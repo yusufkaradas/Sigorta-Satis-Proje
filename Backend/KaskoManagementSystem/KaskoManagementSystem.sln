@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37516.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.API", "Kasko.API\Kasko.API.csproj", "{B927BF61-27E5-4552-A559-262E85A785C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.Business", "Kasko.Business\Kasko.Business.csproj", "{9EC759AB-E7D8-4BCF-A098-A065BD520484}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.DataAccess", "Kasko.DataAcces\Kasko.DataAccess.csproj", "{F14FB205-5329-40DE-A106-F9E08E5CFB46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.Entities", "Kasko.Entities\Kasko.Entities.csproj", "{08B37EA3-9F2A-4A68-856B-7A6052A82236}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.Shared", "Kasko.Shared\Kasko.Shared.csproj", "{6EF62344-B873-4E25-A516-505AA1C745DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.Business.Tests", "Kasko.Business.Tests\Kasko.Business.Tests.csproj", "{43C9B531-117C-4336-9360-B76AC34641AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kasko.IntegrationTests", "Kasko.IntegrationTests\Kasko.IntegrationTests.csproj", "{113B2F7B-7FFE-40CD-8CAE-15AC94B24152}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B927BF61-27E5-4552-A559-262E85A785C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B927BF61-27E5-4552-A559-262E85A785C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B927BF61-27E5-4552-A559-262E85A785C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B927BF61-27E5-4552-A559-262E85A785C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EC759AB-E7D8-4BCF-A098-A065BD520484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EC759AB-E7D8-4BCF-A098-A065BD520484}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EC759AB-E7D8-4BCF-A098-A065BD520484}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EC759AB-E7D8-4BCF-A098-A065BD520484}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F14FB205-5329-40DE-A106-F9E08E5CFB46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F14FB205-5329-40DE-A106-F9E08E5CFB46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F14FB205-5329-40DE-A106-F9E08E5CFB46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F14FB205-5329-40DE-A106-F9E08E5CFB46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08B37EA3-9F2A-4A68-856B-7A6052A82236}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08B37EA3-9F2A-4A68-856B-7A6052A82236}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08B37EA3-9F2A-4A68-856B-7A6052A82236}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08B37EA3-9F2A-4A68-856B-7A6052A82236}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EF62344-B873-4E25-A516-505AA1C745DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EF62344-B873-4E25-A516-505AA1C745DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EF62344-B873-4E25-A516-505AA1C745DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EF62344-B873-4E25-A516-505AA1C745DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43C9B531-117C-4336-9360-B76AC34641AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43C9B531-117C-4336-9360-B76AC34641AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43C9B531-117C-4336-9360-B76AC34641AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43C9B531-117C-4336-9360-B76AC34641AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{113B2F7B-7FFE-40CD-8CAE-15AC94B24152}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{113B2F7B-7FFE-40CD-8CAE-15AC94B24152}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{113B2F7B-7FFE-40CD-8CAE-15AC94B24152}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{113B2F7B-7FFE-40CD-8CAE-15AC94B24152}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F3D760E0-E6ED-4D5C-AD5A-B6146776FAED}
+	EndGlobalSection
+EndGlobal

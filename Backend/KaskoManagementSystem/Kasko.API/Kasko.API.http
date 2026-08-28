@@ -1,0 +1,6 @@
+@Kasko.API_HostAddress = http://localhost:5117
+
+GET {{Kasko.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

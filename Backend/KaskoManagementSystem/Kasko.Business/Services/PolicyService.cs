@@ -1,0 +1,351 @@
+﻿using Kasko.Business.DTOs.Policy;
+using Kasko.Business.Exceptions;
+using Kasko.Business.Services.Abstract;
+using Kasko.DataAccess.Repositories;
+using Kasko.DataAccess.Repositories.Abstract;
+
+using Kasko.Entities.Concrete;
+using Kasko.Entities.Enums;
+using Microsoft.EntityFrameworkCore;
+
+
+namespace Kasko.Business.Services.Concrete
+{
+    public class PolicyService : IPolicyService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyRepository _policyRepository;
+        private readonly IQuoteRepository _quoteRepository;
+        private readonly ICustomerRepository _customerRepository;
+        private readonly IVehicleRepository _vehicleRepository;
+
+        public PolicyService(
+            IUnitOfWork unitOfWork,
+            IPolicyRepository policyRepository,
+            IQuoteRepository quoteRepository,
+            ICustomerRepository customerRepository,
+            IVehicleRepository vehicleRepository)
+        {
+            _unitOfWork = unitOfWork;
+            _policyRepository = policyRepository;
+            _quoteRepository = quoteRepository;
+            _customerRepository = customerRepository;
+            _vehicleRepository = vehicleRepository;
+        }
+
+        public async Task<PolicyDto> CreateAsync(PolicyCreateDto dto)
+        {
+            
+            var customer = await _customerRepository.GetByIdAsync(dto.CustomerId);
+
+            if (customer == null || customer.IsDeleted)
+            {
+                throw new NotFoundException("Müşteri bulunamadı.");
+            }
+
+            
+            var vehicle = await _vehicleRepository.GetByIdAsync(dto.VehicleId);
+
+            if (vehicle == null || vehicle.IsDeleted)
+            {
+                throw new NotFoundException("Araç bulunamadı.");
+            }
+
+            
+            if (vehicle.CustomerId != dto.CustomerId)
+            {
+                throw new BadRequestException(
+                    "Araç belirtilen müşteriye ait değildir.");
+            }
+
+            
+            var quote = await _quoteRepository
+                .GetByIdIncludingDetailsAsync(dto.QuoteId);
+
+            if (quote == null || quote.IsDeleted)
+            {
+                throw new NotFoundException("Teklif bulunamadı.");
+            }
+
+            
+            if (quote.CustomerId != dto.CustomerId)
+            {
+                throw new BadRequestException(
+                    "Teklif belirtilen müşteriye ait değildir.");
+            }
+
+            
+            if (quote.VehicleId != dto.VehicleId)
+            {
+                throw new BadRequestException(
+                    "Teklif belirtilen araca ait değildir.");
+            }
+
+            
+            if (quote.ValidUntil < DateTime.UtcNow)
+            {
+                throw new BadRequestException(
+                    "Teklifin geçerlilik süresi dolmuştur.");
+            }
+
+            
+            if (quote.Status != QuoteStatus.Accepted)
+            {
+                throw new BadRequestException(
+                    "Sadece kabul edilmiş teklifler poliçeye dönüştürülebilir.");
+            }
+
+            
+            if (dto.StartDate >= dto.EndDate)
+            {
+                throw new BadRequestException(
+                    "Poliçe başlangıç tarihi bitiş tarihinden önce olmalıdır.");
+            }
+
+            
+            var existingPolicies = await _policyRepository.FindAsync(
+                x => x.QuoteId == dto.QuoteId &&
+                     !x.IsDeleted);
+
+            if (existingPolicies.Any())
+            {
+                throw new BadRequestException(
+                    "Bu teklif için zaten bir poliçe oluşturulmuştur.");
+            }
+
+            
+            string policyNumber;
+
+            do
+            {
+                policyNumber =
+                    $"POL-{DateTime.UtcNow.Year}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
+            }
+            while (await _policyRepository
+                .PolicyNumberExistsAsync(policyNumber));
+
+            
+            var policy = new Policy
+            {
+                Id = Guid.NewGuid(),
+
+                CustomerId = dto.CustomerId,
+                VehicleId = dto.VehicleId,
+                QuoteId = dto.QuoteId,
+
+                PolicyNumber = policyNumber,
+
+                
+                PremiumAmount = quote.PremiumAmount,
+
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+
+
+                Status = PolicyStatus.Draft,
+
+                IsDeleted = false,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Policies.AddAsync(policy);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new PolicyDto
+            {
+                Id = policy.Id,
+                CustomerId = policy.CustomerId,
+                VehicleId = policy.VehicleId,
+                QuoteId = policy.QuoteId,
+                PolicyNumber = policy.PolicyNumber,
+                PremiumAmount = policy.PremiumAmount,
+                StartDate = policy.StartDate,
+                EndDate = policy.EndDate,
+                CreatedDate = policy.CreatedDate,
+                Status = policy.Status,
+                IsActive = !policy.IsDeleted &&
+           policy.Status == PolicyStatus.Active
+            };
+        }
+
+        public async Task<PolicyDto?> GetByIdAsync(Guid id)
+        {
+            var policy =
+                await _unitOfWork.Policies.GetByIdIncludingDetailsAsync(id);
+
+            if (policy == null)
+            {
+                throw new NotFoundException("Poliçe bulunamadı.");
+            }
+
+            return new PolicyDto
+            {
+                Id = policy.Id,
+                CustomerId = policy.CustomerId,
+                VehicleId = policy.VehicleId,
+                QuoteId = policy.QuoteId,
+                PolicyNumber = policy.PolicyNumber,
+                PremiumAmount = policy.PremiumAmount,
+                StartDate = policy.StartDate,
+                EndDate = policy.EndDate,
+                CreatedDate = policy.CreatedDate,
+                Status = policy.Status,
+                IsActive = !policy.IsDeleted &&
+           policy.Status == PolicyStatus.Active,
+           RowVersion = Convert.ToBase64String(policy.RowVersion)
+            };
+        }
+
+        public async Task<IEnumerable<PolicyListDto>> GetAllAsync()
+        {
+            var policies = await _unitOfWork.Policies.GetAllAsync();
+
+            return policies
+                .Where(x => !x.IsDeleted)
+                .Select(x => new PolicyListDto
+                {
+                    Id = x.Id,
+                    CustomerId = x.CustomerId,
+                    VehicleId = x.VehicleId,
+                    PolicyNumber = x.PolicyNumber,
+                    PremiumAmount = x.PremiumAmount,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    Status = x.Status,
+                    CreatedDate = x.CreatedDate
+                })
+                .ToList();
+        }
+
+        public async Task UpdateAsync(
+            Guid id,
+            PolicyUpdateDto dto)
+        {
+            var policy =
+                await _unitOfWork.Policies.GetByIdAsync(id);
+
+            if (policy == null || policy.IsDeleted)
+            {
+                throw new NotFoundException("Poliçe bulunamadı.");
+            }
+
+            if (dto.EndDate <= policy.StartDate)
+            {
+                throw new BadRequestException(
+                    "Poliçe bitiş tarihi başlangıç tarihinden sonra olmalıdır.");
+            }
+            if (policy.Status is PolicyStatus.Expired
+    or PolicyStatus.Cancelled)
+            {
+                throw new BadRequestException(
+                    "Süresi dolmuş veya iptal edilmiş poliçe güncellenemez.");
+            }
+
+            byte[] rowVersion;
+
+            try
+            {
+                rowVersion = Convert.FromBase64String(dto.RowVersion);
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException(
+                    "Geçersiz RowVersion değeri.");
+            }
+
+            _unitOfWork.Policies.SetOriginalRowVersion(
+              policy,
+              rowVersion);
+
+            policy.EndDate = dto.EndDate;
+            policy.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.Policies.UpdateAsync(policy);
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new ConflictException(
+                    "Poliçe başka bir kullanıcı tarafından güncellenmiş. Lütfen güncel veriyi tekrar alın.");
+            }
+        }
+
+        public async Task DeleteAsync(
+            Guid id,
+            Guid? deletedBy)
+        {
+            var policy =
+                await _unitOfWork.Policies.GetByIdAsync(id);
+
+            if (policy == null || policy.IsDeleted)
+            {
+                throw new NotFoundException("Poliçe bulunamadı.");
+            }
+
+            policy.IsDeleted = true;
+            policy.DeletedDate = DateTime.UtcNow;
+            policy.DeletedBy = deletedBy;
+
+            await _unitOfWork.Policies.UpdateAsync(policy);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+            public async Task CancelAsync(
+    Guid id,
+    Guid? cancelledBy)
+        {
+            var policy = await _unitOfWork.Policies
+                .GetByIdAsync(id);
+
+            if (policy == null || policy.IsDeleted)
+            {
+                throw new NotFoundException(
+                    "Poliçe bulunamadı.");
+            }
+
+            if (policy.Status != PolicyStatus.Active)
+            {
+                throw new BadRequestException(
+                    "Sadece aktif poliçe iptal edilebilir.");
+            }
+
+            policy.Status = PolicyStatus.Cancelled;
+            policy.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.Policies.UpdateAsync(policy);
+            await _unitOfWork.SaveChangesAsync();
+
+       }
+        public async Task ExpireAsync(Guid id)
+        {
+            var policy = await _unitOfWork.Policies
+                .GetByIdAsync(id);
+
+            if (policy == null || policy.IsDeleted)
+            {
+                throw new NotFoundException(
+                    "Poliçe bulunamadı.");
+            }
+
+            if (policy.Status != PolicyStatus.Active)
+            {
+                throw new BadRequestException(
+                    "Sadece aktif poliçe süresi dolabilir.");
+            }
+
+            if (policy.EndDate > DateTime.UtcNow)
+            {
+                throw new BadRequestException(
+                    "Poliçenin süresi henüz dolmamıştır.");
+            }
+
+            policy.Status = PolicyStatus.Expired;
+            policy.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.Policies.UpdateAsync(policy);
+            await _unitOfWork.SaveChangesAsync();
+        }
+    }
+    }
