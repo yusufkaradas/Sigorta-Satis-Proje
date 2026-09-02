@@ -18,5 +18,6 @@ namespace Kasko.Entities.Concrete
         public ICollection<QuoteCoverage> QuoteCoverages { get; set; }
     = new List<QuoteCoverage>();
 
+        public QuotePricingSnapshot? PricingSnapshot { get; set; }
     }
 }

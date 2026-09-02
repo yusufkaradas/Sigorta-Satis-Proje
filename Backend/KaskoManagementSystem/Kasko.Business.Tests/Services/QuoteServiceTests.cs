@@ -6,7 +6,9 @@ using Kasko.DataAccess.Repositories;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
+using System.Threading;
 using Moq;
+using System.Linq.Expressions;
 
 namespace Kasko.Business.Tests.Services;
 
@@ -18,6 +20,8 @@ public class QuoteServiceTests
     private readonly Mock<IVehicleRepository> _vehicleRepositoryMock;
     private readonly Mock<IPricingService> _pricingServiceMock;
     private readonly Mock<IQuoteCoverageRepository> _quoteCoverageRepositoryMock;
+    private readonly Mock<IPackageCoverageRepository> _packageCoverageRepositoryMock;
+    private readonly Mock<IGenericRepository<QuotePricingSnapshot>> _quotePricingSnapshotRepositoryMock;
 
     private readonly QuoteService _service;
 
@@ -29,6 +33,9 @@ public class QuoteServiceTests
         _vehicleRepositoryMock = new Mock<IVehicleRepository>();
         _pricingServiceMock = new Mock<IPricingService>();
         _quoteCoverageRepositoryMock = new Mock<IQuoteCoverageRepository>();
+        _packageCoverageRepositoryMock = new Mock<IPackageCoverageRepository>();
+        _quotePricingSnapshotRepositoryMock =
+    new Mock<IGenericRepository<QuotePricingSnapshot>>();
 
         _unitOfWorkMock
             .Setup(x => x.Quotes)
@@ -44,10 +51,119 @@ public class QuoteServiceTests
         _unitOfWorkMock
              .Setup(x => x.QuoteCoverages)
              .Returns(_quoteCoverageRepositoryMock.Object);
+        _unitOfWorkMock
+    .Setup(x => x.PackageCoverages)
+    .Returns(_packageCoverageRepositoryMock.Object);
+        _unitOfWorkMock
+    .Setup(x => x.QuotePricingSnapshots)
+    .Returns(_quotePricingSnapshotRepositoryMock.Object);
 
         _service = new QuoteService(
         _unitOfWorkMock.Object,
         _pricingServiceMock.Object);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldIncludeDefaultPackageCoverages()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var packageId = Guid.NewGuid();
+
+        var coverageId1 = Guid.NewGuid();
+        var coverageId2 = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _packageCoverageRepositoryMock
+            .Setup(x => x.FindAsync(
+                It.IsAny<Expression<Func<PackageCoverage, bool>>>()))
+            .ReturnsAsync(new[]
+            {
+            new PackageCoverage
+            {
+                Id = Guid.NewGuid(),
+                InsurancePackageId = packageId,
+                CoverageId = coverageId1,
+                IsDefault = true,
+                IsDeleted = false
+            },
+            new PackageCoverage
+            {
+                Id = Guid.NewGuid(),
+                InsurancePackageId = packageId,
+                CoverageId = coverageId2,
+                IsDefault = true,
+                IsDeleted = false
+            }
+            });
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.PackageId == packageId &&
+                    r.CoverageIds.Contains(coverageId1) &&
+                    r.CoverageIds.Contains(coverageId2)),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PricingCalculation
+            {
+                MarketValue = 1_000_000m,
+                BasePremium = 20_000m,
+                RiskAdjustedPremium = 20_000m,
+                CoveragePremium = 0m,
+                TotalPremium = 20_000m
+            });
+        _quotePricingSnapshotRepositoryMock
+    .Setup(x => x.AddAsync(It.IsAny<QuotePricingSnapshot>()))
+    .Returns(Task.CompletedTask);
+        var result =
+            await _service.CalculateAsync(
+                new CreateQuoteDto
+                {
+                    CustomerId = customerId,
+                    VehicleId = vehicleId,
+                    PackageId = packageId,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 0,
+                    Deductible = 0,
+                    CoverageIds = Array.Empty<Guid>(),
+                    ValidUntil = DateTime.UtcNow.AddDays(10)
+                });
+
+        Assert.Equal(20_000m, result.TotalPremium);
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.CoverageIds.Count == 2 &&
+                    r.CoverageIds.Contains(coverageId1) &&
+                    r.CoverageIds.Contains(coverageId2)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
     [Fact]
     public async Task ChangeStatusAsync_ShouldChangeDraftToOffered()
@@ -970,16 +1086,20 @@ public class QuoteServiceTests
         };
 
         _customerRepositoryMock
-            .Setup(x => x.GetByIdAsync(customerId))
-            .ReturnsAsync(customer);
+     .Setup(x => x.GetByIdAsync(customerId))
+     .ReturnsAsync(customer);
+
+        vehicle.IsDeleted = true;   
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
 
         _pricingServiceMock
      .Setup(x => x.CalculateAsync(
-         It.IsAny<decimal>(),
-         It.IsAny<int>(),
-         It.IsAny<IReadOnlyCollection<Guid>>(),
+         It.IsAny<PricingRequest>(),
          It.IsAny<CancellationToken>()))
-     .ReturnsAsync(
+      .ReturnsAsync(
          new PricingCalculation
          {
              MarketValue = 1_000_000m,
@@ -1043,16 +1163,20 @@ public class QuoteServiceTests
         };
 
         _customerRepositoryMock
-            .Setup(x => x.GetByIdAsync(customerId))
-            .ReturnsAsync(customer);
+    .Setup(x => x.GetByIdAsync(customerId))
+    .ReturnsAsync(customer);
+
+        vehicle.IsActive = false;   
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
 
         _pricingServiceMock
       .Setup(x => x.CalculateAsync(
-          It.IsAny<decimal>(),
-          It.IsAny<int>(),
-          It.IsAny<IReadOnlyCollection<Guid>>(),
+          It.IsAny<PricingRequest>(),
           It.IsAny<CancellationToken>()))
-      .ReturnsAsync(
+        .ReturnsAsync(
           new PricingCalculation
           {
               MarketValue = 1_000_000m,
@@ -1117,16 +1241,20 @@ public class QuoteServiceTests
         };
 
         _customerRepositoryMock
-            .Setup(x => x.GetByIdAsync(customerId))
-            .ReturnsAsync(customer);
+    .Setup(x => x.GetByIdAsync(customerId))
+    .ReturnsAsync(customer);
+
+        vehicle.CustomerId = anotherCustomerId;   
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
 
         _pricingServiceMock
-    .Setup(x => x.CalculateAsync(
-        It.IsAny<decimal>(),
-        It.IsAny<int>(),
-        It.IsAny<IReadOnlyCollection<Guid>>(),
-        It.IsAny<CancellationToken>()))
-    .ReturnsAsync(
+      .Setup(x => x.CalculateAsync(
+          It.IsAny<PricingRequest>(),
+          It.IsAny<CancellationToken>()))
+      .ReturnsAsync(
         new PricingCalculation
         {
             MarketValue = 1_000_000m,
@@ -1200,12 +1328,10 @@ public class QuoteServiceTests
             .ReturnsAsync(vehicle);
 
         _pricingServiceMock
-            .Setup(x => x.CalculateAsync(
-                It.IsAny<decimal>(),
-                It.IsAny<int>(),
-                It.IsAny<IReadOnlyCollection<Guid>>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
+     .Setup(x => x.CalculateAsync(
+         It.IsAny<PricingRequest>(),
+         It.IsAny<CancellationToken>()))
+             .ReturnsAsync(
                 new PricingCalculation
                 {
                     MarketValue = 1_000_000m,
@@ -1319,11 +1445,9 @@ public class QuoteServiceTests
             .ReturnsAsync(vehicle);
 
         _pricingServiceMock
-            .Setup(x => x.CalculateAsync(
-                vehicle.MarketValue,
-                vehicle.ModelYear,
-                dto.CoverageIds,
-                It.IsAny<CancellationToken>()))
+                 .Setup(x => x.CalculateAsync(
+                 It.IsAny<PricingRequest>(),
+                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(
                 new PricingCalculation
                 {
@@ -1402,6 +1526,217 @@ public class QuoteServiceTests
         _unitOfWorkMock.Verify(
             x => x.SaveChangesAsync(),
             Times.Once);
+    }
+    [Fact]
+    public async Task CreateAsync_ShouldUseClaimsCountFromPreviousPolicy()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var previousPolicyId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-30),
+            City = "Istanbul",
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var previousPolicy = new PreviousPolicy
+        {
+            Id = previousPolicyId,
+            CustomerId = customerId,
+            PreviousInsurer = "ABC Sigorta",
+            PolicyNumber = "POL-001",
+            StartDate = DateTime.UtcNow.AddYears(-1),
+            EndDate = DateTime.UtcNow,
+            ClaimsCount = 3,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _unitOfWorkMock
+            .Setup(x => x.PreviousPolicies.GetByIdAsync(previousPolicyId))
+            .ReturnsAsync(previousPolicy);
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.IsAny<PricingRequest>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PricingCalculation
+            {
+                MarketValue = 1_000_000m,
+                TotalPremium = 26_000m,
+                Coverages = Array.Empty<PricingCoverageResult>()
+            });
+
+        _quoteRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Quote>()))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        await _service.CreateAsync(
+            new CreateQuoteDto
+            {
+                CustomerId = customerId,
+                VehicleId = vehicleId,
+                PreviousPolicyId = previousPolicyId,
+                ClaimsCount = 0,
+                Usage = "PRIVATE",
+                PackageId = null,
+                Deductible = 0,
+                CoverageIds = Array.Empty<Guid>(),
+                ValidUntil = DateTime.UtcNow.AddDays(10)
+            });
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.ClaimsCount == 3),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldThrowNotFound_WhenPreviousPolicyDoesNotExist()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var previousPolicyId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-30),
+            City = "Istanbul",
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _unitOfWorkMock
+            .Setup(x => x.PreviousPolicies.GetByIdAsync(previousPolicyId))
+            .ReturnsAsync((PreviousPolicy?)null);
+
+        await Assert.ThrowsAsync<NotFoundException>(
+            () =>
+                _service.CreateAsync(
+                    new CreateQuoteDto
+                    {
+                        CustomerId = customerId,
+                        VehicleId = vehicleId,
+                        PreviousPolicyId = previousPolicyId,
+                        ClaimsCount = 0,
+                        Usage = "PRIVATE",
+                        Deductible = 0,
+                        CoverageIds = Array.Empty<Guid>(),
+                        ValidUntil = DateTime.UtcNow.AddDays(10)
+                    }));
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldThrowBadRequest_WhenPreviousPolicyBelongsToAnotherCustomer()
+    {
+        var customerId = Guid.NewGuid();
+        var anotherCustomerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var previousPolicyId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-30),
+            City = "Istanbul",
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var previousPolicy = new PreviousPolicy
+        {
+            Id = previousPolicyId,
+            CustomerId = anotherCustomerId,
+            PreviousInsurer = "ABC Sigorta",
+            PolicyNumber = "POL-002",
+            StartDate = DateTime.UtcNow.AddYears(-1),
+            EndDate = DateTime.UtcNow,
+            ClaimsCount = 2,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _unitOfWorkMock
+            .Setup(x => x.PreviousPolicies.GetByIdAsync(previousPolicyId))
+            .ReturnsAsync(previousPolicy);
+
+        await Assert.ThrowsAsync<BadRequestException>(
+            () =>
+                _service.CreateAsync(
+                    new CreateQuoteDto
+                    {
+                        CustomerId = customerId,
+                        VehicleId = vehicleId,
+                        PreviousPolicyId = previousPolicyId,
+                        ClaimsCount = 0,
+                        Usage = "PRIVATE",
+                        Deductible = 0,
+                        CoverageIds = Array.Empty<Guid>(),
+                        ValidUntil = DateTime.UtcNow.AddDays(10)
+                    }));
     }
     [Fact]
     public async Task DeleteAsync_ShouldThrowNotFound_WhenQuoteDoesNotExist()
@@ -1587,7 +1922,7 @@ public class QuoteServiceTests
             result.QuoteNumber);
 
         Assert.Equal(
-               22000m,
+               25000m,
                result.PremiumAmount);
 
         Assert.Equal(
@@ -1742,5 +2077,636 @@ public class QuoteServiceTests
             x => x.GetAllAsync(),
             Times.Once);
     }
+    [Fact]
+    public async Task CalculateAsync_ShouldReturnPricingCalculationWithoutCreatingQuote()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
 
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsDeleted = false,
+            IsActive = true
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.MarketValue == 1_000_000m &&
+                    r.ModelYear == DateTime.UtcNow.Year &&
+                    r.DriverAge == 31 &&
+                    r.Usage == "PRIVATE" &&
+                    r.ClaimsCount == 0 &&
+                    r.Region == "NORMAL" &&
+                    r.Deductible == 0 &&
+                    r.CoverageIds.Count == 0),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PricingCalculation
+            {
+                MarketValue = 1_000_000m,
+                BasePremium = 20_000m,
+                RiskAdjustedPremium = 20_000m,
+                CoveragePremium = 0m,
+                TotalPremium = 20_000m,
+                Coverages = Array.Empty<PricingCoverageResult>()
+            });
+
+        var result =
+            await _service.CalculateAsync(
+                new CreateQuoteDto
+                {
+                    CustomerId = customerId,
+                    VehicleId = vehicleId,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 0,
+                    Deductible = 0,
+                    CoverageIds = Array.Empty<Guid>(),
+                    ValidUntil = DateTime.UtcNow.AddDays(10)
+                });
+
+        Assert.Equal(1_000_000m, result.MarketValue);
+        Assert.Equal(20_000m, result.TotalPremium);
+
+        _quoteRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<Quote>()),
+            Times.Never);
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.IsAny<PricingRequest>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+    [Fact]
+    public async Task CalculateAndCreateAsync_ShouldUseSamePremium()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ValidUntil = DateTime.UtcNow.AddDays(10),
+            CoverageIds = Array.Empty<Guid>(),
+            Usage = "PRIVATE",
+            ClaimsCount = 0,
+            PackageId = null,
+            Deductible = 0,
+            PreviousPolicyId = null
+        };
+
+        var pricingCalculation = new PricingCalculation
+        {
+            MarketValue = 1_000_000m,
+            BaseRate = 0.02m,
+            AgeFactor = 1.00m,
+            UsageFactor = 1.00m,
+            DriverFactor = 1.00m,
+            ClaimsFactor = 1.00m,
+            RegionFactor = 1.00m,
+            PackageFactor = 1.00m,
+            DeductibleFactor = 1.00m,
+            BasePremium = 20_000m,
+            RiskAdjustedPremium = 20_000m,
+            CoveragePremium = 2_900m,
+            TotalPremium = 22_900m,
+            Coverages = Array.Empty<PricingCoverageResult>()
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _pricingServiceMock
+    .Setup(x => x.CalculateAsync(
+        It.IsAny<PricingRequest>(),
+        It.IsAny<CancellationToken>()))
+    .ReturnsAsync(pricingCalculation);
+
+        _quoteRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Quote>()))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        var calculated =
+            await _service.CalculateAsync(dto);
+
+        var created =
+            await _service.CreateAsync(dto);
+
+        Assert.Equal(
+            calculated.TotalPremium,
+            created.PremiumAmount);
+
+        Assert.Equal(
+            22_900m,
+            calculated.TotalPremium);
+
+        Assert.Equal(
+            22_900m,
+            created.PremiumAmount);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldThrowBadRequest_WhenValidUntilIsInThePast()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ValidUntil = DateTime.UtcNow.AddDays(-1),
+            CoverageIds = Array.Empty<Guid>(),
+            Usage = "PRIVATE",
+            ClaimsCount = 0,
+            Deductible = 0
+        };
+
+        var exception =
+            await Assert.ThrowsAsync<BadRequestException>(
+                () => _service.CalculateAsync(dto));
+
+        Assert.Contains(
+            "Teklif geçerlilik tarihi gelecekte olmalıdır.",
+            exception.Message);
+    }
+    [Fact]
+    public async Task CreateAsync_ShouldThrowBadRequest_WhenValidUntilIsInThePast()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ValidUntil = DateTime.UtcNow.AddDays(-1),
+            CoverageIds = Array.Empty<Guid>(),
+            Usage = "PRIVATE",
+            ClaimsCount = 0,
+            Deductible = 0
+        };
+
+        var exception =
+            await Assert.ThrowsAsync<BadRequestException>(
+                () => _service.CreateAsync(dto));
+
+        Assert.Contains(
+            "Teklif geçerlilik tarihi gelecekte olmalıdır.",
+            exception.Message);
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.IsAny<PricingRequest>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldUsePreviousPolicyClaimsCount()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var previousPolicyId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var previousPolicy = new PreviousPolicy
+        {
+            Id = previousPolicyId,
+            CustomerId = customerId,
+            ClaimsCount = 2,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _unitOfWorkMock
+            .Setup(x => x.PreviousPolicies
+                .GetByIdAsync(previousPolicyId))
+            .ReturnsAsync(previousPolicy);
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.ClaimsCount == 2),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PricingCalculation
+            {
+                MarketValue = 1_000_000m,
+                BasePremium = 20_000m,
+                RiskAdjustedPremium = 24_000m,
+                CoveragePremium = 0m,
+                TotalPremium = 24_000m
+            });
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            PreviousPolicyId = previousPolicyId,
+            ClaimsCount = 0,
+            Usage = "PRIVATE",
+            Deductible = 0,
+            CoverageIds = Array.Empty<Guid>(),
+            ValidUntil = DateTime.UtcNow.AddDays(10)
+        };
+
+        var result =
+            await _service.CalculateAsync(dto);
+
+        Assert.Equal(
+            24_000m,
+            result.TotalPremium);
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.ClaimsCount == 2),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldUseDtoClaimsCount_WhenPreviousPolicyIsNotProvided()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.ClaimsCount == 3 &&
+                    r.Usage == "COMMERCIAL"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PricingCalculation
+            {
+                MarketValue = 1_000_000m,
+                BasePremium = 20_000m,
+                RiskAdjustedPremium = 26_000m,
+                CoveragePremium = 0m,
+                TotalPremium = 26_000m
+            });
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ClaimsCount = 3,
+            Usage = "COMMERCIAL",
+            Deductible = 0,
+            CoverageIds = Array.Empty<Guid>(),
+            ValidUntil = DateTime.UtcNow.AddDays(10)
+        };
+
+        var result =
+            await _service.CalculateAsync(dto);
+
+        Assert.Equal(
+            26_000m,
+            result.TotalPremium);
+
+        _pricingServiceMock.Verify(
+            x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.ClaimsCount == 3 &&
+                    r.Usage == "COMMERCIAL"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldNotDuplicatePackageDefaultCoverage()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var packageId = Guid.NewGuid();
+        var coverageId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-31),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _packageCoverageRepositoryMock
+            .Setup(x => x.FindAsync(
+                It.IsAny<Expression<Func<PackageCoverage, bool>>>()))
+            .ReturnsAsync(
+                new[]
+                {
+                new PackageCoverage
+                {
+                    Id = Guid.NewGuid(),
+                    InsurancePackageId = packageId,
+                    CoverageId = coverageId,
+                    IsDefault = true,
+                    IsDeleted = false
+                }
+                });
+
+        _pricingServiceMock
+            .Setup(x => x.CalculateAsync(
+                It.Is<PricingRequest>(r =>
+                    r.CoverageIds.Count == 1 &&
+                    r.CoverageIds.Count(x => x == coverageId) == 1),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                new PricingCalculation
+                {
+                    MarketValue = 1_000_000m,
+                    BasePremium = 20_000m,
+                    RiskAdjustedPremium = 20_000m,
+                    CoveragePremium = 900m,
+                    TotalPremium = 20_900m
+                });
+
+        var result =
+            await _service.CalculateAsync(
+                new CreateQuoteDto
+                {
+                    CustomerId = customerId,
+                    VehicleId = vehicleId,
+                    PackageId = packageId,
+                    CoverageIds = new[] { coverageId },
+                    Usage = "PRIVATE",
+                    ClaimsCount = 0,
+                    Deductible = 0,
+                    ValidUntil = DateTime.UtcNow.AddDays(10)
+                });
+
+        Assert.Equal(
+            20_900m,
+            result.TotalPremium);
+    }
+    [Fact]
+    public async Task CreateAsync_ShouldCreatePricingSnapshot()
+    {
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            DateOfBirth = DateTime.UtcNow.AddYears(-30),
+            City = "Istanbul",
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year - 4,
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ValidUntil = DateTime.UtcNow.AddDays(7),
+            Usage = "PRIVATE",
+            ClaimsCount = 0,
+            Deductible = 0
+        };
+
+        _customerRepositoryMock
+            .Setup(x => x.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        var pricing = new PricingCalculation
+        {
+            MarketValue = 1_000_000m,
+            BaseRate = 0.02m,
+            AgeFactor = 1.10m,
+            UsageFactor = 1.00m,
+            DriverFactor = 1.00m,
+            ClaimsFactor = 0.90m,
+            RegionFactor = 1.00m,
+            PackageFactor = 1.00m,
+            DeductibleFactor = 1.00m,
+            BasePremium = 20_000m,
+            RiskAdjustedPremium = 19_800m,
+            CoveragePremium = 0m,
+            Discount = 0m,
+            TotalPremium = 19_800m,
+            Coverages = Array.Empty<PricingCoverageResult>()
+        };
+
+        _pricingServiceMock
+    .Setup(x => x.CalculateAsync(
+        It.IsAny<PricingRequest>(),
+        It.IsAny<CancellationToken>()))
+    .ReturnsAsync(pricing);
+
+        _quoteRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Quote>()))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        var result =
+            await _service.CreateAsync(dto);
+
+        Assert.NotNull(result);
+
+        _unitOfWorkMock.Verify(
+            x => x.QuotePricingSnapshots.AddAsync(
+                It.Is<QuotePricingSnapshot>(snapshot =>
+                    snapshot.MarketValue == pricing.MarketValue &&
+                    snapshot.BaseRate == pricing.BaseRate &&
+                    snapshot.AgeFactor == pricing.AgeFactor &&
+                    snapshot.UsageFactor == pricing.UsageFactor &&
+                    snapshot.DriverFactor == pricing.DriverFactor &&
+                    snapshot.ClaimsFactor == pricing.ClaimsFactor &&
+                    snapshot.RegionFactor == pricing.RegionFactor &&
+                    snapshot.PackageFactor == pricing.PackageFactor &&
+                    snapshot.DeductibleFactor == pricing.DeductibleFactor &&
+                    snapshot.CoveragePremium == pricing.CoveragePremium &&
+                    snapshot.Discount == pricing.Discount &&
+                    snapshot.FinalPremium == pricing.TotalPremium
+                )),
+            Times.Once);
+    }
 }

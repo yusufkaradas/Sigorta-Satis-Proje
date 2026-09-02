@@ -1,4 +1,5 @@
 ﻿using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.Entities.Concrete;
 
 namespace Kasko.DataAccess.Repositories.Concrete
 {
@@ -24,11 +25,24 @@ namespace Kasko.DataAccess.Repositories.Concrete
         public IPricingRuleRepository PricingRules { get; }
 
         public IQuoteCoverageRepository QuoteCoverages { get; }
+
+        public IInsurancePackageRepository InsurancePackages { get; }
+
+        public IPackageCoverageRepository PackageCoverages { get; }
+
+        public IPreviousPolicyRepository PreviousPolicies { get; }
+
+        public IGenericRepository<QuotePricingSnapshot> QuotePricingSnapshots { get; }
+
+        public IPricingRuleChangeRequestRepository PricingRuleChangeRequests { get; }
         public UnitOfWork(KaskoContext context, IUserRepository userRepository, IRoleRepository roleRepository, 
             ICustomerRepository customerRepository, IVehicleRepository vehicleRepository,
             IQuoteRepository quoteRepository, IPolicyRepository policyRepository, 
             IPaymentRepository paymentRepository, ICoverageRepository coverageRepository,
-            IVehicleValueCatalogRepository vehicleValueCatalogRepository, IPricingRuleRepository pricingRuleRepository,IQuoteCoverageRepository quoteCoverageRepository)
+            IVehicleValueCatalogRepository vehicleValueCatalogRepository, IPricingRuleRepository pricingRuleRepository,
+            IQuoteCoverageRepository quoteCoverageRepository,IInsurancePackageRepository insurancePackageRepository, 
+            IPackageCoverageRepository packageCoverageRepository, IPreviousPolicyRepository previousPolicyRepository,
+            IGenericRepository<QuotePricingSnapshot> quotePricingSnapshotRepository, IPricingRuleChangeRequestRepository pricingRuleChangeRequestRepository)
         {
             _context = context;
             Users = userRepository;
@@ -42,6 +56,11 @@ namespace Kasko.DataAccess.Repositories.Concrete
             Quotes = quoteRepository;
             Policies = policyRepository;
             Payments = paymentRepository;
+            InsurancePackages = insurancePackageRepository;
+            PackageCoverages = packageCoverageRepository;
+            PreviousPolicies = previousPolicyRepository;
+            QuotePricingSnapshots = quotePricingSnapshotRepository;
+            PricingRuleChangeRequests = pricingRuleChangeRequestRepository;
         }
         public async Task<int> SaveChangesAsync()
         {

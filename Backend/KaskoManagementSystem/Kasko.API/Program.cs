@@ -41,7 +41,14 @@ builder.Services.AddScoped<ICoverageRepository, CoverageRepository>();
 builder.Services.AddScoped<IVehicleValueCatalogRepository,VehicleValueCatalogRepository>();
 builder.Services.AddScoped<IVehicleValueCatalogService,VehicleValueCatalogService>();
 builder.Services.AddScoped<IPricingRuleRepository, PricingRuleRepository>();
-builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IQuoteCoverageRepository, QuoteCoverageRepository>();
+builder.Services.AddScoped<IInsurancePackageRepository, InsurancePackageRepository>();
+builder.Services.AddScoped<IPackageCoverageRepository, PackageCoverageRepository>();
+builder.Services.AddScoped<IPreviousPolicyRepository, PreviousPolicyRepository>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IPricingRuleChangeRequestRepository, PricingRuleChangeRequestRepository>();
+
+
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -54,7 +61,13 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICoverageService, CoverageService>();
 builder.Services.AddScoped<IVehicleValueImportService,VehicleValueImportService>();
 builder.Services.AddScoped<IVehicleValueCatalogService, VehicleValueCatalogService>();
-builder.Services.AddScoped<IQuoteCoverageRepository, QuoteCoverageRepository>();
+builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IPreviousPolicyService, PreviousPolicyService>(); 
+builder.Services.AddScoped<IInsurancePackageService, InsurancePackageService>();
+builder.Services.AddScoped<IPricingRuleService, PricingRuleService>();
+builder.Services.AddScoped<IPricingRuleChangeRequestService, PricingRuleChangeRequestService>();
+
+
 
 
 

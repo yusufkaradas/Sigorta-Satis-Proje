@@ -54,10 +54,31 @@ public class E2ELifecycleTests
             quote.Status);
 
         Assert.Equal(
-            25000m,
-            quote.PremiumAmount);
+               24187.50m,
+    quote.PremiumAmount);
+        var snapshot =
+    await IntegrationTestHelper
+        .GetQuotePricingSnapshotAsync(
+            factory,
+            quote.Id);
 
-        
+        Assert.NotNull(snapshot);
+
+        Assert.Equal(
+            quote.Id,
+            snapshot!.QuoteId);
+
+        Assert.Equal(
+            quote.PremiumAmount,
+            snapshot.FinalPremium);
+
+        Assert.True(
+            snapshot.MarketValue > 0);
+
+        Assert.True(
+            snapshot.BaseRate > 0);
+
+
         await IntegrationTestHelper.ChangeQuoteStatusAsync(
             client,
             quote.Id,

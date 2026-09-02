@@ -27,6 +27,16 @@ namespace Kasko.DataAccess.Repositories.Abstract
 
         IQuoteCoverageRepository QuoteCoverages { get; }
 
+        IInsurancePackageRepository InsurancePackages { get; }
+
+        IPackageCoverageRepository PackageCoverages { get; }
+
+        IPreviousPolicyRepository PreviousPolicies { get; }
+
+        I­GenericRepository<QuotePricingSnapshot> QuotePricingSnapshots { get; }
+
+        IPricingRuleChangeRequestRepository PricingRuleChangeRequests { get; }
+
         Task<int> SaveChangesAsync();
 
         Task ExecuteInTransactionAsync(Func<Task> action);

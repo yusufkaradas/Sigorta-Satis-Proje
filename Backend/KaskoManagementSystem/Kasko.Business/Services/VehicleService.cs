@@ -56,6 +56,8 @@ namespace Kasko.Business.Services
                 PlateNumber = vehicle.PlateNumber,
                 VIN = vehicle.VIN,
                 Brand = vehicle.Brand,
+                BrandCode = vehicle.BrandCode,
+                TypeCode = vehicle.TypeCode,
                 Model = vehicle.Model,
                 ModelYear = vehicle.ModelYear,
                 VehicleType = vehicle.VehicleType,
@@ -97,6 +99,17 @@ namespace Kasko.Business.Services
                 throw new BadRequestException(
                     "Bu VIN numarası başka bir araç tarafından kullanılmaktadır.");
             }
+        var tsbRecord =
+        await _unitOfWork.VehicleValueCatalogs.GetActiveByKeyAsync(
+        dto.BrandCode,
+        dto.TypeCode,
+        dto.ModelYear);
+
+            if (tsbRecord == null)
+            {
+                throw new NotFoundException(
+                    "Seçilen marka, araç tipi ve model yılı için TSB araç değeri bulunamadı.");
+            }
 
             var vehicle = new Vehicle
             {
@@ -109,6 +122,8 @@ namespace Kasko.Business.Services
                 Brand = dto.Brand,
                 Model = dto.Model,
                 ModelYear = dto.ModelYear,
+                BrandCode = dto.BrandCode,
+                TypeCode = dto.TypeCode,
 
                 VehicleType = dto.VehicleType,
                 FuelType = dto.FuelType,
@@ -119,7 +134,7 @@ namespace Kasko.Business.Services
 
                 Color = dto.Color,
 
-                MarketValue = dto.MarketValue,
+                MarketValue = tsbRecord.Value,
 
                 CreatedDate = DateTime.UtcNow,
 
@@ -206,7 +221,18 @@ namespace Kasko.Business.Services
                 throw new BadRequestException(
                     "Bu VIN numarası başka bir araç tarafından kullanılmaktadır.");
             }
+            
+            var tsbRecord =
+            await _unitOfWork.VehicleValueCatalogs.GetActiveByKeyAsync(
+            dto.BrandCode,
+            dto.TypeCode,
+            dto.ModelYear);
 
+            if (tsbRecord == null)
+            {
+                throw new NotFoundException(
+                    "Seçilen marka, araç tipi ve model yılı için TSB araç değeri bulunamadı.");
+            }
             vehicle.CustomerId = dto.CustomerId;
 
             vehicle.PlateNumber = dto.PlateNumber;
@@ -224,7 +250,7 @@ namespace Kasko.Business.Services
 
             vehicle.Color = dto.Color;
 
-            vehicle.MarketValue = dto.MarketValue;
+            vehicle.MarketValue = tsbRecord.Value;
 
             vehicle.UpdatedDate = DateTime.UtcNow;
 

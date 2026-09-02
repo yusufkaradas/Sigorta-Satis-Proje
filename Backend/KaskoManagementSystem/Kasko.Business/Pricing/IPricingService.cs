@@ -3,8 +3,6 @@
 public interface IPricingService
 {
     Task<PricingCalculation> CalculateAsync(
-        decimal marketValue,
-        int modelYear,
-        IReadOnlyCollection<Guid> coverageIds,
+        PricingRequest request,
         CancellationToken cancellationToken = default);
 }

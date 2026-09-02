@@ -16,6 +16,9 @@ namespace Kasko.Business.DTOs.Vehicle
 
         public string Model { get; set; } = string.Empty;
 
+        public string? BrandCode { get; set; } = string.Empty;
+
+        public string? TypeCode { get; set; } = string.Empty;
         public int ModelYear { get; set; }
 
         public VehicleType VehicleType { get; set; }

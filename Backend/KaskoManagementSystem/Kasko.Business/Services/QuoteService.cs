@@ -18,6 +18,7 @@ namespace Kasko.Business.Services
         {
             _unitOfWork = unitOfWork;
             _pricingService = pricingService;
+
         }
 
         public async Task<IEnumerable<QuoteListDto>> GetAllAsync()
@@ -61,10 +62,14 @@ namespace Kasko.Business.Services
                 CreatedDate = quote.CreatedDate
             };
         }
-
-        public async Task<QuoteDto> CreateAsync(CreateQuoteDto dto)
+        public async Task<PricingCalculation> CalculateAsync(
+    CreateQuoteDto dto)
         {
-            
+            if (dto.ValidUntil <= DateTime.UtcNow)
+            {
+                throw new BadRequestException(
+                    "Teklif geçerlilik tarihi gelecekte olmalıdır.");
+            }
             var customer = await _unitOfWork.Customers
                 .GetByIdAsync(dto.CustomerId);
 
@@ -74,7 +79,6 @@ namespace Kasko.Business.Services
                     "Müşteri bulunamadı.");
             }
 
-            
             var vehicle = await _unitOfWork.Vehicles
                 .GetByIdAsync(dto.VehicleId);
 
@@ -84,7 +88,115 @@ namespace Kasko.Business.Services
                     "Araç bulunamadı.");
             }
 
-            
+            if (vehicle.IsDeleted)
+            {
+                throw new BadRequestException(
+                    "Silinmiş bir araç için fiyat hesaplanamaz.");
+            }
+
+            if (!vehicle.IsActive)
+            {
+                throw new BadRequestException(
+                    "Pasif bir araç için fiyat hesaplanamaz.");
+            }
+
+            if (vehicle.CustomerId != dto.CustomerId)
+            {
+                throw new BadRequestException(
+                    "Seçilen araç bu müşteriye ait değildir.");
+            }
+
+            PreviousPolicy? previousPolicy = null;
+
+            if (dto.PreviousPolicyId.HasValue)
+            {
+                previousPolicy =
+                    await _unitOfWork
+                        .PreviousPolicies
+                        .GetByIdAsync(dto.PreviousPolicyId.Value);
+
+                if (previousPolicy == null ||
+                    previousPolicy.IsDeleted)
+                {
+                    throw new NotFoundException(
+                        "Önceki poliçe bulunamadı.");
+                }
+
+                if (previousPolicy.CustomerId != dto.CustomerId)
+                {
+                    throw new BadRequestException(
+                        "Önceki poliçe bu müşteriye ait değil.");
+                }
+            }
+
+            var driverAge =
+                CalculateDriverAge(
+                    customer.DateOfBirth);
+
+            var region =
+                ResolveRegion(
+                    customer.City);
+
+            var pricingRequest =
+                new PricingRequest
+                {
+                    MarketValue =
+                        vehicle.MarketValue,
+
+                    ModelYear =
+                        vehicle.ModelYear,
+
+                    DriverAge =
+                        driverAge,
+
+                    Usage =
+                        dto.Usage,
+
+                    ClaimsCount =
+                        previousPolicy?.ClaimsCount
+                        ?? dto.ClaimsCount,
+
+                    Region =
+                        region,
+
+                    PackageId =
+                        dto.PackageId,
+
+                    Deductible =
+                        dto.Deductible,
+
+                    CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds)
+                };
+
+            return await _pricingService.CalculateAsync(
+                pricingRequest);
+        }
+
+        public async Task<QuoteDto> CreateAsync(CreateQuoteDto dto)
+        {
+            if (dto.ValidUntil <= DateTime.UtcNow)
+            {
+                throw new BadRequestException(
+                    "Teklif geçerlilik tarihi gelecekte olmalıdır.");
+            }
+            var customer = await _unitOfWork.Customers
+                .GetByIdAsync(dto.CustomerId);
+
+            if (customer == null)
+            {
+                throw new NotFoundException(
+                    "Müşteri bulunamadı.");
+            }
+
+            var vehicle = await _unitOfWork.Vehicles
+                .GetByIdAsync(dto.VehicleId);
+
+            if (vehicle == null)
+            {
+                throw new NotFoundException(
+                    "Araç bulunamadı.");
+            }
+
             if (vehicle.IsDeleted)
             {
                 throw new BadRequestException(
@@ -97,25 +209,57 @@ namespace Kasko.Business.Services
                     "Pasif bir araç için teklif oluşturulamaz.");
             }
 
-            
             if (vehicle.CustomerId != dto.CustomerId)
             {
                 throw new BadRequestException(
                     "Seçilen araç bu müşteriye ait değildir.");
             }
 
-            
             var quoteNumber =
                 $"KLF-{DateTime.UtcNow.Year}-{Guid.NewGuid():N}"
                 .Substring(0, 21)
                 .ToUpper();
 
+            var driverAge = CalculateDriverAge(customer.DateOfBirth);
+            var region = ResolveRegion(customer.City);
+            PreviousPolicy? previousPolicy = null;
+
+            if (dto.PreviousPolicyId.HasValue)
+            {
+                previousPolicy =
+                    await _unitOfWork
+                        .PreviousPolicies
+                        .GetByIdAsync(dto.PreviousPolicyId.Value);
+
+                if (previousPolicy == null ||
+                    previousPolicy.IsDeleted)
+                {
+                    throw new NotFoundException(
+                        "Önceki poliçe bulunamadı.");
+                }
+
+                if (previousPolicy.CustomerId != dto.CustomerId)
+                {
+                    throw new BadRequestException(
+                        "Önceki poliçe bu müşteriye ait değil.");
+                }
+            }
+            var pricingRequest = new PricingRequest
+            {
+                MarketValue = vehicle.MarketValue,
+                ModelYear = vehicle.ModelYear,
+                DriverAge = driverAge,
+                Usage = dto.Usage,
+                ClaimsCount = previousPolicy?.ClaimsCount ?? dto.ClaimsCount,
+                Region = region,
+                PackageId = dto.PackageId,
+                Deductible = dto.Deductible,
+                CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds)
+            };
 
             var pricing =
-      await _pricingService.CalculateAsync(
-          vehicle.MarketValue,
-          vehicle.ModelYear,
-          dto.CoverageIds);
+                await _pricingService.CalculateAsync(
+                    pricingRequest);
 
             decimal premiumAmount =
                 pricing.TotalPremium;
@@ -156,10 +300,48 @@ namespace Kasko.Business.Services
                     .AddAsync(quoteCoverage);
             }
 
+            var pricingSnapshot = new QuotePricingSnapshot
+            {
+                Id = Guid.NewGuid(),
+
+                QuoteId = quote.Id,
+
+                MarketValue = pricing.MarketValue,
+
+                BaseRate = pricing.BaseRate,
+
+                AgeFactor = pricing.AgeFactor,
+
+                UsageFactor = pricing.UsageFactor,
+
+                DriverFactor = pricing.DriverFactor,
+
+                ClaimsFactor = pricing.ClaimsFactor,
+
+                RegionFactor = pricing.RegionFactor,
+
+                PackageFactor = pricing.PackageFactor,
+
+                DeductibleFactor = pricing.DeductibleFactor,
+
+                CoveragePremium = pricing.CoveragePremium,
+
+                Discount = pricing.Discount,
+
+                FinalPremium = pricing.TotalPremium,
+
+                IsDeleted = false,
+
+                CreatedDate = DateTime.UtcNow
+            };
+
+            await _unitOfWork
+                .QuotePricingSnapshots
+                .AddAsync(pricingSnapshot);
+
             await _unitOfWork.Quotes.AddAsync(quote);
 
             await _unitOfWork.SaveChangesAsync();
-
 
             return new QuoteDto
             {
@@ -226,9 +408,9 @@ namespace Kasko.Business.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-            public async Task ChangeStatusAsync(
-    Guid id,
-    QuoteStatus newStatus)
+        public async Task ChangeStatusAsync(
+            Guid id,
+            QuoteStatus newStatus)
         {
             var quote = await _unitOfWork.Quotes.GetByIdAsync(id);
 
@@ -244,7 +426,6 @@ namespace Kasko.Business.Services
                     "Teklif zaten bu durumdadır.");
             }
 
-            
             if (quote.Status is QuoteStatus.Accepted
                 or QuoteStatus.Rejected
                 or QuoteStatus.Expired
@@ -254,7 +435,6 @@ namespace Kasko.Business.Services
                     "Bu durumdaki teklifin durumu değiştirilemez.");
             }
 
-            
             if (quote.ValidUntil < DateTime.UtcNow
                 && newStatus != QuoteStatus.Expired)
             {
@@ -301,6 +481,71 @@ namespace Kasko.Business.Services
 
             await _unitOfWork.Quotes.UpdateAsync(quote);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        private static int CalculateDriverAge(DateTime dateOfBirth)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var age = today.Year - dateOfBirth.Year;
+
+            if (dateOfBirth.Date > today.AddYears(-age))
+            {
+                age--;
+            }
+
+            return age < 0 ? 0 : age;
+        }
+        private async Task<IReadOnlyCollection<Guid>> ResolveCoverageIdsAsync(
+    Guid? packageId,
+    IReadOnlyCollection<Guid> coverageIds)
+        {
+            var requestedCoverageIds =
+                coverageIds
+                    .Distinct()
+                    .ToHashSet();
+
+            if (!packageId.HasValue)
+            {
+                return requestedCoverageIds.ToArray();
+            }
+
+            var packageCoverages =
+                await _unitOfWork
+                    .PackageCoverages
+                    .FindAsync(x =>
+                        x.InsurancePackageId == packageId.Value);
+
+            var allowedCoverageIds =
+                packageCoverages
+                    .Select(x => x.CoverageId)
+                    .ToHashSet();
+
+            var invalidCoverageIds =
+                requestedCoverageIds
+                    .Where(x => !allowedCoverageIds.Contains(x))
+                    .ToArray();
+
+            if (invalidCoverageIds.Length > 0)
+            {
+                throw new BadRequestException(
+                    "Seçilen teminatlardan biri veya daha fazlası seçilen sigorta paketine ait değil.");
+            }
+
+            foreach (var packageCoverage in packageCoverages)
+            {
+                if (packageCoverage.IsDefault)
+                {
+                    requestedCoverageIds.Add(
+                        packageCoverage.CoverageId);
+                }
+            }
+
+            return requestedCoverageIds.ToArray();
+        }
+        private string ResolveRegion(string? city)
+        {
+            return "NORMAL";
         }
     }
 }

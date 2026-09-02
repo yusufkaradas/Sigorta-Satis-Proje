@@ -7,4 +7,8 @@ public interface IPricingRuleRepository
 {
     Task<PricingRule?> GetByCodeAsync(
         string code);
+
+    Task<PricingRule?> GetApplicableRuleAsync(
+        string code,
+        DateTime effectiveDate);
 }

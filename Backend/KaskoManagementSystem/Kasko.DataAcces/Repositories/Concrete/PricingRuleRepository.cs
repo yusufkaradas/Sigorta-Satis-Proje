@@ -25,4 +25,21 @@ public class PricingRuleRepository
                 x.IsActive &&
                 x.Code == code);
     }
+    public async Task<PricingRule?> GetApplicableRuleAsync(
+    string code,
+    DateTime effectiveDate)
+    {
+        return await _context
+            .Set<PricingRule>()
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.Code == code &&
+                x.EffectiveFrom <= effectiveDate &&
+                (x.EffectiveUntil == null ||
+                 x.EffectiveUntil >= effectiveDate))
+            .OrderByDescending(x => x.Version)
+            .FirstOrDefaultAsync();
+    }
 }

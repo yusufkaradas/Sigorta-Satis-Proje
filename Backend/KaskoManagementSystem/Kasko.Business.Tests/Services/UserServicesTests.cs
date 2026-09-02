@@ -137,11 +137,19 @@ namespace Kasko.Business.Tests.Services
                 RoleId = roleId
             };
 
+            var role = new Role
+            {
+                Id = roleId,
+                Name = "Customer"
+            };
+
+            user.Role = role;
+
             _userRepositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
+                .Setup(x => x.GetByIdWithRoleAsync(userId))
                 .ReturnsAsync(user);
 
-          
+
             var result = await _userService.GetByIdAsync(userId);
 
            

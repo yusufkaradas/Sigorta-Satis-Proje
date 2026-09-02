@@ -15,7 +15,8 @@ public class PricingServiceTests
 
     public PricingServiceTests()
     {
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _unitOfWorkMock =
+            new Mock<IUnitOfWork>();
 
         _pricingRuleRepositoryMock =
             new Mock<IPricingRuleRepository>();
@@ -38,8 +39,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                DateTime.UtcNow.Year, Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Equal(
             0.02m,
@@ -48,6 +54,18 @@ public class PricingServiceTests
         Assert.Equal(
             1.00m,
             result.AgeFactor);
+
+        Assert.Equal(
+            1.00m,
+            result.UsageFactor);
+
+        Assert.Equal(
+            1.00m,
+            result.DriverFactor);
+
+        Assert.Equal(
+            1.00m,
+            result.ClaimsFactor);
 
         Assert.Equal(
             20_000m,
@@ -75,8 +93,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                modelYear, Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = modelYear,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Equal(
             1.10m,
@@ -108,8 +131,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                modelYear, Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = modelYear,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Equal(
             1.20m,
@@ -133,8 +161,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                modelYear, Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = modelYear,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Equal(
             1.35m,
@@ -158,8 +191,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                modelYear, Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = modelYear,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Equal(
             1.50m,
@@ -171,13 +209,232 @@ public class PricingServiceTests
     }
 
     [Fact]
+    public async Task CalculateAsync_ShouldApplyPrivateUsageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.00m,
+            result.UsageFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyCommercialUsageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "USAGE_COMMERCIAL",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "USAGE_COMMERCIAL",
+                    1.25m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    Usage = "COMMERCIAL",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.25m,
+            result.UsageFactor);
+
+        Assert.Equal(
+            25_000m,
+            result.RiskAdjustedPremium);
+
+        Assert.Equal(
+            25_000m,
+            result.TotalPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyRentalUsageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+     .Setup(x => x.GetApplicableRuleAsync(
+         "USAGE_RENTAL",
+         It.IsAny<DateTime>()))
+             .ReturnsAsync(
+                CreateRule(
+                    "USAGE_RENTAL",
+                    1.40m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    Usage = "RENTAL",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.40m,
+            result.UsageFactor);
+
+        Assert.Equal(
+            28_000m,
+            result.RiskAdjustedPremium);
+
+        Assert.Equal(
+            28_000m,
+            result.TotalPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApply25PlusDriverFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.00m,
+            result.DriverFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApply21To24DriverFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "DRIVER_21_24",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "DRIVER_21_24",
+                    1.15m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 22,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.15m,
+            result.DriverFactor);
+
+        Assert.Equal(
+            23_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApply18To20DriverFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "DRIVER_18_20",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "DRIVER_18_20",
+                    1.30m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 19,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.30m,
+            result.DriverFactor);
+
+        Assert.Equal(
+            26_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
     public async Task CalculateAsync_ShouldThrow_WhenMarketValueIsZero()
     {
         var exception =
             await Assert.ThrowsAsync<ArgumentException>(
                 () => _service.CalculateAsync(
-                    0m,
-                    DateTime.UtcNow.Year, Array.Empty<Guid>()));
+                    new PricingRequest
+                    {
+                        MarketValue = 0m,
+                        ModelYear = DateTime.UtcNow.Year,
+                        CoverageIds = Array.Empty<Guid>()
+                    }));
 
         Assert.Contains(
             "Araç değeri 0'dan büyük olmalıdır.",
@@ -190,8 +447,12 @@ public class PricingServiceTests
         var exception =
             await Assert.ThrowsAsync<ArgumentException>(
                 () => _service.CalculateAsync(
-                    -100m,
-                    DateTime.UtcNow.Year, Array.Empty<Guid>()));
+                    new PricingRequest
+                    {
+                        MarketValue = -100m,
+                        ModelYear = DateTime.UtcNow.Year,
+                        CoverageIds = Array.Empty<Guid>()
+                    }));
 
         Assert.Contains(
             "Araç değeri 0'dan büyük olmalıdır.",
@@ -202,58 +463,27 @@ public class PricingServiceTests
     public async Task CalculateAsync_ShouldThrow_WhenBaseRateRuleDoesNotExist()
     {
         _pricingRuleRepositoryMock
-            .Setup(x => x.GetByCodeAsync(
-                "BASE_KASKO_RATE"))
-            .ReturnsAsync((PricingRule?)null);
+    .Setup(x => x.GetApplicableRuleAsync(
+        "BASE_KASKO_RATE",
+        It.IsAny<DateTime>()))
+    .ReturnsAsync(
+        (PricingRule?)null);
 
         var exception =
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _service.CalculateAsync(
-                    1_000_000m,
-                    DateTime.UtcNow.Year, Array.Empty<Guid>()));
+                    new PricingRequest
+                    {
+                        MarketValue = 1_000_000m,
+                        ModelYear = DateTime.UtcNow.Year,
+                        CoverageIds = Array.Empty<Guid>()
+                    }));
 
         Assert.Contains(
             "BASE_KASKO_RATE",
             exception.Message);
     }
 
-    private void SetupRules(
-        decimal baseRate,
-        string ageFactorCode,
-        decimal ageFactor)
-    {
-        _pricingRuleRepositoryMock
-            .Setup(x => x.GetByCodeAsync(
-                "BASE_KASKO_RATE"))
-            .ReturnsAsync(
-                CreateRule(
-                    "BASE_KASKO_RATE",
-                    baseRate));
-
-        _pricingRuleRepositoryMock
-            .Setup(x => x.GetByCodeAsync(
-                ageFactorCode))
-            .ReturnsAsync(
-                CreateRule(
-                    ageFactorCode,
-                    ageFactor));
-    }
-
-    private static PricingRule CreateRule(
-        string code,
-        decimal value)
-    {
-        return new PricingRule
-        {
-            Id = Guid.NewGuid(),
-            Code = code,
-            Name = code,
-            Value = value,
-            IsActive = true,
-            IsDeleted = false,
-            CreatedDate = DateTime.UtcNow
-        };
-    }
     [Fact]
     public async Task CalculateAsync_ShouldCalculateFixedCoverageCorrectly()
     {
@@ -271,22 +501,26 @@ public class PricingServiceTests
             .ReturnsAsync(
                 new[]
                 {
-                new Coverage
-                {
-                    Id = coverageId,
-                    Name = "Cam Kırılması",
-                    PricingType = CoveragePricingType.Fixed,
-                    BasePrice = 900m,
-                    IsActive = true,
-                    IsDeleted = false
-                }
+                    new Coverage
+                    {
+                        Id = coverageId,
+                        Name = "Cam Kırılması",
+                        PricingType = CoveragePricingType.Fixed,
+                        BasePrice = 900m,
+                        IsActive = true,
+                        IsDeleted = false
+                    }
                 });
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                DateTime.UtcNow.Year,
-                new[] { coverageId });
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    ClaimsCount = 1,
+                    CoverageIds = new[] { coverageId }
+                });
 
         Assert.Single(result.Coverages);
 
@@ -302,6 +536,7 @@ public class PricingServiceTests
             20_900m,
             result.TotalPremium);
     }
+
     [Fact]
     public async Task CalculateAsync_ShouldCalculatePercentageCoverageCorrectly()
     {
@@ -319,24 +554,28 @@ public class PricingServiceTests
             .ReturnsAsync(
                 new[]
                 {
-                new Coverage
-                {
-                    Id = coverageId,
-                    Name = "Hırsızlık",
-                    PricingType =
-                        CoveragePricingType.PercentageOfVehicleValue,
-                    BasePrice = 0m,
-                    Rate = 0.20m,
-                    IsActive = true,
-                    IsDeleted = false
-                }
+                    new Coverage
+                    {
+                        Id = coverageId,
+                        Name = "Hırsızlık",
+                        PricingType =
+                            CoveragePricingType.PercentageOfVehicleValue,
+                        BasePrice = 0m,
+                        Rate = 0.20m,
+                        IsActive = true,
+                        IsDeleted = false
+                    }
                 });
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                DateTime.UtcNow.Year,
-                new[] { coverageId });
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    ClaimsCount = 1,
+                    CoverageIds = new[] { coverageId }
+                });
 
         Assert.Single(result.Coverages);
 
@@ -352,6 +591,7 @@ public class PricingServiceTests
             22_000m,
             result.TotalPremium);
     }
+
     [Fact]
     public async Task CalculateAsync_ShouldSumMultipleCoveragesCorrectly()
     {
@@ -372,37 +612,41 @@ public class PricingServiceTests
             .ReturnsAsync(
                 new[]
                 {
-                new Coverage
-                {
-                    Id = fixedCoverageId,
-                    Name = "Cam Kırılması",
-                    PricingType = CoveragePricingType.Fixed,
-                    BasePrice = 900m,
-                    IsActive = true,
-                    IsDeleted = false
-                },
+                    new Coverage
+                    {
+                        Id = fixedCoverageId,
+                        Name = "Cam Kırılması",
+                        PricingType = CoveragePricingType.Fixed,
+                        BasePrice = 900m,
+                        IsActive = true,
+                        IsDeleted = false
+                    },
 
-                new Coverage
-                {
-                    Id = percentageCoverageId,
-                    Name = "Hırsızlık",
-                    PricingType =
-                        CoveragePricingType.PercentageOfVehicleValue,
-                    BasePrice = 0m,
-                    Rate = 0.20m,
-                    IsActive = true,
-                    IsDeleted = false
-                }
+                    new Coverage
+                    {
+                        Id = percentageCoverageId,
+                        Name = "Hırsızlık",
+                        PricingType =
+                            CoveragePricingType.PercentageOfVehicleValue,
+                        BasePrice = 0m,
+                        Rate = 0.20m,
+                        IsActive = true,
+                        IsDeleted = false
+                    }
                 });
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                DateTime.UtcNow.Year,
-                new[]
+                new PricingRequest
                 {
-                fixedCoverageId,
-                percentageCoverageId
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    ClaimsCount = 1,
+                    CoverageIds = new[]
+                    {
+                        fixedCoverageId,
+                        percentageCoverageId
+                    }
                 });
 
         Assert.Equal(
@@ -417,6 +661,7 @@ public class PricingServiceTests
             22_900m,
             result.TotalPremium);
     }
+
     [Fact]
     public async Task CalculateAsync_ShouldHaveZeroCoveragePremium_WhenNoCoverageSelected()
     {
@@ -427,9 +672,13 @@ public class PricingServiceTests
 
         var result =
             await _service.CalculateAsync(
-                1_000_000m,
-                DateTime.UtcNow.Year,
-                Array.Empty<Guid>());
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
 
         Assert.Empty(result.Coverages);
 
@@ -440,5 +689,537 @@ public class PricingServiceTests
         Assert.Equal(
             20_000m,
             result.TotalPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyZeroClaimsFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 0,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            0.90m,
+            result.ClaimsFactor);
+
+        Assert.Equal(
+            18_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyOneClaimFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "CLAIMS_1",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "CLAIMS_1",
+                    1.00m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.00m,
+            result.ClaimsFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyTwoClaimsFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "CLAIMS_2",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "CLAIMS_2",
+                    1.15m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 2,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.15m,
+            result.ClaimsFactor);
+
+        Assert.Equal(
+            23_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyThreeOrMoreClaimsFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+     .Setup(x => x.GetApplicableRuleAsync(
+         "CLAIMS_3_PLUS",
+         It.IsAny<DateTime>()))
+             .ReturnsAsync(
+                CreateRule(
+                    "CLAIMS_3_PLUS",
+                    1.30m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 3,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.30m,
+            result.ClaimsFactor);
+
+        Assert.Equal(
+            26_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    private void SetupRules(
+        decimal baseRate,
+        string ageFactorCode,
+        decimal ageFactor)
+    {
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+                        "BASE_KASKO_RATE",
+                        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "BASE_KASKO_RATE",
+                    baseRate));
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+                ageFactorCode, It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    ageFactorCode,
+                    ageFactor));
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+    "USAGE_PRIVATE",
+    It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "USAGE_PRIVATE",
+                    1.00m));
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+    "DRIVER_25_PLUS",
+    It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "DRIVER_25_PLUS",
+                    1.00m));
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+    "CLAIMS_0",
+    It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "CLAIMS_0",
+                    0.90m));
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+             "CLAIMS_1",
+             It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "CLAIMS_1",
+                    1.00m));
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+             "REGION_NORMAL",
+             It.IsAny<DateTime>()))
+    .ReturnsAsync(
+        CreateRule(
+            "REGION_NORMAL",
+            1.00m));
+    }
+
+    private static PricingRule CreateRule(
+        string code,
+        decimal value)
+    {
+        return new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = code,
+            Name = code,
+            Value = value,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedDate = DateTime.UtcNow
+        };
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyLowRegionFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "REGION_LOW",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "REGION_LOW",
+                    0.95m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "LOW",
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            0.95m,
+            result.RegionFactor);
+
+        Assert.Equal(
+            19_000m,
+            result.RiskAdjustedPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyNormalRegionFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "NORMAL",
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.00m,
+            result.RegionFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyHighRegionFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+       _pricingRuleRepositoryMock
+    .Setup(x => x.GetApplicableRuleAsync(
+        "REGION_HIGH",
+        It.IsAny<DateTime>()))
+            .ReturnsAsync(
+                CreateRule(
+                    "REGION_HIGH",
+                    1.10m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "HIGH",
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.10m,
+            result.RegionFactor);
+
+        Assert.Equal(
+            22_000m,
+            result.RiskAdjustedPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyEconomicPackageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var packageId =
+            Guid.NewGuid();
+
+        _unitOfWorkMock
+            .Setup(x => x.InsurancePackages.GetByIdAsync(packageId))
+            .ReturnsAsync(
+                new InsurancePackage
+                {
+                    Id = packageId,
+                    Code = "EKONOMIK",
+                    Name = "Ekonomik Paket",
+                    Factor = 1.00m,
+                    IsActive = true,
+                    IsDeleted = false
+                });
+
+        var result =
+            await _service.CalculateAsync(
+               new PricingRequest
+               {
+                   MarketValue = 1_000_000m,
+                   ModelYear = DateTime.UtcNow.Year,
+                   DriverAge = 25,
+                   Usage = "PRIVATE",
+                   ClaimsCount = 1,
+                   Region = "NORMAL",
+                   PackageId = packageId,
+                   CoverageIds = Array.Empty<Guid>()
+               });
+
+        Assert.Equal(
+            1.00m,
+            result.PackageFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+    }
+
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyStandardPackageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var packageId =
+            Guid.NewGuid();
+
+        _unitOfWorkMock
+            .Setup(x => x.InsurancePackages.GetByIdAsync(packageId))
+            .ReturnsAsync(
+                new InsurancePackage
+                {
+                    Id = packageId,
+                    Code = "STANDART",
+                    Name = "Standart Paket",
+                    Factor = 1.10m,
+                    IsActive = true,
+                    IsDeleted = false
+                });
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "NORMAL",
+                    PackageId = packageId,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.10m,
+            result.PackageFactor);
+
+        Assert.Equal(
+            22_000m,
+            result.RiskAdjustedPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyComprehensivePackageFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var packageId =
+            Guid.NewGuid();
+
+        _unitOfWorkMock
+            .Setup(x => x.InsurancePackages.GetByIdAsync(packageId))
+            .ReturnsAsync(
+                new InsurancePackage
+                {
+                    Id = packageId,
+                    Code = "KAPSAMLI",
+                    Name = "Kapsamlı Paket",
+                    Factor = 1.20m,
+                    IsActive = true,
+                    IsDeleted = false
+                });
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "NORMAL",
+                    PackageId = packageId,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.20m,
+            result.PackageFactor);
+
+        Assert.Equal(
+            24_000m,
+            result.RiskAdjustedPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldApplyDeductibleFactor()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    DriverAge = 25,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 1,
+                    Region = "NORMAL",
+                    Deductible = 10_000m,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            1.00m,
+            result.DeductibleFactor);
+
+        Assert.Equal(
+            20_000m,
+            result.RiskAdjustedPremium);
+
+        Assert.Equal(
+            20_000m,
+            result.TotalPremium);
+    }
+    [Fact]
+    public async Task CalculateAsync_ShouldThrow_WhenDeductibleIsNegative()
+    {
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        var exception =
+            await Assert.ThrowsAsync<ArgumentException>(
+                () =>
+                    _service.CalculateAsync(
+                        new PricingRequest
+                        {
+                            MarketValue = 1_000_000m,
+                            ModelYear = DateTime.UtcNow.Year,
+                            DriverAge = 25,
+                            Usage = "PRIVATE",
+                            ClaimsCount = 1,
+                            Region = "NORMAL",
+                            Deductible = -1m,
+                            CoverageIds = Array.Empty<Guid>()
+                        }));
+
+        Assert.Contains(
+            "Muafiyet tutarı negatif olamaz.",
+            exception.Message);
     }
 }

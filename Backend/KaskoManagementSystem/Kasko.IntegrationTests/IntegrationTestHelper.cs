@@ -233,7 +233,9 @@ public static class IntegrationTestHelper
             EngineVolume = 1.6m,
             EnginePower = 132,
 
-            Color = "White"
+            Color = "White",
+
+            MarketValue = 1_250_000m
         };
 
         var response =
@@ -326,5 +328,23 @@ public static class IntegrationTestHelper
         Assert.NotNull(policy);
 
         return policy!;
+    }
+    public static async Task<QuotePricingSnapshot?> GetQuotePricingSnapshotAsync(
+    WebApplicationFactory<Program> factory,
+    Guid quoteId)
+    {
+        await using var scope =
+            factory.Services.CreateAsyncScope();
+
+        var context =
+            scope.ServiceProvider
+                .GetRequiredService<KaskoContext>();
+
+        return await context.QuotePricingSnapshots
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x =>
+                    x.QuoteId == quoteId &&
+                    !x.IsDeleted);
     }
 }

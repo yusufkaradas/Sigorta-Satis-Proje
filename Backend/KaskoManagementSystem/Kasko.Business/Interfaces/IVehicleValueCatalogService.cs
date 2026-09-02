@@ -1,4 +1,5 @@
 ﻿using Kasko.Business.DTOs.VehicleValue;
+using Kasko.Entities.Concrete;
 
 namespace Kasko.Business.Interfaces;
 
@@ -20,4 +21,9 @@ public interface IVehicleValueCatalogService
     string brandCode,
     string typeCode,
     CancellationToken cancellationToken = default);
+
+    Task<VehicleValueCatalog?> GetActiveByKeyAsync(
+    string brandCode,
+    string typeCode,
+    int modelYear);
 }

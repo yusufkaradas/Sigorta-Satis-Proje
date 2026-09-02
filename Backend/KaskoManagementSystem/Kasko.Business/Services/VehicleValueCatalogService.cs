@@ -2,6 +2,7 @@
 using Kasko.Business.Integrations.VehicleValue;
 using Kasko.Business.Interfaces;
 using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.Entities.Concrete;
 
 namespace Kasko.Business.Services;
 
@@ -132,5 +133,23 @@ public class VehicleValueCatalogService
             .GetActiveYearsAsync(
                 brandCode,
                 typeCode);
+    }
+
+    public async Task<VehicleValueCatalog?> GetActiveByKeyAsync(
+    string brandCode,
+    string typeCode,
+    int modelYear)
+    {
+        return await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.BrandCode == brandCode &&
+                x.TypeCode == typeCode &&
+                x.ModelYear == modelYear)
+            .OrderByDescending(x => x.EffectiveDate)
+            .FirstOrDefaultAsync();
     }
 }

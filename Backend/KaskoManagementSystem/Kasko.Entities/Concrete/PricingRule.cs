@@ -13,4 +13,10 @@ public class PricingRule : BaseEntity
     public decimal Value { get; set; }
 
     public bool IsActive { get; set; }
+
+    public int Version { get; set; }
+
+    public DateTime EffectiveFrom { get; set; }
+
+    public DateTime? EffectiveUntil { get; set; }
 }

@@ -30,10 +30,60 @@ public class KaskoContext : DbContext
     public DbSet<QuoteCoverage> QuoteCoverages { get; set; }
     public DbSet<VehicleValueCatalog> VehicleValueCatalogs { get; set; }
 
+    public DbSet<InsurancePackage> InsurancePackages { get; set; }
+
+    public DbSet<PackageCoverage> PackageCoverages { get; set; }
+
     public DbSet<PricingRule> PricingRules => Set<PricingRule>();
+
+    public DbSet<PricingRuleChangeRequest> PricingRuleChangeRequests { get; set; }
+
+    public DbSet<PreviousPolicy> PreviousPolicies { get; set; }
+
+    public DbSet<QuotePricingSnapshot> QuotePricingSnapshots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<QuotePricingSnapshot>(entity =>
+        {
+            entity.Property(x => x.MarketValue)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.BaseRate)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.AgeFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.UsageFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.DriverFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.ClaimsFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.RegionFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.PackageFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.DeductibleFactor)
+                .HasPrecision(18, 6);
+
+            entity.Property(x => x.CoveragePremium)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Discount)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.FinalPremium)
+                .HasPrecision(18, 2);
+        });
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.HasIndex(x => x.IdentityNumber)
@@ -308,10 +358,41 @@ public class KaskoContext : DbContext
             entity.Property(x => x.Value)
                 .HasPrecision(18, 4);
 
-            entity.HasIndex(x => x.Code)
+            entity.HasIndex(x => new { x.Code, x.Version })
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
+        }); modelBuilder.Entity<PreviousPolicy>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.Customer)
+                .WithMany()
+                .HasForeignKey(x => x.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
+        modelBuilder.Entity<PricingRuleChangeRequest>(entity =>
+        {
+            entity.Property(x => x.OldValue)
+                  .HasPrecision(18, 4);
+
+            entity.Property(x => x.NewValue)
+                  .HasPrecision(18, 4);
+            entity.HasOne(x => x.PricingRule)
+                .WithMany()
+                .HasForeignKey(x => x.PricingRuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Requester)
+                .WithMany()
+                .HasForeignKey(x => x.RequestedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Approver)
+                .WithMany()
+                .HasForeignKey(x => x.ApprovedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<PricingRule>().HasData(
 
      new PricingRule
@@ -323,7 +404,24 @@ public class KaskoContext : DbContext
          Value = 0.0200m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = new DateTime(2026, 8, 31),
+     },
+     new PricingRule
+     {
+         Id = Guid.Parse("10000000-0000-0000-0000-000000000020"),
+         Code = "BASE_KASKO_RATE",
+         Name = "Temel Kasko Oranı V2",
+         Description = "01.09.2026 itibarıyla geçerli yeni temel kasko oranı.",
+         Value = 0.0215m,
+         IsActive = true,
+         IsDeleted = false,
+         Version = 2,
+         EffectiveFrom = new DateTime(2026, 9, 1),
+         EffectiveUntil = null,
+         CreatedDate = new DateTime(2026, 9, 1)
      },
 
      new PricingRule
@@ -334,7 +432,10 @@ public class KaskoContext : DbContext
          Value = 1.0000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -345,7 +446,10 @@ public class KaskoContext : DbContext
          Value = 1.1000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -356,7 +460,10 @@ public class KaskoContext : DbContext
          Value = 1.2000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -367,7 +474,10 @@ public class KaskoContext : DbContext
          Value = 1.3500m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -378,7 +488,10 @@ public class KaskoContext : DbContext
          Value = 1.5000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -389,7 +502,10 @@ public class KaskoContext : DbContext
          Value = 1.0000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -400,7 +516,10 @@ public class KaskoContext : DbContext
          Value = 1.2500m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -411,7 +530,10 @@ public class KaskoContext : DbContext
          Value = 1.4000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -422,7 +544,10 @@ public class KaskoContext : DbContext
          Value = 1.0000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -433,7 +558,10 @@ public class KaskoContext : DbContext
          Value = 1.1500m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -444,7 +572,10 @@ public class KaskoContext : DbContext
          Value = 1.3000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -455,7 +586,10 @@ public class KaskoContext : DbContext
          Value = 0.9000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -466,7 +600,10 @@ public class KaskoContext : DbContext
          Value = 1.0000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -477,7 +614,10 @@ public class KaskoContext : DbContext
          Value = 1.1500m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -488,7 +628,10 @@ public class KaskoContext : DbContext
          Value = 1.3000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -499,7 +642,10 @@ public class KaskoContext : DbContext
          Value = 0.9500m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -510,7 +656,10 @@ public class KaskoContext : DbContext
          Value = 1.0000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      },
 
      new PricingRule
@@ -521,7 +670,10 @@ public class KaskoContext : DbContext
          Value = 1.1000m,
          IsActive = true,
          IsDeleted = false,
-         CreatedDate = new DateTime(2026, 1, 1)
+         CreatedDate = new DateTime(2026, 1, 1),
+         Version = 1,
+         EffectiveFrom = new DateTime(2026, 1, 1),
+         EffectiveUntil = null
      }
  );
         ApplySoftDeleteQueryFilters(modelBuilder);
@@ -556,5 +708,55 @@ public class KaskoContext : DbContext
 
             entityType.SetQueryFilter(lambda);
         }
+        modelBuilder.Entity<InsurancePackage>(entity =>
+        {
+            entity.ToTable("InsurancePackages");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Code)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.Factor)
+                .HasPrecision(18, 4);
+
+            entity.Property(x => x.IsActive)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<PackageCoverage>(entity =>
+        {
+            entity.ToTable("PackageCoverages");
+
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.InsurancePackage)
+                .WithMany(x => x.PackageCoverages)
+                .HasForeignKey(x => x.InsurancePackageId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Coverage)
+                .WithMany()
+                .HasForeignKey(x => x.CoverageId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(x => x.IsDefault)
+                .IsRequired();
+
+            entity.HasIndex(x => new
+            {
+                x.InsurancePackageId,
+                x.CoverageId
+            })
+            .IsUnique();
+        });
     }
 }

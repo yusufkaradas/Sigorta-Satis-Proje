@@ -1,4 +1,5 @@
 ﻿using Kasko.Business.DTOs.Quote;
+using Kasko.Business.Pricing;
 using Kasko.Entities.Enums;
 
 namespace Kasko.Business.Services
@@ -16,5 +17,7 @@ namespace Kasko.Business.Services
         Task DeleteAsync(Guid id);
 
         Task ChangeStatusAsync(Guid id, QuoteStatus newStatus);
+
+        Task<PricingCalculation> CalculateAsync(CreateQuoteDto dto);
     }
 }

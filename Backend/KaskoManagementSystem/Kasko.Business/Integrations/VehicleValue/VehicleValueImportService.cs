@@ -223,16 +223,9 @@ public class VehicleValueImportService
                 await _unitOfWork
                     .VehicleValueCatalogs
                     .AddAsync(entity);
-                
-                await _unitOfWork
-    
-                    .VehicleValueCatalogs
-    
-                    .AddAsync(entity);
 
                 existingKeys.Add(key);
 
-                result.ImportedCount++;
                 result.ImportedCount++;
             }
         }

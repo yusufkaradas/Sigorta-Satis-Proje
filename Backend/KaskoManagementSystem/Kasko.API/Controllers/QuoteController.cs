@@ -43,7 +43,15 @@ namespace Kasko.API.Controllers
             return Ok(quote);
         }
 
-        
+        [HttpPost("calculate")]
+        public async Task<IActionResult> Calculate(
+    [FromBody] CreateQuoteDto dto)
+        {
+            var result =
+                await _quoteService.CalculateAsync(dto);
+
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateQuoteDto dto)
