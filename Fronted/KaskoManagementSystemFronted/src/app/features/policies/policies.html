@@ -1,0 +1,292 @@
+<div class="policies-page">
+
+  <main class="main-content">
+
+    <section class="page-header">
+
+      <h1>
+        Poliçe Yönetim İşlemleri
+      </h1>
+
+    </section>
+
+    <section class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Toplam Poliçeler
+        </div>
+
+        <div class="stat-card-value">
+          {{ totalPolicies }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Aktif Poliçeler
+        </div>
+
+        <div class="stat-card-value">
+          {{ activePolicies }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Pasif Poliçeler
+        </div>
+
+        <div class="stat-card-value">
+          {{ draftPolicies }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Silinen Poliçeler
+        </div>
+
+        <div class="stat-card-value">
+          {{ cancelledPolicies }}
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="policies-card">
+
+      <div class="policy-list-header">
+
+        <h2>
+          Poliçeler
+        </h2>
+
+        <button
+          class="primary-button"
+          type="button"
+          routerLink="/policies/new"
+        >
+          + Yeni Poliçe
+        </button>
+
+      </div>
+
+      <div class="filters">
+
+        <input
+          type="text"
+          placeholder="Ara..."
+          [(ngModel)]="searchText"
+          (input)="filterPolicies()"
+        >
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="filterPolicies()"
+        >
+
+          <option value="">
+            Tüm Durumlar
+          </option>
+
+          <option [value]="PolicyStatus.Draft">
+            Taslak
+          </option>
+
+          <option [value]="PolicyStatus.Active">
+            Aktif
+          </option>
+
+          <option [value]="PolicyStatus.Expired">
+            Süresi Doldu
+          </option>
+
+          <option [value]="PolicyStatus.Cancelled">
+            İptal Edildi
+          </option>
+
+        </select>
+
+        <button
+          type="button"
+          class="clear-button"
+          (click)="clearFilters()"
+        >
+          Temizle
+        </button>
+
+      </div>
+
+      <div
+        *ngIf="isLoading"
+        class="loading"
+      >
+        Poliçeler yükleniyor...
+      </div>
+
+      <div
+        *ngIf="!isLoading && errorMessage"
+        class="error-message"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <div
+        *ngIf="!isLoading && !errorMessage"
+        class="table-wrapper"
+      >
+
+        <table class="policy-table">
+
+          <thead>
+
+            <tr>
+
+              <th>Poliçe No</th>
+              <th>Müşteri</th>
+              <th>Araç</th>
+              <th>Tür</th>
+              <th>Başlangıç</th>
+              <th>Bitiş</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let policy of paginatedPolicies"
+            >
+
+              <td>
+
+                <span class="policy-number">
+                  {{ policy.policyNumber }}
+                </span>
+
+              </td>
+
+              <td>
+                {{ policy.customerId }}
+              </td>
+
+              <td>
+                {{ policy.vehicleId }}
+              </td>
+
+              <td>
+                Kasko
+              </td>
+
+              <td>
+                {{ policy.startDate | date:'dd.MM.yyyy' }}
+              </td>
+
+              <td>
+                {{ policy.endDate | date:'dd.MM.yyyy' }}
+              </td>
+
+              <td>
+
+                <span
+                  class="status"
+                  [ngClass]="
+                    getStatusClass(policy.status)
+                  "
+                >
+                  {{ getStatusText(policy.status) }}
+                </span>
+
+              </td>
+
+              <td>
+
+                <button
+                  type="button"
+                  class="detail-button"
+                  (click)="openDetail(policy.id)"
+                >
+                  Detay
+                </button>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div
+        class="pagination"
+        *ngIf="
+          !isLoading &&
+          !errorMessage &&
+          totalPages > 0
+        "
+      >
+
+        <button
+          type="button"
+          class="pagination-arrow"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()"
+        >
+          ‹
+        </button>
+
+        <button
+          *ngFor="let page of pages"
+          type="button"
+          class="pagination-number"
+          [class.active]="currentPage === page"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+
+        <button
+          type="button"
+          class="pagination-arrow"
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()"
+        >
+          ›
+        </button>
+
+        <span class="pagination-info">
+          {{ currentPage }} / {{ totalPages }}
+        </span>
+
+      </div>
+
+      <div
+        *ngIf="
+          !isLoading &&
+          !errorMessage &&
+          filteredPolicies.length === 0
+        "
+        class="empty-state"
+      >
+        Poliçe bulunamadı.
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

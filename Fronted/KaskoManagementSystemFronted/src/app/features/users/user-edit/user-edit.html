@@ -1,0 +1,223 @@
+<div class="user-edit-page">
+
+  <section class="page-header">
+
+    <div>
+      <h1>Kullanıcı Düzenle</h1>
+
+      <p>
+        Sistem kullanıcısının bilgilerini düzenle
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="cancel()">
+
+      ← Kullanıcılara Dön
+
+    </button>
+
+  </section>
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="!isLoading && !errorMessage"
+    class="form-card">
+
+    <h2>
+      Kullanıcı Bilgileri
+    </h2>
+
+
+    <form
+      (ngSubmit)="save()"
+      #userForm="ngForm">
+
+
+      <div class="form-grid">
+
+
+        <!-- AD -->
+
+        <div class="form-group">
+
+          <label for="firstName">
+            Ad
+          </label>
+
+          <input
+            id="firstName"
+            type="text"
+            name="firstName"
+            [(ngModel)]="model.firstName"
+            required>
+
+        </div>
+
+
+        <!-- SOYAD -->
+
+        <div class="form-group">
+
+          <label for="lastName">
+            Soyad
+          </label>
+
+          <input
+            id="lastName"
+            type="text"
+            name="lastName"
+            [(ngModel)]="model.lastName"
+            required>
+
+        </div>
+
+
+        <!-- E-POSTA -->
+
+        <div class="form-group">
+
+          <label for="email">
+            E-posta
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="model.email"
+            required>
+
+        </div>
+
+
+        <!-- TELEFON -->
+
+        <div class="form-group">
+
+          <label for="phoneNumber">
+            Telefon
+          </label>
+
+          <input
+            id="phoneNumber"
+            type="text"
+            name="phoneNumber"
+            [(ngModel)]="model.phoneNumber">
+
+        </div>
+
+
+        <!-- ROL -->
+<div class="form-group">
+
+  <label for="roleId">
+    Rol
+  </label>
+
+  <select
+    id="roleId"
+    name="roleId"
+    [(ngModel)]="model.roleId"
+    required>
+
+    <option value="" disabled>
+      Rol seçiniz
+    </option>
+
+    <option
+      *ngFor="let role of roles"
+      [value]="role.id">
+
+      {{ role.name }}
+
+    </option>
+
+  </select>
+
+</div>
+
+
+        <!-- DURUM -->
+
+        <div class="form-group">
+
+          <label for="isActive">
+            Durum
+          </label>
+
+          <select
+            id="isActive"
+            name="isActive"
+            [(ngModel)]="model.isActive">
+
+            <option [ngValue]="true">
+              Aktif
+            </option>
+
+            <option [ngValue]="false">
+              Pasif
+            </option>
+
+          </select>
+
+        </div>
+
+
+      </div>
+
+
+      <div
+        *ngIf="errorMessage"
+        class="form-error">
+
+        {{ errorMessage }}
+
+      </div>
+
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancel()">
+
+          İptal
+
+        </button>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="
+            userForm.invalid ||
+            isSaving
+          ">
+
+          {{
+            isSaving
+              ? 'Kaydediliyor...'
+              : 'Kaydet'
+          }}
+
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </section>
+
+</div>

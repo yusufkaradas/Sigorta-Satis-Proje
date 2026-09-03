@@ -1,0 +1,84 @@
+<div class="login-page">
+  <section class="brand-section">
+    <div class="brand-content">
+
+      <div class="logo-box">
+        <span>Logo</span>
+      </div>
+
+      <h1>Şirket Adı</h1>
+
+      <p>Kasko Yönetim Sistemi</p>
+
+      <div class="brand-image-placeholder"></div>
+
+    </div>
+  </section>
+
+  <section class="login-section">
+    <div class="login-card">
+
+      <h2>Giriş Yap</h2>
+
+      <form (ngSubmit)="onSubmit()">
+
+        <div class="form-group">
+          <label for="email">E-posta Adresi</label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="E-posta adresinizi girin"
+            [(ngModel)]="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Şifre</label>
+
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Şifrenizi girin"
+            [(ngModel)]="password"
+          />
+        </div>
+
+        <div class="form-options">
+
+          <label class="remember-me">
+            <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe" />
+            <span>Beni Hatırla</span>
+          </label>
+
+          <a href="#" class="forgot-password">
+            Şifremi Unuttum
+          
+          </a>
+          @if (successMessage) {
+  <div class="success-message">
+    {{ successMessage }}
+  </div>
+}
+
+        </div>
+
+         @if (errorMessage) {
+    <div class="input-error-message">
+      {{ errorMessage }}
+        </div>
+    }
+        <button type="submit" 
+        class="login-button"
+        [disabled]="isLoading"
+        >
+         {{isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}}
+        </button>
+
+      </form>
+
+    </div>
+  </section>
+</div>

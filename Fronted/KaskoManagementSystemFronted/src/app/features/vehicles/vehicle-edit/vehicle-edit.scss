@@ -1,0 +1,160 @@
+.vehicle-edit-page {
+  min-height: 100vh;
+  padding: 30px;
+  background: #eef3f9;
+}
+
+.edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.edit-header h1 {
+  margin: 0;
+  color: #657185;
+  font-size: 24px;
+}
+
+.edit-header p {
+  margin: 6px 0 0;
+  color: #8a91a1;
+  font-size: 14px;
+}
+
+.form-card {
+  padding: 28px;
+  background: white;
+  border: 1px solid #e0e3e8;
+  border-radius: 14px;
+}
+
+.form-section {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.form-section h2 {
+  margin: 0 0 20px;
+  color: #333333;
+  font-size: 17px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  color: #666666;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+  color: #333333;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4f46e5;
+}
+
+.message {
+  margin-bottom: 18px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.message.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.state-message {
+  padding: 50px;
+  background: white;
+  border-radius: 12px;
+  text-align: center;
+  color: #777777;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: none;
+  background: #4f46e5;
+  color: white;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  border: 1px solid #dfe3e8;
+  background: white;
+  color: #333333;
+}
+
+@media (max-width: 750px) {
+
+  .vehicle-edit-page {
+    padding: 18px;
+  }
+
+  .edit-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-card {
+    padding: 20px;
+  }
+
+}

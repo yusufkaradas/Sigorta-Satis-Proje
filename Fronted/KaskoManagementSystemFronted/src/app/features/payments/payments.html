@@ -1,0 +1,258 @@
+<div class="payments-page">
+
+  <main class="main-area">
+
+    <section class="payments-content">
+
+      <div class="page-heading">
+
+        <h2>Poliçe Ödeme İşlemleri</h2>
+
+      </div>
+
+      <section class="summary-grid">
+
+        <div class="summary-card">
+          <span>Toplam Ödeme</span>
+
+          <strong>
+            {{ totalPaymentCount }}
+          </strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Başarılı Ödemeler</span>
+
+          <strong>
+            {{ successfulPaymentCount }}
+          </strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Başarısız Ödemeler</span>
+
+          <strong>
+            {{ failedPaymentCount }}
+          </strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Bekleyen Ödemeler</span>
+
+          <strong>
+            {{ pendingPaymentCount }}
+          </strong>
+        </div>
+
+      </section>
+
+      <section class="payments-card">
+
+        <div class="filter-row">
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="İşlem ve poliçe ara"
+            class="search-input"
+          />
+
+        </div>
+
+        <div
+          *ngIf="isLoading"
+          class="state-message"
+        >
+          Ödemeler yükleniyor...
+        </div>
+
+        <div
+          *ngIf="!isLoading && errorMessage"
+          class="state-message error"
+        >
+          {{ errorMessage }}
+        </div>
+
+        <div
+          *ngIf="!isLoading && !errorMessage"
+          class="table-wrapper"
+        >
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>İşlem No</th>
+                <th>Poliçe</th>
+                <th>Tutar</th>
+                <th>Durum</th>
+                <th>Ödeme Tarihi</th>
+                <th>Hata Nedeni</th>
+                <th>İşlemler</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <tr
+                *ngFor="let payment of pagedPayments"
+              >
+
+                <td>
+                  {{ payment.transactionNumber }}
+                </td>
+
+                <td>
+                  {{ payment.policyId }}
+                </td>
+
+                <td class="amount">
+
+                  {{
+                    payment.amount
+                      | number:'1.2-2'
+                  }}
+                  ₺
+
+                </td>
+
+                <td>
+
+                  <span
+                    class="status-badge"
+                    [ngClass]="
+                      getStatusClass(
+                        payment.status
+                      )
+                    "
+                  >
+
+                    {{
+                      getStatusText(
+                        payment.status
+                      )
+                    }}
+
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <div class="date-cell">
+
+                    <span>
+                      {{
+                        formatDate(
+                          payment.paymentDate
+                        )
+                      }}
+                    </span>
+
+                    <span>
+                      {{
+                        formatTime(
+                          payment.paymentDate
+                        )
+                      }}
+                    </span>
+
+                  </div>
+
+                </td>
+
+                <td>
+                  {{
+                    payment.failureReason || '-'
+                  }}
+                </td>
+
+                <td>
+
+                  <a
+                    class="detail-button"
+                    [routerLink]="[
+                      '/payments',
+                      payment.id
+                    ]"
+                  >
+                    Detay
+                  </a>
+
+                </td>
+
+              </tr>
+
+              <tr
+                *ngIf="
+                  pagedPayments.length === 0
+                "
+              >
+
+                <td
+                  colspan="7"
+                  class="empty-row"
+                >
+                  Ödeme kaydı bulunamadı.
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div
+          *ngIf="
+            !isLoading &&
+            !errorMessage &&
+            filteredPayments.length > 0
+          "
+          class="pagination"
+        >
+
+          <button
+            type="button"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1"
+          >
+            ‹
+          </button>
+
+          <button
+            type="button"
+            *ngFor="
+              let page of pageNumbers
+            "
+            [class.active]="
+              page === currentPage
+            "
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="
+              currentPage === totalPages
+            "
+          >
+            ›
+          </button>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+</div>

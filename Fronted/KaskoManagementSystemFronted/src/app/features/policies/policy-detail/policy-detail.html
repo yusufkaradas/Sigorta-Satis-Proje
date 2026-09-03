@@ -1,0 +1,237 @@
+<div class="policy-detail-page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Poliçe Detayı</h1>
+
+      <p>
+        Poliçe bilgilerini görüntüleyin
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+
+      ← Poliçelere Dön
+
+    </button>
+
+  </div>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    Poliçe bilgileri yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && policy"
+    class="policy-card">
+
+    <h2>Poliçe Bilgileri</h2>
+
+
+    <div class="details-grid">
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Poliçe No
+        </span>
+
+        <strong>
+          {{ policy.policyNumber }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Müşteri ID
+        </span>
+
+        <strong>
+          {{ policy.customerId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Araç ID
+        </span>
+
+        <strong>
+          {{ policy.vehicleId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Teklif ID
+        </span>
+
+        <strong>
+          {{ policy.quoteId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Prim Tutarı
+        </span>
+
+        <strong>
+          {{ policy.premiumAmount | number:'1.2-2' }} ₺
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Başlangıç Tarihi
+        </span>
+
+        <strong>
+          {{ policy.startDate | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Bitiş Tarihi
+        </span>
+
+        <strong>
+          {{ policy.endDate | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Durum
+        </span>
+
+        <strong
+          class="status"
+          [ngClass]="getStatusClass(policy.status)">
+
+          {{ getStatusText(policy.status) }}
+
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span class="detail-label">
+          Aktiflik
+        </span>
+
+        <strong
+          [class.active-text]="policy.isActive"
+          [class.passive-text]="!policy.isActive">
+
+          {{ policy.isActive ? 'Aktif' : 'Pasif' }}
+
+        </strong>
+
+      </div>
+
+
+    </div>
+
+
+   <div class="actions">
+
+  <button
+    *ngIf="
+      policy.status === PolicyStatus.Draft ||
+      policy.status === PolicyStatus.Active
+    "
+    type="button"
+    class="edit-button"
+    [routerLink]="[
+      '/policies',
+      policy.id,
+      'edit'
+    ]">
+
+    Poliçeyi Düzenle
+
+  </button>
+
+  <button
+    *ngIf="
+      policy.status === PolicyStatus.Active
+    "
+    type="button"
+    class="cancel-button"
+    (click)="cancelPolicy()">
+
+    Poliçeyi İptal Et
+
+  </button>
+
+  <button
+    *ngIf="
+      policy.status === PolicyStatus.Draft ||
+      policy.status === PolicyStatus.Cancelled ||
+      policy.status === PolicyStatus.Expired
+    "
+    type="button"
+    class="delete-button"
+    (click)="deletePolicy()">
+
+    Poliçeyi Sil
+
+  </button>
+
+  <button
+    type="button"
+    class="back-action"
+    (click)="goBack()">
+
+    Geri Dön
+
+  </button>
+
+</div>
+
+  </div>

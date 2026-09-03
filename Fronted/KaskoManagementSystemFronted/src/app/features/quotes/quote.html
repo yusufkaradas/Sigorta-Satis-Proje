@@ -1,0 +1,289 @@
+<div class="quotes-page">
+
+  <main class="main-content">
+
+    <section class="page-header">
+
+      <div class="page-title">
+
+        <h1>
+          Teklif Yönetim İşlemleri
+        </h1>
+
+      </div>
+
+      <button
+        type="button"
+        class="new-quote-button"
+        (click)="openCreate()"
+      >
+        + Yeni Teklif
+      </button>
+
+    </section>
+
+    <section class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Toplam Teklif
+        </div>
+
+        <div class="stat-card-value">
+          {{ totalQuotes }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Aktif Teklif
+        </div>
+
+        <div class="stat-card-value">
+          {{ activeQuotes }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Pasif Teklif
+        </div>
+
+        <div class="stat-card-value">
+          {{ passiveQuotes }}
+        </div>
+
+      </div>
+
+      <div class="stat-card">
+
+        <div class="stat-card-title">
+          Silinen Teklif
+        </div>
+
+        <div class="stat-card-value">
+          {{ deletedQuotes }}
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="quotes-card">
+
+      <div class="filters">
+
+        <input
+          type="text"
+          placeholder="Teklif ara..."
+          [(ngModel)]="searchText"
+          (input)="filterQuotes()"
+        >
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="filterQuotes()"
+        >
+
+          <option value="">
+            Tüm Durumlar
+          </option>
+
+          <option [value]="QuoteStatus.Draft">
+            Taslak
+          </option>
+
+          <option [value]="QuoteStatus.Offered">
+            Teklif Verildi
+          </option>
+
+          <option [value]="QuoteStatus.Accepted">
+            Kabul Edildi
+          </option>
+
+          <option [value]="QuoteStatus.Rejected">
+            Reddedildi
+          </option>
+
+          <option [value]="QuoteStatus.Expired">
+            Süresi Doldu
+          </option>
+
+          <option [value]="QuoteStatus.Cancelled">
+            İptal Edildi
+          </option>
+
+        </select>
+
+        <button
+          type="button"
+          class="clear-button"
+          (click)="clearFilters()"
+        >
+          Temizle
+        </button>
+
+      </div>
+
+      <div
+        *ngIf="isLoading"
+        class="loading"
+      >
+        Teklifler yükleniyor...
+      </div>
+
+      <div
+        *ngIf="!isLoading && errorMessage"
+        class="error-message"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <div
+        *ngIf="!isLoading && quotes.length > 0"
+        class="table-wrapper"
+      >
+
+        <table class="quote-table">
+
+          <thead>
+
+            <tr>
+
+              <th>Teklif No</th>
+              <th>Müşteri</th>
+              <th>Araç</th>
+              <th>Prim Tutarı</th>
+              <th>Geçerlilik</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let quote of paginatedQuotes"
+            >
+
+              <td>
+
+                <span class="quote-number">
+                  {{ quote.quoteNumber }}
+                </span>
+
+              </td>
+
+              <td>
+                {{ quote.customerId }}
+              </td>
+
+              <td>
+                {{ quote.vehicleId }}
+              </td>
+
+              <td>
+                {{ quote.premiumAmount | number:'1.2-2' }} ₺
+              </td>
+
+              <td>
+                {{ quote.validUntil | date:'dd.MM.yyyy' }}
+              </td>
+
+              <td>
+
+                <span
+                  class="status"
+                  [ngClass]="getStatusClass(quote.status)"
+                >
+                  {{ getStatusText(quote.status) }}
+                </span>
+
+              </td>
+
+              <td>
+
+                <button
+                  type="button"
+                  class="detail-button"
+                  (click)="openDetail(quote.id)"
+                >
+                  Detay
+                </button>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div
+        *ngIf="
+          !isLoading &&
+          !errorMessage &&
+          filteredQuotes.length === 0
+        "
+        class="empty-state"
+      >
+        Teklif bulunamadı.
+      </div>
+
+      <div
+        class="pagination"
+        *ngIf="
+          !isLoading &&
+          !errorMessage &&
+          totalPages > 0
+        "
+      >
+
+        <button
+          type="button"
+          class="pagination-arrow"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()"
+        >
+          ‹
+        </button>
+
+        <button
+          *ngFor="let page of pages"
+          type="button"
+          class="pagination-number"
+          [class.active]="currentPage === page"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+
+        <button
+          type="button"
+          class="pagination-arrow"
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()"
+        >
+          ›
+        </button>
+
+        <span class="pagination-info">
+          {{ currentPage }} / {{ totalPages }}
+        </span>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

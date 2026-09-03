@@ -1,0 +1,272 @@
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+
+import {
+  Policy,
+  PolicyStatus
+} from '../policy';
+
+import { PolicyService } from '../policy.service';
+
+@Component({
+  selector: 'app-policy-detail',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterLink
+  ],
+  templateUrl: './policy-detail.html',
+  styleUrl: './policy-detail.scss'
+})
+export class PolicyDetail {
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly policyService = inject(PolicyService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  policy: Policy | null = null;
+
+  isLoading = true;
+
+  errorMessage = '';
+
+  readonly PolicyStatus = PolicyStatus;
+
+
+  ngOnInit(): void {
+
+    const id =
+      this.route.snapshot.paramMap.get('id');
+
+    console.log(
+      'POLICY DETAIL ID:',
+      id
+    );
+
+    if (!id) {
+
+      this.errorMessage =
+        'Poliçe ID bulunamadı.';
+
+      this.isLoading = false;
+
+      this.cdr.detectChanges();
+
+      return;
+    }
+
+    this.loadPolicy(id);
+  }
+
+
+  loadPolicy(id: string): void {
+
+    console.log(
+      'POLICY DETAIL LOAD START'
+    );
+
+    this.isLoading = true;
+
+    this.errorMessage = '';
+
+    this.policyService
+      .getById(id)
+      .subscribe({
+
+        next: (data) => {
+
+          console.log(
+            'POLICY DETAIL RESPONSE:',
+            data
+          );
+
+          this.policy = data;
+
+          this.isLoading = false;
+
+          this.cdr.detectChanges();
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'POLICY DETAIL API HATASI:',
+            error
+          );
+
+          this.errorMessage =
+            'Poliçe bilgileri yüklenemedi.';
+
+          this.isLoading = false;
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+  }
+
+
+  getStatusText(
+    status: PolicyStatus
+  ): string {
+
+    switch (status) {
+
+      case PolicyStatus.Draft:
+        return 'Taslak';
+
+      case PolicyStatus.Active:
+        return 'Aktif';
+
+      case PolicyStatus.Expired:
+        return 'Süresi Doldu';
+
+      case PolicyStatus.Cancelled:
+        return 'İptal Edildi';
+
+      default:
+        return 'Bilinmiyor';
+    }
+  }
+
+
+  getStatusClass(
+    status: PolicyStatus
+  ): string {
+
+    switch (status) {
+
+      case PolicyStatus.Draft:
+        return 'status-draft';
+
+      case PolicyStatus.Active:
+        return 'status-active';
+
+      case PolicyStatus.Expired:
+        return 'status-expired';
+
+      case PolicyStatus.Cancelled:
+        return 'status-cancelled';
+
+      default:
+        return '';
+    }
+  }
+cancelPolicy(): void {
+
+  if (!this.policy) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    'Bu poliçeyi iptal etmek istediğinize emin misiniz?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.isLoading = true;
+  this.errorMessage = '';
+
+  this.policyService
+    .cancel(this.policy.id)
+    .subscribe({
+
+      next: () => {
+
+        console.log(
+          'POLICY CANCEL SUCCESS:',
+          this.policy?.id
+        );
+
+        // İşlem başarılı olduktan sonra
+        // güncel poliçeyi tekrar backend'den çekiyoruz.
+        this.loadPolicy(this.policy!.id);
+
+      },
+
+      error: (error) => {
+
+        console.error(
+          'POLICY CANCEL ERROR:',
+          error
+        );
+
+        this.errorMessage =
+          'Poliçe iptal edilirken bir hata oluştu.';
+
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+      }
+
+    });
+}
+deletePolicy(): void {
+
+  if (!this.policy) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    'Bu poliçeyi silmek istediğinize emin misiniz?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.isLoading = true;
+  this.errorMessage = '';
+
+  this.policyService
+    .delete(this.policy.id)
+    .subscribe({
+
+      next: () => {
+
+        console.log(
+          'POLICY DELETE SUCCESS:',
+          this.policy?.id
+        );
+
+        this.router.navigate([
+          '/policies'
+        ]);
+
+      },
+
+      error: (error) => {
+
+        console.error(
+          'POLICY DELETE ERROR:',
+          error
+        );
+
+        this.errorMessage =
+          error?.error?.message ??
+          'Poliçe silinirken bir hata oluştu.';
+
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+      }
+
+    });
+}
+
+  goBack(): void {
+
+    this.router.navigate([
+      '/policies'
+    ]);
+
+  }
+
+}

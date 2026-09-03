@@ -1,0 +1,207 @@
+* {
+  box-sizing: border-box;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  background: #eef4f9;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+
+  background: #555555;
+
+  padding: 18px 20px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-box {
+  height: 145px;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 24px;
+
+  font-size: 20px;
+  color: #111111;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-menu a {
+  height: 43px;
+
+  background: #ffffff;
+
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111111;
+  text-decoration: none;
+
+  font-size: 15px;
+
+  transition: 0.2s ease;
+}
+
+.sidebar-menu a:hover {
+  background: #eeeeee;
+}
+
+.sidebar-menu a.active {
+  background: #c9c9c9;
+  font-weight: 600;
+}
+
+.logout-button {
+  margin-top: auto;
+
+  height: 43px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #ff3b3b;
+  color: #ffffff;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.logout-button:hover {
+  background: #e52d2d;
+}
+
+
+/* MAIN */
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* TOPBAR */
+
+.topbar {
+  height: 78px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #dbe3ea;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 28px;
+}
+
+.topbar h2 {
+  margin: 0;
+
+  font-size: 22px;
+
+  color: #315b82;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-actions button {
+  height: 42px;
+  min-width: 42px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #555555;
+
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+.topbar-actions .user-button {
+  padding: 0 20px;
+}
+
+
+/* CONTENT */
+
+.content-area {
+  flex: 1;
+
+  padding: 28px;
+
+  overflow: auto;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .sidebar {
+    width: 210px;
+  }
+
+  .topbar {
+    padding: 0 18px;
+  }
+
+  .content-area {
+    padding: 18px;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .sidebar {
+    width: 180px;
+    padding: 12px;
+  }
+
+  .logo-box {
+    height: 110px;
+  }
+
+  .sidebar-menu a {
+    font-size: 13px;
+  }
+
+  .topbar h2 {
+    font-size: 18px;
+  }
+
+}

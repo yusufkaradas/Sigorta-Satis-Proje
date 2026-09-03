@@ -1,0 +1,328 @@
+<div class="policy-create-page">
+
+  <aside class="sidebar">
+
+    <div class="logo-box">
+      Logo
+    </div>
+
+    <nav class="sidebar-menu">
+
+      <a
+        routerLink="/dashboard"
+        class="sidebar-button">
+        Dashboard
+      </a>
+
+      <a
+        routerLink="/vehicles"
+        class="sidebar-button">
+        Araçlar
+      </a>
+
+      <a
+        routerLink="/quotes"
+        class="sidebar-button">
+        Teklifler
+      </a>
+
+      <a
+        routerLink="/policies"
+        class="sidebar-button active">
+        Poliçeler
+      </a>
+
+      <a
+        routerLink="/payments"
+        class="sidebar-button">
+        Ödemeler
+      </a>
+
+      <a
+        routerLink="/users"
+        class="sidebar-button">
+        Kullanıcılar
+      </a>
+
+      <a
+        routerLink="/roles"
+        class="sidebar-button">
+        Roller
+      </a>
+
+      <a
+        routerLink="/customers"
+        class="sidebar-button">
+        Müşteriler
+      </a>
+
+    </nav>
+
+    <button
+      type="button"
+      class="sidebar-button logout-button">
+
+      Çıkış
+
+    </button>
+
+  </aside>
+
+  <main class="main-content">
+
+
+    <header class="top-header">
+
+      <div class="top-title">
+        Poliçeler
+      </div>
+
+      <button
+        type="button"
+        class="header-icon">
+
+        ⚙
+
+      </button>
+
+      <button
+        type="button"
+        class="header-icon">
+
+        🔔
+
+      </button>
+
+      <button
+        type="button"
+        class="user-button">
+
+        Kullanıcı Adı
+
+      </button>
+
+    </header>
+
+
+    <section class="page-header">
+
+      <div>
+
+        <h1>
+          Yeni Poliçe
+        </h1>
+
+        <p>
+          Yeni poliçe oluşturma işlemi
+        </p>
+
+      </div>
+
+      <a
+        routerLink="/policies"
+        class="back-button">
+
+        ← Poliçelere Dön
+
+      </a>
+
+    </section>
+
+    <section class="form-card">
+
+      <div class="form-card-header">
+
+        <h2>
+          Poliçe Bilgileri
+        </h2>
+
+      </div>
+
+
+      <form
+        [formGroup]="policyForm"
+        (ngSubmit)="createPolicy()">
+
+
+        <div class="form-group">
+
+          <label for="customerId">
+            Müşteri ID
+          </label>
+
+          <input
+            id="customerId"
+            type="text"
+            formControlName="customerId"
+            placeholder="Müşteri ID giriniz">
+
+          <small
+            class="validation-message"
+            *ngIf="
+              customerId.invalid &&
+              customerId.touched
+            ">
+
+            Müşteri ID zorunludur.
+
+          </small>
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="vehicleId">
+            Araç ID
+          </label>
+
+          <input
+            id="vehicleId"
+            type="text"
+            formControlName="vehicleId"
+            placeholder="Araç ID giriniz">
+
+          <small
+            class="validation-message"
+            *ngIf="
+              vehicleId.invalid &&
+              vehicleId.touched
+            ">
+
+            Araç ID zorunludur.
+
+          </small>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="quoteId">
+            Teklif ID
+          </label>
+
+          <input
+            id="quoteId"
+            type="text"
+            formControlName="quoteId"
+            placeholder="Teklif ID giriniz">
+
+          <small
+            class="validation-message"
+            *ngIf="
+              quoteId.invalid &&
+              quoteId.touched
+            ">
+
+            Teklif ID zorunludur.
+
+          </small>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="startDate">
+              Başlangıç Tarihi
+            </label>
+
+            <input
+              id="startDate"
+              type="date"
+              formControlName="startDate">
+
+            <small
+              class="validation-message"
+              *ngIf="
+                startDate.invalid &&
+                startDate.touched
+              ">
+
+              Başlangıç tarihi zorunludur.
+
+            </small>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="endDate">
+              Bitiş Tarihi
+            </label>
+
+            <input
+              id="endDate"
+              type="date"
+              formControlName="endDate">
+
+            <small
+              class="validation-message"
+              *ngIf="
+                endDate.invalid &&
+                endDate.touched
+              ">
+
+              Bitiş tarihi zorunludur.
+
+            </small>
+
+          </div>
+
+        </div>
+
+        <div
+          *ngIf="errorMessage"
+          class="error-message">
+
+          {{ errorMessage }}
+
+        </div>
+
+        <div
+          *ngIf="successMessage"
+          class="success-message">
+
+          {{ successMessage }}
+
+        </div>
+     
+
+        <div class="form-actions">
+
+          <a
+            routerLink="/policies"
+            class="cancel-button">
+
+            İptal
+
+          </a>
+
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isSubmitting">
+
+            <span *ngIf="!isSubmitting">
+              Poliçe Oluştur
+            </span>
+
+            <span *ngIf="isSubmitting">
+              Oluşturuluyor...
+            </span>
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </section>
+
+  </main>
+
+</div>

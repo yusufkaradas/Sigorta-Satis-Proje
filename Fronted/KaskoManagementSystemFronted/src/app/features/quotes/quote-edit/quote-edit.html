@@ -1,0 +1,201 @@
+<div class="quote-edit-page">
+
+  <header class="top-header">
+
+    <div class="top-title">
+      Teklif Düzenle
+    </div>
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="header-icon">
+        ⚙
+      </button>
+
+      <button
+        type="button"
+        class="header-icon">
+        🔔
+      </button>
+
+      <button
+        type="button"
+        class="user-button">
+        Kullanıcı Adı
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>
+        Teklif Düzenle
+      </h1>
+
+      <p>
+        Teklif geçerlilik tarihini güncelleyin.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+
+      ← Geri Dön
+
+    </button>
+
+  </section>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    Teklif bilgileri yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && successMessage"
+    class="success-message">
+
+    {{ successMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="!isLoading && quote"
+    class="edit-card">
+
+    <h2>
+      Teklif Bilgileri
+    </h2>
+
+
+    <div class="info-grid">
+
+      <div class="info-item">
+
+        <span>
+          Teklif No
+        </span>
+
+        <strong>
+          {{ quote.quoteNumber }}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          Müşteri ID
+        </span>
+
+        <strong>
+          {{ quote.customerId }}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          Araç ID
+        </span>
+
+        <strong>
+          {{ quote.vehicleId }}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          Prim Tutarı
+        </span>
+
+        <strong>
+          {{ quote.premiumAmount | number:'1.2-2' }} ₺
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="validUntil">
+        Geçerlilik Tarihi
+      </label>
+
+      <input
+        id="validUntil"
+        type="date"
+        [(ngModel)]="validUntil"
+        [disabled]="isSaving"
+      />
+
+    </div>
+
+
+    <div class="form-actions">
+
+      <button
+        type="button"
+        class="cancel-button"
+        (click)="goBack()"
+        [disabled]="isSaving">
+
+        Vazgeç
+
+      </button>
+
+
+      <button
+        type="button"
+        class="save-button"
+        (click)="save()"
+        [disabled]="isSaving">
+
+        <span *ngIf="!isSaving">
+          Değişiklikleri Kaydet
+        </span>
+
+        <span *ngIf="isSaving">
+          Kaydediliyor...
+        </span>
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

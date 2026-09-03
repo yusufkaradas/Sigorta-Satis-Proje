@@ -1,0 +1,125 @@
+<div class="customer-detail-page">
+
+  <div class="detail-header">
+
+    <div>
+      <h1>Müşteri Detayı</h1>
+      <p>Müşteri bilgilerinin görüntülenmesi</p>
+    </div>
+
+    <a
+      routerLink="/customers"
+      class="back-button"
+    >
+      ← Müşterilere Dön
+    </a>
+
+<a
+  class="edit-button"
+  [routerLink]="[
+    '/customers',
+    customer?.id,
+    'edit'
+  ]"
+>
+  Düzenle
+ </a>
+
+  <button
+    *ngIf="customer"
+    type="button"
+    class="delete-button"
+    (click)="deleteCustomer()"
+  >
+    Müşteriyi Sil
+  </button>
+
+</div>
+
+  <div
+     *ngIf="customer"
+    type="button"
+    class="delete-button"
+    (click)="deleteCustomer()"
+  >
+    Müşteri bilgileri yükleniyor...
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      errorMessage
+    "
+    class="state-message error"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <section
+    *ngIf="
+      !isLoading &&
+      customer
+    "
+    class="detail-card"
+  >
+
+    <div class="detail-row">
+      <span>Ad Soyad</span>
+      <strong>
+        {{ customer.firstName }}
+        {{ customer.lastName }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>T.C. Kimlik No</span>
+      <strong>
+        {{ customer.identityNumber }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>E-posta</span>
+      <strong>
+        {{ customer.email }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Telefon</span>
+      <strong>
+        {{ customer.phoneNumber }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Adres</span>
+      <strong>
+        {{ customer.address || '-' }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Şehir</span>
+      <strong>
+        {{ customer.city }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>İlçe</span>
+      <strong>
+        {{ customer.district }}
+      </strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Durum</span>
+      <strong>
+        {{ getStatusText() }}
+      </strong>
+    </div>
+
+  </section>
+
+</div>

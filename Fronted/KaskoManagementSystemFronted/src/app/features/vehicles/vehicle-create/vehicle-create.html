@@ -1,0 +1,500 @@
+<div class="vehicle-create-page">
+
+  <div class="create-header">
+
+    <div>
+      <h1>Yeni Araç</h1>
+
+      <p>
+        Sisteme yeni bir araç ekleyin
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="secondary-button"
+      (click)="cancel()"
+    >
+      Araçlara Dön
+    </button>
+
+  </div>
+
+
+  <!-- HATA -->
+
+  <div
+    *ngIf="errorMessage"
+    class="message error"
+  >
+    {{ errorMessage }}
+  </div>
+
+
+  <!-- BAŞARI -->
+
+  <div
+    *ngIf="successMessage"
+    class="message success"
+  >
+    {{ successMessage }}
+  </div>
+
+
+  <form
+    class="form-card"
+    (ngSubmit)="createVehicle()"
+  >
+
+    <!-- MÜŞTERİ -->
+
+    <section class="form-section">
+
+      <h2>Müşteri Bilgileri</h2>
+
+      <div class="form-group">
+
+        <label for="customerId">
+          Müşteri *
+        </label>
+
+        <select
+          id="customerId"
+          name="customerId"
+          [(ngModel)]="form.customerId"
+          [disabled]="isLoadingCustomers"
+          required
+        >
+
+          <option
+            value=""
+            disabled
+          >
+            {{
+              isLoadingCustomers
+                ? 'Müşteriler yükleniyor...'
+                : 'Müşteri seçin'
+            }}
+          </option>
+
+          <option
+            *ngFor="let customer of customers"
+            [value]="customer.id"
+          >
+            {{ customer.firstName }}
+            {{ customer.lastName }}
+          </option>
+
+        </select>
+
+      </div>
+
+    </section>
+
+
+    <!-- ARAÇ BİLGİLERİ -->
+
+    <section class="form-section">
+
+      <h2>Araç Bilgileri</h2>
+
+
+      <div class="form-grid">
+
+        <!-- PLAKA -->
+
+        <div class="form-group">
+
+          <label for="plateNumber">
+            Plaka *
+          </label>
+
+          <input
+            id="plateNumber"
+            type="text"
+            name="plateNumber"
+            [(ngModel)]="form.plateNumber"
+            placeholder="34ABC123"
+            maxlength="20"
+            required
+          />
+
+        </div>
+
+
+        <!-- VIN -->
+
+        <div class="form-group">
+
+          <label for="vin">
+            VIN *
+          </label>
+
+          <input
+            id="vin"
+            type="text"
+            name="vin"
+            [(ngModel)]="form.vin"
+            placeholder="17 karakter VIN"
+            maxlength="17"
+            required
+          />
+
+        </div>
+
+
+       <div class="form-group">
+
+  <label for="brand">
+    Marka *
+  </label>
+
+  <select
+    id="brand"
+    name="brand"
+    [(ngModel)]="selectedBrandCode"
+    (ngModelChange)="onBrandChange()"
+    [disabled]="
+      isLoadingBrands ||
+      isSubmitting
+    "
+    required
+  >
+
+    <option
+      value=""
+      disabled
+    >
+      {{
+        isLoadingBrands
+          ? 'Markalar yükleniyor...'
+          : 'Marka seçin'
+      }}
+    </option>
+
+    <option
+      *ngFor="let brand of brands"
+      [ngValue]="brand.code"
+    >
+      {{ brand.name }}
+    </option>
+
+  </select>
+
+</div>
+
+
+       <div class="form-group">
+
+  <label for="model">
+    Model *
+  </label>
+
+  <select
+    id="model"
+    name="model"
+    [(ngModel)]="selectedTypeCode"
+    (ngModelChange)="onTypeChange()"
+    [disabled]="
+      !selectedBrandCode ||
+      isLoadingTypes ||
+      isSubmitting
+    "
+    required
+  >
+
+    <option
+      value=""
+      disabled
+    >
+      {{
+        !selectedBrandCode
+          ? 'Önce marka seçin'
+          : isLoadingTypes
+            ? 'Modeller yükleniyor...'
+            : 'Model seçin'
+      }}
+    </option>
+
+    <option
+      *ngFor="let type of types"
+      [ngValue]="type.code"
+    >
+      {{ type.name }}
+    </option>
+
+  </select>
+
+</div>
+
+<div class="form-group">
+
+  <label for="modelYear">
+    Model Yılı *
+  </label>
+
+  <select
+    id="modelYear"
+    name="modelYear"
+    [(ngModel)]="selectedModelYear"
+    (ngModelChange)="onYearChange()"
+    [disabled]="
+      !selectedTypeCode ||
+      isLoadingYears ||
+      isSubmitting
+    "
+    required
+  >
+
+    <option
+      [ngValue]="null"
+      disabled
+    >
+      {{
+        !selectedTypeCode
+          ? 'Önce model seçin'
+          : isLoadingYears
+            ? 'Yıllar yükleniyor...'
+            : 'Model yılı seçin'
+      }}
+    </option>
+
+    <option
+      *ngFor="let year of years"
+      [ngValue]="year"
+    >
+      {{ year }}
+    </option>
+
+  </select>
+
+</div>
+<div class="form-group">
+
+  <label for="tsbValue">
+    TSB Kasko Değeri
+  </label>
+
+  <input
+    id="tsbValue"
+    type="text"
+    name="tsbValue"
+    [value]="
+      isLoadingTsbValue
+        ? 'Değer getiriliyor...'
+        : tsbValue !== null
+          ? (tsbValue | number:'1.0-0') + ' ₺'
+          : 'Marka, model ve yıl seçin'
+    "
+    readonly
+  />
+
+</div>
+      
+
+        <div class="form-group">
+
+          <label for="vehicleType">
+            Araç Tipi *
+          </label>
+
+          <select
+            id="vehicleType"
+            name="vehicleType"
+            [(ngModel)]="form.vehicleType"
+          >
+
+            <option [ngValue]="1">
+              Sedan
+            </option>
+
+            <option [ngValue]="2">
+              Hatchback
+            </option>
+
+            <option [ngValue]="3">
+              SUV
+            </option>
+
+            <option [ngValue]="4">
+              Pickup
+            </option>
+
+            <option [ngValue]="5">
+              Coupe
+            </option>
+
+            <option [ngValue]="6">
+              Cabrio
+            </option>
+
+            <option [ngValue]="7">
+              Van
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- YAKIT -->
+
+        <div class="form-group">
+
+          <label for="fuelType">
+            Yakıt Tipi *
+          </label>
+
+          <select
+            id="fuelType"
+            name="fuelType"
+            [(ngModel)]="form.fuelType"
+          >
+
+            <option [ngValue]="1">
+              Benzin
+            </option>
+
+            <option [ngValue]="2">
+              Dizel
+            </option>
+
+            <option [ngValue]="3">
+              Hibrit
+            </option>
+
+            <option [ngValue]="4">
+              Elektrik
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- VİTES -->
+
+        <div class="form-group">
+
+          <label for="transmissionType">
+            Vites Tipi *
+          </label>
+
+          <select
+            id="transmissionType"
+            name="transmissionType"
+            [(ngModel)]="form.transmissionType"
+          >
+
+            <option [ngValue]="1">
+              Manuel
+            </option>
+
+            <option [ngValue]="2">
+              Otomatik
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- MOTOR HACMİ -->
+
+        <div class="form-group">
+
+          <label for="engineVolume">
+            Motor Hacmi
+          </label>
+
+          <input
+            id="engineVolume"
+            type="number"
+            step="0.1"
+            name="engineVolume"
+            [(ngModel)]="form.engineVolume"
+            placeholder="1.6"
+          />
+
+        </div>
+
+
+        <!-- MOTOR GÜCÜ -->
+
+        <div class="form-group">
+
+          <label for="enginePower">
+            Motor Gücü
+          </label>
+
+          <input
+            id="enginePower"
+            type="number"
+            name="enginePower"
+            [(ngModel)]="form.enginePower"
+            placeholder="132"
+          />
+
+        </div>
+
+
+        <!-- RENK -->
+
+        <div class="form-group">
+
+          <label for="color">
+            Renk *
+          </label>
+
+          <input
+            id="color"
+            type="text"
+            name="color"
+            [(ngModel)]="form.color"
+            placeholder="White"
+            maxlength="30"
+            required
+          />
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- BUTONLAR -->
+
+    <div class="form-actions">
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="cancel()"
+      >
+        İptal
+      </button>
+
+
+      <button
+        type="submit"
+        class="primary-button"
+        [disabled]="
+          isSubmitting ||
+          isLoadingCustomers
+        "
+      >
+
+        {{
+          isSubmitting
+            ? 'Oluşturuluyor...'
+            : 'Araç Oluştur'
+        }}
+
+      </button>
+
+    </div>
+
+  </form>
+
+</div>

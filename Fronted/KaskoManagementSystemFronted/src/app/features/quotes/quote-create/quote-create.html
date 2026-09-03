@@ -1,0 +1,178 @@
+<div class="quote-create-page">
+
+  <header class="top-header">
+
+    <div class="top-title">
+      Teklif Oluştur
+    </div>
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="header-icon">
+        ⚙
+      </button>
+
+      <button
+        type="button"
+        class="header-icon">
+        🔔
+      </button>
+
+      <button
+        type="button"
+        class="user-button">
+        Kullanıcı Adı
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>
+        Yeni Teklif Oluştur
+      </h1>
+
+      <p>
+        Yeni bir sigorta teklifi oluşturun.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="cancel()">
+
+      ← Tekliflere Dön
+
+    </button>
+
+  </section>
+
+
+  <section class="form-card">
+
+    <h2>
+      Teklif Bilgileri
+    </h2>
+
+
+    <!-- ERROR -->
+
+    <div
+      *ngIf="errorMessage"
+      class="error-message">
+
+      {{ errorMessage }}
+
+    </div>
+
+
+    <form
+      (ngSubmit)="createQuote()"
+      #quoteForm="ngForm">
+
+
+      <!-- CUSTOMER -->
+
+      <div class="form-group">
+
+        <label for="customerId">
+          Müşteri ID
+        </label>
+
+        <input
+          id="customerId"
+          name="customerId"
+          type="text"
+          [(ngModel)]="customerId"
+          required
+          placeholder="Müşteri ID giriniz">
+
+      </div>
+
+
+      <!-- VEHICLE -->
+
+      <div class="form-group">
+
+        <label for="vehicleId">
+          Araç ID
+        </label>
+
+        <input
+          id="vehicleId"
+          name="vehicleId"
+          type="text"
+          [(ngModel)]="vehicleId"
+          required
+          placeholder="Araç ID giriniz">
+
+      </div>
+
+
+      <!-- VALID UNTIL -->
+
+      <div class="form-group">
+
+        <label for="validUntil">
+          Geçerlilik Tarihi
+        </label>
+
+        <input
+          id="validUntil"
+          name="validUntil"
+          type="date"
+          [(ngModel)]="validUntil"
+          required>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancel()">
+
+          İptal
+
+        </button>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="
+            quoteForm.invalid ||
+            isSaving
+          ">
+
+          <span *ngIf="!isSaving">
+            Teklif Oluştur
+          </span>
+
+          <span *ngIf="isSaving">
+            Oluşturuluyor...
+          </span>
+
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </section>
+
+</div>

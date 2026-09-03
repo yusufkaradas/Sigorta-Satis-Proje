@@ -1,0 +1,207 @@
+<div class="quote-detail-page">
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>
+        Teklif Detayı
+      </h1>
+
+      <p>
+        Teklif bilgilerini görüntüleme
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+
+      ← Tekliflere Dön
+
+    </button>
+
+  </section>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    Teklif yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="!isLoading && quote"
+    class="detail-card">
+
+    <h2>
+      Teklif Bilgileri
+    </h2>
+
+    <div class="detail-grid">
+
+      <div class="detail-item">
+
+        <span>
+          Teklif No
+        </span>
+
+        <strong>
+          {{ quote.quoteNumber }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Müşteri ID
+        </span>
+
+        <strong>
+          {{ quote.customerId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Araç ID
+        </span>
+
+        <strong>
+          {{ quote.vehicleId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Prim Tutarı
+        </span>
+
+        <strong>
+          {{ quote.premiumAmount | number:'1.2-2' }} ₺
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Geçerlilik Tarihi
+        </span>
+
+        <strong>
+          {{ quote.validUntil | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Durum
+        </span>
+
+        <strong>
+          {{ getStatusText(quote.status) }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+   <div class="detail-actions">
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="goBack()">
+
+    Geri Dön
+
+  </button>
+
+  <button
+    *ngIf="quote?.status === QuoteStatus.Draft"
+    type="button"
+    class="status-button"
+    (click)="changeStatus(QuoteStatus.Offered)">
+
+    Teklif Ver
+
+  </button>
+
+  <button
+    *ngIf="quote?.status === QuoteStatus.Offered"
+    type="button"
+    class="status-button"
+    (click)="changeStatus(QuoteStatus.Accepted)">
+
+    Teklifi Kabul Et
+
+  </button>
+
+
+  
+  <button
+    *ngIf="quote?.status === QuoteStatus.Offered"
+    type="button"
+    class="reject-button"
+    (click)="changeStatus(QuoteStatus.Rejected)">
+
+    Reddet
+
+  </button>
+<button
+  *ngIf="
+    quote?.status === QuoteStatus.Draft ||
+    quote?.status === QuoteStatus.Offered
+  "
+  type="button"
+  class="edit-button"
+  [routerLink]="[
+    '/quotes',
+    quote!.id,
+    'edit'
+  ]">
+
+  Teklifi Düzenle
+
+</button>
+
+  <button
+    type="button"
+    class="delete-button"
+    (click)="deleteQuote()">
+
+    Teklifi Sil
+
+  </button>
+</div>
+  </section>
+
+</div>

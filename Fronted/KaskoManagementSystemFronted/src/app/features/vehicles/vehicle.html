@@ -1,0 +1,245 @@
+<div class="vehicles-page">
+
+  <main class="main-area">
+
+    <section class="content">
+
+      <div class="page-title-row">
+
+        <h1>
+          Araç Yönetim İşlemleri
+        </h1>
+
+        <a
+          routerLink="/vehicles/new"
+          class="new-button"
+        >
+          + Yeni Araç
+        </a>
+
+      </div>
+
+      <div class="stats">
+
+        <div class="stat-card">
+          <span>Toplam Araç</span>
+
+          <strong>
+            {{ totalVehicleCount }}
+          </strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Aktif Araç</span>
+
+          <strong>
+            {{ activeVehicleCount }}
+          </strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Pasif Araç</span>
+
+          <strong>
+            {{ inactiveVehicleCount }}
+          </strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Gösterilen</span>
+
+          <strong>
+            {{ filteredVehicles.length }}
+          </strong>
+        </div>
+
+      </div>
+
+      <section class="vehicles-card">
+
+        <div class="toolbar">
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Araçları ara"
+          >
+
+        </div>
+
+        <div
+          *ngIf="isLoading"
+          class="state-message"
+        >
+          Araçlar yükleniyor...
+        </div>
+
+        <div
+          *ngIf="
+            !isLoading &&
+            errorMessage
+          "
+          class="state-message error"
+        >
+          {{ errorMessage }}
+        </div>
+
+        <div
+          *ngIf="
+            !isLoading &&
+            !errorMessage
+          "
+          class="table-wrapper"
+        >
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Plaka</th>
+                <th>Marka</th>
+                <th>Model</th>
+                <th>Yıl</th>
+                <th>Araç Tipi</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <tr
+                *ngFor="
+                  let vehicle
+                  of pagedVehicles
+                "
+              >
+
+                <td>
+                  {{ vehicle.plateNumber }}
+                </td>
+
+                <td>
+                  {{ vehicle.brand }}
+                </td>
+
+                <td>
+                  {{ vehicle.model }}
+                </td>
+
+                <td>
+                  {{ vehicle.modelYear }}
+                </td>
+
+                <td>
+                  {{
+                    getVehicleTypeText(
+                      vehicle.vehicleType
+                    )
+                  }}
+                </td>
+
+                <td>
+
+                  <span
+                    class="status"
+                    [class.active]="vehicle.isActive"
+                    [class.passive]="!vehicle.isActive"
+                  >
+                    {{
+                      getStatusText(vehicle)
+                    }}
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <a
+                    class="detail-button"
+                    [routerLink]="[
+                      '/vehicles',
+                      vehicle.id
+                    ]"
+                  >
+                    Detay
+                  </a>
+
+                </td>
+
+              </tr>
+
+              <tr
+                *ngIf="
+                  pagedVehicles.length === 0
+                "
+              >
+
+                <td
+                  colspan="7"
+                  class="empty-row"
+                >
+                  Araç bulunamadı.
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div
+          class="pagination"
+          *ngIf="
+            !isLoading &&
+            !errorMessage &&
+            filteredVehicles.length > 0
+          "
+        >
+
+          <button
+            type="button"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1"
+          >
+            ‹
+          </button>
+
+          <button
+            type="button"
+            *ngFor="
+              let page
+              of pageNumbers
+            "
+            (click)="goToPage(page)"
+            [class.current]="currentPage === page"
+          >
+            {{ page }}
+          </button>
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages"
+          >
+            ›
+          </button>
+
+          <span>
+            {{ currentPage }}/{{ totalPages }}
+          </span>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+</div>

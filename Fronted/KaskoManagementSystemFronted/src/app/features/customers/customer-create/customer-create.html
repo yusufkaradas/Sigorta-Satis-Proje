@@ -1,0 +1,132 @@
+<h1>Yeni Müşteri</h1>
+
+<a routerLink="/customers">
+  ← Müşterilere Dön
+</a>
+
+<hr />
+
+<form (ngSubmit)="submit()">
+
+  <div>
+    <label>Ad</label>
+
+    <input
+      type="text"
+      name="firstName"
+      [(ngModel)]="form.firstName"
+    />
+  </div>
+
+
+  <div>
+    <label>Soyad</label>
+
+    <input
+      type="text"
+      name="lastName"
+      [(ngModel)]="form.lastName"
+    />
+  </div>
+
+
+  <div>
+    <label>T.C. Kimlik No</label>
+
+    <input
+      type="text"
+      name="identityNumber"
+      [(ngModel)]="form.identityNumber"
+    />
+  </div>
+
+
+  <div>
+    <label>Doğum Tarihi</label>
+
+    <input
+      type="date"
+      name="dateOfBirth"
+      [(ngModel)]="form.dateOfBirth"
+    />
+  </div>
+
+
+  <div>
+    <label>E-posta</label>
+
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="form.email"
+    />
+  </div>
+
+
+  <div>
+    <label>Telefon</label>
+
+    <input
+      type="text"
+      name="phoneNumber"
+      [(ngModel)]="form.phoneNumber"
+    />
+  </div>
+
+
+  <div>
+    <label>Adres</label>
+
+    <textarea
+      name="address"
+      [(ngModel)]="form.address"
+    ></textarea>
+  </div>
+
+
+  <div>
+    <label>Şehir</label>
+
+    <input
+      type="text"
+      name="city"
+      [(ngModel)]="form.city"
+    />
+  </div>
+
+
+  <div>
+    <label>İlçe</label>
+
+    <input
+      type="text"
+      name="district"
+      [(ngModel)]="form.district"
+    />
+  </div>
+
+
+  <button
+    type="submit"
+    [disabled]="isSubmitting"
+  >
+
+    {{
+      isSubmitting
+        ? 'Kaydediliyor...'
+        : 'Müşteri Oluştur'
+    }}
+
+  </button>
+
+</form>
+
+
+<p *ngIf="successMessage">
+  {{ successMessage }}
+</p>
+
+
+<p *ngIf="errorMessage">
+  {{ errorMessage }}
+</p>

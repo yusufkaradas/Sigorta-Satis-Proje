@@ -1,0 +1,113 @@
+<div class="app-layout">
+
+  <aside class="sidebar">
+
+    <div class="logo-box">
+      <span>Logo</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+
+      <a
+        routerLink="/vehicles"
+        routerLinkActive="active"
+      >
+        Araçlar
+      </a>
+
+      <a
+        routerLink="/quotes"
+        routerLinkActive="active"
+      >
+        Teklifler
+      </a>
+
+      <a
+        routerLink="/policies"
+        routerLinkActive="active"
+      >
+        Poliçeler
+      </a>
+
+      <a
+        routerLink="/payments"
+        routerLinkActive="active"
+      >
+        Ödemeler
+      </a>
+
+      <a
+        routerLink="/users"
+        routerLinkActive="active"
+      >
+        Kullanıcılar
+      </a>
+
+      <a
+        routerLink="/roles"
+        routerLinkActive="active"
+      >
+        Roller
+      </a>
+
+      <a
+        routerLink="/customers"
+        routerLinkActive="active"
+      >
+        Müşteriler
+      </a>
+
+    </nav>
+
+    <button
+      type="button"
+      class="logout-button"
+      (click)="logout()"
+    >
+      Çıkış
+    </button>
+
+  </aside>
+
+
+  <main class="main-content">
+
+    <header class="topbar">
+
+      <h2>Sigorta Satış Portalı</h2>
+
+      <div class="topbar-actions">
+
+        <button type="button">
+          ⚙
+        </button>
+
+        <button type="button">
+          🔔
+        </button>
+
+        <button type="button" class="user-button">
+          Kullanıcı Adı
+        </button>
+
+      </div>
+
+    </header>
+
+    <section class="content-area">
+
+      <router-outlet></router-outlet>
+
+    </section>
+
+  </main>
+
+</div>

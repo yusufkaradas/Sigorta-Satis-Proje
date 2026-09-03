@@ -1,0 +1,114 @@
+<div class="role-edit-page">
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>Rol Düzenle</h1>
+
+      <p>
+        Rol bilgilerini güncelleyin
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+
+      ← Detaya Dön
+
+    </button>
+
+  </section>
+
+
+  <section class="edit-card">
+
+    <div
+      *ngIf="isLoading"
+      class="loading">
+
+      Rol bilgileri yükleniyor...
+
+    </div>
+
+
+    <form
+      *ngIf="!isLoading"
+      (ngSubmit)="submit()"
+      #roleForm="ngForm">
+
+      <div class="form-group">
+
+        <label for="roleName">
+          Rol Adı
+        </label>
+
+        <input
+          id="roleName"
+          type="text"
+          name="name"
+          [(ngModel)]="form.name"
+          required
+          maxlength="100"
+          placeholder="Rol adını girin"
+        />
+
+      </div>
+
+
+      <div
+        *ngIf="successMessage"
+        class="success-message">
+
+        {{ successMessage }}
+
+      </div>
+
+
+      <div
+        *ngIf="errorMessage"
+        class="error-message">
+
+        {{ errorMessage }}
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="goBack()">
+
+          İptal
+
+        </button>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="
+            isSubmitting ||
+            roleForm.invalid
+          ">
+
+          {{
+            isSubmitting
+              ? 'Kaydediliyor...'
+              : 'Değişiklikleri Kaydet'
+          }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+</div>

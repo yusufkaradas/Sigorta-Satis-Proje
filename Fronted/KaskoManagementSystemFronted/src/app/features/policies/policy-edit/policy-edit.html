@@ -1,0 +1,180 @@
+<div class="policy-edit-page">
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>
+        Poliçe Düzenle
+      </h1>
+
+      <p>
+        Poliçe bilgilerini güncelleyin
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="cancel()">
+
+      ← Poliçe Detayına Dön
+
+    </button>
+
+  </section>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    Poliçe bilgileri yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="!isLoading && policy"
+    class="edit-card">
+
+    <h2>
+      Poliçe Bilgileri
+    </h2>
+
+
+    <div class="detail-grid">
+
+      <div class="detail-item">
+
+        <span>
+          Poliçe No
+        </span>
+
+        <strong>
+          {{ policy.policyNumber }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Müşteri ID
+        </span>
+
+        <strong>
+          {{ policy.customerId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Araç ID
+        </span>
+
+        <strong>
+          {{ policy.vehicleId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Teklif ID
+        </span>
+
+        <strong>
+          {{ policy.quoteId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Prim Tutarı
+        </span>
+
+        <strong>
+          {{ policy.premiumAmount | number:'1.2-2' }} ₺
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Başlangıç Tarihi
+        </span>
+
+        <strong>
+          {{ policy.startDate | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="form-item">
+
+        <label for="endDate">
+          Bitiş Tarihi
+        </label>
+
+        <input
+          id="endDate"
+          type="date"
+          [(ngModel)]="endDate"
+        />
+
+      </div>
+
+
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        type="button"
+        class="back-action"
+        (click)="cancel()">
+
+        Vazgeç
+
+      </button>
+
+
+      <button
+        type="button"
+        class="save-button"
+        [disabled]="isSaving"
+        (click)="save()">
+
+        {{ isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

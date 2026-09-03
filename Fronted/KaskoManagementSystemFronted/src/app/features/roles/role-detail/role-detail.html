@@ -1,0 +1,117 @@
+<div class="role-detail-page">
+
+  <section class="page-header">
+
+    <div>
+
+      <h1>Rol Detayı</h1>
+
+      <p>
+        Rol bilgilerini görüntüleyin.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+
+      ← Rollere Dön
+
+    </button>
+
+  </section>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    Rol bilgileri yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="!isLoading && role"
+    class="detail-card">
+
+    <h2>Rol Bilgileri</h2>
+
+
+    <div class="detail-grid">
+
+      <div class="detail-item">
+
+        <span>Rol ID</span>
+
+        <strong>
+          {{ role.id }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>Rol Adı</span>
+
+        <strong>
+          {{ role.name }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        type="button"
+        class="edit-button"
+        [routerLink]="[
+          '/roles',
+          role.id,
+          'edit'
+        ]">
+
+        Rolü Düzenle
+
+      </button>
+
+
+      <button
+        type="button"
+        class="delete-button"
+        (click)="deleteRole()">
+
+        Rolü Sil
+
+      </button>
+
+
+      <button
+        type="button"
+        class="back-action"
+        (click)="goBack()">
+
+        Geri Dön
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

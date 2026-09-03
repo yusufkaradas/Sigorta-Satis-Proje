@@ -1,0 +1,314 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.dashboard-page {
+  width: 100%;
+  height: 100vh;
+
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+
+  overflow: hidden;
+  background: #eef2f7;
+}
+
+.sidebar {
+  width: 210px;
+  height: 100vh;
+
+  background: #535353;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  width: 100%;
+  height: 120px;
+  flex-shrink: 0;
+
+  background: #fff;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 28px;
+
+  font-size: 17px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-item,
+.logout-button {
+  width: 100%;
+  height: 42px;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #fff;
+  color: #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.logout-button {
+  margin-top: auto;
+}
+
+.main-area {
+  min-width: 0;
+  min-height: 0;
+  height: 100vh;
+
+  display: grid;
+  grid-template-rows: 64px minmax(0, 1fr);
+
+  overflow: hidden;
+}
+
+
+.topbar {
+  width: 100%;
+  height: 64px;
+
+  background: #fff;
+  border-bottom: 1px solid #d8dee6;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 20px 0 24px;
+}
+
+.topbar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  width: 36px;
+  height: 36px;
+}
+
+.user-button {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.dashboard-content {
+  min-height: 0;
+  overflow: auto;
+
+  padding: 24px;
+}
+.page-heading {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.page-heading h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.page-heading p {
+  margin: 0;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  height: 128px;
+
+  background: #fff;
+  border: 1px solid #d8dee6;
+  border-radius: 10px;
+
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.card-title {
+  font-size: 15px;
+}
+
+.summary-card strong {
+  margin: 4px 0;
+
+  font-size: 24px;
+  line-height: 1;
+}
+
+.card-description {
+  font-size: 13px;
+  color: #6b7280;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dashboard-card {
+  min-width: 0;
+  padding: 18px 20px;
+  min-height: 220px;
+
+  background: #ffffff;
+
+  border: 1px solid #d8dee6;
+  border-radius: 10px;
+
+  padding: 18px 20px;
+}
+
+.dashboard-card h2 {
+  margin: 0 0 22px;
+
+  text-align: center;
+
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+.status-list {
+  width: 100%;
+  padding: 4px 8px 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.status-row {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 120px 36px minmax(0, 1fr);
+
+  align-items: center;
+  column-gap: 10px;
+
+  min-height: 22px;
+}
+
+.status-label {
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.status-count {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #535353;
+}
+
+.status-bar {
+  width: 100%;
+  height: 10px;
+
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.status-bar span {
+  display: block;
+  height: 100%;
+  background: #535353;
+  border-radius: 999px;
+
+  transition: width 0.3s ease;
+}
+.operations-table {
+  width: 100%;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 0.65fr 1.35fr 1.25fr 0.95fr 0.7fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-row span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table-row span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table-header {
+  font-weight: 600;
+}
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+
+  padding: 9px 0;
+
+  font-size: 14px;
+}
+
+.last-payment {
+  margin-top: 20px;
+
+  text-align: center;
+
+  font-size: 13px;
+  color: #6b7280;
+}

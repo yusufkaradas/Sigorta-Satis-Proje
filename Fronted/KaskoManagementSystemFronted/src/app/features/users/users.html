@@ -1,0 +1,202 @@
+<div class="users-page">
+
+  <section class="page-header">
+
+    <div class="header-content">
+
+      <h1>
+        Kullanıcı Yönetimi
+      </h1>
+
+      <p>
+        Sistem kullanıcılarını görüntüleme
+      </p>
+
+    </div>
+
+    <a
+      routerLink="/users/new"
+      class="new-user-button">
+
+      + Yeni Kullanıcı
+
+    </a>
+
+  </section>
+
+
+  <section class="users-card">
+
+    <div class="toolbar">
+
+      <div class="search-box">
+
+        <input
+          type="text"
+          placeholder="Kullanıcı ara..."
+          [(ngModel)]="searchText">
+
+      </div>
+
+    </div>
+
+
+    <div
+      *ngIf="isLoading"
+      class="loading">
+
+      Kullanıcılar yükleniyor...
+
+    </div>
+
+
+    <div
+      *ngIf="!isLoading && errorMessage"
+      class="error">
+
+      {{ errorMessage }}
+
+    </div>
+
+
+    <div
+      *ngIf="!isLoading && !errorMessage"
+      class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Ad Soyad</th>
+
+            <th>E-posta</th>
+
+            <th>Telefon</th>
+
+            <th>Rol</th>
+
+            <th>Durum</th>
+
+            <th>İşlemler</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let user of filteredUsers">
+
+            <td>
+
+              <div class="user-name">
+
+                {{ user.firstName }}
+                {{ user.lastName }}
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              {{ user.email }}
+
+            </td>
+
+
+            <td>
+
+              {{ user.phoneNumber || '-' }}
+
+            </td>
+
+
+            <td>
+
+              {{ user.roleName || user.roleId }}
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="status"
+                [class.status-active]="user.isActive"
+                [class.status-inactive]="!user.isActive">
+
+                {{ user.isActive ? 'Aktif' : 'Pasif' }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <div class="actions">
+
+                <a
+                  [routerLink]="[
+                    '/users',
+                    user.id
+                  ]"
+                  class="action-button">
+
+                  Detay
+
+                </a>
+
+
+                <a
+                  [routerLink]="[
+                    '/users',
+                    user.id,
+                    'edit'
+                  ]"
+                  class="action-button edit">
+
+                  Düzenle
+
+                </a>
+
+
+                <button
+                  type="button"
+                  class="action-button delete"
+                  (click)="deleteUser(user.id)">
+
+                  Sil
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+
+      <div
+        *ngIf="filteredUsers.length === 0"
+        class="empty">
+
+        Kullanıcı bulunamadı.
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

@@ -1,0 +1,92 @@
+<div class="role-create-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>Yeni Rol</h1>
+
+      <p>
+        Sisteme yeni bir rol ekleyin.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="form-card">
+
+    <form
+      (ngSubmit)="onSubmit()"
+    >
+
+      <div class="form-group">
+
+        <label for="roleName">
+          Rol Adı
+        </label>
+
+        <input
+          id="roleName"
+          name="roleName"
+          type="text"
+          placeholder="Örn. Manager"
+          [(ngModel)]="name"
+          [disabled]="isLoading"
+        />
+
+      </div>
+
+
+      @if (errorMessage) {
+
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+
+      }
+
+
+      @if (successMessage) {
+
+        <div class="success-message">
+          {{ successMessage }}
+        </div>
+
+      }
+
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="goBack()"
+          [disabled]="isLoading"
+        >
+          Vazgeç
+        </button>
+
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading"
+        >
+
+          {{
+            isLoading
+              ? 'Oluşturuluyor...'
+              : 'Rol Oluştur'
+          }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

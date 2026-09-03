@@ -1,0 +1,145 @@
+<div>
+
+  <h1>Müşteri Düzenle</h1>
+
+  <a
+    [routerLink]="[
+      '/customers',
+      customerId
+    ]"
+  >
+    ← Detaya Dön
+  </a>
+
+  <hr />
+
+  <div *ngIf="isLoading">
+    Müşteri yükleniyor...
+  </div>
+
+  <form
+    *ngIf="!isLoading"
+    (ngSubmit)="submit()"
+  >
+
+    <div>
+      <label>Ad</label>
+
+      <input
+        name="firstName"
+        [(ngModel)]="form.firstName"
+      />
+    </div>
+
+    <div>
+      <label>Soyad</label>
+
+      <input
+        name="lastName"
+        [(ngModel)]="form.lastName"
+      />
+    </div>
+
+    <div>
+      <label>T.C. Kimlik No</label>
+
+      <input
+        name="identityNumber"
+        [(ngModel)]="
+          form.identityNumber
+        "
+      />
+    </div>
+
+    <div>
+      <label>Doğum Tarihi</label>
+
+      <input
+        type="date"
+        name="dateOfBirth"
+        [(ngModel)]="form.dateOfBirth"
+      />
+    </div>
+
+    <div>
+      <label>E-posta</label>
+
+      <input
+        type="email"
+        name="email"
+        [(ngModel)]="form.email"
+      />
+    </div>
+
+    <div>
+      <label>Telefon</label>
+
+      <input
+        name="phoneNumber"
+        [(ngModel)]="
+          form.phoneNumber
+        "
+      />
+    </div>
+
+    <div>
+      <label>Adres</label>
+
+      <textarea
+        name="address"
+        [(ngModel)]="form.address"
+      ></textarea>
+    </div>
+
+    <div>
+      <label>Şehir</label>
+
+      <input
+        name="city"
+        [(ngModel)]="form.city"
+      />
+    </div>
+
+    <div>
+      <label>İlçe</label>
+
+      <input
+        name="district"
+        [(ngModel)]="form.district"
+      />
+    </div>
+
+    <div>
+      <label>
+        <input
+          type="checkbox"
+          name="isActive"
+          [(ngModel)]="form.isActive"
+        />
+
+        Aktif
+      </label>
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="isSubmitting"
+    >
+      {{
+        isSubmitting
+          ? 'Kaydediliyor...'
+          : 'Değişiklikleri Kaydet'
+      }}
+    </button>
+
+  </form>
+
+  <p *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <p *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+
+</div>

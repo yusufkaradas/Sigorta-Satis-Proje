@@ -1,0 +1,260 @@
+.quote-create-page {
+  min-height: 100vh;
+  background: #edf5fb;
+  padding: 20px 30px;
+  box-sizing: border-box;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* HEADER */
+
+.top-header {
+  height: 70px;
+  background: #ffffff;
+  border-radius: 0 0 20px 20px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+.top-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #527092;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d6e0e9;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.user-button {
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 24px;
+  background: #555555;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* PAGE HEADER */
+
+.page-header {
+  max-width: 1100px;
+  margin: 0 auto 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #527092;
+  font-size: 30px;
+}
+
+.page-header p {
+  margin: 8px 0 0;
+  color: #6d7d8c;
+  font-size: 16px;
+}
+
+/* BACK BUTTON */
+
+.back-button {
+  border: 1px solid #d4e0ea;
+  background: #ffffff;
+  color: #304d6d;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.back-button:hover {
+  background: #f2f6fa;
+}
+
+/* FORM CARD */
+
+.form-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #d8e4ee;
+  border-radius: 18px;
+  padding: 35px 40px;
+  box-sizing: border-box;
+}
+
+.form-card h2 {
+  margin: 0 0 30px;
+  color: #527092;
+  font-size: 24px;
+}
+
+/* ERROR */
+
+.error-message {
+  background: #fff0f0;
+  border: 1px solid #efb5b5;
+  color: #b52d2d;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+}
+
+/* FORM */
+
+form {
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  color: #405d79;
+  font-weight: bold;
+  margin-bottom: 9px;
+  font-size: 15px;
+}
+
+.form-group input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  border: 1px solid #ccd9e5;
+  border-radius: 9px;
+  padding: 0 15px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #34495e;
+  outline: none;
+  background: #ffffff;
+}
+
+.form-group input:focus {
+  border-color: #647ee8;
+  box-shadow: 0 0 0 2px rgba(100, 126, 232, 0.12);
+}
+
+.form-group input::placeholder {
+  color: #9aa8b5;
+}
+
+/* ACTIONS */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #e1e8ef;
+}
+
+.cancel-button {
+  min-width: 110px;
+  height: 45px;
+  border: 1px solid #d2dde7;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #52677d;
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background: #f4f7fa;
+}
+
+.save-button {
+  min-width: 160px;
+  height: 45px;
+  border: none;
+  border-radius: 9px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.save-button:disabled {
+  background: #b8bec9;
+  cursor: not-allowed;
+}
+
+/* LOADING */
+
+.loading {
+  max-width: 1100px;
+  margin: 30px auto;
+  text-align: center;
+  color: #527092;
+  font-size: 17px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 800px) {
+
+  .quote-create-page {
+    padding: 15px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .form-card {
+    padding: 25px 20px;
+  }
+
+  .top-header {
+    padding: 0 15px;
+  }
+
+  .user-button {
+    padding: 0 15px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-button,
+  .save-button {
+    width: 100%;
+  }
+}

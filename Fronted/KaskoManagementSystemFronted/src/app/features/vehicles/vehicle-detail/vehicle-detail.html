@@ -1,0 +1,331 @@
+<div class="vehicle-detail-page">
+
+  <div class="detail-header">
+
+    <div>
+
+      <h1>
+        Araç Detayı
+      </h1>
+
+      <p>
+        Araç bilgilerini görüntüleyin
+      </p>
+
+    </div>
+
+
+    <a
+      routerLink="/vehicles"
+      class="back-button"
+    >
+      Araçlara Dön
+    </a>
+
+  </div>
+
+  <div
+    *ngIf="isLoading"
+    class="state-message"
+  >
+
+    Araç bilgileri yükleniyor...
+
+  </div>
+
+
+  <div
+    *ngIf="
+      !isLoading &&
+      errorMessage
+    "
+    class="state-message error"
+  >
+
+    {{ errorMessage }}
+
+  </div>
+
+
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      vehicle
+    "
+    class="detail-card"
+  >
+
+
+    <section class="detail-section">
+
+      <h2>
+        Temel Bilgiler
+      </h2>
+
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>
+            Plaka
+          </span>
+
+          <strong>
+            {{ vehicle.plateNumber }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            VIN
+          </span>
+
+          <strong>
+            {{ vehicle.vin }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Marka
+          </span>
+
+          <strong>
+            {{ vehicle.brand }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Model
+          </span>
+
+          <strong>
+            {{ vehicle.model }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Model Yılı
+          </span>
+
+          <strong>
+            {{ vehicle.modelYear }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Araç Tipi
+          </span>
+
+          <strong>
+            {{
+              getVehicleTypeText(
+                vehicle.vehicleType
+              )
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="detail-section">
+
+      <h2>
+        Teknik Bilgiler
+      </h2>
+
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>
+            Yakıt Tipi
+          </span>
+
+          <strong>
+            {{
+              getFuelTypeText(
+                vehicle.fuelType
+              )
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Vites Tipi
+          </span>
+
+          <strong>
+            {{
+              getTransmissionTypeText(
+                vehicle.transmissionType
+              )
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Motor Hacmi
+          </span>
+
+          <strong>
+            {{
+              vehicle.engineVolume ?? '-'
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Motor Gücü
+          </span>
+
+          <strong>
+            {{
+              vehicle.enginePower ?? '-'
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Renk
+          </span>
+
+          <strong>
+            {{
+              vehicle.color ?? '-'
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Durum
+          </span>
+
+          <strong
+            [class.active]="
+              vehicle.isActive
+            "
+            [class.passive]="
+              !vehicle.isActive
+            "
+          >
+
+            {{
+              getStatusText(
+                vehicle
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="detail-section">
+
+      <h2>
+        Müşteri
+      </h2>
+
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>
+            Customer ID
+          </span>
+
+          <strong>
+            {{ vehicle.customerId }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+   <div class="detail-actions">
+
+  <a
+    routerLink="/vehicles"
+    class="secondary-button"
+  >
+    Araçlara Dön
+  </a>
+
+
+  <a
+    [routerLink]="[
+      '/vehicles',
+      vehicle.id,
+      'edit'
+    ]"
+    class="primary-button"
+  >
+    Düzenle
+  </a>
+
+<button
+  type="button"
+  class="danger-button"
+  (click)="deleteVehicle()"
+>
+  Aracı Sil
+</button>
+
+</div>
+
+</div>

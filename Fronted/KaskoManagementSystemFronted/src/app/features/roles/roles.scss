@@ -1,0 +1,480 @@
+.roles-page {
+  min-height: 100vh;
+  background: #eef4f9;
+  padding: 28px 34px;
+  box-sizing: border-box;
+}
+
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+.page-title h1 {
+  margin: 0;
+
+  color: #315a80;
+
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.page-title p {
+  margin: 7px 0 0;
+
+  color: #71849a;
+
+  font-size: 14px;
+}
+
+
+.create-role-button {
+  border: 0;
+
+  background: #5046e5;
+  color: #ffffff;
+
+  padding: 11px 18px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.create-role-button:hover {
+  background: #4338ca;
+}
+
+
+/* =========================
+   STAT CARDS
+========================= */
+
+.role-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  min-height: 92px;
+
+  background: #ffffff;
+
+  border: 1px solid #dce5ed;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  box-sizing: border-box;
+}
+
+.stat-title {
+  color: #60758b;
+
+  font-size: 14px;
+
+  margin-bottom: 5px;
+}
+
+.stat-card strong {
+  color: #1f2937;
+
+  font-size: 23px;
+
+  font-weight: 700;
+}
+
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.roles-card {
+  background: #ffffff;
+
+  border: 1px solid #dce5ed;
+
+  border-radius: 12px;
+
+  padding: 24px;
+
+  box-sizing: border-box;
+}
+
+.roles-card-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.roles-card-header h2 {
+  margin: 0;
+
+  color: #315a80;
+
+  font-size: 19px;
+
+  font-weight: 600;
+}
+
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+.toolbar input {
+  flex: 1;
+
+  height: 40px;
+
+  border: 1px solid #d7e0e8;
+
+  border-radius: 7px;
+
+  padding: 0 14px;
+
+  background: #ffffff;
+
+  color: #334155;
+
+  font-size: 14px;
+
+  outline: none;
+
+  box-sizing: border-box;
+}
+
+.toolbar input:focus {
+  border-color: #8fa9bf;
+}
+
+.toolbar input::placeholder {
+  color: #9aa8b6;
+}
+
+.filter-button {
+  height: 40px;
+
+  padding: 0 18px;
+
+  border: 1px solid #d7e0e8;
+
+  background: #ffffff;
+
+  border-radius: 7px;
+
+  color: #4b6074;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  table-layout: fixed;
+}
+
+thead tr {
+  border-bottom: 1px solid #dbe4ec;
+}
+
+th {
+  text-align: left;
+
+  padding: 13px 12px;
+
+  color: #5f7184;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+td {
+  padding: 15px 12px;
+
+  color: #3f5266;
+
+  font-size: 13px;
+
+  border-bottom: 1px solid #edf1f5;
+
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: #fafbfd;
+}
+
+.role-name {
+  color: #243b53;
+
+  font-weight: 600;
+}
+
+.role-id {
+  color: #718096;
+
+  font-size: 12px;
+
+  word-break: break-all;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 66px;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #dff4e8;
+
+  color: #25804b;
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
+
+.action-button {
+  border: 0;
+
+  border-radius: 6px;
+
+  padding: 7px 10px;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+.action-button.detail {
+  background: #eef3f8;
+
+  color: #47647d;
+}
+
+.action-button.edit {
+  background: #eeeefe;
+
+  color: #5147cf;
+}
+
+.action-button.delete {
+  background: #fde8e8;
+
+  color: #c53b3b;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
+
+
+/* =========================
+   PAGINATION
+========================= */
+
+.pagination {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 22px;
+}
+
+.pagination button {
+  width: 34px;
+
+  height: 34px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: #eef3f8;
+
+  color: #43576b;
+
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+.pagination button:hover {
+  background: #dfe8f0;
+}
+
+.pagination button.active-page {
+  background: #5046e5;
+
+  color: #ffffff;
+}
+
+.pagination button:disabled {
+  opacity: 0.45;
+
+  cursor: default;
+}
+
+.page-info {
+  margin-left: 8px;
+
+  color: #718096;
+
+  font-size: 13px;
+}
+
+
+/* =========================
+   STATES
+========================= */
+
+.loading,
+.error,
+.empty {
+  padding: 35px;
+
+  text-align: center;
+
+  color: #718096;
+
+  font-size: 14px;
+}
+
+.error {
+  color: #c53b3b;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1000px) {
+
+  .role-stats {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .roles-page {
+    padding: 22px;
+  }
+
+}
+
+@media (max-width: 650px) {
+
+  .page-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 14px;
+  }
+
+  .role-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .roles-card {
+    padding: 16px;
+  }
+
+}
