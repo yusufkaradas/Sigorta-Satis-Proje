@@ -13,4 +13,8 @@ public interface IVehicleValueCatalogRepository
     Task<IReadOnlyList<int>> GetActiveYearsAsync(
         string brandCode,
         string typeCode);
+    Task<VehicleValueCatalog?> GetActiveByKeyAsync(
+    string brandCode,
+    string typeCode,
+    int modelYear);
 }

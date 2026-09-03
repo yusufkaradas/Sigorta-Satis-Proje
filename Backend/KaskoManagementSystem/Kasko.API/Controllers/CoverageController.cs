@@ -46,6 +46,7 @@ public class CoverageController : ControllerBase
 
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(
         [FromBody] CreateCoverageDto dto)
     {
@@ -60,6 +61,7 @@ public class CoverageController : ControllerBase
 
 
     [HttpPut]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(
         [FromBody] UpdateCoverageDto dto)
     {
@@ -70,6 +72,7 @@ public class CoverageController : ControllerBase
 
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(
         Guid id)
     {

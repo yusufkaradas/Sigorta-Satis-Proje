@@ -197,53 +197,100 @@ public static class IntegrationTestHelper
         return customer!.Id;
     }
     public static async Task<VehicleDto> CreateVehicleAsync(
+        WebApplicationFactory<Program> factory,
         HttpClient client,
         Guid customerId)
     {
+        var brandCode =
+            $"TEST-BRAND-{Guid.NewGuid():N}";
+
+        var typeCode =
+            $"TEST-TYPE-{Guid.NewGuid():N}";
         var random = Guid.NewGuid()
             .ToString("N")
             .Substring(0, 6)
             .ToUpper();
+        await using var scope =
+    factory.Services.CreateAsyncScope();
 
+        var context =
+            scope.ServiceProvider
+                .GetRequiredService<KaskoContext>();
+
+        var now = DateTime.UtcNow;
+
+        var catalog =
+            new VehicleValueCatalog
+            {
+                Id = Guid.NewGuid(),
+
+                BrandCode = brandCode,
+                TypeCode = typeCode,
+
+                BrandName = "Test Toyota",
+                TypeName = "Test Corolla",
+
+                ModelYear = 2024,
+
+                Value = 1_250_000m,
+
+                Source = "IntegrationTest",
+
+                EffectiveDate = now,
+                ImportedAt = now,
+
+                IsActive = true,
+                IsDeleted = false,
+
+                CreatedDate = now
+            };
+
+        context.VehicleValueCatalogs.Add(catalog);
+
+        await context.SaveChangesAsync();
         var dto = new CreateVehicleDto
         {
             CustomerId = customerId,
 
             PlateNumber =
-                $"34TEST{random.Substring(0, 3)}",
+        $"34TEST{random.Substring(0, 3)}",
 
             VIN =
-                "1HGCM82633A" +
-                random,
+        "1HGCM82633A" + random,
 
-            Brand = "Toyota",
-            Model = "Corolla",
+            Brand = "Test Toyota",
+            BrandCode = brandCode,
+
+            Model = "Test Corolla",
+            TypeCode = typeCode,
 
             ModelYear = 2024,
 
             VehicleType =
-                Kasko.Entities.Enums.VehicleType.Sedan,
+        Kasko.Entities.Enums.VehicleType.Sedan,
 
             FuelType =
-                Kasko.Entities.Enums.FuelType.Gasoline,
+        Kasko.Entities.Enums.FuelType.Gasoline,
 
             TransmissionType =
-                Kasko.Entities.Enums.TransmissionType.Automatic,
+        Kasko.Entities.Enums.TransmissionType.Automatic,
 
             EngineVolume = 1.6m,
             EnginePower = 132,
 
             Color = "White",
 
-            MarketValue = 1_250_000m
+            // Test amacıyla gönderiliyor; backend TSB değerini kullanmalı.
+            MarketValue = 1m
         };
-
         var response =
-            await client.PostAsJsonAsync(
-                "/api/Vehicle",
-                dto);
+    await client.PostAsJsonAsync(
+        "/api/Vehicle",
+        dto);
 
-        response.EnsureSuccessStatusCode();
+        Assert.Equal(
+            HttpStatusCode.Created,
+            response.StatusCode);
 
         var vehicle =
             await response.Content
@@ -251,7 +298,27 @@ public static class IntegrationTestHelper
 
         Assert.NotNull(vehicle);
 
-        return vehicle!;
+        Assert.Equal(
+            customerId,
+            vehicle!.CustomerId);
+
+        Assert.Equal(
+            brandCode,
+            vehicle.BrandCode);
+
+        Assert.Equal(
+            typeCode,
+            vehicle.TypeCode);
+
+        Assert.Equal(
+            2024,
+            vehicle.ModelYear);
+
+        Assert.Equal(
+            catalog.Value,
+            vehicle.MarketValue);
+
+        return vehicle;
     }
 
     public static async Task<QuoteDto> CreateQuoteAsync(
@@ -264,8 +331,7 @@ public static class IntegrationTestHelper
             CustomerId = customerId,
             VehicleId = vehicleId,
 
-            ValidUntil =
-                DateTime.UtcNow.AddDays(30)
+            ValidUntil = DateTime.UtcNow.AddDays(30)
         };
 
         var response =

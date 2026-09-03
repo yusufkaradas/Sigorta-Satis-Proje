@@ -1,5 +1,4 @@
 ﻿using Kasko.Business.DTOs.VehicleValue;
-using Kasko.Business.Integrations.VehicleValue;
 using Kasko.Business.Interfaces;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -15,6 +14,19 @@ public class VehicleValueCatalogService
         IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<VehicleValueCatalog?> GetActiveByKeyAsync(
+        string brandCode,
+        string typeCode,
+        int modelYear)
+    {
+        return await _unitOfWork
+            .VehicleValueCatalogs
+            .GetActiveByKeyAsync(
+                brandCode,
+                typeCode,
+                modelYear);
     }
 
     public async Task<VehicleValueLookupDto?> LookupAsync(
@@ -70,7 +82,7 @@ public class VehicleValueCatalogService
     }
 
     public async Task<IReadOnlyList<VehicleValueBrandDto>> GetBrandsAsync(
-    CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var records =
             await _unitOfWork
@@ -85,9 +97,10 @@ public class VehicleValueCatalogService
             })
             .ToList();
     }
+
     public async Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
-     string brandCode,
-     CancellationToken cancellationToken = default)
+        string brandCode,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(brandCode))
         {
@@ -109,47 +122,16 @@ public class VehicleValueCatalogService
             })
             .ToList();
     }
+
     public async Task<IReadOnlyList<int>> GetYearsAsync(
-    string brandCode,
-    string typeCode,
-    CancellationToken cancellationToken = default)
+        string brandCode,
+        string typeCode,
+        CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(brandCode))
-        {
-            throw new ArgumentException(
-                "Marka kodu boş olamaz.",
-                nameof(brandCode));
-        }
-
-        if (string.IsNullOrWhiteSpace(typeCode))
-        {
-            throw new ArgumentException(
-                "Tip kodu boş olamaz.",
-                nameof(typeCode));
-        }
-
         return await _unitOfWork
             .VehicleValueCatalogs
             .GetActiveYearsAsync(
                 brandCode,
                 typeCode);
-    }
-
-    public async Task<VehicleValueCatalog?> GetActiveByKeyAsync(
-    string brandCode,
-    string typeCode,
-    int modelYear)
-    {
-        return await _context
-            .VehicleValueCatalogs
-            .AsNoTracking()
-            .Where(x =>
-                !x.IsDeleted &&
-                x.IsActive &&
-                x.BrandCode == brandCode &&
-                x.TypeCode == typeCode &&
-                x.ModelYear == modelYear)
-            .OrderByDescending(x => x.EffectiveDate)
-            .FirstOrDefaultAsync();
     }
 }

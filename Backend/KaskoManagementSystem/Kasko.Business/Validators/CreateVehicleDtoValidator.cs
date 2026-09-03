@@ -44,7 +44,13 @@ namespace Kasko.Business.Validators
             RuleFor(x => x.ModelYear)
                 .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
                 .WithMessage("Geçerli bir model yılı giriniz.");
+            RuleFor(x => x.BrandCode)
+                .NotEmpty()
+                .WithMessage("TSB marka kodu zorunludur.");
 
+            RuleFor(x => x.TypeCode)
+                .NotEmpty()
+                .WithMessage("TSB araç tipi kodu zorunludur.");
             RuleFor(x => x.EngineVolume)
                 .GreaterThan(0)
                 .When(x => x.EngineVolume.HasValue)
@@ -70,6 +76,7 @@ namespace Kasko.Business.Validators
             RuleFor(x => x.MarketValue)
                  .GreaterThan(0)
                  .WithMessage("Araç piyasa değeri 0'dan büyük olmalıdır.");
+
         }
     }
 }

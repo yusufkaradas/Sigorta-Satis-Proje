@@ -26,4 +26,5 @@ public interface IVehicleValueCatalogService
     string brandCode,
     string typeCode,
     int modelYear);
+    
 }

@@ -17,6 +17,7 @@ namespace Kasko.Business.Tests.Services
         private Mock<IUnitOfWork> _unitOfWorkMock = null!;
         private Mock<IVehicleRepository> _vehicleRepositoryMock = null!;
         private Mock<ICustomerRepository> _customerRepositoryMock = null!;
+        private Mock<IVehicleValueCatalogRepository> _vehicleValueCatalogRepositoryMock = null!;
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private VehicleService _vehicleService = null!;
 
@@ -25,6 +26,7 @@ namespace Kasko.Business.Tests.Services
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _vehicleRepositoryMock = new Mock<IVehicleRepository>();
             _customerRepositoryMock = new Mock<ICustomerRepository>();
+            _vehicleValueCatalogRepositoryMock = new Mock<IVehicleValueCatalogRepository>();
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
             _unitOfWorkMock
@@ -34,6 +36,9 @@ namespace Kasko.Business.Tests.Services
             _unitOfWorkMock
                 .Setup(x => x.Customers)
                 .Returns(_customerRepositoryMock.Object);
+            _unitOfWorkMock
+                .Setup(x => x.VehicleValueCatalogs)
+                .Returns(_vehicleValueCatalogRepositoryMock.Object);
 
             _vehicleService = new VehicleService(
                 _unitOfWorkMock.Object,
@@ -337,7 +342,9 @@ namespace Kasko.Business.Tests.Services
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
                 Brand = "Toyota",
+                BrandCode = "TOYOTA",
                 Model = "Corolla",
+                TypeCode = "COROLLA-2024",
                 ModelYear = 2024,
                 VehicleType = VehicleType.Sedan,
                 FuelType = FuelType.Gasoline,
@@ -346,7 +353,29 @@ namespace Kasko.Business.Tests.Services
                 EnginePower = 130,
                 Color = "Beyaz"
             };
+            var tsbRecord = new VehicleValueCatalog
+            {
+                Id = Guid.NewGuid(),
 
+                BrandCode = "TOYOTA",
+                TypeCode = "COROLLA-2024",
+
+                BrandName = "Toyota",
+                TypeName = "Corolla",
+
+                ModelYear = 2024,
+
+                Value = 1_250_000m,
+
+                Source = "TSB",
+
+                EffectiveDate = new DateTime(2026, 8, 1),
+
+                ImportedAt = new DateTime(2026, 8, 1),
+
+                IsActive = true,
+                IsDeleted = false
+            };
             var claims = new List<Claim>
             {
                 new Claim(
@@ -389,8 +418,13 @@ namespace Kasko.Business.Tests.Services
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(1);
+            _vehicleValueCatalogRepositoryMock
+                .Setup(x => x.GetActiveByKeyAsync(
+                 dto.BrandCode,
+                 dto.TypeCode,
+                 dto.ModelYear))
+                .ReturnsAsync(tsbRecord);
 
-           
             var result = await _vehicleService.CreateAsync(dto);
 
             
@@ -401,14 +435,17 @@ namespace Kasko.Business.Tests.Services
             Assert.Equal(dto.PlateNumber, result.PlateNumber);
             Assert.Equal(dto.VIN, result.VIN);
             Assert.Equal(dto.Brand, result.Brand);
+            Assert.Equal(tsbRecord.BrandCode, result.BrandCode);
             Assert.Equal(dto.Model, result.Model);
             Assert.Equal(dto.ModelYear, result.ModelYear);
+            Assert.Equal(tsbRecord.TypeCode, result.TypeCode);
             Assert.Equal(dto.VehicleType, result.VehicleType);
             Assert.Equal(dto.FuelType, result.FuelType);
             Assert.Equal(dto.TransmissionType, result.TransmissionType);
             Assert.Equal(dto.EngineVolume, result.EngineVolume);
             Assert.Equal(dto.EnginePower, result.EnginePower);
             Assert.Equal(dto.Color, result.Color);
+            Assert.Equal(tsbRecord.Value, result.MarketValue);
             Assert.True(result.IsActive);
 
             _vehicleRepositoryMock.Verify(
@@ -436,8 +473,191 @@ namespace Kasko.Business.Tests.Services
                 Times.Once);
         }
 
-       
+        [Fact]
+        public async Task CreateAsync_WhenTsbRecordNotFound_ShouldThrowNotFoundException()
+        {
+            var customerId = Guid.NewGuid();
 
+            var customer = new Customer
+            {
+                Id = customerId,
+                IsDeleted = false
+            };
+
+            var dto = new CreateVehicleDto
+            {
+                CustomerId = customerId,
+
+                PlateNumber = "34TSB001",
+                VIN = "TSBVIN123456",
+
+                Brand = "Toyota",
+                BrandCode = "TOYOTA",
+
+                Model = "Corolla",
+                TypeCode = "COROLLA-2024",
+
+                ModelYear = 2024,
+
+                VehicleType = VehicleType.Sedan,
+                FuelType = FuelType.Gasoline,
+                TransmissionType = TransmissionType.Automatic,
+
+                EngineVolume = 1.6m,
+                EnginePower = 130,
+                Color = "Beyaz",
+
+                MarketValue = 1m
+            };
+
+            _customerRepositoryMock
+                .Setup(x => x.GetByIdAsync(customerId))
+                .ReturnsAsync(customer);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.PlateExistsAsync(
+                    dto.PlateNumber,
+                    It.IsAny<Guid?>()))
+                .ReturnsAsync(false);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.VinExistsAsync(
+                    dto.VIN,
+                    It.IsAny<Guid?>()))
+                .ReturnsAsync(false);
+
+            _vehicleValueCatalogRepositoryMock
+                .Setup(x => x.GetActiveByKeyAsync(
+                    dto.BrandCode,
+                    dto.TypeCode,
+                    dto.ModelYear))
+                .ReturnsAsync((VehicleValueCatalog?)null);
+
+            var act = async () =>
+                await _vehicleService.CreateAsync(dto);
+
+            await Assert.ThrowsAsync<NotFoundException>(act);
+
+            _vehicleRepositoryMock.Verify(
+                x => x.AddAsync(It.IsAny<Vehicle>()),
+                Times.Never);
+
+            _unitOfWorkMock.Verify(
+                x => x.SaveChangesAsync(),
+                Times.Never);
+        }
+        [Fact]
+        public async Task CreateAsync_WhenTsbRecordExists_ShouldUseTsbMarketValue()
+        {
+            var customerId = Guid.NewGuid();
+
+            var customer = new Customer
+            {
+                Id = customerId,
+                IsDeleted = false
+            };
+
+            var dto = new CreateVehicleDto
+            {
+                CustomerId = customerId,
+
+                PlateNumber = "34TSB002",
+                VIN = "TSBVIN654321",
+
+                Brand = "Toyota",
+                BrandCode = "TOYOTA",
+
+                Model = "Corolla",
+                TypeCode = "COROLLA-2024",
+
+                ModelYear = 2024,
+
+                VehicleType = VehicleType.Sedan,
+                FuelType = FuelType.Gasoline,
+                TransmissionType = TransmissionType.Automatic,
+
+                EngineVolume = 1.6m,
+                EnginePower = 130,
+                Color = "Beyaz",
+
+                // Kasıtlı olarak yanlış.
+                MarketValue = 1m
+            };
+
+            var tsbValue = 1_250_000m;
+
+            var tsbRecord = new VehicleValueCatalog
+            {
+                Id = Guid.NewGuid(),
+
+                BrandCode = dto.BrandCode,
+                TypeCode = dto.TypeCode,
+
+                BrandName = "Toyota",
+                TypeName = "Corolla",
+
+                ModelYear = dto.ModelYear,
+
+                Value = tsbValue,
+
+                Source = "TSB",
+
+                EffectiveDate = new DateTime(2026, 8, 1),
+
+                ImportedAt = new DateTime(2026, 8, 1),
+
+                IsActive = true,
+                IsDeleted = false
+            };
+
+            _customerRepositoryMock
+                .Setup(x => x.GetByIdAsync(customerId))
+                .ReturnsAsync(customer);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.PlateExistsAsync(
+                    dto.PlateNumber,
+                    It.IsAny<Guid?>()))
+                .ReturnsAsync(false);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.VinExistsAsync(
+                    dto.VIN,
+                    It.IsAny<Guid?>()))
+                .ReturnsAsync(false);
+
+            _vehicleValueCatalogRepositoryMock
+                .Setup(x => x.GetActiveByKeyAsync(
+                    dto.BrandCode,
+                    dto.TypeCode,
+                    dto.ModelYear))
+                .ReturnsAsync(tsbRecord);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<Vehicle>()))
+                .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock
+                .Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1);
+
+            var result = await _vehicleService.CreateAsync(dto);
+
+            Assert.NotNull(result);
+
+            Assert.Equal(tsbValue, result.MarketValue);
+
+            _vehicleRepositoryMock.Verify(
+                x => x.AddAsync(It.Is<Vehicle>(v =>
+                    v.MarketValue == tsbValue &&
+                    v.BrandCode == dto.BrandCode &&
+                    v.TypeCode == dto.TypeCode)),
+                Times.Once);
+
+            _unitOfWorkMock.Verify(
+                x => x.SaveChangesAsync(),
+                Times.Once);
+        }
         [Fact]
         public async Task UpdateAsync_WhenVehicleNotFound_ShouldThrowNotFoundException()
         {
@@ -684,17 +904,48 @@ namespace Kasko.Business.Tests.Services
             var dto = new UpdateVehicleDto
             {
                 CustomerId = customerId,
+
                 PlateNumber = "34NEW222",
                 VIN = "NEWVIN456",
+
                 Brand = "Honda",
+                BrandCode = "HONDA",
+
                 Model = "Civic",
+                TypeCode = "CIVIC-2024",
+
                 ModelYear = 2024,
+
                 VehicleType = VehicleType.Sedan,
                 FuelType = FuelType.Hybrid,
                 TransmissionType = TransmissionType.Automatic,
+
                 EngineVolume = 1.5m,
                 EnginePower = 130,
+
                 Color = "Beyaz"
+            };
+            var tsbRecord = new VehicleValueCatalog
+            {
+                Id = Guid.NewGuid(),
+
+                BrandCode = dto.BrandCode,
+                TypeCode = dto.TypeCode,
+
+                BrandName = "Honda",
+                TypeName = "Civic",
+
+                ModelYear = dto.ModelYear,
+
+                Value = 1_300_000m,
+
+                Source = "TSB",
+
+                EffectiveDate = new DateTime(2026, 9, 1),
+                ImportedAt = new DateTime(2026, 9, 1),
+
+                IsActive = true,
+                IsDeleted = false
             };
 
             _vehicleRepositoryMock
@@ -725,7 +976,14 @@ namespace Kasko.Business.Tests.Services
                 .Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(1);
 
-           
+            _vehicleValueCatalogRepositoryMock
+                .Setup(x => x.GetActiveByKeyAsync(
+                dto.BrandCode,
+                dto.TypeCode,
+                dto.ModelYear))
+               .ReturnsAsync(tsbRecord);
+
+
             await _vehicleService.UpdateAsync(vehicleId, dto);
 
             
@@ -733,6 +991,9 @@ namespace Kasko.Business.Tests.Services
             Assert.Equal(dto.PlateNumber, vehicle.PlateNumber);
             Assert.Equal(dto.VIN, vehicle.VIN);
             Assert.Equal(dto.Brand, vehicle.Brand);
+            Assert.Equal(dto.BrandCode, vehicle.BrandCode);
+            Assert.Equal(dto.TypeCode, vehicle.TypeCode);
+            Assert.Equal(tsbRecord.Value, vehicle.MarketValue);
             Assert.Equal(dto.Model, vehicle.Model);
             Assert.Equal(dto.ModelYear, vehicle.ModelYear);
             Assert.Equal(dto.VehicleType, vehicle.VehicleType);
@@ -752,7 +1013,89 @@ namespace Kasko.Business.Tests.Services
                 Times.Once);
         }
 
-        
+        [Fact]
+        public async Task UpdateAsync_WhenTsbRecordNotFound_ShouldThrowNotFoundException()
+        {
+            var vehicleId = Guid.NewGuid();
+            var customerId = Guid.NewGuid();
+
+            var vehicle = new Vehicle
+            {
+                Id = vehicleId,
+                CustomerId = customerId,
+                PlateNumber = "34OLD111",
+                VIN = "OLDVIN123"
+            };
+
+            var customer = new Customer
+            {
+                Id = customerId,
+                IsDeleted = false
+            };
+
+            var dto = new UpdateVehicleDto
+            {
+                CustomerId = customerId,
+                PlateNumber = "34NEW222",
+                VIN = "NEWVIN456",
+
+                Brand = "Honda",
+                BrandCode = "HONDA",
+
+                Model = "Civic",
+                TypeCode = "CIVIC-2024",
+
+                ModelYear = 2024,
+
+                VehicleType = VehicleType.Sedan,
+                FuelType = FuelType.Hybrid,
+                TransmissionType = TransmissionType.Automatic,
+
+                EngineVolume = 1.5m,
+                EnginePower = 130,
+                Color = "Beyaz"
+            };
+
+            _vehicleRepositoryMock
+                .Setup(x => x.GetByIdAsync(vehicleId))
+                .ReturnsAsync(vehicle);
+
+            _customerRepositoryMock
+                .Setup(x => x.GetByIdAsync(customerId))
+                .ReturnsAsync(customer);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.PlateExistsAsync(
+                    dto.PlateNumber,
+                    vehicleId))
+                .ReturnsAsync(false);
+
+            _vehicleRepositoryMock
+                .Setup(x => x.VinExistsAsync(
+                    dto.VIN,
+                    vehicleId))
+                .ReturnsAsync(false);
+
+            _vehicleValueCatalogRepositoryMock
+                .Setup(x => x.GetActiveByKeyAsync(
+                    dto.BrandCode,
+                    dto.TypeCode,
+                    dto.ModelYear))
+                .ReturnsAsync((VehicleValueCatalog?)null);
+
+            var act = async () =>
+                await _vehicleService.UpdateAsync(vehicleId, dto);
+
+            await Assert.ThrowsAsync<NotFoundException>(act);
+
+            _vehicleRepositoryMock.Verify(
+                x => x.UpdateAsync(It.IsAny<Vehicle>()),
+                Times.Never);
+
+            _unitOfWorkMock.Verify(
+                x => x.SaveChangesAsync(),
+                Times.Never);
+        }
 
         [Fact]
         public async Task DeleteAsync_WhenVehicleNotFound_ShouldThrowNotFoundException()

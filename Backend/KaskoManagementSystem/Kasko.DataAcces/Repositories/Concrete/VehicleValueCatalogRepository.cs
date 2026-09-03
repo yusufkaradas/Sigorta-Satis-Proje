@@ -60,11 +60,10 @@ public class VehicleValueCatalogRepository
             .ToListAsync();
     }
     public async Task<IReadOnlyList<int>> GetActiveYearsAsync(
-    string brandCode,
-    string typeCode)
+     string brandCode,
+     string typeCode)
     {
-        return await _context
-            .VehicleValueCatalogs
+        return await _context.VehicleValueCatalogs
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted &&
@@ -75,5 +74,21 @@ public class VehicleValueCatalogRepository
             .Distinct()
             .OrderByDescending(x => x)
             .ToListAsync();
+    }
+    public async Task<VehicleValueCatalog?> GetActiveByKeyAsync(
+     string brandCode,
+     string typeCode,
+     int modelYear)
+    {
+        return await _context.VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.BrandCode == brandCode &&
+                x.TypeCode == typeCode &&
+                x.ModelYear == modelYear)
+            .OrderByDescending(x => x.EffectiveDate)
+            .FirstOrDefaultAsync();
     }
 }

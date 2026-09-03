@@ -29,6 +29,7 @@ public class ConcurrencyTests
 
         var vehicle =
             await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
                 client,
                 customerId);
 

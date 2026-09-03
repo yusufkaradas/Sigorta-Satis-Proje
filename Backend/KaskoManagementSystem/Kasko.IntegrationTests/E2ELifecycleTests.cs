@@ -35,6 +35,7 @@ public class E2ELifecycleTests
         
         var vehicle =
             await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
                 client,
                 customerId);
 
@@ -185,6 +186,7 @@ public class E2ELifecycleTests
 
         var vehicle =
             await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
                 client,
                 customerId);
 

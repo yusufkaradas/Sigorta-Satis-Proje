@@ -99,11 +99,12 @@ namespace Kasko.Business.Services
                 throw new BadRequestException(
                     "Bu VIN numarası başka bir araç tarafından kullanılmaktadır.");
             }
-        var tsbRecord =
-        await _unitOfWork.VehicleValueCatalogs.GetActiveByKeyAsync(
-        dto.BrandCode,
-        dto.TypeCode,
-        dto.ModelYear);
+            var tsbRecord =
+        await _unitOfWork.VehicleValueCatalogs
+            .GetActiveByKeyAsync(
+                dto.BrandCode,
+                dto.TypeCode,
+                dto.ModelYear);
 
             if (tsbRecord == null)
             {
@@ -164,7 +165,9 @@ namespace Kasko.Business.Services
                 PlateNumber = vehicle.PlateNumber,
                 VIN = vehicle.VIN,
                 Brand = vehicle.Brand,
+                BrandCode = vehicle.BrandCode,
                 Model = vehicle.Model,
+                TypeCode = vehicle.TypeCode,
                 ModelYear = vehicle.ModelYear,
                 VehicleType = vehicle.VehicleType,
                 FuelType = vehicle.FuelType,
@@ -238,8 +241,12 @@ namespace Kasko.Business.Services
             vehicle.PlateNumber = dto.PlateNumber;
             vehicle.VIN = dto.VIN;
             vehicle.Brand = dto.Brand;
+            vehicle.BrandCode = dto.BrandCode;
+
             vehicle.Model = dto.Model;
             vehicle.ModelYear = dto.ModelYear;
+
+            vehicle.TypeCode = dto.TypeCode;
 
             vehicle.VehicleType = dto.VehicleType;
             vehicle.FuelType = dto.FuelType;
