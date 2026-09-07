@@ -24,8 +24,9 @@ public record TestUser(
 public static class IntegrationTestHelper
 {
     public static async Task<TestUser> SeedUserAsync(
-        WebApplicationFactory<Program> factory,
-        string role)
+    WebApplicationFactory<Program> factory,
+    string role,
+    Guid? customerId = null)
     {
         await using var scope =
             factory.Services.CreateAsyncScope();
@@ -78,6 +79,8 @@ public static class IntegrationTestHelper
             IsDeleted = false,
 
             RoleId = roleEntity.Id,
+
+            CustomerId = customerId,
 
             CreatedDate = DateTime.UtcNow
         };
@@ -178,8 +181,8 @@ public static class IntegrationTestHelper
                 dto);
 
         Assert.Equal(
-            HttpStatusCode.Created,
-            response.StatusCode);
+     HttpStatusCode.Created,
+     response.StatusCode);
 
         var customers =
             await client.GetFromJsonAsync<
@@ -206,10 +209,9 @@ public static class IntegrationTestHelper
 
         var typeCode =
             $"TEST-TYPE-{Guid.NewGuid():N}";
-        var random = Guid.NewGuid()
-            .ToString("N")
-            .Substring(0, 6)
-            .ToUpper();
+        var uniqueId = Guid.NewGuid()
+           .ToString("N")
+           .ToUpperInvariant();
         await using var scope =
     factory.Services.CreateAsyncScope();
 
@@ -253,10 +255,10 @@ public static class IntegrationTestHelper
             CustomerId = customerId,
 
             PlateNumber =
-        $"34TEST{random.Substring(0, 3)}",
+    $"34TEST{uniqueId.Substring(0, 14)}",
 
             VIN =
-        "1HGCM82633A" + random,
+    uniqueId.Substring(0, 17),
 
             Brand = "Test Toyota",
             BrandCode = brandCode,
@@ -289,8 +291,8 @@ public static class IntegrationTestHelper
         dto);
 
         Assert.Equal(
-            HttpStatusCode.Created,
-            response.StatusCode);
+      HttpStatusCode.Created,
+      response.StatusCode);
 
         var vehicle =
             await response.Content

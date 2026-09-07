@@ -1,7 +1,8 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace Kasko.IntegrationTests;
 

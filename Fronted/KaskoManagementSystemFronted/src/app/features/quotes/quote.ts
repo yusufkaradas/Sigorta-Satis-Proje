@@ -23,6 +23,27 @@ export enum QuoteStatus {
 
 }
 
+export interface QuoteCoverage {
+  coverageId: string;
+  coverageName: string;
+  calculatedPrice: number;
+  limit?: number | null;
+}
+
+export interface QuotePricingSnapshot {
+  marketValue: number;
+  baseRate: number;
+  ageFactor: number;
+  usageFactor: number;
+  driverFactor: number;
+  claimsFactor: number;
+  regionFactor: number;
+  packageFactor: number;
+  deductibleFactor: number;
+  coveragePremium: number;
+  discount: number;
+  finalPremium: number;
+}
 
 export interface Quote {
 
@@ -30,7 +51,25 @@ export interface Quote {
 
   customerId: string;
 
+  customerName?: string;
+
+  customerEmail?: string;
+
+  customerPhone?: string;
+
   vehicleId: string;
+
+  vehicleDescription?: string;
+
+  plateNumber?: string;
+
+  brand?: string;
+
+  model?: string;
+
+  modelYear?: number;
+
+  marketValue?: number;
 
   quoteNumber: string;
 
@@ -40,8 +79,15 @@ export interface Quote {
 
   status: QuoteStatus;
 
+  createdDate?: string;
+
   isDeleted?: boolean;
 
+  isActive?: boolean;
+
+  coverages?: QuoteCoverage[];
+
+  pricingSnapshot?: QuotePricingSnapshot | null;
 }
 
 
@@ -50,6 +96,18 @@ export interface QuoteCreateDto {
   customerId: string;
 
   vehicleId: string;
+
+  usage: string;
+
+  claimsCount: number;
+
+  deductible: number;
+
+  previousPolicyId: string | null;
+
+  packageId: string;
+
+  coverageIds: string[];
 
   validUntil: string;
 
@@ -74,6 +132,8 @@ export interface QuoteUpdateDto {
     CommonModule,
 
     FormsModule,
+
+    RouterLink
 
   ],
 
@@ -174,6 +234,7 @@ readonly instanceId =
       (_, index) => index + 1
 
     );
+    
 
   }
 

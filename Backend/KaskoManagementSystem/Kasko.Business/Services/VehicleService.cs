@@ -24,6 +24,29 @@ namespace Kasko.Business.Services
         {
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
 
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue = _httpContextAccessor.HttpContext.User
+                    .FindFirst(ClaimTypes.NameIdentifier)?
+                    .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Enumerable.Empty<VehicleListDto>();
+                }
+
+                var currentUser = await _unitOfWork.Users
+                    .GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    return Enumerable.Empty<VehicleListDto>();
+                }
+
+                vehicles = vehicles
+                    .Where(x => x.CustomerId == currentUser.CustomerId.Value);
+            }
+
             return vehicles.Select(x => new VehicleListDto
             {
                 Id = x.Id,
@@ -48,7 +71,26 @@ namespace Kasko.Business.Services
             {
                 return null;
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue = _httpContextAccessor.HttpContext.User
+                    .FindFirst(ClaimTypes.NameIdentifier)?
+                    .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return null;
+                }
+
+                var currentUser = await _unitOfWork.Users
+                    .GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    vehicle.CustomerId != currentUser.CustomerId.Value)
+                {
+                    return null;
+                }
+            }
             return new VehicleDto
             {
                 Id = vehicle.Id,

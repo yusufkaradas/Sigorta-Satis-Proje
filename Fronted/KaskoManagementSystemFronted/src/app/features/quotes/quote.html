@@ -119,6 +119,7 @@
           </option>
 
         </select>
+        
 
         <button
           type="button"
@@ -169,59 +170,90 @@
 
           <tbody>
 
-            <tr
-              *ngFor="let quote of paginatedQuotes"
-            >
+           <tr *ngFor="let quote of paginatedQuotes">
 
-              <td>
+  <!-- TEKLİF NO -->
+  <td>
+    <span class="quote-number">
+      {{ quote.quoteNumber }}
+    </span>
+  </td>
 
-                <span class="quote-number">
-                  {{ quote.quoteNumber }}
-                </span>
+  <!-- MÜŞTERİ -->
+  <td>
+    <div class="customer-cell">
+      <strong>
+        {{ quote.customerName || '—' }}
+      </strong>
+    </div>
+  </td>
 
-              </td>
+  <!-- ARAÇ -->
+  <td>
+  <div class="vehicle-cell">
+    <strong>
+      {{ quote.vehicleDescription || '—' }}
+    </strong>
+  </div>
+</td>
 
-              <td>
-                {{ quote.customerId }}
-              </td>
+  <!-- PRİM -->
+  <td>
+    {{ quote.premiumAmount | number:'1.2-2' }} ₺
+  </td>
 
-              <td>
-                {{ quote.vehicleId }}
-              </td>
+  <!-- GEÇERLİLİK -->
+  <td>
+    {{ quote.validUntil | date:'dd.MM.yyyy' }}
+  </td>
 
-              <td>
-                {{ quote.premiumAmount | number:'1.2-2' }} ₺
-              </td>
+  <!-- DURUM -->
+  <td>
+    <span
+      class="status"
+      [ngClass]="getStatusClass(quote.status)"
+    >
+      {{ getStatusText(quote.status) }}
+    </span>
+  </td>
 
-              <td>
-                {{ quote.validUntil | date:'dd.MM.yyyy' }}
-              </td>
+  <!-- İŞLEM -->
+  <td class="actions-cell">
 
-              <td>
+    <button
+      type="button"
+      class="detail-button"
+      (click)="openDetail(quote.id)"
+    >
+      Detay
+    </button>
 
-                <span
-                  class="status"
-                  [ngClass]="getStatusClass(quote.status)"
-                >
-                  {{ getStatusText(quote.status) }}
-                </span>
+    <button
+      *ngIf="quote.status === QuoteStatus.Draft"
+      type="button"
+      class="offer-button"
+      (click)="openDetail(quote.id)"
+    >
+      Teklif Ver
+    </button>
 
-              </td>
+    <button
+      *ngIf="quote.status === QuoteStatus.Accepted"
+      type="button"
+      class="policy-button"
+      [routerLink]="['/policies/new']"
+      [queryParams]="{
+        customerId: quote.customerId,
+        vehicleId: quote.vehicleId,
+        quoteId: quote.id
+      }"
+    >
+      Poliçe Oluştur
+    </button>
 
-              <td>
+  </td>
 
-                <button
-                  type="button"
-                  class="detail-button"
-                  (click)="openDetail(quote.id)"
-                >
-                  Detay
-                </button>
-
-              </td>
-
-            </tr>
-
+</tr>
           </tbody>
 
         </table>

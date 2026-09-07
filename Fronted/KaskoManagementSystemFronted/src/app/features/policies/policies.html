@@ -177,14 +177,21 @@
                 </span>
 
               </td>
+<td>
+  <div class="customer-cell">
+    <strong>
+      {{ policy.customerName || '—' }}
+    </strong>
+  </div>
+</td>
 
-              <td>
-                {{ policy.customerId }}
-              </td>
-
-              <td>
-                {{ policy.vehicleId }}
-              </td>
+<td>
+  <div class="vehicle-cell">
+    <strong>
+      {{ policy.vehicleDescription || '—' }}
+    </strong>
+  </div>
+</td>
 
               <td>
                 Kasko

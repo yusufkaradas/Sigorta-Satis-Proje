@@ -10,6 +10,10 @@ namespace Kasko.Business.DTOs.Policy
 
         public Guid VehicleId { get; set; }
 
+        public string CustomerName { get; set; } = string.Empty;
+
+        public string VehicleDescription { get; set; } = string.Empty;
+
         public string PolicyNumber { get; set; } = string.Empty;
 
         public decimal PremiumAmount { get; set; }

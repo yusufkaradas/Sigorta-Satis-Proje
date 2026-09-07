@@ -1,228 +1,109 @@
 <div class="policy-create-page">
 
-  <aside class="sidebar">
+  <div class="page-heading">
+    <div class="page-heading-content">
+      <span class="page-eyebrow">
+        POLİÇE YÖNETİMİ
+      </span>
 
-    <div class="logo-box">
-      Logo
+      <h1>
+        Yeni Poliçe
+      </h1>
+
+      <p>
+        Kabul edilen teklif üzerinden yeni poliçe oluşturun.
+      </p>
     </div>
 
-    <nav class="sidebar-menu">
+    <a
+      routerLink="/policies"
+      class="back-button"
+    >
+      ← Poliçelere Dön
+    </a>
+  </div>
 
-      <a
-        routerLink="/dashboard"
-        class="sidebar-button">
-        Dashboard
-      </a>
+  <section class="form-card">
 
-      <a
-        routerLink="/vehicles"
-        class="sidebar-button">
-        Araçlar
-      </a>
+    <div class="form-card-header">
 
-      <a
-        routerLink="/quotes"
-        class="sidebar-button">
-        Teklifler
-      </a>
+      <div class="section-title">
+        <span class="section-number">
+          01
+        </span>
 
-      <a
-        routerLink="/policies"
-        class="sidebar-button active">
-        Poliçeler
-      </a>
+        <div>
+          <h2>
+            Poliçe Bilgileri
+          </h2>
 
-      <a
-        routerLink="/payments"
-        class="sidebar-button">
-        Ödemeler
-      </a>
-
-      <a
-        routerLink="/users"
-        class="sidebar-button">
-        Kullanıcılar
-      </a>
-
-      <a
-        routerLink="/roles"
-        class="sidebar-button">
-        Roller
-      </a>
-
-      <a
-        routerLink="/customers"
-        class="sidebar-button">
-        Müşteriler
-      </a>
-
-    </nav>
-
-    <button
-      type="button"
-      class="sidebar-button logout-button">
-
-      Çıkış
-
-    </button>
-
-  </aside>
-
-  <main class="main-content">
-
-
-    <header class="top-header">
-
-      <div class="top-title">
-        Poliçeler
+          <span class="section-description">
+            Kabul edilen tekliften aktarılan bilgiler ve poliçe süresi
+          </span>
+        </div>
       </div>
 
-      <button
-        type="button"
-        class="header-icon">
+      <span class="new-policy-badge">
+        YENİ POLİÇE
+      </span>
 
-        ⚙
+    </div>
 
-      </button>
+    <div class="form-divider"></div>
 
-      <button
-        type="button"
-        class="header-icon">
+    <!-- OTOMATİK AKTARILAN BİLGİLER -->
+    <div class="context-info">
 
-        🔔
+      <div class="context-info-icon">
+        ✓
+      </div>
 
-      </button>
+      <div class="context-info-content">
 
-      <button
-        type="button"
-        class="user-button">
+        <strong>
+          Teklif bilgileri otomatik aktarıldı
+        </strong>
 
-        Kullanıcı Adı
-
-      </button>
-
-    </header>
-
-
-    <section class="page-header">
-
-      <div>
-
-        <h1>
-          Yeni Poliçe
-        </h1>
-
-        <p>
-          Yeni poliçe oluşturma işlemi
-        </p>
+        <span>
+          Müşteri, araç ve teklif bilgileri kabul edilen tekliften alınmıştır.
+        </span>
 
       </div>
 
-      <a
-        routerLink="/policies"
-        class="back-button">
+    </div>
 
-        ← Poliçelere Dön
+    <form
+      [formGroup]="policyForm"
+      (ngSubmit)="createPolicy()"
+      class="policy-form"
+    >
 
-      </a>
+      <!-- BACKEND'E GÖNDERİLECEK GİZLİ BİLGİLER -->
+      <input
+        type="hidden"
+        formControlName="customerId"
+      />
 
-    </section>
+      <input
+        type="hidden"
+        formControlName="vehicleId"
+      />
 
-    <section class="form-card">
+      <input
+        type="hidden"
+        formControlName="quoteId"
+      />
 
-      <div class="form-card-header">
+      <!-- POLİÇE SÜRESİ -->
+      <div class="date-section">
 
-        <h2>
-          Poliçe Bilgileri
-        </h2>
-
-      </div>
-
-
-      <form
-        [formGroup]="policyForm"
-        (ngSubmit)="createPolicy()">
-
-
-        <div class="form-group">
-
-          <label for="customerId">
-            Müşteri ID
-          </label>
-
-          <input
-            id="customerId"
-            type="text"
-            formControlName="customerId"
-            placeholder="Müşteri ID giriniz">
-
-          <small
-            class="validation-message"
-            *ngIf="
-              customerId.invalid &&
-              customerId.touched
-            ">
-
-            Müşteri ID zorunludur.
-
-          </small>
-
+        <div class="section-subheading">
+          Poliçe Süresi
         </div>
 
-        <div class="form-group">
+        <div class="date-grid">
 
-          <label for="vehicleId">
-            Araç ID
-          </label>
-
-          <input
-            id="vehicleId"
-            type="text"
-            formControlName="vehicleId"
-            placeholder="Araç ID giriniz">
-
-          <small
-            class="validation-message"
-            *ngIf="
-              vehicleId.invalid &&
-              vehicleId.touched
-            ">
-
-            Araç ID zorunludur.
-
-          </small>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="quoteId">
-            Teklif ID
-          </label>
-
-          <input
-            id="quoteId"
-            type="text"
-            formControlName="quoteId"
-            placeholder="Teklif ID giriniz">
-
-          <small
-            class="validation-message"
-            *ngIf="
-              quoteId.invalid &&
-              quoteId.touched
-            ">
-
-            Teklif ID zorunludur.
-
-          </small>
-
-        </div>
-
-
-        <div class="form-row">
-
+          <!-- BAŞLANGIÇ -->
           <div class="form-group">
 
             <label for="startDate">
@@ -232,22 +113,18 @@
             <input
               id="startDate"
               type="date"
-              formControlName="startDate">
+              formControlName="startDate"
+            />
 
-            <small
-              class="validation-message"
-              *ngIf="
-                startDate.invalid &&
-                startDate.touched
-              ">
-
-              Başlangıç tarihi zorunludur.
-
-            </small>
+            @if (startDate.invalid && startDate.touched) {
+              <span class="validation-message">
+                Başlangıç tarihi zorunludur.
+              </span>
+            }
 
           </div>
 
-
+          <!-- BİTİŞ -->
           <div class="form-group">
 
             <label for="endDate">
@@ -255,74 +132,92 @@
             </label>
 
             <input
-              id="endDate"
-              type="date"
-              formControlName="endDate">
+             id="endDate"
+             type="date"
+             formControlName="endDate"
+             [min]="startDate.value"
+              />
 
-            <small
-              class="validation-message"
-              *ngIf="
-                endDate.invalid &&
-                endDate.touched
-              ">
-
-              Bitiş tarihi zorunludur.
-
-            </small>
+            @if (endDate.invalid && endDate.touched) {
+              <span class="validation-message">
+                Bitiş tarihi zorunludur.
+              </span>
+            }
 
           </div>
 
         </div>
 
-        <div
-          *ngIf="errorMessage"
-          class="error-message">
+      </div>
 
-          {{ errorMessage }}
+      <!-- HATA -->
+      @if (errorMessage) {
 
-        </div>
+        <div class="message message-error">
 
-        <div
-          *ngIf="successMessage"
-          class="success-message">
+          <span class="message-icon">
+            !
+          </span>
 
-          {{ successMessage }}
-
-        </div>
-     
-
-        <div class="form-actions">
-
-          <a
-            routerLink="/policies"
-            class="cancel-button">
-
-            İptal
-
-          </a>
-
-
-          <button
-            type="submit"
-            class="primary-button"
-            [disabled]="isSubmitting">
-
-            <span *ngIf="!isSubmitting">
-              Poliçe Oluştur
-            </span>
-
-            <span *ngIf="isSubmitting">
-              Oluşturuluyor...
-            </span>
-
-          </button>
+          <span>
+            {{ errorMessage }}
+          </span>
 
         </div>
 
-      </form>
+      }
 
-    </section>
+      <!-- BAŞARI -->
+      @if (successMessage) {
 
-  </main>
+        <div class="message message-success">
+
+          <span class="message-icon">
+            ✓
+          </span>
+
+          <span>
+            {{ successMessage }}
+          </span>
+
+        </div>
+
+      }
+
+      <!-- ALT BUTONLAR -->
+      <div class="form-actions">
+
+        <a
+          routerLink="/policies"
+          class="secondary-button"
+        >
+          İptal
+        </a>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="isSubmitting"
+        >
+
+          @if (isSubmitting) {
+
+            <span class="button-spinner"></span>
+
+            Poliçe Oluşturuluyor...
+
+          } @else {
+
+            Poliçe Oluştur
+
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
 
 </div>

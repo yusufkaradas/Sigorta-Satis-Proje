@@ -1,22 +1,30 @@
-﻿using Kasko.Entities.Enums;
+﻿using Kasko.Business.DTOs.VehicleValue;
+using Kasko.Entities.Enums;
 
-namespace Kasko.Business.DTOs.Quote
+namespace Kasko.Business.DTOs.Quote;
+
+public class QuoteListDto
 {
-    public class QuoteListDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public string QuoteNumber { get; set; } = string.Empty;
+    public Guid CustomerId { get; set; }
 
-        public Guid CustomerId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
 
-        public Guid VehicleId { get; set; }
+    public Guid VehicleId { get; set; }
 
-        public decimal PremiumAmount { get; set; }
+    public string VehicleDescription { get; set; } = string.Empty;
 
-        public QuoteStatus Status { get; set; }
+    public string PlateNumber { get; set; } = string.Empty;
 
-        public DateTime ValidUntil { get; set; }
-        public DateTime CreatedDate { get; set; }
-    }
+    public string QuoteNumber { get; set; } = string.Empty;
+
+    public decimal PremiumAmount { get; set; }
+
+    public QuoteStatus Status { get; set; }
+
+    public DateTime ValidUntil { get; set; }
+
+    public DateTime CreatedDate { get; set; }
+
 }

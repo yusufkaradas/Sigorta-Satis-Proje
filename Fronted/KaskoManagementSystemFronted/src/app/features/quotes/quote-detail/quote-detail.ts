@@ -1,8 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectorRef, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject
+} from '@angular/core';
 
-import { Quote, QuoteStatus } from '../quote';
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink
+} from '@angular/router';
+
+import {
+  Quote,
+  QuoteStatus
+} from '../quote';
+
 import { QuoteService } from '../quote.service';
 
 @Component({
@@ -16,18 +29,30 @@ import { QuoteService } from '../quote.service';
   styleUrl: './quote-detail.scss'
 })
 export class QuoteDetail {
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly quoteService = inject(QuoteService);
-  private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly QuoteStatus = QuoteStatus;
+  private readonly router =
+    inject(Router);
+
+  private readonly route =
+    inject(ActivatedRoute);
+
+  private readonly quoteService =
+    inject(QuoteService);
+
+  private readonly cdr =
+    inject(ChangeDetectorRef);
+
+
+  readonly QuoteStatus =
+    QuoteStatus;
+
 
   quote: Quote | null = null;
 
   isLoading = true;
 
   errorMessage = '';
+
 
   ngOnInit(): void {
 
@@ -47,9 +72,11 @@ export class QuoteDetail {
     this.loadQuote(id);
   }
 
+
   loadQuote(id: string): void {
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     this.quoteService
@@ -77,7 +104,10 @@ export class QuoteDetail {
             error
           );
 
+          this.quote = null;
+
           this.errorMessage =
+            error?.error?.message ??
             'Teklif bilgileri yüklenemedi.';
 
           this.isLoading = false;
@@ -87,35 +117,119 @@ export class QuoteDetail {
 
       });
   }
+private parseBackendDate(
+  value?: string | null
+): Date | null {
 
-  getStatusText(status: number): string {
+  if (!value) {
+    return null;
+  }
+
+  const hasTimezone =
+    /(?:Z|[+-]\d{2}:?\d{2})$/.test(value);
+
+  const normalizedValue =
+    hasTimezone
+      ? value
+      : `${value}Z`;
+
+  const parsedDate =
+    new Date(normalizedValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
+
+formatCreatedDate(
+  value?: string | null
+): string {
+
+  const date =
+    this.parseBackendDate(value);
+
+  if (!date) {
+    return '—';
+  }
+
+  return new Intl.DateTimeFormat(
+    'tr-TR',
+    {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Istanbul'
+    }
+  ).format(date);
+}
+
+  getStatusText(
+    status: QuoteStatus | number
+  ): string {
 
     switch (status) {
 
-      case 1:
+      case QuoteStatus.Draft:
         return 'Taslak';
 
-      case 2:
+      case QuoteStatus.Offered:
         return 'Teklif Verildi';
 
-      case 3:
+      case QuoteStatus.Accepted:
         return 'Kabul Edildi';
 
-      case 4:
+      case QuoteStatus.Rejected:
         return 'Reddedildi';
 
-      case 5:
+      case QuoteStatus.Expired:
         return 'Süresi Doldu';
 
-      case 6:
+      case QuoteStatus.Cancelled:
         return 'İptal Edildi';
 
       default:
         return 'Bilinmiyor';
     }
   }
-  changeStatus(status: QuoteStatus): void {
 
+
+  getStatusClass(
+    status: QuoteStatus | number
+  ): string {
+
+    switch (status) {
+
+      case QuoteStatus.Draft:
+        return 'status-draft';
+
+      case QuoteStatus.Offered:
+        return 'status-offered';
+
+      case QuoteStatus.Accepted:
+        return 'status-accepted';
+
+      case QuoteStatus.Rejected:
+        return 'status-rejected';
+
+      case QuoteStatus.Expired:
+        return 'status-expired';
+
+      case QuoteStatus.Cancelled:
+        return 'status-cancelled';
+
+      default:
+        return '';
+    }
+  }
+
+
+changeStatus(status: QuoteStatus): void {
   if (!this.quote) {
     return;
   }
@@ -133,19 +247,39 @@ export class QuoteDetail {
   this.isLoading = true;
   this.errorMessage = '';
 
-  this.quoteService
-    .changeStatus(this.quote.id, status)
-    .subscribe({
+  const quoteId = this.quote.id;
+  const customerId = this.quote.customerId;
+  const vehicleId = this.quote.vehicleId;
 
+  this.quoteService
+    .changeStatus(quoteId, status)
+    .subscribe({
       next: () => {
 
-        console.log(
-          'QUOTE STATUS CHANGED:',
-          status
-        );
+        if (status === QuoteStatus.Accepted) {
 
-        this.loadQuote(this.quote!.id);
+  if (!customerId || !vehicleId || !quoteId) {
+    this.errorMessage =
+      'Poliçe oluşturmak için teklif bilgileri alınamadı.';
 
+    this.isLoading = false;
+    return;
+  }
+
+  this.router.navigate(
+    ['/policies/new'],
+    {
+      queryParams: {
+        customerId: customerId,
+        vehicleId: vehicleId,
+        quoteId: quoteId
+      }
+    }
+  );
+
+  return;
+}
+        this.loadQuote(quoteId);
       },
 
       error: (error) => {
@@ -163,61 +297,96 @@ export class QuoteDetail {
 
         this.cdr.detectChanges();
       }
-
     });
 }
-deleteQuote(): void {
 
-  if (!this.quote) {
-    return;
+  deleteQuote(): void {
+
+    if (!this.quote) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        'Bu teklifi silmek istediğinize emin misiniz?'
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.errorMessage = '';
+
+    this.quoteService
+      .delete(this.quote.id)
+      .subscribe({
+
+        next: () => {
+
+          console.log(
+            'QUOTE DELETE SUCCESS:',
+            this.quote?.id
+          );
+
+          this.router.navigate([
+            '/quotes'
+          ]);
+        },
+
+        error: (error) => {
+
+          console.error(
+            'QUOTE DELETE ERROR:',
+            error
+          );
+
+          this.errorMessage =
+            error?.error?.message ??
+            'Teklif silinirken bir hata oluştu.';
+
+          this.isLoading = false;
+
+          this.cdr.detectChanges();
+        }
+
+      });
   }
 
-  const confirmed = window.confirm(
-    'Bu teklifi silmek istediğinize emin misiniz?'
-  );
 
-  if (!confirmed) {
-    return;
-  }
-
-  this.isLoading = true;
-  this.errorMessage = '';
-
-  this.quoteService
-    .delete(this.quote.id)
-    .subscribe({
-
-      next: () => {
-
-        console.log(
-          'QUOTE DELETE SUCCESS:',
-          this.quote?.id
-        );
-
-        this.router.navigate([
-          '/quotes'
-        ]);
-
-      },
-
-      error: (error) => {
-
-        console.error(
-          'QUOTE DELETE ERROR:',
-          error
-        );
-
-        this.errorMessage =
-          'Teklif silinirken bir hata oluştu.';
-
-        this.isLoading = false;
-
-        this.cdr.detectChanges();
-      }
-
-    });
-}
   goBack(): void {
-    this.router.navigate(['/quotes']);
+
+    this.router.navigate([
+      '/quotes'
+    ]);
+  }
+
+
+  get isDraft(): boolean {
+
+    return this.quote?.status ===
+      QuoteStatus.Draft;
+  }
+
+
+  get isOffered(): boolean {
+
+    return this.quote?.status ===
+      QuoteStatus.Offered;
+  }
+
+
+  get canEdit(): boolean {
+
+    return this.isDraft ||
+      this.isOffered;
+  }
+
+
+  get canDelete(): boolean {
+
+    return !!this.quote &&
+      this.quote.status !== QuoteStatus.Accepted;
   }
 }

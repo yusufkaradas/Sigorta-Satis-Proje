@@ -431,5 +431,57 @@
   .filters select {
     flex: 1;
   }
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
 
+.offer-button,
+.policy-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.offer-button {
+  background: #eef3ff;
+  color: #4b47df;
+}
+
+.offer-button:hover {
+  background: #e2e8ff;
+}
+
+.policy-button {
+  background: #e9f4ee;
+  color: #287448;
+}
+
+.policy-button:hover {
+  background: #dceee3;
+}
+.customer-cell,
+.customer-cell strong,
+.vehicle-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vehicle-cell strong {
+  color: #294963;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vehicle-cell span {
+  color: #8a9aa8;
+  font-size: 11px;
+}
 }

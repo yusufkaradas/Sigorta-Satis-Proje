@@ -1,36 +1,5 @@
 <div class="quote-create-page">
 
-  <header class="top-header">
-
-    <div class="top-title">
-      Teklif Oluştur
-    </div>
-
-    <div class="header-actions">
-
-      <button
-        type="button"
-        class="header-icon">
-        ⚙
-      </button>
-
-      <button
-        type="button"
-        class="header-icon">
-        🔔
-      </button>
-
-      <button
-        type="button"
-        class="user-button">
-        Kullanıcı Adı
-      </button>
-
-    </div>
-
-  </header>
-
-
   <section class="page-header">
 
     <div>
@@ -80,58 +49,399 @@
       #quoteForm="ngForm">
 
 
-      <!-- CUSTOMER -->
+      <!-- MÜŞTERİ -->
 
       <div class="form-group">
 
         <label for="customerId">
-          Müşteri ID
+          Müşteri *
         </label>
 
-        <input
+        <select
           id="customerId"
           name="customerId"
-          type="text"
           [(ngModel)]="customerId"
+          (ngModelChange)="onCustomerChange()"
+          [disabled]="isLoadingCustomers"
           required
-          placeholder="Müşteri ID giriniz">
+        >
+
+          <option
+            value=""
+            disabled>
+
+            {{
+              isLoadingCustomers
+                ? 'Müşteriler yükleniyor...'
+                : 'Müşteri seçin'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let customer of customers"
+            [value]="customer.id">
+
+            {{ customer.firstName }}
+            {{ customer.lastName }}
+
+          </option>
+
+        </select>
 
       </div>
 
 
-      <!-- VEHICLE -->
+      <!-- ARAÇ -->
 
       <div class="form-group">
 
         <label for="vehicleId">
-          Araç ID
+          Araç *
         </label>
 
-        <input
+        <select
           id="vehicleId"
           name="vehicleId"
-          type="text"
           [(ngModel)]="vehicleId"
+          [disabled]="
+            !customerId ||
+            isLoadingVehicles
+          "
           required
-          placeholder="Araç ID giriniz">
+        >
+
+          <option
+            value=""
+            disabled>
+
+            {{
+              !customerId
+                ? 'Önce müşteri seçin'
+                : isLoadingVehicles
+                  ? 'Araçlar yükleniyor...'
+                  : vehicles.length === 0
+                    ? 'Bu müşteriye ait araç bulunamadı'
+                    : 'Araç seçin'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let vehicle of vehicles"
+            [value]="vehicle.id">
+
+            {{ vehicle.brand }}
+            {{ vehicle.model }}
+            — {{ vehicle.plateNumber }}
+
+          </option>
+
+        </select>
 
       </div>
 
 
-      <!-- VALID UNTIL -->
+      <!-- KULLANIM ŞEKLİ -->
 
       <div class="form-group">
 
-        <label for="validUntil">
+        <label for="usage">
+          Kullanım Şekli *
+        </label>
+
+        <select
+          id="usage"
+          name="usage"
+          [(ngModel)]="usage"
+          required
+        >
+
+          <option value="PRIVATE">
+            Özel Kullanım
+          </option>
+
+          <option value="COMMERCIAL">
+            Ticari Kullanım
+          </option>
+
+        </select>
+
+        <small>
+          Aracın kullanım şekli prim hesaplamasında dikkate alınır.
+        </small>
+
+      </div>
+
+
+      <!-- ÖNCEKİ POLİÇE -->
+
+      <div class="form-group">
+
+        <label for="previousPolicyId">
+          Önceki Poliçe
+        </label>
+
+        <select
+          id="previousPolicyId"
+          name="previousPolicyId"
+          [(ngModel)]="previousPolicyId"
+          (ngModelChange)="onPreviousPolicyChange()"
+          [disabled]="
+            isLoadingPreviousPolicies ||
+            !customerId
+          "
+        >
+
+          <option [ngValue]="null">
+
+            {{
+              !customerId
+                ? 'Önce müşteri seçin'
+                : isLoadingPreviousPolicies
+                  ? 'Önceki poliçeler yükleniyor...'
+                  : previousPolicies.length === 0
+                    ? 'Önceki poliçe bulunamadı'
+                    : 'Önceki poliçe yok'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let policy of previousPolicies"
+            [value]="policy.id">
+
+            {{ policy.previousInsurer }}
+            —
+            {{ policy.policyNumber }}
+            —
+            {{ policy.startDate | date:'dd.MM.yyyy' }}
+            /
+            {{ policy.endDate | date:'dd.MM.yyyy' }}
+
+          </option>
+
+        </select>
+
+        <small
+          *ngIf="previousPolicyId">
+
+          Önceki poliçedeki hasar geçmişi otomatik olarak kullanılacaktır.
+
+        </small>
+
+      </div>
+
+
+      <!-- MUAFİYET -->
+
+      <div class="form-group">
+
+        <label for="deductible">
+          Muafiyet
+        </label>
+
+        <select
+          id="deductible"
+          name="deductible"
+          [(ngModel)]="deductible"
+        >
+
+          <option [ngValue]="0">
+            Muafiyet Yok
+          </option>
+
+          <option [ngValue]="5000">
+            5.000 ₺
+          </option>
+
+          <option [ngValue]="10000">
+            10.000 ₺
+          </option>
+
+          <option [ngValue]="20000">
+            20.000 ₺
+          </option>
+
+        </select>
+
+        <small>
+          Hasar durumunda poliçede uygulanacak muafiyet tutarıdır.
+        </small>
+
+      </div>
+
+
+      <!-- KASKO PAKETİ -->
+
+      <div class="form-group">
+
+        <label for="packageId">
+          Kasko Paketi *
+        </label>
+
+        <select
+          id="packageId"
+          name="packageId"
+          [(ngModel)]="packageId"
+          (ngModelChange)="onPackageChange()"
+          [disabled]="isLoadingPackages"
+          required
+        >
+
+          <option
+            value=""
+            disabled>
+
+            {{
+              isLoadingPackages
+                ? 'Kasko paketleri yükleniyor...'
+                : 'Kasko paketi seçin'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let pkg of packages"
+            [value]="pkg.id">
+
+            {{ pkg.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- PAKET TEMİNATLARI -->
+
+      <div
+        class="coverage-list"
+        *ngIf="
+          selectedPackage &&
+          selectedPackage.coverages &&
+          selectedPackage.coverages.length > 0
+        "
+      >
+
+        <div class="coverage-list-header">
+
+          <div class="coverage-list-title">
+            Teminatlar
+          </div>
+
+          <div class="coverage-list-subtitle">
+            {{ selectedPackage.name }} kapsamında sunulan teminatlar
+          </div>
+
+        </div>
+
+
+        <div
+          class="coverage-item"
+          *ngFor="
+            let coverage of
+            selectedPackage?.coverages ?? []
+          "
+        >
+
+          <div class="coverage-left">
+
+            <span class="coverage-check">
+
+              {{
+                coverage.isDefault
+                  ? '✓'
+                  : '○'
+              }}
+
+            </span>
+
+
+            <div class="coverage-info">
+
+              <strong>
+                {{ coverage.coverageName }}
+              </strong>
+
+              <span
+                *ngIf="coverage.isDefault"
+                class="default-badge">
+
+                Pakete Dahil
+
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="coverage-right">
+
+            <span class="coverage-price">
+
+              {{
+                coverage.calculatedPrice
+                  | number:'1.0-2'
+              }}
+
+              ₺
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <small class="coverage-note">
+
+          Seçilen pakete dahil teminatlar otomatik olarak
+          teklife eklenir.
+
+        </small>
+
+      </div>
+
+
+      <!-- TEMİNAT YOK -->
+
+      <div
+        class="coverage-empty"
+        *ngIf="
+          selectedPackage &&
+          (!selectedPackage.coverages ||
+           selectedPackage.coverages.length === 0)
+        "
+      >
+
+        Seçilen paket için tanımlı teminat bulunamadı.
+
+      </div>
+
+
+      <!-- GEÇERLİLİK TARİHİ -->
+
+      <div class="form-group">
+
+        <label>
           Geçerlilik Tarihi
         </label>
 
-        <input
-          id="validUntil"
-          name="validUntil"
-          type="date"
-          [(ngModel)]="validUntil"
-          required>
+        <div class="date-display">
+
+          {{ validUntil | date:'dd.MM.yyyy' }}
+
+        </div>
+
+        <small>
+
+          Teklif, oluşturulduğu tarihten itibaren
+          7 gün geçerlidir.
+
+        </small>
 
       </div>
 

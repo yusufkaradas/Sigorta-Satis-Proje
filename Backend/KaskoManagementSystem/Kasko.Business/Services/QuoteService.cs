@@ -4,6 +4,8 @@ using Kasko.Business.Pricing;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Kasko.Business.Services
 {
@@ -11,6 +13,7 @@ namespace Kasko.Business.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPricingService _pricingService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public QuoteService(
             IUnitOfWork unitOfWork,
@@ -18,26 +21,74 @@ namespace Kasko.Business.Services
         {
             _unitOfWork = unitOfWork;
             _pricingService = pricingService;
+            _httpContextAccessor = new HttpContextAccessor();
 
         }
 
         public async Task<IEnumerable<QuoteListDto>> GetAllAsync()
         {
             var quotes = await _unitOfWork.Quotes.GetAllAsync();
+            var customers = await _unitOfWork.Customers.GetAllAsync();
+            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+
+            var customerMap = customers
+                .ToDictionary(
+                    x => x.Id,
+                    x => $"{x.FirstName} {x.LastName}");
+
+            var vehicleMap = vehicles
+                .ToDictionary(
+                    x => x.Id,
+                    x => new
+                    {
+                        Description = $"{x.Brand} {x.Model}",
+                        PlateNumber = x.PlateNumber
+                    });
 
             return quotes
                 .Where(x => !x.IsDeleted)
-                .Select(x => new QuoteListDto
+                .Select(x =>
                 {
-                    Id = x.Id,
-                    QuoteNumber = x.QuoteNumber,
-                    CustomerId = x.CustomerId,
-                    VehicleId = x.VehicleId,
-                    PremiumAmount = x.PremiumAmount,
-                    Status = x.Status,
-                    ValidUntil = x.ValidUntil,
-                    CreatedDate = x.CreatedDate
-                });
+                    customerMap.TryGetValue(
+                        x.CustomerId,
+                        out var customerName);
+
+                    vehicleMap.TryGetValue(
+                        x.VehicleId,
+                        out var vehicleInfo);
+
+                    return new QuoteListDto
+                    {
+                        Id = x.Id,
+
+                        QuoteNumber = x.QuoteNumber,
+
+                        CustomerId = x.CustomerId,
+
+                        CustomerName =
+                            customerName ?? "—",
+
+                        VehicleId = x.VehicleId,
+
+                        VehicleDescription =
+    vehicleInfo == null
+        ? "—"
+        : $"{vehicleInfo.Description.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]} " +
+          $"{vehicleInfo.Description.Split(' ', StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(1)}",
+
+                        PlateNumber =
+                            vehicleInfo?.PlateNumber ?? "—",
+
+                        PremiumAmount = x.PremiumAmount,
+
+                        Status = x.Status,
+
+                        ValidUntil = x.ValidUntil,
+
+                        CreatedDate = x.CreatedDate
+                    };
+                })
+                .ToList();
         }
 
         public async Task<QuoteDto?> GetByIdAsync(Guid id)
@@ -49,17 +100,163 @@ namespace Kasko.Business.Services
             {
                 return null;
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    quote.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+            }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return null;
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    quote.CustomerId != currentUser.CustomerId.Value)
+                {
+                    return null;
+                }
+            }
             return new QuoteDto
             {
                 Id = quote.Id,
+
                 CustomerId = quote.CustomerId,
+
+                CustomerName =
+        $"{quote.Customer.FirstName} {quote.Customer.LastName}",
+
+                CustomerEmail =
+        quote.Customer.Email,
+
+                CustomerPhone =
+        quote.Customer.PhoneNumber,
+
                 VehicleId = quote.VehicleId,
-                QuoteNumber = quote.QuoteNumber,
-                PremiumAmount = quote.PremiumAmount,
-                Status = quote.Status,
-                ValidUntil = quote.ValidUntil,
-                CreatedDate = quote.CreatedDate
+
+                VehicleDescription =
+        $"{quote.Vehicle.Brand} {quote.Vehicle.Model}",
+
+                PlateNumber =
+        quote.Vehicle.PlateNumber,
+
+                Brand =
+        quote.Vehicle.Brand,
+
+                Model =
+        quote.Vehicle.Model,
+
+                ModelYear =
+        quote.Vehicle.ModelYear,
+
+                MarketValue =
+        quote.Vehicle.MarketValue,
+
+                QuoteNumber =
+        quote.QuoteNumber,
+
+                PremiumAmount =
+        quote.PremiumAmount,
+
+                Status =
+        quote.Status,
+
+                ValidUntil =
+        quote.ValidUntil,
+
+                CreatedDate =
+        quote.CreatedDate,
+
+                IsActive =
+        !quote.IsDeleted,
+
+                Coverages =
+        quote.QuoteCoverages
+            .Where(x => !x.IsDeleted)
+            .Select(x => new Kasko.Business.DTOs.Quote.QuoteCoverageDto
+            {
+                CoverageId =
+                    x.CoverageId,
+
+                CoverageName =
+                    x.Coverage.Name,
+
+                CalculatedPrice =
+                    x.CalculatedPrice,
+
+                Limit =
+                    x.Limit
+            })
+            .ToList(),
+
+                PricingSnapshot =
+        quote.PricingSnapshot == null
+            ? null
+            : new QuotePricingSnapshotDto
+            {
+                MarketValue =
+                    quote.PricingSnapshot.MarketValue,
+
+                BaseRate =
+                    quote.PricingSnapshot.BaseRate,
+
+                AgeFactor =
+                    quote.PricingSnapshot.AgeFactor,
+
+                UsageFactor =
+                    quote.PricingSnapshot.UsageFactor,
+
+                DriverFactor =
+                    quote.PricingSnapshot.DriverFactor,
+
+                ClaimsFactor =
+                    quote.PricingSnapshot.ClaimsFactor,
+
+                RegionFactor =
+                    quote.PricingSnapshot.RegionFactor,
+
+                PackageFactor =
+                    quote.PricingSnapshot.PackageFactor,
+
+                DeductibleFactor =
+                    quote.PricingSnapshot.DeductibleFactor,
+
+                CoveragePremium =
+                    quote.PricingSnapshot.CoveragePremium,
+
+                Discount =
+                    quote.PricingSnapshot.Discount,
+
+                FinalPremium =
+                    quote.PricingSnapshot.FinalPremium
+            }
             };
         }
         public async Task<PricingCalculation> CalculateAsync(
@@ -380,7 +577,29 @@ namespace Kasko.Business.Services
                 throw new BadRequestException(
                     "İptal edilmiş teklif güncellenemez.");
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    quote.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+            }
             quote.ValidUntil = dto.ValidUntil;
             quote.UpdatedDate = DateTime.UtcNow;
 
@@ -398,6 +617,29 @@ namespace Kasko.Business.Services
             {
                 throw new NotFoundException(
                     "Teklif bulunamadı.");
+            }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    quote.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
             }
 
             quote.IsDeleted = true;
@@ -419,7 +661,29 @@ namespace Kasko.Business.Services
                 throw new NotFoundException(
                     "Teklif bulunamadı.");
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    quote.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Teklif bulunamadı.");
+                }
+            }
             if (quote.Status == newStatus)
             {
                 throw new BadRequestException(

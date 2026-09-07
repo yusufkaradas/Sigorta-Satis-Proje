@@ -94,6 +94,13 @@ public class KaskoContext : DbContext
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasOne(x => x.Customer)
+                .WithMany()
+                .HasForeignKey(x => x.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Vehicle>(entity =>
         {

@@ -68,20 +68,15 @@ export class QuoteService {
     );
 
   }
+changeStatus(
+  id: string,
+  status: QuoteStatus
+): Observable<void> {
 
-
-  changeStatus(
-    id: string,
-    status: QuoteStatus
-  ): Observable<void> {
-
-    return this.http.patch<void>(
-      `${this.apiUrl}/${id}/status`,
-      {
-        status
-      }
-    );
-
+  return this.http.patch<void>(
+    `${this.apiUrl}/${id}/status?status=${status}`,
+    null
+  );
   }
 
 }

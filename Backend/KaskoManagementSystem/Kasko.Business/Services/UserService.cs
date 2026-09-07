@@ -75,6 +75,16 @@ public class UserService : IUserService
         {
             throw new NotFoundException("Rol bulunamadı.");
         }
+        if (dto.CustomerId.HasValue)
+        {
+            var customer = await _unitOfWork.Customers
+                .GetByIdAsync(dto.CustomerId.Value);
+
+            if (customer == null)
+            {
+                throw new NotFoundException("Müşteri bulunamadı.");
+            }
+        }
 
         var user = new User
         {
@@ -83,6 +93,7 @@ public class UserService : IUserService
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
             RoleId = dto.RoleId,
+            CustomerId = dto.CustomerId,
             IsActive = true,
             IsDeleted = false,
             CreatedDate = DateTime.UtcNow

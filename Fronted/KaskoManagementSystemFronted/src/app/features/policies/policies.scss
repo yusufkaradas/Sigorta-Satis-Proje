@@ -541,5 +541,17 @@
   .policies-card {
     padding: 15px;
   }
+.customer-cell,
+.vehicle-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 
+.customer-cell strong,
+.vehicle-cell strong {
+  color: #294963;
+  font-size: 13px;
+  font-weight: 700;
+}
 }

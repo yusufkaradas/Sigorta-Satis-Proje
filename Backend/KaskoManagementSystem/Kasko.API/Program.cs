@@ -1,14 +1,15 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Kasko.API.Extensions;
+using Kasko.Business.Integrations.Insurer;
+using Kasko.Business.Integrations.VehicleValue;
 using Kasko.Business.Interfaces;
+using Kasko.Business.Pricing;
 using Kasko.Business.Security;
 using Kasko.Business.Services;
 using Kasko.Business.Services.Abstract;
 using Kasko.Business.Services.Concrete;
-using Kasko.Business.Integrations.VehicleValue;
 using Kasko.Business.Validators;
-using Kasko.Business.Pricing;
 using Kasko.DataAccess;
 using Kasko.DataAccess.Repositories;
 using Kasko.DataAccess.Repositories.Abstract;
@@ -66,6 +67,9 @@ builder.Services.AddScoped<IPreviousPolicyService, PreviousPolicyService>();
 builder.Services.AddScoped<IInsurancePackageService, InsurancePackageService>();
 builder.Services.AddScoped<IPricingRuleService, PricingRuleService>();
 builder.Services.AddScoped<IPricingRuleChangeRequestService, PricingRuleChangeRequestService>();
+builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerAQuoteProvider>();
+builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerBQuoteProvider>();
+builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerCQuoteProvider>();
 
 
 

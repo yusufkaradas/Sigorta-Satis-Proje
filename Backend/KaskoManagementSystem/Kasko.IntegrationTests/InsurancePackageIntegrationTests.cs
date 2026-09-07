@@ -184,7 +184,7 @@ public class InsurancePackageIntegrationTests
             new Coverage
             {
                 Id = Guid.NewGuid(),
-                Name = "Integration Inactive Coverage",
+                Name = $"Integration Inactive Coverage {Guid.NewGuid()}",
                 Description = "Should not appear in package response",
                 PricingType = CoveragePricingType.Fixed,
                 BasePrice = 500m,
@@ -197,15 +197,19 @@ public class InsurancePackageIntegrationTests
             };
 
         var packageCoverage =
-            new PackageCoverage
-            {
-                Id = Guid.NewGuid(),
-                InsurancePackageId = package!.Id,
-                CoverageId = inactiveCoverage.Id,
-                IsDefault = false,
-                IsDeleted = false,
-                CreatedDate = DateTime.UtcNow
-            };
+     new PackageCoverage
+     {
+         Id = Guid.NewGuid(),
+         InsurancePackageId = package!.Id,
+         CoverageId = inactiveCoverage.Id,
+
+         InsurancePackage = package,
+         Coverage = inactiveCoverage,
+
+         IsDefault = false,
+         IsDeleted = false,
+         CreatedDate = DateTime.UtcNow
+     };
 
         setupContext.Coverages.Add(inactiveCoverage);
         setupContext.PackageCoverages.Add(packageCoverage);
@@ -271,7 +275,7 @@ public class InsurancePackageIntegrationTests
             new Coverage
             {
                 Id = Guid.NewGuid(),
-                Name = "Integration Deleted Relation Coverage",
+                Name = $"Integration Deleted Relation Coverage {Guid.NewGuid()}",
                 Description = "Coverage remains active",
                 PricingType = CoveragePricingType.Fixed,
                 BasePrice = 750m,
@@ -282,13 +286,16 @@ public class InsurancePackageIntegrationTests
                 IsDeleted = false,
                 CreatedDate = DateTime.UtcNow
             };
-
         var deletedPackageCoverage =
             new PackageCoverage
             {
                 Id = Guid.NewGuid(),
                 InsurancePackageId = package!.Id,
                 CoverageId = activeCoverage.Id,
+
+                InsurancePackage = package,
+                Coverage = activeCoverage,
+
                 IsDefault = false,
                 IsDeleted = true,
                 CreatedDate = DateTime.UtcNow
@@ -297,7 +304,18 @@ public class InsurancePackageIntegrationTests
         setupContext.Coverages.Add(activeCoverage);
         setupContext.PackageCoverages.Add(deletedPackageCoverage);
 
-        await setupContext.SaveChangesAsync();
+        try
+        {
+            await setupContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new Exception(
+                ex.InnerException?.InnerException?.Message
+                ?? ex.InnerException?.Message
+                ?? ex.Message,
+                ex);
+        }
 
         var response =
             await client.GetAsync(

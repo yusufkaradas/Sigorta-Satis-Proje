@@ -1,6 +1,7 @@
-﻿using Kasko.DataAccess.Repositories.Abstract;
+﻿using Kasko.DataAccess;
+using Kasko.DataAccess.Repositories.Abstract;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kasko.IntegrationTests;
 

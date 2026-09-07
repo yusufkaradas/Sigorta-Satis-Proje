@@ -11,6 +11,7 @@ public class CreateUserDto {
 
     public string? PhoneNumber { get; set; }
     public Guid RoleId { get; set; }
+    public Guid? CustomerId { get; set; }
 
 
 

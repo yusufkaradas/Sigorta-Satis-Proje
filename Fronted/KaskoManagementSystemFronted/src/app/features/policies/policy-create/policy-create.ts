@@ -5,7 +5,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import {ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import {
   PolicyCreateDto
@@ -34,6 +34,9 @@ export class PolicyCreate {
 
   private readonly router =
     inject(Router);
+  
+  private readonly route =
+  inject(ActivatedRoute);
 
   isSubmitting = false;
 
@@ -89,7 +92,61 @@ export class PolicyCreate {
   get endDate() {
     return this.policyForm.controls.endDate;
   }
+ 
+ ngOnInit(): void {
+  this.loadQuoteContext();
 
+  const startDate = new Date();
+
+  const endDate = new Date(startDate);
+  endDate.setFullYear(endDate.getFullYear() + 1);
+
+  this.policyForm.patchValue({
+    startDate: this.toDateInputValue(startDate),
+    endDate: this.toDateInputValue(endDate)
+  });
+}
+
+private toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+
+}
+private loadQuoteContext(): void {
+
+  this.route.queryParamMap.subscribe(params => {
+
+    const customerId =
+      params.get('customerId');
+
+    const vehicleId =
+      params.get('vehicleId');
+
+    const quoteId =
+      params.get('quoteId');
+
+    if (!customerId || !vehicleId || !quoteId) {
+      this.errorMessage =
+        'Poliçe oluşturmak için kabul edilmiş bir teklif seçilmelidir.';
+      return;
+    }
+
+    this.policyForm.patchValue({
+
+      customerId,
+
+      vehicleId,
+
+      quoteId
+
+    });
+
+  });
+
+}
   createPolicy(): void {
 
     this.errorMessage = '';

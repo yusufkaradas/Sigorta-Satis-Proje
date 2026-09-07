@@ -138,14 +138,20 @@ export class VehiclesService {
     'https://localhost:7086/api/Vehicle';
 
 
-  getVehicles():
-    Observable<Vehicle[]> {
+ getVehicles(
+  customerId?: string
+): Observable<Vehicle[]> {
 
+  if (customerId) {
     return this.http.get<Vehicle[]>(
-      this.apiUrl
+      `${this.apiUrl}?customerId=${customerId}`
     );
-
   }
+
+  return this.http.get<Vehicle[]>(
+    this.apiUrl
+  );
+}
 
 
   getVehicleById(

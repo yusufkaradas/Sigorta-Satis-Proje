@@ -20,6 +20,9 @@ namespace Kasko.DataAccess.Repositories.Concrete
             return await _dbContext.Quotes
                 .Include(x => x.Customer)
                 .Include(x => x.Vehicle)
+                .Include(x => x.QuoteCoverages)
+                    .ThenInclude(x => x.Coverage)
+                .Include(x => x.PricingSnapshot)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
         public async Task<bool> QuoteNumberExistsAsync(

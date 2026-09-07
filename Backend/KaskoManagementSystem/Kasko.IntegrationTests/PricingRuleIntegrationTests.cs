@@ -101,8 +101,8 @@ public class PricingRuleIntegrationTests
         var request =
             new CreatePricingRuleDto
             {
-                Code = "INTEGRATION_TEST_RULE",
-                Name = "Integration Test Rule",
+                Code = $"INTEGRATION_TEST_RULE_{Guid.NewGuid():N}",
+                Name = $"Integration Test Rule {Guid.NewGuid():N}",
                 Description = "Created by integration test",
                 Value = 0.1234m,
                 IsActive = true,

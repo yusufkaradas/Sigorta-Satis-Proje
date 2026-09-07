@@ -7,6 +7,8 @@ using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 
 namespace Kasko.Business.Services.Concrete
@@ -18,19 +20,22 @@ namespace Kasko.Business.Services.Concrete
         private readonly IQuoteRepository _quoteRepository;
         private readonly ICustomerRepository _customerRepository;
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PolicyService(
             IUnitOfWork unitOfWork,
             IPolicyRepository policyRepository,
             IQuoteRepository quoteRepository,
             ICustomerRepository customerRepository,
-            IVehicleRepository vehicleRepository)
+            IVehicleRepository vehicleRepository, 
+            IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _policyRepository = policyRepository;
             _quoteRepository = quoteRepository;
             _customerRepository = customerRepository;
             _vehicleRepository = vehicleRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<PolicyDto> CreateAsync(PolicyCreateDto dto)
@@ -177,7 +182,27 @@ namespace Kasko.Business.Services.Concrete
             {
                 throw new NotFoundException("Poliçe bulunamadı.");
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException("Poliçe bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    policy.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException("Poliçe bulunamadı.");
+                }
+            }
             return new PolicyDto
             {
                 Id = policy.Id,
@@ -199,20 +224,51 @@ namespace Kasko.Business.Services.Concrete
         public async Task<IEnumerable<PolicyListDto>> GetAllAsync()
         {
             var policies = await _unitOfWork.Policies.GetAllAsync();
+            var customers = await _unitOfWork.Customers.GetAllAsync();
+            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+
+            var customerMap = customers
+                .ToDictionary(
+                    x => x.Id,
+                    x => $"{x.FirstName} {x.LastName}");
+
+            var vehicleMap = vehicles
+                .ToDictionary(
+                    x => x.Id,
+                    x => $"{x.Brand} {x.Model}");
 
             return policies
                 .Where(x => !x.IsDeleted)
-                .Select(x => new PolicyListDto
+                .Select(x =>
                 {
-                    Id = x.Id,
-                    CustomerId = x.CustomerId,
-                    VehicleId = x.VehicleId,
-                    PolicyNumber = x.PolicyNumber,
-                    PremiumAmount = x.PremiumAmount,
-                    StartDate = x.StartDate,
-                    EndDate = x.EndDate,
-                    Status = x.Status,
-                    CreatedDate = x.CreatedDate
+                    customerMap.TryGetValue(
+                        x.CustomerId,
+                        out var customerName);
+
+                    vehicleMap.TryGetValue(
+                        x.VehicleId,
+                        out var vehicleDescription);
+
+                    return new PolicyListDto
+                    {
+                        Id = x.Id,
+
+                        CustomerId = x.CustomerId,
+
+                        CustomerName =
+                            customerName ?? "—",
+
+                        VehicleId = x.VehicleId,
+
+                        VehicleDescription =
+                            vehicleDescription ?? "—",
+
+                        PolicyNumber = x.PolicyNumber,
+                        PremiumAmount = x.PremiumAmount,
+                        StartDate = x.StartDate,
+                        EndDate = x.EndDate,
+                        Status = x.Status
+                    };
                 })
                 .ToList();
         }
@@ -228,7 +284,29 @@ namespace Kasko.Business.Services.Concrete
             {
                 throw new NotFoundException("Poliçe bulunamadı.");
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    policy.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+            }
             if (dto.EndDate <= policy.StartDate)
             {
                 throw new BadRequestException(
@@ -283,7 +361,29 @@ namespace Kasko.Business.Services.Concrete
             {
                 throw new NotFoundException("Poliçe bulunamadı.");
             }
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
 
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    policy.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+            }
             policy.IsDeleted = true;
             policy.DeletedDate = DateTime.UtcNow;
             policy.DeletedBy = deletedBy;

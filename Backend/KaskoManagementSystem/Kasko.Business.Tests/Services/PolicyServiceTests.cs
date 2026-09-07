@@ -5,6 +5,7 @@ using Kasko.DataAccess.Repositories;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
+using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace Kasko.Business.Tests.Services;
@@ -16,6 +17,7 @@ public class PolicyServiceTests
     private readonly Mock<IQuoteRepository> _quoteRepositoryMock;
     private readonly Mock<ICustomerRepository> _customerRepositoryMock;
     private readonly Mock<IVehicleRepository> _vehicleRepositoryMock;
+    private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
 
     private readonly PolicyService _service;
 
@@ -26,6 +28,7 @@ public class PolicyServiceTests
         _quoteRepositoryMock = new Mock<IQuoteRepository>();
         _customerRepositoryMock = new Mock<ICustomerRepository>();
         _vehicleRepositoryMock = new Mock<IVehicleRepository>();
+        _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
         _unitOfWorkMock
             .Setup(x => x.Policies)
@@ -48,7 +51,8 @@ public class PolicyServiceTests
             _policyRepositoryMock.Object,
             _quoteRepositoryMock.Object,
             _customerRepositoryMock.Object,
-            _vehicleRepositoryMock.Object);
+            _vehicleRepositoryMock.Object,
+            _httpContextAccessorMock.Object);
     }
 
     [Fact]
