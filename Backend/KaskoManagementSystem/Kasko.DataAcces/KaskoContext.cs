@@ -349,7 +349,9 @@ public class KaskoContext : DbContext
 
             entity.Property(x => x.IsActive)
                 .IsRequired();
-
+            entity.Property(x => x.VehicleCategory)
+                  .HasMaxLength(50)
+                  .IsRequired();
             entity.HasIndex(x => new
             {
                 x.BrandCode,
@@ -359,7 +361,34 @@ public class KaskoContext : DbContext
             })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(x => new
+            {
+                x.BrandCode,
+                x.TypeCode,
+                x.ModelYear,
+                x.EffectiveDate
+            })
+           .IsUnique()
+           .HasFilter("[IsDeleted] = 0");
+
+            entity.HasIndex(x => new
+            {
+                x.BrandCode,
+                x.BrandName
+            })
+            .HasDatabaseName("IX_VehicleValueCatalogs_ActiveBrands")
+            .HasFilter("[IsDeleted] = 0 AND [IsActive] = 1");
+
+            entity.HasIndex(x => new
+            {
+                x.BrandCode,
+                x.TypeCode,
+                x.TypeName
+            })
+            .HasDatabaseName("IX_VehicleValueCatalogs_ActiveTypes")
+            .HasFilter("[IsDeleted] = 0 AND [IsActive] = 1");
         });
+
         modelBuilder.Entity<PricingRule>(entity =>
         {
             entity.Property(x => x.Value)

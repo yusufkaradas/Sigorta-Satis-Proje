@@ -12,4 +12,5 @@ public class VehicleValueImportResult
 
     public int DuplicateCount { get; set; }
     public int InvalidRowCount { get; set; }
+
 }

@@ -38,6 +38,8 @@ export interface Vehicle {
 
   transmissionType?: number;
 
+  customerName?: string;
+
   engineVolume?: number | null;
 
   enginePower?: number | null;

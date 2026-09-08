@@ -22,22 +22,23 @@ public class VehicleValueCatalogRepository
             .Where(x =>
                 !x.IsDeleted &&
                 x.IsActive)
-            .GroupBy(x => new
+            .Select(x => new
             {
                 x.BrandCode,
                 x.BrandName
             })
+            .Distinct()
+            .OrderBy(x => x.BrandName)
             .Select(x => new VehicleValueCatalog
             {
-                BrandCode = x.Key.BrandCode,
-                BrandName = x.Key.BrandName
+                BrandCode = x.BrandCode,
+                BrandName = x.BrandName
             })
-            .OrderBy(x => x.BrandName)
             .ToListAsync();
     }
 
     public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(
-        string brandCode)
+    string brandCode)
     {
         return await _context
             .VehicleValueCatalogs
@@ -46,16 +47,12 @@ public class VehicleValueCatalogRepository
                 !x.IsDeleted &&
                 x.IsActive &&
                 x.BrandCode == brandCode)
-            .GroupBy(x => new
-            {
-                x.TypeCode,
-                x.TypeName
-            })
             .Select(x => new VehicleValueCatalog
             {
-                TypeCode = x.Key.TypeCode,
-                TypeName = x.Key.TypeName
+                TypeCode = x.TypeCode,
+                TypeName = x.TypeName
             })
+            .Distinct()
             .OrderBy(x => x.TypeName)
             .ToListAsync();
     }

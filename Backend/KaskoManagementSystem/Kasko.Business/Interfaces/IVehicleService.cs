@@ -4,7 +4,7 @@ namespace Kasko.Business.Services
 {
     public interface IVehicleService
     {
-        Task<IEnumerable<VehicleListDto>> GetAllAsync();
+        Task<IEnumerable<VehicleListDto>> GetAllAsync(Guid? customerId = null);
 
         Task<VehicleDto?> GetByIdAsync(Guid id);
 

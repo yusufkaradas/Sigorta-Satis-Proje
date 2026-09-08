@@ -1,13 +1,25 @@
 <div class="policy-detail-page">
 
-  <div class="page-header">
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+  <section class="page-header">
 
-    <div>
-      <h1>Poliçe Detayı</h1>
+    <div class="page-header-content">
+
+      <span class="page-eyebrow">
+        POLİÇE YÖNETİMİ
+      </span>
+
+      <h1>
+        Poliçe Detayı
+      </h1>
 
       <p>
-        Poliçe bilgilerini görüntüleyin
+        Poliçe bilgilerini, müşteri ve araç detaylarını
+        görüntüleyin.
       </p>
+
     </div>
 
     <button
@@ -15,223 +27,916 @@
       class="back-button"
       (click)="goBack()">
 
-      ← Poliçelere Dön
+      <span class="button-icon">
+        ←
+      </span>
+
+      Poliçelere Dön
 
     </button>
 
-  </div>
+  </section>
 
 
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
   <div
     *ngIf="isLoading"
     class="loading">
 
-    Poliçe bilgileri yükleniyor...
+    <div class="loading-spinner"></div>
+
+    <span>
+      Poliçe bilgileri yükleniyor...
+    </span>
 
   </div>
 
 
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
   <div
     *ngIf="!isLoading && errorMessage"
     class="error-message">
 
-    {{ errorMessage }}
+    <strong>
+      İşlem gerçekleştirilemedi
+    </strong>
+
+    <span>
+      {{ errorMessage }}
+    </span>
 
   </div>
 
 
-  <div
+  <!-- =====================================================
+       MAIN DETAIL
+  ====================================================== -->
+  <section
     *ngIf="!isLoading && policy"
-    class="policy-card">
-
-    <h2>Poliçe Bilgileri</h2>
+    class="detail-card">
 
 
-    <div class="details-grid">
+    <!-- ===================================================
+         POLICY HERO
+    ==================================================== -->
+    <div class="policy-hero">
 
+      <div class="policy-hero-left">
 
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Poliçe No
+        <span class="section-label">
+          POLİÇE
         </span>
 
-        <strong>
+        <h2>
           {{ policy.policyNumber }}
-        </strong>
+        </h2>
+
+        <p class="policy-summary">
+
+          Poliçe süresi:
+
+          <strong>
+            {{ policy.startDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+          →
+
+          <strong>
+            {{ policy.endDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+        </p>
 
       </div>
 
 
-      <div class="detail-item">
+      <!-- SADECE BURADA DURUM GÖSTERİLİYOR -->
+      <div
+        class="status-badge"
+        [ngClass]="getStatusClass(policy.status)">
 
-        <span class="detail-label">
-          Müşteri ID
-        </span>
-
-        <strong>
-          {{ policy.customerId }}
-        </strong>
+        {{ getStatusText(policy.status) }}
 
       </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Araç ID
-        </span>
-
-        <strong>
-          {{ policy.vehicleId }}
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Teklif ID
-        </span>
-
-        <strong>
-          {{ policy.quoteId }}
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Prim Tutarı
-        </span>
-
-        <strong>
-          {{ policy.premiumAmount | number:'1.2-2' }} ₺
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Başlangıç Tarihi
-        </span>
-
-        <strong>
-          {{ policy.startDate | date:'dd.MM.yyyy' }}
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Bitiş Tarihi
-        </span>
-
-        <strong>
-          {{ policy.endDate | date:'dd.MM.yyyy' }}
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Durum
-        </span>
-
-        <strong
-          class="status"
-          [ngClass]="getStatusClass(policy.status)">
-
-          {{ getStatusText(policy.status) }}
-
-        </strong>
-
-      </div>
-
-
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Aktiflik
-        </span>
-
-        <strong
-          [class.active-text]="policy.isActive"
-          [class.passive-text]="!policy.isActive">
-
-          {{ policy.isActive ? 'Aktif' : 'Pasif' }}
-
-        </strong>
-
-      </div>
-
 
     </div>
 
 
-   <div class="actions">
+    <!-- ===================================================
+         POLICY INFORMATION
+    ==================================================== -->
+    <section class="detail-section">
 
-  <button
-    *ngIf="
-      policy.status === PolicyStatus.Draft ||
-      policy.status === PolicyStatus.Active
-    "
-    type="button"
-    class="edit-button"
-    [routerLink]="[
-      '/policies',
-      policy.id,
-      'edit'
-    ]">
+      <div class="section-heading">
 
-    Poliçeyi Düzenle
+        <div>
 
-  </button>
+          <span class="section-index">
+            01
+          </span>
 
-  <button
-    *ngIf="
-      policy.status === PolicyStatus.Active
-    "
-    type="button"
-    class="cancel-button"
-    (click)="cancelPolicy()">
+          <div>
 
-    Poliçeyi İptal Et
+            <h3>
+              Poliçe Bilgileri
+            </h3>
 
-  </button>
+            <p>
+              Poliçenin temel kimlik ve geçerlilik bilgileri
+            </p>
 
-  <button
-    *ngIf="
-      policy.status === PolicyStatus.Draft ||
-      policy.status === PolicyStatus.Cancelled ||
-      policy.status === PolicyStatus.Expired
-    "
-    type="button"
-    class="delete-button"
-    (click)="deletePolicy()">
+          </div>
 
-    Poliçeyi Sil
+        </div>
 
-  </button>
+      </div>
 
-  <button
-    type="button"
-    class="back-action"
-    (click)="goBack()">
 
-    Geri Dön
+      <div class="detail-grid detail-grid-3">
 
-  </button>
+        <div class="detail-item">
+
+          <span>
+            Poliçe No
+          </span>
+
+          <strong class="policy-number">
+            {{ policy.policyNumber }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Başlangıç Tarihi
+          </span>
+
+          <strong>
+            {{ policy.startDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Bitiş Tarihi
+          </span>
+
+          <strong>
+            {{ policy.endDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Poliçe Türü
+          </span>
+
+          <strong>
+            Kasko
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Prim Tutarı
+          </span>
+
+          <strong class="premium-value">
+
+            {{
+              policy.premiumAmount
+                | number:'1.2-2'
+            }}
+            ₺
+
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+  <span>
+    Oluşturulma Tarihi
+  </span>
+
+  <strong>
+    {{ policy.createdDate | date:'dd.MM.yyyy' }}
+  </strong>
 
 </div>
 
-  </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CUSTOMER
+    ==================================================== -->
+    <section
+      class="detail-section"
+      *ngIf="quote">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-index">
+            02
+          </span>
+
+          <div>
+
+            <h3>
+              Müşteri Bilgileri
+            </h3>
+
+            <p>
+              Poliçenin bağlı olduğu müşteri bilgileri
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>
+            Müşteri
+          </span>
+
+          <strong>
+            {{ quote.customerName || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            E-posta
+          </span>
+
+          <strong>
+            {{ quote.customerEmail || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Telefon
+          </span>
+
+          <strong>
+            {{ quote.customerPhone || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Teklif
+          </span>
+
+          <strong class="reference-value">
+            {{ quote.quoteNumber || '—' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         VEHICLE
+    ==================================================== -->
+    <section
+      class="detail-section"
+      *ngIf="quote">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-index">
+            03
+          </span>
+
+          <div>
+
+            <h3>
+              Araç Bilgileri
+            </h3>
+
+            <p>
+              Poliçeye konu olan araç bilgileri
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>
+            Marka
+          </span>
+
+          <strong>
+            {{ quote.brand || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Model
+          </span>
+
+          <strong>
+            {{ quote.model || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Model Yılı
+          </span>
+
+          <strong>
+            {{ quote.modelYear || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Plaka
+          </span>
+
+          <strong class="plate">
+            {{ quote.plateNumber || '—' }}
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Araç Değeri
+          </span>
+
+          <strong>
+
+            {{
+              quote.marketValue != null
+                ? (quote.marketValue | number:'1.0-2') + ' ₺'
+                : '—'
+            }}
+
+          </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <span>
+            Araç
+          </span>
+
+          <strong>
+            {{ quote.brand || '—' }}
+            {{ quote.model || '' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         COVERAGES
+    ==================================================== -->
+    <section
+      class="detail-section"
+      *ngIf="quote?.coverages?.length">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-index">
+            04
+          </span>
+
+          <div>
+
+            <h3>
+              Teminatlar
+            </h3>
+
+            <p>
+              Poliçeye dahil edilen teminat ve limit bilgileri
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <span class="coverage-count">
+          {{ quote.coverages?.length }}
+          teminat
+        </span>
+
+      </div>
+
+
+      <div class="coverage-table">
+
+        <div class="coverage-table-header">
+
+          <div>
+            Teminat
+          </div>
+
+          <div>
+            Limit
+          </div>
+
+          <div>
+            Prim
+          </div>
+
+          <div>
+            Durum
+          </div>
+
+        </div>
+
+
+        <div
+          class="coverage-table-row"
+          *ngFor="let coverage of quote.coverages">
+
+          <div class="coverage-name">
+
+            <span class="coverage-icon">
+              ✓
+            </span>
+
+            <div>
+
+              <strong>
+                {{ coverage.coverageName }}
+              </strong>
+
+              <small>
+                Poliçeye dahil
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div class="coverage-limit-cell">
+
+            <span
+              *ngIf="coverage.limit != null"
+              class="limit-value">
+
+              {{
+                coverage.limit
+                  | number:'1.0-2'
+              }}
+              ₺
+
+            </span>
+
+            <span
+              *ngIf="coverage.limit == null"
+              class="muted-value">
+
+              Poliçe limiti
+
+            </span>
+
+          </div>
+
+
+          <div class="coverage-price-cell">
+
+            {{
+              coverage.calculatedPrice
+                | number:'1.2-2'
+            }}
+            ₺
+
+          </div>
+
+
+          <div>
+
+            <span class="coverage-status">
+              Dahil
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="coverage-footnote">
+
+        <span>
+          ✓
+        </span>
+
+        Bu teminatlar poliçe primine dahil edilmiştir.
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         PRICING
+    ==================================================== -->
+    <section
+      class="detail-section pricing-section"
+      *ngIf="quote?.pricingSnapshot">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-index">
+            05
+          </span>
+
+          <div>
+
+            <h3>
+              Fiyatlandırma
+            </h3>
+
+            <p>
+              Poliçeye aktarılan teklif fiyatlandırma özeti
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <span class="snapshot-badge">
+          SNAPSHOT
+        </span>
+
+      </div>
+
+
+      <div class="pricing-overview">
+
+        <div class="pricing-overview-row">
+
+          <span>
+            Araç Değeri
+          </span>
+
+          <strong>
+            {{
+              quote.pricingSnapshot?.marketValue
+                | number:'1.2-2'
+            }}
+            ₺
+          </strong>
+
+        </div>
+
+
+        <div class="pricing-overview-row">
+
+          <span>
+            Teminat Primleri
+          </span>
+
+          <strong>
+            {{
+              quote.pricingSnapshot?.coveragePremium
+                | number:'1.2-2'
+            }}
+            ₺
+          </strong>
+
+        </div>
+
+
+        <div class="pricing-overview-row">
+
+          <span>
+            İndirim
+          </span>
+
+          <strong>
+            {{
+              quote.pricingSnapshot?.discount
+                | number:'1.2-2'
+            }}
+            ₺
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="total-premium-card">
+
+        <div>
+
+          <span>
+            Poliçe Primi
+          </span>
+
+          <small>
+            Poliçeye aktarılan nihai prim tutarı
+          </small>
+
+        </div>
+
+
+        <strong>
+
+          {{
+            policy.premiumAmount
+              | number:'1.2-2'
+          }}
+          ₺
+
+        </strong>
+
+      </div>
+
+
+      <details class="calculation-details">
+
+        <summary>
+
+          <div>
+
+            <strong>
+              Hesaplama Detayı
+            </strong>
+
+            <small>
+              Teklif sırasında kullanılan fiyatlandırma katsayıları
+            </small>
+
+          </div>
+
+          <span class="details-arrow">
+            ›
+          </span>
+
+        </summary>
+
+
+        <div class="calculation-body">
+
+          <div class="pricing-grid">
+
+
+            <div class="pricing-item">
+
+              <span>
+                Yaş Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.ageFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Kullanım Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.usageFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Sürücü Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.driverFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Hasar Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.claimsFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Bölge Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.regionFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Paket Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.packageFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="pricing-item">
+
+              <span>
+                Muafiyet Faktörü
+              </span>
+
+              <strong>
+                {{
+                  quote.pricingSnapshot?.deductibleFactor
+                    | number:'1.2-4'
+                }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </details>
+
+    </section>
+
+
+    <!-- ===================================================
+         ACTIONS
+    ==================================================== -->
+    <div class="detail-actions">
+
+      <button
+        type="button"
+        class="action-button action-secondary"
+        (click)="goBack()">
+
+        Geri Dön
+
+      </button>
+
+
+      <button
+        *ngIf="
+          policy.status === PolicyStatus.Draft ||
+          policy.status === PolicyStatus.Active
+        "
+        type="button"
+        class="action-button action-primary"
+        [routerLink]="[
+          '/policies',
+          policy.id,
+          'edit'
+        ]">
+
+        Poliçeyi Düzenle
+
+      </button>
+
+
+      <button
+        *ngIf="
+          policy.status === PolicyStatus.Active
+        "
+        type="button"
+        class="action-button action-danger"
+        (click)="cancelPolicy()">
+
+        Poliçeyi İptal Et
+
+      </button>
+
+
+      <button
+        *ngIf="
+          policy.status === PolicyStatus.Draft ||
+          policy.status === PolicyStatus.Cancelled ||
+          policy.status === PolicyStatus.Expired
+        "
+        type="button"
+        class="action-button action-delete"
+        (click)="deletePolicy()">
+
+        Poliçeyi Sil
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

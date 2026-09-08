@@ -7,15 +7,27 @@ export enum PolicyStatus {
 
 export interface Policy {
   id: string;
+
   customerId: string;
+  customerName?: string;
+
   vehicleId: string;
+  brand?: string;
+  model?: string;
+
   quoteId: string;
+
   policyNumber: string;
   premiumAmount: number;
+
   startDate: string;
   endDate: string;
+  createdDate?: string;
+
   status: PolicyStatus;
+
   isActive: boolean;
+
   rowVersion?: string;
 }
 

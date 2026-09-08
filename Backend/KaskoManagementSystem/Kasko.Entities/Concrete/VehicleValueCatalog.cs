@@ -12,6 +12,8 @@ public class VehicleValueCatalog : BaseEntity
 
     public string TypeName { get; set; } = string.Empty;
 
+    public string VehicleCategory { get; set; } = string.Empty;
+
     public int ModelYear { get; set; }
 
     public decimal Value { get; set; }

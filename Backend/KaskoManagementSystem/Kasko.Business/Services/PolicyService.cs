@@ -233,9 +233,13 @@ namespace Kasko.Business.Services.Concrete
                     x => $"{x.FirstName} {x.LastName}");
 
             var vehicleMap = vehicles
-                .ToDictionary(
-                    x => x.Id,
-                    x => $"{x.Brand} {x.Model}");
+     .ToDictionary(
+         x => x.Id,
+         x => new
+         {
+             x.Brand,
+             x.Model
+         });
 
             return policies
                 .Where(x => !x.IsDeleted)
@@ -247,21 +251,17 @@ namespace Kasko.Business.Services.Concrete
 
                     vehicleMap.TryGetValue(
                         x.VehicleId,
-                        out var vehicleDescription);
+                        out var vehicle);
 
                     return new PolicyListDto
                     {
                         Id = x.Id,
-
                         CustomerId = x.CustomerId,
-
-                        CustomerName =
-                            customerName ?? "—",
+                        CustomerName = customerName ?? "—",
 
                         VehicleId = x.VehicleId,
-
-                        VehicleDescription =
-                            vehicleDescription ?? "—",
+                        Brand = vehicle?.Brand ?? "—",
+                        Model = vehicle?.Model ?? "—",
 
                         PolicyNumber = x.PolicyNumber,
                         PremiumAmount = x.PremiumAmount,
@@ -272,7 +272,40 @@ namespace Kasko.Business.Services.Concrete
                 })
                 .ToList();
         }
+        public async Task<IEnumerable<PolicyListDto>> GetUpcomingRenewalsAsync(
+    int daysAhead = 30)
+        {
+            if (daysAhead < 1)
+            {
+                throw new BadRequestException(
+                    "Yenileme kontrol süresi en az 1 gün olmalıdır.");
+            }
 
+            var today = DateTime.UtcNow.Date;
+            var limitDate = today.AddDays(daysAhead);
+
+            var policies = await _policyRepository.FindAsync(
+                x =>
+                    !x.IsDeleted &&
+                    x.Status == PolicyStatus.Active &&
+                    x.EndDate.Date >= today &&
+                    x.EndDate.Date <= limitDate);
+
+            return policies
+                .OrderBy(x => x.EndDate)
+                .Select(x => new PolicyListDto
+                {
+                    Id = x.Id,
+                    CustomerId = x.CustomerId,
+                    VehicleId = x.VehicleId,
+                    PolicyNumber = x.PolicyNumber,
+                    PremiumAmount = x.PremiumAmount,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    Status = x.Status
+                })
+                .ToList();
+        }
         public async Task UpdateAsync(
             Guid id,
             PolicyUpdateDto dto)

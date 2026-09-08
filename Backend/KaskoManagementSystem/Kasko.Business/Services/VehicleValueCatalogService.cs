@@ -123,6 +123,7 @@ public class VehicleValueCatalogService
             .ToList();
     }
 
+
     public async Task<IReadOnlyList<int>> GetYearsAsync(
         string brandCode,
         string typeCode,

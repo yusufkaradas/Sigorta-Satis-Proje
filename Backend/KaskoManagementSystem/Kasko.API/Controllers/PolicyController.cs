@@ -79,6 +79,15 @@ namespace Kasko.API.Controllers
 
             return NoContent();
         }
+        [HttpGet("upcoming-renewals")]
+        public async Task<IActionResult> GetUpcomingRenewals(
+    [FromQuery] int daysAhead = 30)
+        {
+            var policies =
+                await _policyService.GetUpcomingRenewalsAsync(daysAhead);
+
+            return Ok(policies);
+        }
         [HttpPost("{id:guid}/cancel")]
         public async Task<IActionResult> Cancel(Guid id)
         {

@@ -57,14 +57,17 @@
         <label for="customerId">
           Müşteri *
         </label>
-
-        <select
-          id="customerId"
-          name="customerId"
-          [(ngModel)]="form.customerId"
-          [disabled]="isLoadingCustomers"
-          required
-        >
+ <select
+  id="customerId"
+  name="customerId"
+  [(ngModel)]="form.customerId"
+  (ngModelChange)="loadCustomerVehicles($event)"
+  [disabled]="
+    isLoadingCustomers ||
+    isSubmitting
+  "
+  required
+>
 
           <option
             value=""
@@ -90,7 +93,109 @@
       </div>
 
     </section>
+<!-- MÜŞTERİNİN MEVCUT ARAÇLARI -->
 
+<section
+  class="customer-vehicles-section"
+  *ngIf="form.customerId"
+>
+
+  <div class="customer-vehicles-header">
+
+    <div>
+      <h2>Müşterinin Mevcut Araçları</h2>
+
+      <p>
+        Seçilen müşteriye ait kayıtlı araçlar
+      </p>
+    </div>
+
+    <span
+      class="vehicle-count"
+      *ngIf="!isLoadingCustomerVehicles"
+    >
+      {{ customerVehicles.length }} araç
+    </span>
+
+  </div>
+
+
+  <div
+    *ngIf="isLoadingCustomerVehicles"
+    class="customer-vehicles-loading"
+  >
+    Müşterinin araçları yükleniyor...
+  </div>
+
+
+  <div
+    *ngIf="
+      !isLoadingCustomerVehicles &&
+      customerVehicles.length === 0
+    "
+    class="customer-vehicles-empty"
+  >
+    Bu müşteriye ait kayıtlı araç bulunamadı.
+  </div>
+
+
+  <div
+    *ngIf="
+      !isLoadingCustomerVehicles &&
+      customerVehicles.length > 0
+    "
+    class="customer-vehicles-list"
+  >
+
+    <button
+      type="button"
+      class="customer-vehicle-card"
+      *ngFor="
+        let vehicle of customerVehicles
+      "
+      [class.selected]="
+        selectedCustomerVehicleId === vehicle.id
+      "
+      (click)="
+        selectedCustomerVehicleId = vehicle.id
+      "
+    >
+
+      <div class="customer-vehicle-main">
+
+        <strong>
+          {{ vehicle.brand }}
+          {{ vehicle.model }}
+        </strong>
+
+        <span>
+          {{ vehicle.plateNumber || 'Plaka yok' }}
+        </span>
+
+      </div>
+
+
+      <div class="customer-vehicle-meta">
+
+        <span>
+          {{ vehicle.modelYear }}
+        </span>
+
+        <span>
+          {{
+            vehicle.marketValue
+              | number:'1.0-0'
+          }}
+          ₺
+        </span>
+
+      </div>
+
+    </button>
+
+  </div>
+
+</section>
 
     <!-- ARAÇ BİLGİLERİ -->
 
@@ -110,14 +215,17 @@
           </label>
 
           <input
-            id="plateNumber"
-            type="text"
-            name="plateNumber"
-            [(ngModel)]="form.plateNumber"
-            placeholder="34ABC123"
-            maxlength="20"
-            required
-          />
+  id="plateNumber"
+  type="text"
+  name="plateNumber"
+  [(ngModel)]="form.plateNumber"
+  (input)="onPlateInput()"
+  placeholder="34ABC123"
+  maxlength="10"
+  autocomplete="off"
+  inputmode="text"
+  required
+           />
 
         </div>
 

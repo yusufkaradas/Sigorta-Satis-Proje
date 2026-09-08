@@ -17,16 +17,18 @@ namespace Kasko.API.Controllers
             _vehicleService = vehicleService;
         }
 
-        
+
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+     [FromQuery] Guid? customerId = null)
         {
-            var vehicles = await _vehicleService.GetAllAsync();
+            var vehicles =
+                await _vehicleService.GetAllAsync(customerId);
 
             return Ok(vehicles);
         }
 
-        
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {

@@ -1,53 +1,77 @@
 <div class="vehicle-detail-page">
 
+  <!-- PAGE HEADER -->
   <div class="detail-header">
 
-    <div>
+    <div class="header-content">
+
+      <span class="page-eyebrow">
+        ARAÇ YÖNETİMİ
+      </span>
 
       <h1>
         Araç Detayı
       </h1>
 
       <p>
-        Araç bilgilerini görüntüleyin
+        Araç, teknik ve müşteri bilgilerini görüntüleyin.
       </p>
 
     </div>
-
 
     <a
       routerLink="/vehicles"
       class="back-button"
     >
-      Araçlara Dön
+      ← Araçlara Dön
     </a>
 
   </div>
 
+
+  <!-- LOADING -->
   <div
     *ngIf="isLoading"
     class="state-message"
   >
 
-    Araç bilgileri yükleniyor...
+    <div class="state-icon loading-icon">
+      ⟳
+    </div>
+
+    <strong>
+      Araç bilgileri yükleniyor...
+    </strong>
+
+    <span>
+      Lütfen bekleyin.
+    </span>
 
   </div>
 
 
+  <!-- ERROR -->
   <div
-    *ngIf="
-      !isLoading &&
-      errorMessage
-    "
+    *ngIf="!isLoading && errorMessage"
     class="state-message error"
   >
 
-    {{ errorMessage }}
+    <div class="state-icon error-icon">
+      !
+    </div>
+
+    <strong>
+      Araç bilgileri yüklenemedi
+    </strong>
+
+    <span>
+      {{ errorMessage }}
+    </span>
 
   </div>
 
 
-
+  <!-- DETAIL -->
   <div
     *ngIf="
       !isLoading &&
@@ -58,41 +82,64 @@
   >
 
 
+    <!-- =================================================
+         TEMEL BİLGİLER
+    ================================================== -->
+
     <section class="detail-section">
 
-      <h2>
-        Temel Bilgiler
-      </h2>
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-eyebrow">
+            01 · GENEL
+          </span>
+
+          <h2>
+            Temel Bilgiler
+          </h2>
+
+          <p>
+            Araca ait temel tanımlama ve değer bilgileri.
+          </p>
+
+        </div>
+
+      </div>
 
 
       <div class="detail-grid">
 
-        <div class="detail-item">
+        <!-- PLAKA -->
+        <div class="detail-item highlight-item">
 
           <span>
             Plaka
           </span>
 
           <strong>
-            {{ vehicle.plateNumber }}
+            {{ vehicle.plateNumber || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- VIN -->
         <div class="detail-item">
 
           <span>
             VIN
           </span>
 
-          <strong>
-            {{ vehicle.vin }}
+          <strong class="identifier">
+            {{ vehicle.vin || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- MARKA -->
         <div class="detail-item">
 
           <span>
@@ -100,12 +147,13 @@
           </span>
 
           <strong>
-            {{ vehicle.brand }}
+            {{ vehicle.brand || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- MODEL -->
         <div class="detail-item">
 
           <span>
@@ -113,12 +161,13 @@
           </span>
 
           <strong>
-            {{ vehicle.model }}
+            {{ vehicle.model || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- MODEL YILI -->
         <div class="detail-item">
 
           <span>
@@ -126,12 +175,13 @@
           </span>
 
           <strong>
-            {{ vehicle.modelYear }}
+            {{ vehicle.modelYear || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- ARAÇ TİPİ -->
         <div class="detail-item">
 
           <span>
@@ -148,20 +198,71 @@
 
         </div>
 
+
+        <!-- TSB KASKO DEĞERİ -->
+        <div class="detail-item value-card">
+
+          <div class="value-card-top">
+
+            <span>
+              TSB Kasko Değeri
+            </span>
+
+            <span class="value-badge">
+              TSB
+            </span>
+
+          </div>
+
+          <strong>
+            {{
+              vehicle.marketValue != null
+                ? (vehicle.marketValue | number:'1.0-2') + ' ₺'
+                : '—'
+            }}
+          </strong>
+
+          <small>
+            Araç değerleme kaydı
+          </small>
+
+        </div>
+
       </div>
 
     </section>
 
 
+    <!-- =================================================
+         TEKNİK BİLGİLER
+    ================================================== -->
+
     <section class="detail-section">
 
-      <h2>
-        Teknik Bilgiler
-      </h2>
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-eyebrow">
+            02 · TEKNİK
+          </span>
+
+          <h2>
+            Teknik Bilgiler
+          </h2>
+
+          <p>
+            Aracın motor, yakıt ve kullanım özellikleri.
+          </p>
+
+        </div>
+
+      </div>
 
 
       <div class="detail-grid">
 
+        <!-- YAKIT -->
         <div class="detail-item">
 
           <span>
@@ -179,6 +280,7 @@
         </div>
 
 
+        <!-- VİTES -->
         <div class="detail-item">
 
           <span>
@@ -196,6 +298,7 @@
         </div>
 
 
+        <!-- MOTOR HACMİ -->
         <div class="detail-item">
 
           <span>
@@ -204,13 +307,16 @@
 
           <strong>
             {{
-              vehicle.engineVolume ?? '-'
+              vehicle.engineVolume != null
+                ? vehicle.engineVolume
+                : '—'
             }}
           </strong>
 
         </div>
 
 
+        <!-- MOTOR GÜCÜ -->
         <div class="detail-item">
 
           <span>
@@ -219,13 +325,16 @@
 
           <strong>
             {{
-              vehicle.enginePower ?? '-'
+              vehicle.enginePower != null
+                ? vehicle.enginePower + ' HP'
+                : '—'
             }}
           </strong>
 
         </div>
 
 
+        <!-- RENK -->
         <div class="detail-item">
 
           <span>
@@ -233,14 +342,13 @@
           </span>
 
           <strong>
-            {{
-              vehicle.color ?? '-'
-            }}
+            {{ vehicle.color || '—' }}
           </strong>
 
         </div>
 
 
+        <!-- DURUM -->
         <div class="detail-item">
 
           <span>
@@ -248,20 +356,14 @@
           </span>
 
           <strong
-            [class.active]="
-              vehicle.isActive
-            "
-            [class.passive]="
-              !vehicle.isActive
-            "
+            [class.active]="vehicle.isActive"
+            [class.passive]="!vehicle.isActive"
           >
-
             {{
               getStatusText(
                 vehicle
               )
             }}
-
           </strong>
 
         </div>
@@ -270,25 +372,65 @@
 
     </section>
 
+
+    <!-- =================================================
+         MÜŞTERİ BİLGİLERİ
+    ================================================== -->
 
     <section class="detail-section">
 
-      <h2>
-        Müşteri
-      </h2>
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-eyebrow">
+            03 · İLİŞKİ
+          </span>
+
+          <h2>
+            Müşteri
+          </h2>
+
+          <p>
+            Bu araç sistemde aşağıdaki müşteriye bağlıdır.
+          </p>
+
+        </div>
+
+      </div>
 
 
-      <div class="detail-grid">
+      <div class="customer-card">
 
-        <div class="detail-item">
+        <div class="customer-avatar">
+
+          {{
+            customerName
+              ? customerName.charAt(0).toUpperCase()
+              : '?'
+          }}
+
+        </div>
+
+
+        <div class="customer-info">
 
           <span>
-            Customer ID
+            Müşteri
           </span>
 
           <strong>
-            {{ vehicle.customerId }}
+            {{ customerName || 'Müşteri bulunamadı' }}
           </strong>
+
+        </div>
+
+
+        <div class="customer-status">
+
+          <span class="status-dot"></span>
+
+          Bağlı
 
         </div>
 
@@ -297,35 +439,43 @@
     </section>
 
 
-   <div class="detail-actions">
+    <!-- =================================================
+         ACTIONS
+    ================================================== -->
 
-  <a
-    routerLink="/vehicles"
-    class="secondary-button"
-  >
-    Araçlara Dön
-  </a>
+    <div class="detail-actions">
+
+      <a
+        routerLink="/vehicles"
+        class="secondary-button"
+      >
+        Araçlara Dön
+      </a>
 
 
-  <a
-    [routerLink]="[
-      '/vehicles',
-      vehicle.id,
-      'edit'
-    ]"
-    class="primary-button"
-  >
-    Düzenle
-  </a>
+      <a
+        [routerLink]="[
+          '/vehicles',
+          vehicle.id,
+          'edit'
+        ]"
+        class="primary-button"
+      >
+        Düzenle
+      </a>
 
-<button
-  type="button"
-  class="danger-button"
-  (click)="deleteVehicle()"
->
-  Aracı Sil
-</button>
 
-</div>
+      <button
+        type="button"
+        class="danger-button"
+        (click)="deleteVehicle()"
+      >
+        Aracı Sil
+      </button>
+
+    </div>
+
+
+  </div>
 
 </div>

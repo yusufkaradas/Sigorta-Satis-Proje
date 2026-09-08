@@ -8,7 +8,8 @@ import {
 } from '../policy';
 
 import { PolicyService } from '../policy.service';
-
+import { Quote } from '../../quotes/quote';
+import { QuoteService } from '../../quotes/quote.service';
 @Component({
   selector: 'app-policy-detail',
   standalone: true,
@@ -24,8 +25,11 @@ export class PolicyDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly policyService = inject(PolicyService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly quoteService = inject(QuoteService);
 
   policy: Policy | null = null;
+
+  quote: Quote | null = null;
 
   isLoading = true;
 
@@ -76,18 +80,60 @@ export class PolicyDetail {
 
         next: (data) => {
 
+  console.log(
+    'POLICY DETAIL RESPONSE:',
+    data
+  );
+
+  this.policy = data;
+
+  if (data.quoteId) {
+
+    this.quoteService
+      .getById(data.quoteId)
+      .subscribe({
+
+        next: (quoteData) => {
+
           console.log(
-            'POLICY DETAIL RESPONSE:',
-            data
+            'POLICY DETAIL QUOTE RESPONSE:',
+            quoteData
           );
 
-          this.policy = data;
+          this.quote = quoteData;
 
           this.isLoading = false;
 
           this.cdr.detectChanges();
 
         },
+
+        error: (error) => {
+
+          console.error(
+            'POLICY DETAIL QUOTE API HATASI:',
+            error
+          );
+
+          this.errorMessage =
+            'Teklif bilgileri yüklenemedi.';
+
+          this.isLoading = false;
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+    return;
+  }
+
+  this.isLoading = false;
+
+  this.cdr.detectChanges();
+
+},
 
         error: (error) => {
 

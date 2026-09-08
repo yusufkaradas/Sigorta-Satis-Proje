@@ -71,6 +71,8 @@ export class VehicleEdit {
 
   customers: Customer[] = [];
 
+  customerName = '';
+
   isLoading = true;
 
   isSubmitting = false;
@@ -336,7 +338,13 @@ private loadTsbValue(): void {
                     vehicle.isActive
 
                 };
+const customer = this.customers.find(
+  x => x.id === vehicle.customerId
+);
 
+this.customerName = customer
+  ? `${customer.firstName} ${customer.lastName}`
+  : '—';
                 this.selectedBrandCode = vehicle.brandCode ?? '';
 
 

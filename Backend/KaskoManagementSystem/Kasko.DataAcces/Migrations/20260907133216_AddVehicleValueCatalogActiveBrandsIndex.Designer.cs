@@ -4,6 +4,7 @@ using Kasko.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kasko.DataAccess.Migrations
 {
     [DbContext(typeof(KaskoContext))]
-    partial class KaskoContextModelSnapshot : ModelSnapshot
+    [Migration("20260907133216_AddVehicleValueCatalogActiveBrandsIndex")]
+    partial class AddVehicleValueCatalogActiveBrandsIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1257,19 +1260,10 @@ namespace Kasko.DataAccess.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("VehicleCategory")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BrandCode", "BrandName")
                         .HasDatabaseName("IX_VehicleValueCatalogs_ActiveBrands")
-                        .HasFilter("[IsDeleted] = 0 AND [IsActive] = 1");
-
-                    b.HasIndex("BrandCode", "TypeCode", "TypeName")
-                        .HasDatabaseName("IX_VehicleValueCatalogs_ActiveTypes")
                         .HasFilter("[IsDeleted] = 0 AND [IsActive] = 1");
 
                     b.HasIndex("BrandCode", "TypeCode", "ModelYear", "EffectiveDate")

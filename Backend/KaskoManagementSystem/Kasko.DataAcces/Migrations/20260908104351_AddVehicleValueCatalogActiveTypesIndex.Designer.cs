@@ -4,6 +4,7 @@ using Kasko.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kasko.DataAccess.Migrations
 {
     [DbContext(typeof(KaskoContext))]
-    partial class KaskoContextModelSnapshot : ModelSnapshot
+    [Migration("20260908104351_AddVehicleValueCatalogActiveTypesIndex")]
+    partial class AddVehicleValueCatalogActiveTypesIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1256,11 +1259,6 @@ namespace Kasko.DataAccess.Migrations
                     b.Property<decimal>("Value")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("VehicleCategory")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 

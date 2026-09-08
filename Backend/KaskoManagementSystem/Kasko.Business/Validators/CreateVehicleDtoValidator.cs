@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Kasko.Business.DTOs.Vehicle;
+using Kasko.Business.Services;
 
 namespace Kasko.Business.Validators
 {
@@ -12,14 +13,11 @@ namespace Kasko.Business.Validators
                 .WithMessage("Müşteri bilgisi zorunludur.");
 
             RuleFor(x => x.PlateNumber)
-                .NotEmpty()
-                .WithMessage("Plaka boş olamaz.")
-                .MaximumLength(20)
-                .WithMessage("Plaka en fazla 20 karakter olabilir.")
-                .Must(x => x.All(char.IsLetterOrDigit))
-                .WithMessage("Plaka sadece harf ve rakamlardan oluşmalıdır.")
-                .Must(x => x == x.Trim())
-                .WithMessage("Plaka başında veya sonunda boşluk olamaz.");
+               .NotEmpty()
+               .WithMessage("Plaka boş olamaz.")
+               .Must(TurkishPlateNumber.IsValid)
+               .WithMessage(
+        "Geçerli bir Türkiye tescil plakası giriniz.");
 
             RuleFor(x => x.VIN)
                 .NotEmpty()

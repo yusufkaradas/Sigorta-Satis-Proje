@@ -465,5 +465,40 @@ tbody tr {
 
     gap: 12px;
   }
+.plate-cell,
+.customer-cell,
+.brand-cell,
+.model-cell {
+  min-width: 0;
+}
 
+.plate-cell strong,
+.customer-cell strong,
+.brand-cell strong,
+.model-cell strong {
+  display: block;
+  color: #294963;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.plate-cell strong {
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.customer-cell strong {
+  white-space: nowrap;
+}
+
+.brand-cell strong {
+  white-space: nowrap;
+}
+
+.model-cell strong {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 }

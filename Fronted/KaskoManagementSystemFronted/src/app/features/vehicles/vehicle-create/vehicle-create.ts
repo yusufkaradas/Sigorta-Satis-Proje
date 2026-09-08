@@ -18,6 +18,7 @@ import {
 
 import {
   CreateVehicleRequest,
+  Vehicle,
   VehiclesService
 } from '../vehicle.service';
 
@@ -65,8 +66,13 @@ export class VehicleCreate {
     inject(ChangeDetectorRef);
 
 
-  customers: Customer[] = [];
-  brands: VehicleValueBrand[] = [];
+customers: Customer[] = [];
+brands: VehicleValueBrand[] = [];
+customerVehicles: Vehicle[] = [];
+
+isLoadingCustomerVehicles = false;
+
+selectedCustomerVehicleId = '';
 
 types: VehicleValueType[] = [];
 
@@ -218,6 +224,54 @@ console.error(
       });
 
   }
+  
+loadCustomerVehicles(
+  customerId: string
+): void {
+
+  this.customerVehicles = [];
+
+  this.selectedCustomerVehicleId = '';
+
+  if (!customerId) {
+    return;
+  }
+
+  this.isLoadingCustomerVehicles = true;
+
+  this.vehicleService
+    .getVehicles(customerId)
+    .subscribe({
+
+      next: (vehicles: Vehicle[]) => {
+
+        this.customerVehicles =
+          vehicles ?? [];
+
+        this.isLoadingCustomerVehicles = false;
+
+        this.cdr.detectChanges();
+
+      },
+
+      error: (error: any) => {
+
+        console.error(
+          'CUSTOMER VEHICLES API HATASI:',
+          error
+        );
+
+        this.customerVehicles = [];
+
+        this.isLoadingCustomerVehicles = false;
+
+        this.cdr.detectChanges();
+
+      }
+
+    });
+
+}
 
 private loadBrands(): void {
 
@@ -256,6 +310,27 @@ private loadBrands(): void {
 
     });
 
+}
+onPlateInput(): void {
+
+  const normalized =
+    (this.form.plateNumber ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '');
+
+  if (normalized.length <= 2) {
+    this.form.plateNumber = normalized;
+    return;
+  }
+
+  const cityCode =
+    normalized.substring(0, 2);
+
+  const remaining =
+    normalized.substring(2);
+
+  this.form.plateNumber =
+    `${cityCode} ${remaining}`;
 }
   createVehicle(): void {
 

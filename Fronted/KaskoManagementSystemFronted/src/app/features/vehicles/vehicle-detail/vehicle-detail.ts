@@ -19,7 +19,10 @@ import {
   VehiclesService
 } from '../vehicle.service';
 
-
+import {
+  Customer,
+  CustomerService
+} from '../../customers/customers.service';
 @Component({
   selector: 'app-vehicle-detail',
 
@@ -45,6 +48,9 @@ export class VehicleDetail {
 
   private readonly cdr =
     inject(ChangeDetectorRef);
+  
+  private readonly customerService =
+  inject(CustomerService);
 
 
   vehicle: Vehicle | null = null;
@@ -52,8 +58,9 @@ export class VehicleDetail {
   isLoading = true;
 
   errorMessage = '';
-
-
+  
+  customerName = '';
+  
   ngOnInit(): void {
 
     this.loadVehicle();
@@ -89,21 +96,51 @@ export class VehicleDetail {
       .getVehicleById(id)
       .subscribe({
 
-        next: (data) => {
+       next: (data) => {
 
-          console.log(
-            'VEHICLE DETAIL RESPONSE:',
-            data
+  console.log(
+    'VEHICLE DETAIL RESPONSE:',
+    data
+  );
+
+  this.vehicle = data;
+
+  this.customerService
+    .getCustomers()
+    .subscribe({
+      next: (customers: Customer[]) => {
+
+        const customer =
+          (customers ?? []).find(
+            x => x.id === data.customerId
           );
 
+        this.customerName =
+          customer
+            ? `${customer.firstName} ${customer.lastName}`
+            : '—';
 
-          this.vehicle = data;
+        this.isLoading = false;
 
-          this.isLoading = false;
+        this.cdr.detectChanges();
+      },
 
-          this.cdr.detectChanges();
+      error: (error : any) => {
 
-        },
+        console.error(
+          'CUSTOMER DETAIL API HATASI:',
+          error
+        );
+
+        this.customerName = '—';
+
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      }
+    });
+
+},
 
 
         error: (error) => {

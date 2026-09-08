@@ -17,5 +17,8 @@ namespace Kasko.Business.Services.Abstract
         Task CancelAsync(Guid id, Guid? cancelledBy);
 
         Task ExpireAsync(Guid id);
+
+        Task<IEnumerable<PolicyListDto>> GetUpcomingRenewalsAsync(
+    int daysAhead = 30);
     }
 }

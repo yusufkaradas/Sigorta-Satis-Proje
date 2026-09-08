@@ -12,7 +12,9 @@ namespace Kasko.Business.DTOs.Policy
 
         public string CustomerName { get; set; } = string.Empty;
 
-        public string VehicleDescription { get; set; } = string.Empty;
+        public string Brand { get; set; } = string.Empty;
+
+        public string Model { get; set; } = string.Empty;
 
         public string PolicyNumber { get; set; } = string.Empty;
 

@@ -362,6 +362,19 @@
 
   white-space: nowrap;
 }
+.vehicle-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vehicle-cell strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .policy-table tbody tr:hover {
   background: #fafbfd;

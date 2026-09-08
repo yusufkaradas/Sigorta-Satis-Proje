@@ -7,7 +7,7 @@ namespace Kasko.Business.DTOs.Vehicle
         public Guid Id { get; set; }
 
         public Guid CustomerId { get; set; }
-
+        public string CustomerName { get; set; } = string.Empty;
         public string PlateNumber { get; set; } = string.Empty;
 
         public string VIN { get; set; } = string.Empty;

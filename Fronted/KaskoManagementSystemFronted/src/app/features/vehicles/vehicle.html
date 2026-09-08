@@ -4,11 +4,24 @@
 
     <section class="content">
 
+      <!-- PAGE HEADER -->
       <div class="page-title-row">
 
-        <h1>
-          Araç Yönetim İşlemleri
-        </h1>
+        <div class="page-title">
+
+          <span class="page-eyebrow">
+            ARAÇ YÖNETİMİ
+          </span>
+
+          <h1>
+            Araç Yönetim İşlemleri
+          </h1>
+
+          <p>
+            Araç kayıtlarını ve müşteriye bağlı araçları yönetin.
+          </p>
+
+        </div>
 
         <a
           routerLink="/vehicles/new"
@@ -19,62 +32,110 @@
 
       </div>
 
+
+      <!-- STATS -->
       <div class="stats">
 
         <div class="stat-card">
-          <span>Toplam Araç</span>
+
+          <span>
+            Toplam Araç
+          </span>
 
           <strong>
             {{ totalVehicleCount }}
           </strong>
+
         </div>
 
+
         <div class="stat-card">
-          <span>Aktif Araç</span>
+
+          <span>
+            Aktif Araç
+          </span>
 
           <strong>
             {{ activeVehicleCount }}
           </strong>
+
         </div>
 
+
         <div class="stat-card">
-          <span>Pasif Araç</span>
+
+          <span>
+            Pasif Araç
+          </span>
 
           <strong>
             {{ inactiveVehicleCount }}
           </strong>
+
         </div>
 
+
         <div class="stat-card">
-          <span>Gösterilen</span>
+
+          <span>
+            Gösterilen
+          </span>
 
           <strong>
             {{ filteredVehicles.length }}
           </strong>
+
         </div>
 
       </div>
 
+
+      <!-- VEHICLES -->
       <section class="vehicles-card">
 
+        <!-- TOOLBAR -->
         <div class="toolbar">
 
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (input)="onSearch()"
-            placeholder="Araçları ara"
-          >
+          <div class="search-box">
+
+            <span class="search-icon">
+              ⌕
+            </span>
+
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              placeholder="Plaka, marka, model veya müşteri ara..."
+            />
+
+          </div>
 
         </div>
 
+
+        <!-- LOADING -->
         <div
           *ngIf="isLoading"
           class="state-message"
         >
-          Araçlar yükleniyor...
+
+          <div class="state-icon">
+            ⟳
+          </div>
+
+          <strong>
+            Araçlar yükleniyor...
+          </strong>
+
+          <span>
+            Lütfen bekleyin.
+          </span>
+
         </div>
 
+
+        <!-- ERROR -->
         <div
           *ngIf="
             !isLoading &&
@@ -82,9 +143,23 @@
           "
           class="state-message error"
         >
-          {{ errorMessage }}
+
+          <div class="state-icon error-icon">
+            !
+          </div>
+
+          <strong>
+            Araçlar yüklenemedi
+          </strong>
+
+          <span>
+            {{ errorMessage }}
+          </span>
+
         </div>
 
+
+        <!-- TABLE -->
         <div
           *ngIf="
             !isLoading &&
@@ -93,85 +168,178 @@
           class="table-wrapper"
         >
 
-          <table>
+          <table class="vehicle-table">
 
             <thead>
 
               <tr>
-                <th>Plaka</th>
-                <th>Marka</th>
-                <th>Model</th>
-                <th>Yıl</th>
-                <th>Araç Tipi</th>
-                <th>Durum</th>
-                <th>İşlemler</th>
+
+                <th>
+                  Plaka
+                </th>
+
+                <th>
+                  Müşteri
+                </th>
+
+                <th>
+                  Marka
+                </th>
+
+                <th>
+                  Model
+                </th>
+
+                <th>
+                  Yıl
+                </th>
+
+                <th>
+                  Araç Tipi
+                </th>
+
+                <th>
+                  Durum
+                </th>
+
+                <th>
+                  İşlemler
+                </th>
+
               </tr>
 
             </thead>
 
+
             <tbody>
 
               <tr
-                *ngFor="
-                  let vehicle
-                  of pagedVehicles
-                "
+                *ngFor="let vehicle of pagedVehicles"
               >
 
+                <!-- PLAKA -->
                 <td>
-                  {{ vehicle.plateNumber }}
+
+                  <div class="plate-cell">
+
+                    <strong>
+                      {{ vehicle.plateNumber || '—' }}
+                    </strong>
+
+                  </div>
+
                 </td>
 
+
+                <!-- MÜŞTERİ -->
                 <td>
-                  {{ vehicle.brand }}
+
+                  <div class="customer-cell">
+
+                    <strong>
+                      {{ vehicle.customerName || '—' }}
+                    </strong>
+
+                  </div>
+
                 </td>
 
+
+                <!-- MARKA -->
                 <td>
-                  {{ vehicle.model }}
+
+                  <div class="brand-cell">
+
+                    <strong>
+                      {{ vehicle.brand || '—' }}
+                    </strong>
+
+                  </div>
+
                 </td>
 
+
+                <!-- MODEL -->
                 <td>
-                  {{ vehicle.modelYear }}
+
+                  <div class="model-cell">
+
+                    <strong
+                      [title]="vehicle.model || '—'"
+                    >
+                      {{ vehicle.model || '—' }}
+                    </strong>
+
+                  </div>
+
                 </td>
 
+
+                <!-- YIL -->
                 <td>
-                  {{
-                    getVehicleTypeText(
-                      vehicle.vehicleType
-                    )
-                  }}
+
+                  <span class="year-value">
+                    {{ vehicle.modelYear || '—' }}
+                  </span>
+
                 </td>
 
+
+                <!-- ARAÇ TİPİ -->
                 <td>
 
-                  <span
-                    class="status"
-                    [class.active]="vehicle.isActive"
-                    [class.passive]="!vehicle.isActive"
-                  >
+                  <span class="vehicle-type">
                     {{
-                      getStatusText(vehicle)
+                      getVehicleTypeText(
+                        vehicle.vehicleType
+                      )
                     }}
                   </span>
 
                 </td>
 
+
+                <!-- DURUM -->
                 <td>
 
-                  <a
-                    class="detail-button"
-                    [routerLink]="[
-                      '/vehicles',
-                      vehicle.id
-                    ]"
+                  <span
+                    class="status"
+                    [class.active]="vehicle.isActive"
+                    [class.inactive]="!vehicle.isActive"
                   >
-                    Detay
-                  </a>
+                    {{
+                      vehicle.isActive
+                        ? 'Aktif'
+                        : 'Pasif'
+                    }}
+                  </span>
+
+                </td>
+
+
+                <!-- İŞLEM -->
+                <td>
+
+                  <div class="actions-cell">
+
+                    <a
+                      [routerLink]="[
+                        '/vehicles',
+                        vehicle.id
+                      ]"
+                      class="detail-button"
+                    >
+                      Detay
+                    </a>
+
+                  </div>
 
                 </td>
 
               </tr>
 
+
+              <!-- EMPTY -->
               <tr
                 *ngIf="
                   pagedVehicles.length === 0
@@ -179,10 +347,26 @@
               >
 
                 <td
-                  colspan="7"
+                  colspan="8"
                   class="empty-row"
                 >
-                  Araç bulunamadı.
+
+                  <div class="empty-state-content">
+
+                    <div class="empty-icon">
+                      —
+                    </div>
+
+                    <strong>
+                      Araç bulunamadı
+                    </strong>
+
+                    <span>
+                      Arama kriterlerinizi değiştirmeyi deneyin.
+                    </span>
+
+                  </div>
+
                 </td>
 
               </tr>
@@ -193,6 +377,8 @@
 
         </div>
 
+
+        <!-- PAGINATION -->
         <div
           class="pagination"
           *ngIf="
@@ -204,34 +390,44 @@
 
           <button
             type="button"
+            class="pagination-arrow"
             (click)="previousPage()"
             [disabled]="currentPage === 1"
           >
             ‹
           </button>
 
+
           <button
             type="button"
+            class="pagination-number"
             *ngFor="
               let page
               of pageNumbers
             "
             (click)="goToPage(page)"
-            [class.current]="currentPage === page"
+            [class.current]="
+              currentPage === page
+            "
           >
             {{ page }}
           </button>
 
+
           <button
             type="button"
+            class="pagination-arrow"
             (click)="nextPage()"
-            [disabled]="currentPage === totalPages"
+            [disabled]="
+              currentPage === totalPages
+            "
           >
             ›
           </button>
 
-          <span>
-            {{ currentPage }}/{{ totalPages }}
+
+          <span class="pagination-info">
+            {{ currentPage }} / {{ totalPages }}
           </span>
 
         </div>

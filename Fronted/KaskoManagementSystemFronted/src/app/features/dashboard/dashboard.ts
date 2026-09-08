@@ -76,20 +76,22 @@ export class Dashboard {
         data.payments?.length
       );
 
-      this.dashboardData = data;
+    this.dashboardData = data;
 
-      try {
-        this.buildRecentActivities();
-      } catch (error) {
-        console.error(
-          'BUILD RECENT ACTIVITIES HATASI:',
-          error
-        );
+try {
+  this.buildRecentActivities();
+} catch (error) {
+  console.error(
+    'BUILD RECENT ACTIVITIES HATASI:',
+    error
+  );
 
-        this.recentActivities = [];
-      }
+  this.recentActivities = [];
+}
 
-      this.isLoading = false;
+this.isLoading = false;
+
+this.cdr.detectChanges();
 
       
       this.cdr.detectChanges();

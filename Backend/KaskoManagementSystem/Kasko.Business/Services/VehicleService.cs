@@ -20,49 +20,60 @@ namespace Kasko.Business.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<IEnumerable<VehicleListDto>> GetAllAsync()
+        public async Task<IEnumerable<VehicleListDto>> GetAllAsync(Guid? customerId = null)
         {
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
-
-            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            if (customerId.HasValue)
             {
-                var userIdValue = _httpContextAccessor.HttpContext.User
-                    .FindFirst(ClaimTypes.NameIdentifier)?
-                    .Value;
-
-                if (!Guid.TryParse(userIdValue, out var userId))
-                {
-                    return Enumerable.Empty<VehicleListDto>();
-                }
-
-                var currentUser = await _unitOfWork.Users
-                    .GetByIdAsync(userId);
-
-                if (currentUser?.CustomerId == null)
-                {
-                    return Enumerable.Empty<VehicleListDto>();
-                }
-
                 vehicles = vehicles
-                    .Where(x => x.CustomerId == currentUser.CustomerId.Value);
+                    .Where(x => x.CustomerId == customerId.Value)
+                    .ToList();
             }
+            var customers = await _unitOfWork.Customers.GetAllAsync();
 
-            return vehicles.Select(x => new VehicleListDto
-            {
-                Id = x.Id,
-                CustomerId = x.CustomerId,
-                PlateNumber = x.PlateNumber,
-                VIN = x.VIN,
-                Brand = x.Brand,
-                Model = x.Model,
-                ModelYear = x.ModelYear,
-                VehicleType = x.VehicleType,
-                CreatedDate = x.CreatedDate,
-                MarketValue = x.MarketValue,
-                IsActive = x.IsActive,
-            });
+            var customerMap = customers
+                .ToDictionary(
+                    x => x.Id,
+                    x => $"{x.FirstName} {x.LastName}");
+
+            return vehicles
+                .Where(x => !x.IsDeleted)
+                .Select(x =>
+                {
+                    customerMap.TryGetValue(
+                        x.CustomerId,
+                        out var customerName);
+
+                    return new VehicleListDto
+                    {
+                        Id = x.Id,
+
+                        CustomerId = x.CustomerId,
+
+                        CustomerName =
+                            customerName ?? "—",
+
+                        PlateNumber = x.PlateNumber,
+
+                        VIN = x.VIN,
+
+                        Brand = x.Brand,
+
+                        Model = x.Model,
+
+                        ModelYear = x.ModelYear,
+
+                        VehicleType = x.VehicleType,
+
+                        CreatedDate = x.CreatedDate,
+
+                        MarketValue = x.MarketValue,
+
+                        IsActive = x.IsActive
+                    };
+                })
+                .ToList();
         }
-
         public async Task<VehicleDto?> GetByIdAsync(Guid id)
         {
             var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(id);
@@ -124,8 +135,13 @@ namespace Kasko.Business.Services
                 throw new NotFoundException("Müşteri bulunamadı.");
             }
 
-            var plateExists = await _unitOfWork.Vehicles
-                .PlateExistsAsync(dto.PlateNumber);
+             var normalizedPlate =
+             TurkishPlateNumber.Normalize(
+             dto.PlateNumber);
+
+            var plateExists =
+                await _unitOfWork.Vehicles
+                    .PlateExistsAsync(normalizedPlate);
 
             if (plateExists)
             {
@@ -160,7 +176,7 @@ namespace Kasko.Business.Services
 
                 CustomerId = dto.CustomerId,
 
-                PlateNumber = dto.PlateNumber,
+                PlateNumber = normalizedPlate,
                 VIN = dto.VIN,
                 Brand = dto.Brand,
                 Model = dto.Model,
