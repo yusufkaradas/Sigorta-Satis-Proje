@@ -10,6 +10,11 @@ import {
 import { PolicyService } from '../policy.service';
 import { Quote } from '../../quotes/quote';
 import { QuoteService } from '../../quotes/quote.service';
+
+import {
+  Payment,
+  PaymentsService
+} from '../../payments/payments.service';
 @Component({
   selector: 'app-policy-detail',
   standalone: true,
@@ -26,12 +31,17 @@ export class PolicyDetail {
   private readonly policyService = inject(PolicyService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly quoteService = inject(QuoteService);
+  private readonly paymentsService = inject(PaymentsService);
 
   policy: Policy | null = null;
 
   quote: Quote | null = null;
+  
+  payment: Payment | null = null;
 
   isLoading = true;
+
+  isPaymentLoading = false;
 
   errorMessage = '';
 
@@ -86,6 +96,8 @@ export class PolicyDetail {
   );
 
   this.policy = data;
+
+  this.loadPayment(data.id);
 
   if (data.quoteId) {
 
@@ -306,7 +318,80 @@ deletePolicy(): void {
 
     });
 }
+private loadPayment(
+  policyId: string
+): void {
 
+  this.isPaymentLoading = true;
+
+  this.payment = null;
+
+  this.paymentsService
+    .getAll()
+    .subscribe({
+
+      next: (payments) => {
+
+        const policyPayments =
+          payments
+            .filter(
+              payment =>
+                payment.policyId === policyId
+            )
+            .filter(
+              payment =>
+                payment.status === 3
+            )
+            .sort(
+              (a, b) => {
+
+                const dateA =
+                  new Date(
+                    a.paymentDate ??
+                    a.createdDate
+                  ).getTime();
+
+                const dateB =
+                  new Date(
+                    b.paymentDate ??
+                    b.createdDate
+                  ).getTime();
+
+                return dateB - dateA;
+              }
+            );
+
+        this.payment =
+          policyPayments[0] ?? null;
+
+        console.log(
+          'POLICY DETAIL PAYMENT RESPONSE:',
+          this.payment
+        );
+
+        this.isPaymentLoading = false;
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        console.error(
+          'POLICY DETAIL PAYMENT API HATASI:',
+          error
+        );
+
+        // Ödeme bilgisi yüklenemese bile
+        // poliçe detay ekranını bozmayalım.
+        this.payment = null;
+
+        this.isPaymentLoading = false;
+
+        this.cdr.detectChanges();
+      }
+
+    });
+}
   goBack(): void {
 
     this.router.navigate([

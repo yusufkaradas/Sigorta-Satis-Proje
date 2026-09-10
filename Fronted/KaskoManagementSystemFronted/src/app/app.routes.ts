@@ -27,6 +27,7 @@ import { QuoteCreate } from './features/quotes/quote-create/quote-create';
 import { QuoteEdit } from './features/quotes/quote-edit/quote-edit';
 
 import { PaymentDetail } from './features/payments/payment-detail';
+import { PaymentCreate } from './features/payments/payment-create/payment-create';
 
 import { Users } from './features/users/users';
 import { UserDetail } from './features/users/user-detail/user-detail';
@@ -43,6 +44,8 @@ import { Layout } from './features/layout/layout';
 
 import { authGuard } from './core/guards/auth-guard';
 import { roleGuard } from './core/guards/role-guards';
+
+
 
 
 export const routes: Routes = [
@@ -144,7 +147,10 @@ export const routes: Routes = [
         component: QuoteEdit
 
       },
-
+ {
+  path: 'payments/new',
+  component: PaymentCreate
+},
       {
         path: 'payments',
         component: Payments
@@ -154,7 +160,6 @@ export const routes: Routes = [
         path: 'payments/:id',
         component: PaymentDetail
       },
-
       {
   path: 'users',
   component: Users,

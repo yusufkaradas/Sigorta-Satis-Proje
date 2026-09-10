@@ -92,6 +92,8 @@ export class QuoteCreate implements OnInit {
 
   previousPolicies: PreviousPolicy[] = [];
 
+  calculatedPremium: number | null = null;
+
 
   // --------------------------------------------------
   // FORM
@@ -140,10 +142,10 @@ export class QuoteCreate implements OnInit {
 
   errorMessage = '';
 
+  isCalculating = false;
 
-  // --------------------------------------------------
-  // INIT
-  // --------------------------------------------------
+  private calculationRequestId = 0;
+
 
   ngOnInit(): void {
 
@@ -234,6 +236,8 @@ export class QuoteCreate implements OnInit {
 
     this.claimsCount = 0;
 
+    this.calculatedPremium = null;
+
     this.errorMessage = '';
 
     if (!this.customerId) {
@@ -244,11 +248,6 @@ export class QuoteCreate implements OnInit {
 
     this.loadPreviousPolicies();
   }
-
-
-  // --------------------------------------------------
-  // VEHICLES
-  // --------------------------------------------------
 
   private loadCustomerVehicles(): void {
 
@@ -413,11 +412,6 @@ export class QuoteCreate implements OnInit {
     );
   }
 
-
-  // --------------------------------------------------
-  // PACKAGES
-  // --------------------------------------------------
-
   private loadPackages(): void {
 
     this.isLoadingPackages = true;
@@ -461,12 +455,6 @@ export class QuoteCreate implements OnInit {
         }
       });
   }
-
-
-  // --------------------------------------------------
-  // PACKAGE CHANGE
-  // --------------------------------------------------
-
   onPackageChange(): void {
 
     this.selectedPackage =
@@ -475,24 +463,12 @@ export class QuoteCreate implements OnInit {
           pkg.id === this.packageId
       ) ?? null;
 
-
-    // Paket seçilmediyse
     if (!this.selectedPackage) {
 
       this.selectedCoverageIds = [];
 
       return;
     }
-
-
-    /*
-     * Backend paket içindeki default
-     * teminatları otomatik olarak ekliyor.
-     *
-     * Bu yüzden yalnızca default teminatları
-     * CoverageIds olarak gönderiyoruz.
-     */
-
     this.selectedCoverageIds =
       this.selectedPackage.coverages
         .filter(
@@ -514,12 +490,122 @@ export class QuoteCreate implements OnInit {
       'SELECTED COVERAGE IDS:',
       this.selectedCoverageIds
     );
+     if (
+      this.customerId &&
+      this.vehicleId &&
+      this.packageId &&
+      this.validUntil
+    ) {
+      this.calculateQuote();
+    }
+  }
+onVehicleChange(): void {
+  this.calculatedPremium = null;
+  this.errorMessage = '';
+
+  if (!this.vehicleId) {
+    return;
   }
 
+  this.calculateQuote();
+}
 
-  // --------------------------------------------------
-  // CREATE QUOTE
-  // --------------------------------------------------
+  calculateQuote(): void {
+
+  if (
+    !this.customerId ||
+    !this.vehicleId ||
+    !this.packageId
+  ) {
+    this.errorMessage =
+      'Fiyat hesaplamak için müşteri, araç ve kasko paketi seçmelisiniz.';
+
+    return;
+  }
+
+  const dto: QuoteCreateDto = {
+
+    customerId:
+      this.customerId,
+
+    vehicleId:
+      this.vehicleId,
+
+    usage:
+      this.usage,
+
+    claimsCount:
+      this.claimsCount,
+
+    deductible:
+      this.deductible,
+
+    previousPolicyId:
+      this.previousPolicyId,
+
+    packageId:
+      this.packageId,
+
+    coverageIds:
+      this.selectedCoverageIds,
+
+    validUntil:
+      this.validUntil
+  };
+
+  const requestId =
+    ++this.calculationRequestId;
+
+  this.isCalculating = true;
+  this.errorMessage = '';
+
+  this.quoteService
+    .calculate(dto)
+    .subscribe({
+
+      next: (response) => {
+
+        if (
+          requestId !==
+          this.calculationRequestId
+        ) {
+          return;
+        }
+
+        this.calculatedPremium =
+          response?.totalPremium ?? null;
+
+        this.isCalculating = false;
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        if (
+          requestId !==
+          this.calculationRequestId
+        ) {
+          return;
+        }
+
+        console.error(
+          'CALCULATE QUOTE ERROR:',
+          error
+        );
+
+        this.calculatedPremium = null;
+
+        this.errorMessage =
+          error?.error?.message ??
+          'Teklif fiyatı hesaplanırken bir hata oluştu.';
+
+        this.isCalculating = false;
+
+        this.cdr.detectChanges();
+      }
+    });
+}
 
   createQuote(): void {
 

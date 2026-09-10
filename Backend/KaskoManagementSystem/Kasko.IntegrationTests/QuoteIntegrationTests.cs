@@ -1,5 +1,6 @@
 ﻿using Kasko.Business.DTOs.Policy;
 using Kasko.Business.DTOs.Quote;
+using Kasko.Business.Pricing;
 using Kasko.DataAccess;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -1679,5 +1680,375 @@ public class QuoteIntegrationTests
         Assert.Equal(
             newValidUntil,
             updatedQuote!.ValidUntil);
+    }
+    [Fact]
+    public async Task Customer_CalculateQuote_Should_UseEffectiveDateForPricingVersion()
+    {
+        await using var factory =
+            new WebApplicationFactory<Program>();
+
+        var user =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Admin");
+
+        using var client =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                user);
+
+        var customerId =
+            await IntegrationTestHelper.CreateCustomerAsync(
+                client);
+
+        var vehicle =
+            await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
+                client,
+                customerId);
+
+        var request =
+            new CreateQuoteDto
+            {
+                CustomerId = customerId,
+                VehicleId = vehicle.Id,
+
+                ValidUntil =
+                    DateTime.UtcNow.AddDays(30),
+
+                EffectiveDate =
+                    new DateTime(2026, 8, 15),
+
+                CoverageIds =
+                    Array.Empty<Guid>(),
+
+                Usage = "PRIVATE",
+                ClaimsCount = 0,
+                PackageId = null,
+                Deductible = 0m,
+                PreviousPolicyId = null
+            };
+
+        var response =
+            await client.PostAsJsonAsync(
+                "/api/Quote/calculate",
+                request);
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            response.StatusCode);
+
+        var json =
+    await response.Content
+        .ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(
+            0.0200m,
+            json.GetProperty("baseRate").GetDecimal());
+    }
+    [Fact]
+    public async Task Customer_CreateQuote_Should_StoreEffectiveDatePricingInSnapshot()
+    {
+        await using var factory =
+            new WebApplicationFactory<Program>();
+
+        var user =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Admin");
+
+        using var client =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                user);
+
+        var customerId =
+            await IntegrationTestHelper.CreateCustomerAsync(
+                client);
+
+        var vehicle =
+            await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
+                client,
+                customerId);
+
+        var effectiveDate =
+            new DateTime(2026, 8, 15);
+
+        var request =
+            new CreateQuoteDto
+            {
+                CustomerId = customerId,
+                VehicleId = vehicle.Id,
+
+                ValidUntil =
+                    DateTime.UtcNow.AddDays(30),
+
+                EffectiveDate =
+                    effectiveDate,
+
+                CoverageIds =
+                    Array.Empty<Guid>(),
+
+                Usage = "PRIVATE",
+                ClaimsCount = 0,
+                PackageId = null,
+                Deductible = 0m,
+                PreviousPolicyId = null
+            };
+
+        var response =
+            await client.PostAsJsonAsync(
+                "/api/Quote",
+                request);
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            response.StatusCode);
+
+        var quote =
+            await response.Content
+                .ReadFromJsonAsync<QuoteDto>();
+
+        Assert.NotNull(quote);
+
+        var snapshot =
+            await IntegrationTestHelper
+                .GetQuotePricingSnapshotAsync(
+                    factory,
+                    quote!.Id);
+
+        Assert.NotNull(snapshot);
+
+        Assert.Equal(
+            quote.Id,
+            snapshot!.QuoteId);
+
+        Assert.Equal(
+            0.0200m,
+            snapshot.BaseRate);
+
+        Assert.Equal(
+            quote.PremiumAmount,
+            snapshot.FinalPremium);
+    }
+    [Fact]
+    public async Task CreateQuote_WithPackageOnly_ShouldAddDefaultCoverages()
+    {
+        await using var factory =
+            new WebApplicationFactory<Program>();
+
+        var user =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Admin");
+
+        using var client =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                user);
+
+        var customerId =
+            await IntegrationTestHelper.CreateCustomerAsync(
+                client);
+
+        var vehicle =
+            await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
+                client,
+                customerId);
+
+        await using var setupScope =
+            factory.Services.CreateAsyncScope();
+
+        var setupContext =
+            setupScope.ServiceProvider
+                .GetRequiredService<KaskoContext>();
+
+        var package =
+            await setupContext.InsurancePackages
+                .AsNoTracking()
+                .Where(x =>
+                    x.Code == "STANDART" &&
+                    x.IsActive &&
+                    !x.IsDeleted)
+                .FirstOrDefaultAsync();
+
+        Assert.NotNull(package);
+
+        var defaultPackageCoverageIds =
+            await setupContext.PackageCoverages
+                .AsNoTracking()
+                .Where(x =>
+                    x.InsurancePackageId == package!.Id &&
+                    x.IsDefault &&
+                    !x.IsDeleted)
+                .Select(x => x.CoverageId)
+                .ToListAsync();
+
+        Assert.NotEmpty(defaultPackageCoverageIds);
+
+        var quoteRequest =
+            new CreateQuoteDto
+            {
+                CustomerId = customerId,
+                VehicleId = vehicle.Id,
+                ValidUntil = DateTime.UtcNow.AddDays(30),
+                PackageId = package!.Id,
+                CoverageIds = Array.Empty<Guid>(),
+                Usage = "PRIVATE",
+                ClaimsCount = 0,
+                Deductible = 0m,
+                PreviousPolicyId = null
+            };
+
+        var response =
+            await client.PostAsJsonAsync(
+                "/api/Quote",
+                quoteRequest);
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            response.StatusCode);
+
+        var quote =
+            await response.Content
+                .ReadFromJsonAsync<QuoteDto>();
+
+        Assert.NotNull(quote);
+
+        await using var verificationScope =
+            factory.Services.CreateAsyncScope();
+
+        var verificationContext =
+            verificationScope.ServiceProvider
+                .GetRequiredService<KaskoContext>();
+
+        var quoteCoverageIds =
+            await verificationContext.QuoteCoverages
+                .AsNoTracking()
+                .Where(x =>
+                    x.QuoteId == quote!.Id &&
+                    !x.IsDeleted)
+                .Select(x => x.CoverageId)
+                .ToListAsync();
+
+        foreach (var coverageId in defaultPackageCoverageIds)
+        {
+            Assert.Contains(
+                coverageId,
+                quoteCoverageIds);
+        }
+    }
+    [Fact]
+    public async Task CreateQuote_WithPackageOnly_ShouldApplyPackageFactorAndCoveragePremium()
+    {
+        await using var factory =
+            new WebApplicationFactory<Program>();
+
+        var user =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Admin");
+
+        using var client =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                user);
+
+        var customerId =
+            await IntegrationTestHelper.CreateCustomerAsync(
+                client);
+
+        var vehicle =
+            await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
+                client,
+                customerId);
+
+        await using var scope =
+            factory.Services.CreateAsyncScope();
+
+        var context =
+            scope.ServiceProvider
+                .GetRequiredService<KaskoContext>();
+
+        var package =
+            await context.InsurancePackages
+                .AsNoTracking()
+                .Where(x =>
+                    x.Code == "STANDART" &&
+                    x.IsActive &&
+                    !x.IsDeleted)
+                .FirstOrDefaultAsync();
+
+        Assert.NotNull(package);
+
+        var defaultCoverageIds =
+            await context.PackageCoverages
+                .AsNoTracking()
+                .Where(x =>
+                    x.InsurancePackageId == package!.Id &&
+                    x.IsDefault &&
+                    !x.IsDeleted)
+                .Select(x => x.CoverageId)
+                .ToListAsync();
+
+        Assert.NotEmpty(defaultCoverageIds);
+
+        var request =
+            new CreateQuoteDto
+            {
+                CustomerId = customerId,
+                VehicleId = vehicle.Id,
+                ValidUntil = DateTime.UtcNow.AddDays(30),
+                PackageId = package!.Id,
+                CoverageIds = Array.Empty<Guid>(),
+                Usage = "PRIVATE",
+                ClaimsCount = 0,
+                Deductible = 0m,
+                PreviousPolicyId = null
+            };
+
+        var response =
+            await client.PostAsJsonAsync(
+                "/api/Quote",
+                request);
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            response.StatusCode);
+
+        var quote =
+            await response.Content
+                .ReadFromJsonAsync<QuoteDto>();
+
+        Assert.NotNull(quote);
+
+        var snapshot =
+            await IntegrationTestHelper.GetQuotePricingSnapshotAsync(
+                factory,
+                quote!.Id);
+
+        Assert.NotNull(snapshot);
+
+        Assert.Equal(
+            package.Factor,
+            snapshot!.PackageFactor);
+
+        Assert.Equal(
+            quote.PremiumAmount,
+            snapshot.FinalPremium);
+
+        var quoteCoverageCount =
+            await context.QuoteCoverages
+                .AsNoTracking()
+                .CountAsync(x =>
+                    x.QuoteId == quote.Id &&
+                    !x.IsDeleted);
+
+        Assert.Equal(
+            defaultCoverageIds.Count,
+            quoteCoverageCount);
     }
 }

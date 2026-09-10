@@ -255,7 +255,7 @@ public static class IntegrationTestHelper
             CustomerId = customerId,
 
             PlateNumber =
-    $"34TEST{uniqueId.Substring(0, 14)}",
+    $"34TST{new Random().Next(10000, 99999)}",
 
             VIN =
     uniqueId.Substring(0, 17),

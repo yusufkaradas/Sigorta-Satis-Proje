@@ -1,4 +1,5 @@
 ﻿using Kasko.Business.DTOs.Policy;
+using Kasko.Business.DTOs.Quote;
 
 namespace Kasko.Business.Services.Abstract
 {
@@ -20,5 +21,7 @@ namespace Kasko.Business.Services.Abstract
 
         Task<IEnumerable<PolicyListDto>> GetUpcomingRenewalsAsync(
     int daysAhead = 30);
+        Task<QuoteDto> RenewAsync(
+    PolicyRenewalDto dto);
     }
 }

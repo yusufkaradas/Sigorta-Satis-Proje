@@ -44,7 +44,17 @@ export class QuoteService {
     );
 
   }
+  
+calculate(
+  dto: QuoteCreateDto
+): Observable<any> {
 
+  return this.http.post<any>(
+    `${this.apiUrl}/calculate`,
+    dto
+  );
+
+}
 
   update(
     id: string,

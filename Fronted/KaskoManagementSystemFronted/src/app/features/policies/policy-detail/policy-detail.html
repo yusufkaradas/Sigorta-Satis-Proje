@@ -231,15 +231,15 @@
 
         <div class="detail-item">
 
-  <span>
-    Oluşturulma Tarihi
-  </span>
+          <span>
+            Oluşturulma Tarihi
+          </span>
 
-  <strong>
-    {{ policy.createdDate | date:'dd.MM.yyyy' }}
-  </strong>
+          <strong>
+            {{ policy.createdDate | date:'dd.MM.yyyy' }}
+          </strong>
 
-</div>
+        </div>
 
       </div>
 
@@ -314,19 +314,6 @@
 
           <strong>
             {{ quote.customerPhone || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Teklif
-          </span>
-
-          <strong class="reference-value">
-            {{ quote.quoteNumber || '—' }}
           </strong>
 
         </div>
@@ -417,39 +404,6 @@
 
           <strong class="plate">
             {{ quote.plateNumber || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Araç Değeri
-          </span>
-
-          <strong>
-
-            {{
-              quote.marketValue != null
-                ? (quote.marketValue | number:'1.0-2') + ' ₺'
-                : '—'
-            }}
-
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Araç
-          </span>
-
-          <strong>
-            {{ quote.brand || '—' }}
-            {{ quote.model || '' }}
           </strong>
 
         </div>
@@ -653,11 +607,13 @@
           </span>
 
           <strong>
+
             {{
               quote.pricingSnapshot?.marketValue
                 | number:'1.2-2'
             }}
             ₺
+
           </strong>
 
         </div>
@@ -670,11 +626,13 @@
           </span>
 
           <strong>
+
             {{
               quote.pricingSnapshot?.coveragePremium
                 | number:'1.2-2'
             }}
             ₺
+
           </strong>
 
         </div>
@@ -687,11 +645,13 @@
           </span>
 
           <strong>
+
             {{
               quote.pricingSnapshot?.discount
                 | number:'1.2-2'
             }}
             ₺
+
           </strong>
 
         </div>
@@ -762,10 +722,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.ageFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -778,10 +740,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.usageFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -794,10 +758,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.driverFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -810,10 +776,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.claimsFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -826,10 +794,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.regionFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -842,10 +812,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.packageFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -858,10 +830,12 @@
               </span>
 
               <strong>
+
                 {{
                   quote.pricingSnapshot?.deductibleFactor
                     | number:'1.2-4'
                 }}
+
               </strong>
 
             </div>
@@ -871,6 +845,129 @@
         </div>
 
       </details>
+
+    </section>
+
+
+    <!-- ===================================================
+         PAYMENT
+    ==================================================== -->
+    <section
+      class="detail-section payment-section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-index">
+            06
+          </span>
+
+          <div>
+
+            <h3>
+              Ödeme Bilgileri
+            </h3>
+
+            <p>
+              Poliçenin ödeme işlemine ait bilgiler
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div
+        *ngIf="isPaymentLoading"
+        class="payment-loading">
+
+        Ödeme bilgileri yükleniyor...
+
+      </div>
+
+
+      <div
+        *ngIf="!isPaymentLoading && payment"
+        class="payment-grid">
+
+        <div class="info-card">
+
+          <span class="info-label">
+            İşlem No
+          </span>
+
+          <strong>
+            {{ payment.transactionNumber }}
+          </strong>
+
+        </div>
+
+
+        <div class="info-card">
+
+          <span class="info-label">
+            Tutar
+          </span>
+
+          <strong class="payment-amount">
+
+            {{
+              payment.amount
+                | number:'1.2-2'
+            }}
+            ₺
+
+          </strong>
+
+        </div>
+
+
+        <div class="info-card">
+
+          <span class="info-label">
+            Durum
+          </span>
+
+          <span class="payment-status-success">
+            Başarılı
+          </span>
+
+        </div>
+
+
+        <div class="info-card">
+
+          <span class="info-label">
+            Ödeme Tarihi
+          </span>
+
+          <strong>
+
+            {{
+              payment.paymentDate
+                | date:'dd.MM.yyyy HH:mm'
+            }}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div
+        *ngIf="
+          !isPaymentLoading &&
+          !payment
+        "
+        class="payment-empty">
+
+        Bu poliçe için başarılı bir ödeme kaydı bulunmuyor.
+
+      </div>
 
     </section>
 
@@ -886,6 +983,22 @@
         (click)="goBack()">
 
         Geri Dön
+
+      </button>
+
+
+      <button
+        *ngIf="policy.status === PolicyStatus.Draft"
+        type="button"
+        class="action-button action-primary"
+        [routerLink]="[
+          '/payments/new'
+        ]"
+        [queryParams]="{
+          policyId: policy.id
+        }">
+
+        Ödeme Yap
 
       </button>
 

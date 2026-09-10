@@ -1,12 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Kasko.Business.DTOs.Policy
 {
-    internal class PolicyRenewalDto
+    public class PolicyRenewalDto
     {
+        [Required]
+        public Guid PolicyId { get; set; }
+
+        [Required]
+        public DateTime StartDate { get; set; }
+
+        [Required]
+        public DateTime EndDate { get; set; }
+
+        public string Usage { get; set; } = "PRIVATE";
+
+        public int ClaimsCount { get; set; }
+
+        public Guid? PackageId { get; set; }
+
+        public decimal Deductible { get; set; }
+
+        public IReadOnlyCollection<Guid> CoverageIds { get; set; }
+            = Array.Empty<Guid>();
     }
 }

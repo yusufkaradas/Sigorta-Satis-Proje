@@ -724,7 +724,10 @@ form {
 
     width: 100%;
   }
+.calculate-button {
 
+  width: 100%;
+}
   .coverage-list {
 
     padding: 15px;
@@ -746,5 +749,121 @@ form {
 
     font-size: 13px;
   }
+/* =====================================================
+   PRICING PREVIEW
+===================================================== */
 
+.pricing-preview {
+
+  margin-top: 28px;
+
+  padding: 22px 24px;
+
+  border: 1px solid #d8e4ee;
+
+  border-radius: 14px;
+
+  background: #f8fbfe;
+
+  box-sizing: border-box;
+}
+
+.pricing-preview-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.pricing-preview-header strong {
+
+  display: block;
+
+  color: #405d79;
+
+  font-size: 16px;
+
+  font-weight: bold;
+}
+
+.pricing-preview-header small {
+
+  display: block;
+
+  margin-top: 6px;
+
+  color: #6d7d8c;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+.pricing-preview-value {
+
+  margin-top: 14px;
+
+  color: #4f46e5;
+
+  font-size: 28px;
+
+  font-weight: bold;
+
+  line-height: 1.2;
+}
+
+
+/* =====================================================
+   CALCULATE BUTTON
+===================================================== */
+
+.calculate-button {
+
+  min-width: 160px;
+
+  height: 45px;
+
+  border: 1px solid #4f46e5;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #4f46e5;
+
+  font-family: inherit;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.calculate-button:hover:not(:disabled) {
+
+  background: #4f46e5;
+
+  color: #ffffff;
+}
+
+.calculate-button:disabled {
+
+  background: #f0f2f5;
+
+  border-color: #cfd5dd;
+
+  color: #9aa3af;
+
+  cursor: not-allowed;
+}
 }

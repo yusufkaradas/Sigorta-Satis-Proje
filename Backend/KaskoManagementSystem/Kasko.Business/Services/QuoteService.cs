@@ -362,7 +362,9 @@ namespace Kasko.Business.Services
                     Deductible =
                         dto.Deductible,
 
-                    CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds)
+                    CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds),
+
+                    EffectiveDate = dto.EffectiveDate
                 };
 
             return await _pricingService.CalculateAsync(
@@ -441,18 +443,41 @@ namespace Kasko.Business.Services
                         "Önceki poliçe bu müşteriye ait değil.");
                 }
             }
-            var pricingRequest = new PricingRequest
-            {
-                MarketValue = vehicle.MarketValue,
-                ModelYear = vehicle.ModelYear,
-                DriverAge = driverAge,
-                Usage = dto.Usage,
-                ClaimsCount = previousPolicy?.ClaimsCount ?? dto.ClaimsCount,
-                Region = region,
-                PackageId = dto.PackageId,
-                Deductible = dto.Deductible,
-                CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds)
-            };
+            var pricingRequest =
+     new PricingRequest
+     {
+         MarketValue =
+             vehicle.MarketValue,
+
+         ModelYear =
+             vehicle.ModelYear,
+
+         DriverAge =
+             driverAge,
+
+         Usage =
+             dto.Usage,
+
+         ClaimsCount =
+             previousPolicy?.ClaimsCount
+             ?? dto.ClaimsCount,
+
+         Region =
+             region,
+
+         PackageId =
+             dto.PackageId,
+
+         Deductible =
+             dto.Deductible,
+
+         CoverageIds = await ResolveCoverageIdsAsync(
+             dto.PackageId,
+             dto.CoverageIds),
+
+         EffectiveDate =
+             dto.EffectiveDate
+     };
 
             var pricing =
                 await _pricingService.CalculateAsync(

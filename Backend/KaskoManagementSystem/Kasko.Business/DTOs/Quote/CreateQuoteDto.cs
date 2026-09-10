@@ -6,6 +6,8 @@
         public Guid VehicleId { get; set; }
         public DateTime ValidUntil { get; set; }
 
+        public DateTime EffectiveDate { get; set; } = DateTime.UtcNow;
+
         public IReadOnlyCollection<Guid> CoverageIds { get; set; }
             = Array.Empty<Guid>();
 

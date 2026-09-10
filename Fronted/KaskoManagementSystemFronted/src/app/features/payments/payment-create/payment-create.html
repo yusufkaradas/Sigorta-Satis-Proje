@@ -1,0 +1,176 @@
+<div class="payment-create-page">
+
+  <section class="page-header">
+
+    <div class="page-header-content">
+
+      <span class="page-eyebrow">
+        ÖDEME İŞLEMLERİ
+      </span>
+
+      <h1>
+        Poliçe Ödemesi
+      </h1>
+
+      <p>
+        Taslak poliçeniz için ödeme işlemini tamamlayın.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <div
+    *ngIf="isLoading"
+    class="loading">
+
+    <div class="loading-spinner"></div>
+
+    <span>
+      Poliçe bilgileri yükleniyor...
+    </span>
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="message message-error">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <div
+    *ngIf="!isLoading && successMessage"
+    class="message message-success">
+
+    {{ successMessage }}
+
+  </div>
+
+
+  <section
+    *ngIf="
+      !isLoading &&
+      policy &&
+      !errorMessage
+    "
+    class="payment-card">
+
+    <div class="payment-card-header">
+
+      <div>
+
+        <span class="section-label">
+          POLİÇE
+        </span>
+
+        <h2>
+          {{ policy.policyNumber }}
+        </h2>
+
+      </div>
+
+      <span class="status-badge">
+        Taslak
+      </span>
+
+    </div>
+
+
+    <div class="payment-summary">
+
+      <div class="summary-item">
+
+        <span>
+          Başlangıç
+        </span>
+
+        <strong>
+          {{ policy.startDate | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="summary-item">
+
+        <span>
+          Bitiş
+        </span>
+
+        <strong>
+          {{ policy.endDate | date:'dd.MM.yyyy' }}
+        </strong>
+
+      </div>
+
+
+      <div class="summary-item">
+
+        <span>
+          Ödenecek Tutar
+        </span>
+
+        <strong class="amount">
+          {{
+            policy.premiumAmount
+              | number:'1.2-2'
+          }}
+          ₺
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="payment-info">
+
+      <strong>
+        Ödeme Bilgisi
+      </strong>
+
+      <p>
+        Ödeme tutarı poliçe priminden otomatik olarak
+        belirlenmektedir.
+      </p>
+
+    </div>
+
+
+    <div class="payment-actions">
+
+      <button
+        type="button"
+        class="action-button action-secondary"
+        (click)="goBack()"
+        [disabled]="isSubmitting">
+
+        Vazgeç
+
+      </button>
+
+
+      <button
+        type="button"
+        class="action-button action-primary"
+        (click)="createPayment()"
+        [disabled]="isSubmitting">
+
+        {{
+          isSubmitting
+            ? 'Ödeme Yapılıyor...'
+            : 'Ödemeyi Tamamla'
+        }}
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

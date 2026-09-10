@@ -101,15 +101,17 @@
         </label>
 
         <select
-          id="vehicleId"
-          name="vehicleId"
-          [(ngModel)]="vehicleId"
-          [disabled]="
-            !customerId ||
-            isLoadingVehicles
-          "
-          required
-        >
+  id="vehicleId"
+  name="vehicleId"
+  [(ngModel)]="vehicleId"
+  (ngModelChange)="onVehicleChange()"
+  [disabled]="
+  !customerId ||
+  !packageId ||
+  isLoadingVehicles
+"
+  required
+>
 
           <option
             value=""
@@ -151,10 +153,11 @@
         </label>
 
         <select
-          id="usage"
-          name="usage"
-          [(ngModel)]="usage"
-          required
+         id="usage"
+         name="usage"
+         [(ngModel)]="usage"
+         (ngModelChange)="calculateQuote()"
+         required
         >
 
           <option value="PRIVATE">
@@ -183,15 +186,15 @@
         </label>
 
         <select
-          id="previousPolicyId"
-          name="previousPolicyId"
-          [(ngModel)]="previousPolicyId"
-          (ngModelChange)="onPreviousPolicyChange()"
-          [disabled]="
-            isLoadingPreviousPolicies ||
-            !customerId
-          "
-        >
+  id="previousPolicyId"
+  name="previousPolicyId"
+  [(ngModel)]="previousPolicyId"
+  (ngModelChange)="onPreviousPolicyChange(); calculateQuote()"
+  [disabled]="
+    isLoadingPreviousPolicies ||
+    !customerId
+  "
+>
 
           <option [ngValue]="null">
 
@@ -242,10 +245,11 @@
         </label>
 
         <select
-          id="deductible"
-          name="deductible"
-          [(ngModel)]="deductible"
-        >
+        id="deductible"
+        name="deductible"
+        [(ngModel)]="deductible"
+        (ngModelChange)="calculateQuote()"
+     >
 
           <option [ngValue]="0">
             Muafiyet Yok
@@ -446,9 +450,67 @@
       </div>
 
 
+      <!-- FİYAT ÖNİZLEME -->
+
+      <div
+        class="pricing-preview"
+        *ngIf="calculatedPremium !== null">
+
+        <div class="pricing-preview-header">
+
+          <div>
+
+            <strong>
+              Hesaplanan Prim
+            </strong>
+
+            <small>
+              Seçilen paket, teminat ve risk bilgilerine göre
+              hesaplanan teklif primi
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="pricing-preview-value">
+
+          {{ calculatedPremium | number:'1.2-2' }} ₺
+
+        </div>
+
+      </div>
+
+
       <!-- ACTIONS -->
 
       <div class="form-actions">
+
+
+        <!-- FİYATI HESAPLA -->
+
+        <button
+          type="button"
+          class="calculate-button"
+          (click)="calculateQuote()"
+          [disabled]="
+            quoteForm.invalid ||
+            isCalculating
+          ">
+
+          <span *ngIf="!isCalculating">
+            Fiyatı Hesapla
+          </span>
+
+          <span *ngIf="isCalculating">
+            Hesaplanıyor...
+          </span>
+
+        </button>
+
+
+        <!-- İPTAL -->
 
         <button
           type="button"
@@ -459,6 +521,8 @@
 
         </button>
 
+
+        <!-- TEKLİF OLUŞTUR -->
 
         <button
           type="submit"
@@ -477,6 +541,7 @@
           </span>
 
         </button>
+
 
       </div>
 

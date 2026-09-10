@@ -1,5 +1,7 @@
 ﻿using Kasko.Business.DTOs.Policy;
+using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Exceptions;
+using Kasko.Business.Services;
 using Kasko.Business.Services.Concrete;
 using Kasko.DataAccess.Repositories;
 using Kasko.DataAccess.Repositories.Abstract;
@@ -18,6 +20,7 @@ public class PolicyServiceTests
     private readonly Mock<ICustomerRepository> _customerRepositoryMock;
     private readonly Mock<IVehicleRepository> _vehicleRepositoryMock;
     private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+    private readonly Mock<IQuoteService> _quoteServiceMock = new();
 
     private readonly PolicyService _service;
 
@@ -29,6 +32,7 @@ public class PolicyServiceTests
         _customerRepositoryMock = new Mock<ICustomerRepository>();
         _vehicleRepositoryMock = new Mock<IVehicleRepository>();
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        _quoteServiceMock = new Mock<IQuoteService>();
 
         _unitOfWorkMock
             .Setup(x => x.Policies)
@@ -52,7 +56,8 @@ public class PolicyServiceTests
             _quoteRepositoryMock.Object,
             _customerRepositoryMock.Object,
             _vehicleRepositoryMock.Object,
-            _httpContextAccessorMock.Object);
+            _httpContextAccessorMock.Object,
+            _quoteServiceMock.Object);
     }
 
     [Fact]
@@ -1593,6 +1598,102 @@ public class PolicyServiceTests
 
         _unitOfWorkMock.Verify(
             x => x.SaveChangesAsync(),
+            Times.Once);
+    }
+    [Fact]
+    public async Task RenewAsync_ShouldThrowBadRequest_WhenPolicyIsNotActive()
+    {
+        var policyId = Guid.NewGuid();
+
+        var policy = new Policy
+        {
+            Id = policyId,
+            CustomerId = Guid.NewGuid(),
+            VehicleId = Guid.NewGuid(),
+            QuoteId = Guid.NewGuid(),
+            PolicyNumber = "POL-RENEW-TEST",
+            PremiumAmount = 25000,
+            StartDate = DateTime.UtcNow.Date,
+            EndDate = DateTime.UtcNow.Date.AddYears(1),
+            Status = PolicyStatus.Draft,
+            IsDeleted = false
+        };
+
+        var dto = new PolicyRenewalDto
+        {
+            PolicyId = policyId,
+            StartDate = policy.EndDate.Date,
+            EndDate = policy.EndDate.Date.AddYears(1)
+        };
+
+        _policyRepositoryMock
+            .Setup(x => x.GetByIdAsync(policyId))
+            .ReturnsAsync(policy);
+
+        var exception = await Assert.ThrowsAsync<BadRequestException>(
+            () => _service.RenewAsync(dto));
+
+        Assert.Equal(
+            "Sadece aktif poliçe yenilenebilir.",
+            exception.Message);
+    }
+    [Fact]
+    public async Task RenewAsync_ShouldCreateNewQuote_WithPolicyCustomerAndVehicle()
+    {
+        var policyId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+
+        var policyEndDate = DateTime.UtcNow.Date.AddDays(30);
+
+        var policy = new Policy
+        {
+            Id = policyId,
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            QuoteId = Guid.NewGuid(),
+            PolicyNumber = "POL-RENEW-TEST",
+            PremiumAmount = 25000,
+            StartDate = DateTime.UtcNow.Date.AddYears(-1),
+            EndDate = policyEndDate,
+            Status = PolicyStatus.Active,
+            IsDeleted = false
+        };
+
+        var dto = new PolicyRenewalDto
+        {
+            PolicyId = policyId,
+            StartDate = policyEndDate,
+            EndDate = policyEndDate.AddYears(1),
+            Usage = "PRIVATE",
+            ClaimsCount = 1,
+            PackageId = null,
+            Deductible = 0,
+            CoverageIds = Array.Empty<Guid>()
+        };
+
+        _policyRepositoryMock
+            .Setup(x => x.GetByIdAsync(policyId))
+            .ReturnsAsync(policy);
+
+        _quoteServiceMock
+            .Setup(x => x.CreateAsync(It.IsAny<CreateQuoteDto>()))
+            .ReturnsAsync((QuoteDto)null!);
+
+        await _service.RenewAsync(dto);
+
+        _quoteServiceMock.Verify(
+            x => x.CreateAsync(
+                It.Is<CreateQuoteDto>(request =>
+                    request.CustomerId == customerId &&
+                    request.VehicleId == vehicleId &&
+                    request.ValidUntil == dto.StartDate &&
+                    request.Usage == dto.Usage &&
+                    request.ClaimsCount == dto.ClaimsCount &&
+                    request.PackageId == dto.PackageId &&
+                    request.Deductible == dto.Deductible &&
+                    request.CoverageIds.SequenceEqual(dto.CoverageIds)
+                )),
             Times.Once);
     }
 }

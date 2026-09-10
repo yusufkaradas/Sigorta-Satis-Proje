@@ -13,6 +13,11 @@ export interface Payment {
   createdDate: string;
 }
 
+export interface PaymentCreateDto {
+  policyId: string;
+  simulateFailure: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,6 +37,13 @@ export class PaymentsService {
   getById(id: string): Observable<Payment> {
     return this.http.get<Payment>(
       `${this.apiUrl}/${id}`
+    );
+  }
+
+  create(dto: PaymentCreateDto): Observable<Payment> {
+    return this.http.post<Payment>(
+      this.apiUrl,
+      dto
     );
   }
 }

@@ -28,7 +28,48 @@ public class PricingServiceTests
         _service = new PricingService(
             _unitOfWorkMock.Object);
     }
+    [Fact]
+    public async Task CalculateAsync_ShouldUseEffectiveDate()
+    {
+        var effectiveDate =
+            new DateTime(2026, 8, 15);
 
+        SetupRules(
+            baseRate: 0.02m,
+            ageFactorCode: "AGE_0_2",
+            ageFactor: 1.00m);
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetApplicableRuleAsync(
+                "BASE_KASKO_RATE",
+                effectiveDate))
+            .ReturnsAsync(
+                CreateRule(
+                    "BASE_KASKO_RATE",
+                    0.02m));
+
+        var result =
+            await _service.CalculateAsync(
+                new PricingRequest
+                {
+                    MarketValue = 1_000_000m,
+                    ModelYear = DateTime.UtcNow.Year,
+                    Usage = "PRIVATE",
+                    ClaimsCount = 0,
+                    EffectiveDate = effectiveDate,
+                    CoverageIds = Array.Empty<Guid>()
+                });
+
+        Assert.Equal(
+            0.02m,
+            result.BaseRate);
+
+        _pricingRuleRepositoryMock.Verify(
+            x => x.GetApplicableRuleAsync(
+                "BASE_KASKO_RATE",
+                effectiveDate),
+            Times.Once);
+    }
     [Fact]
     public async Task CalculateAsync_ShouldCalculateCorrectly_ForVehicleAge0To2()
     {

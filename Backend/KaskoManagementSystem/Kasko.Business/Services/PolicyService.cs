@@ -4,6 +4,8 @@ using Kasko.Business.Services.Abstract;
 using Kasko.DataAccess.Repositories;
 using Kasko.DataAccess.Repositories.Abstract;
 
+using Kasko.Business.DTOs.Quote;
+
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +23,7 @@ namespace Kasko.Business.Services.Concrete
         private readonly ICustomerRepository _customerRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IQuoteService _quoteService;
 
         public PolicyService(
             IUnitOfWork unitOfWork,
@@ -28,7 +31,8 @@ namespace Kasko.Business.Services.Concrete
             IQuoteRepository quoteRepository,
             ICustomerRepository customerRepository,
             IVehicleRepository vehicleRepository, 
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IQuoteService quoteService)
         {
             _unitOfWork = unitOfWork;
             _policyRepository = policyRepository;
@@ -36,6 +40,7 @@ namespace Kasko.Business.Services.Concrete
             _customerRepository = customerRepository;
             _vehicleRepository = vehicleRepository;
             _httpContextAccessor = httpContextAccessor;
+            _quoteService = quoteService;
         }
 
         public async Task<PolicyDto> CreateAsync(PolicyCreateDto dto)
@@ -382,7 +387,77 @@ namespace Kasko.Business.Services.Concrete
                     "Poliçe başka bir kullanıcı tarafından güncellenmiş. Lütfen güncel veriyi tekrar alın.");
             }
         }
+        public async Task<QuoteDto> RenewAsync(
+    PolicyRenewalDto dto)
+        {
+            var policy = await _policyRepository
+                .GetByIdAsync(dto.PolicyId);
 
+            if (policy == null || policy.IsDeleted)
+            {
+                throw new NotFoundException(
+                    "Poliçe bulunamadı.");
+            }
+
+            if (policy.Status != PolicyStatus.Active)
+            {
+                throw new BadRequestException(
+                    "Sadece aktif poliçe yenilenebilir.");
+            }
+
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    policy.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Poliçe bulunamadı.");
+                }
+            }
+
+            if (dto.StartDate >= dto.EndDate)
+            {
+                throw new BadRequestException(
+                    "Yenileme başlangıç tarihi bitiş tarihinden önce olmalıdır.");
+            }
+
+            if (dto.StartDate < policy.EndDate.Date)
+            {
+                throw new BadRequestException(
+                    "Yenileme başlangıç tarihi mevcut poliçenin bitiş tarihinden önce olamaz.");
+            }
+
+            var quote = await _quoteService.CreateAsync(
+                new CreateQuoteDto
+                {
+                    CustomerId = policy.CustomerId,
+                    VehicleId = policy.VehicleId,
+
+                    ValidUntil = dto.StartDate,
+
+                    CoverageIds = dto.CoverageIds,
+                    Usage = dto.Usage,
+                    ClaimsCount = dto.ClaimsCount,
+                    PackageId = dto.PackageId,
+                    Deductible = dto.Deductible
+                });
+
+            return quote;
+        }
         public async Task DeleteAsync(
             Guid id,
             Guid? deletedBy)

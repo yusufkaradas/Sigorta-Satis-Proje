@@ -1423,7 +1423,6 @@ summary:focus-visible {
 
   .policy-detail-page {
     padding-left: 8px;
-
     padding-right: 8px;
   }
 
@@ -1441,7 +1440,6 @@ summary:focus-visible {
 
   .detail-item {
     min-height: 67px;
-
     padding: 12px 13px;
   }
 
@@ -1452,4 +1450,69 @@ summary:focus-visible {
   .total-premium-card strong {
     font-size: 20px;
   }
+}
+
+
+/* =========================================================
+   PAYMENT
+========================================================= */
+
+.payment-section {
+  margin-top: 32px;
+}
+
+.payment-loading,
+.payment-empty {
+  padding: 20px;
+  border-radius: 12px;
+  background: #f8f9fc;
+  color: #6f7889;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  padding: 18px 20px;
+  border: 1px solid #e7ebf2;
+  border-radius: 12px;
+  background: #fafbfd;
+}
+
+.info-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #7b8495;
+}
+
+.info-card strong {
+  display: block;
+  font-size: 15px;
+  color: #24324a;
+}
+
+.payment-amount {
+  font-size: 21px !important;
+}
+
+.payment-status-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e8f7ed;
+  color: #2d7a46;
+  font-size: 13px;
+  font-weight: 700;
+}
+@media (max-width: 700px) {
+
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+
 }

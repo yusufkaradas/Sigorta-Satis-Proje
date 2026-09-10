@@ -104,6 +104,15 @@ namespace Kasko.API.Controllers
 
             return NoContent();
         }
+        [HttpPost("renew")]
+        public async Task<IActionResult> Renew(
+    [FromBody] PolicyRenewalDto dto)
+        {
+            var quote =
+                await _policyService.RenewAsync(dto);
+
+            return Ok(quote);
+        }
         [HttpPost("{id:guid}/expire")]
         public async Task<IActionResult> Expire(Guid id)
         {
