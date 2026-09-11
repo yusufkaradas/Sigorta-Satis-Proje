@@ -133,33 +133,41 @@ export class PaymentDetail {
   }
 
   formatDate(
-    date?: string | null
-  ): string {
+  date?: string | null
+): string {
 
-    if (!date) {
-      return '-';
-    }
-
-    const parsedDate =
-      new Date(date);
-
-    if (
-      Number.isNaN(
-        parsedDate.getTime()
-      )
-    ) {
-      return '-';
-    }
-
-    return new Intl.DateTimeFormat(
-      'tr-TR',
-      {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }
-    ).format(parsedDate);
+  if (!date) {
+    return '-';
   }
+
+  const hasTimezone =
+    /(?:Z|[+-]\d{2}:\d{2})$/i.test(date);
+
+  const normalizedDate =
+    hasTimezone
+      ? date
+      : `${date}Z`;
+
+  const parsedDate =
+    new Date(normalizedDate);
+
+  if (
+    Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    return '-';
+  }
+
+  return new Intl.DateTimeFormat(
+    'tr-TR',
+    {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }
+  ).format(parsedDate);
+}
 }

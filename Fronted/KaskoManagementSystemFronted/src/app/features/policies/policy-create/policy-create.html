@@ -1,222 +1,125 @@
 <div class="policy-create-page">
 
-  <div class="page-heading">
-    <div class="page-heading-content">
-      <span class="page-eyebrow">
-        POLİÇE YÖNETİMİ
+  <section class="processing-card">
+
+    <!-- OTOMATİK İŞLEM -->
+    @if (isSubmitting) {
+
+      <div class="processing-icon processing-icon-loading">
+
+        <span class="processing-spinner"></span>
+
+      </div>
+
+      <span class="processing-eyebrow">
+        SATIN ALMA İŞLEMİ
       </span>
 
       <h1>
-        Yeni Poliçe
+        Poliçeniz hazırlanıyor
       </h1>
 
       <p>
-        Kabul edilen teklif üzerinden yeni poliçe oluşturun.
+        Kabul edilen teklifiniz üzerinden poliçe oluşturuluyor.
       </p>
-    </div>
 
-    <a
-      routerLink="/policies"
-      class="back-button"
-    >
-      ← Poliçelere Dön
-    </a>
-  </div>
+      <div class="processing-steps">
 
-  <section class="form-card">
-
-    <div class="form-card-header">
-
-      <div class="section-title">
-        <span class="section-number">
-          01
-        </span>
-
-        <div>
-          <h2>
-            Poliçe Bilgileri
-          </h2>
-
-          <span class="section-description">
-            Kabul edilen tekliften aktarılan bilgiler ve poliçe süresi
-          </span>
-        </div>
-      </div>
-
-      <span class="new-policy-badge">
-        YENİ POLİÇE
-      </span>
-
-    </div>
-
-    <div class="form-divider"></div>
-
-    <!-- OTOMATİK AKTARILAN BİLGİLER -->
-    <div class="context-info">
-
-      <div class="context-info-icon">
-        ✓
-      </div>
-
-      <div class="context-info-content">
-
-        <strong>
-          Teklif bilgileri otomatik aktarıldı
-        </strong>
-
-        <span>
-          Müşteri, araç ve teklif bilgileri kabul edilen tekliften alınmıştır.
-        </span>
-
-      </div>
-
-    </div>
-
-    <form
-      [formGroup]="policyForm"
-      (ngSubmit)="createPolicy()"
-      class="policy-form"
-    >
-
-      <!-- BACKEND'E GÖNDERİLECEK GİZLİ BİLGİLER -->
-      <input
-        type="hidden"
-        formControlName="customerId"
-      />
-
-      <input
-        type="hidden"
-        formControlName="vehicleId"
-      />
-
-      <input
-        type="hidden"
-        formControlName="quoteId"
-      />
-
-      <!-- POLİÇE SÜRESİ -->
-      <div class="date-section">
-
-        <div class="section-subheading">
-          Poliçe Süresi
-        </div>
-
-        <div class="date-grid">
-
-          <!-- BAŞLANGIÇ -->
-          <div class="form-group">
-
-            <label for="startDate">
-              Başlangıç Tarihi
-            </label>
-
-            <input
-              id="startDate"
-              type="date"
-              formControlName="startDate"
-            />
-
-            @if (startDate.invalid && startDate.touched) {
-              <span class="validation-message">
-                Başlangıç tarihi zorunludur.
-              </span>
-            }
-
-          </div>
-
-          <!-- BİTİŞ -->
-          <div class="form-group">
-
-            <label for="endDate">
-              Bitiş Tarihi
-            </label>
-
-            <input
-             id="endDate"
-             type="date"
-             formControlName="endDate"
-             [min]="startDate.value"
-              />
-
-            @if (endDate.invalid && endDate.touched) {
-              <span class="validation-message">
-                Bitiş tarihi zorunludur.
-              </span>
-            }
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- HATA -->
-      @if (errorMessage) {
-
-        <div class="message message-error">
-
-          <span class="message-icon">
-            !
-          </span>
-
-          <span>
-            {{ errorMessage }}
-          </span>
-
-        </div>
-
-      }
-
-      <!-- BAŞARI -->
-      @if (successMessage) {
-
-        <div class="message message-success">
-
-          <span class="message-icon">
+        <div class="processing-step processing-step-active">
+          <span class="step-icon">
             ✓
           </span>
 
           <span>
-            {{ successMessage }}
+            Teklif onaylandı
           </span>
-
         </div>
 
-      }
+        <div class="processing-step processing-step-active">
+          <span class="step-icon">
+            <span class="mini-spinner"></span>
+          </span>
 
-      <!-- ALT BUTONLAR -->
-      <div class="form-actions">
+          <span>
+            Poliçe hazırlanıyor
+          </span>
+        </div>
 
-        <a
-          routerLink="/policies"
-          class="secondary-button"
-        >
-          İptal
-        </a>
+        <div class="processing-step">
+          <span class="step-icon">
+            3
+          </span>
 
-        <button
-          type="submit"
-          class="primary-button"
-          [disabled]="isSubmitting"
-        >
-
-          @if (isSubmitting) {
-
-            <span class="button-spinner"></span>
-
-            Poliçe Oluşturuluyor...
-
-          } @else {
-
-            Poliçe Oluştur
-
-          }
-
-        </button>
+          <span>
+            Ödeme
+          </span>
+        </div>
 
       </div>
 
-    </form>
+    }
+
+
+    <!-- BAŞARILI -->
+    @if (successMessage) {
+
+      <div class="processing-icon processing-icon-success">
+        ✓
+      </div>
+
+      <span class="processing-eyebrow">
+        İŞLEM HAZIR
+      </span>
+
+      <h1>
+        Poliçeniz hazır
+      </h1>
+
+      <p>
+        {{ successMessage }}
+      </p>
+
+      <div class="redirect-note">
+        <span class="redirect-spinner"></span>
+
+        Ödeme ekranına yönlendiriliyorsunuz...
+      </div>
+
+    }
+
+
+    <!-- HATA -->
+    @if (errorMessage) {
+
+      <div class="processing-icon processing-icon-error">
+        !
+      </div>
+
+      <span class="processing-eyebrow">
+        İŞLEM TAMAMLANAMADI
+      </span>
+
+      <h1>
+        Poliçe oluşturulamadı
+      </h1>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+      <div class="error-actions">
+
+        <a
+          routerLink="/quotes"
+          class="secondary-button">
+
+          Tekliflere Dön
+
+        </a>
+
+      </div>
+
+    }
 
   </section>
 

@@ -1,14 +1,15 @@
 <div class="quote-detail-page">
 
   <!-- =====================================================
-       PAGE HEADER
+       HEADER
   ====================================================== -->
+
   <section class="page-header">
 
     <div class="page-header-content">
 
       <span class="page-eyebrow">
-        TEKLİF YÖNETİMİ
+        KASKO TEKLİFİ
       </span>
 
       <h1>
@@ -16,19 +17,18 @@
       </h1>
 
       <p>
-        Teklif bilgilerini, teminatları ve fiyatlandırma detaylarını görüntüleyin.
+        Teklifinizi, kapsamını ve toplam priminizi kontrol edin.
       </p>
 
     </div>
+
 
     <button
       type="button"
       class="back-button"
       (click)="goBack()">
 
-      <span class="button-icon">←</span>
-
-      Tekliflere Dön
+      ← Tekliflere Dön
 
     </button>
 
@@ -38,6 +38,7 @@
   <!-- =====================================================
        LOADING
   ====================================================== -->
+
   <div
     *ngIf="isLoading"
     class="loading">
@@ -54,6 +55,7 @@
   <!-- =====================================================
        ERROR
   ====================================================== -->
+
   <div
     *ngIf="!isLoading && errorMessage"
     class="error-message">
@@ -70,30 +72,32 @@
 
 
   <!-- =====================================================
-       MAIN DETAIL
+       DETAIL
   ====================================================== -->
+
   <section
     *ngIf="!isLoading && quote"
     class="detail-card">
 
 
     <!-- ===================================================
-         QUOTE HERO
+         HERO
     ==================================================== -->
+
     <div class="quote-hero">
 
-      <div class="quote-hero-left">
+      <div class="quote-hero-content">
 
         <span class="section-label">
-          Teklif
+          Teklif No
         </span>
 
         <h2>
           {{ quote.quoteNumber }}
         </h2>
 
-        <p class="quote-created-info">
-          Oluşturulma Tarihi:
+        <p>
+          Oluşturulma:
           <strong>
             {{ formatCreatedDate(quote.createdDate) }}
           </strong>
@@ -102,567 +106,75 @@
       </div>
 
 
-      <!-- SADECE BURADA DURUM GÖSTERİLİYOR -->
-      <div
+      <span
         class="status-badge"
         [ngClass]="getStatusClass(quote.status)">
 
         {{ getStatusText(quote.status) }}
 
-      </div>
+      </span>
 
     </div>
 
 
     <!-- ===================================================
-         TEKLİF BİLGİLERİ
-         DURUM KALDIRILDI
+         QUICK SUMMARY
     ==================================================== -->
-    <section class="detail-section">
 
-      <div class="section-heading">
+    <section class="quick-summary">
 
-        <div>
 
-          <span class="section-index">
-            01
-          </span>
-
-          <div>
-
-            <h3>
-              Teklif Bilgileri
-            </h3>
-
-            <p>
-              Teklifin temel kimlik ve geçerlilik bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid detail-grid-3">
-
-        <div class="detail-item">
-
-          <span>
-            Teklif No
-          </span>
-
-          <strong class="quote-number">
-            {{ quote.quoteNumber }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Oluşturulma Tarihi
-          </span>
-
-          <strong>
-            {{ formatCreatedDate(quote.createdDate) }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Geçerlilik Tarihi
-          </span>
-
-          <strong>
-            {{ quote.validUntil | date:'dd.MM.yyyy' }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         CUSTOMER
-    ==================================================== -->
-    <section class="detail-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            02
-          </span>
-
-          <div>
-
-            <h3>
-              Müşteri Bilgileri
-            </h3>
-
-            <p>
-              Teklif sahibi müşteriye ait bilgiler
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <div class="detail-item">
-
-          <span>
-            Müşteri
-          </span>
-
-          <strong>
-            {{ quote.customerName || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            E-posta
-          </span>
-
-          <strong>
-            {{ quote.customerEmail || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Telefon
-          </span>
-
-          <strong>
-            {{ quote.customerPhone || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Müşteri ID
-          </span>
-
-          <strong class="identifier">
-            {{ quote.customerId }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         VEHICLE
-    ==================================================== -->
-    <section class="detail-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            03
-          </span>
-
-          <div>
-
-            <h3>
-              Araç Bilgileri
-            </h3>
-
-            <p>
-              Teklife konu olan araç bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <div class="detail-item">
-
-          <span>
-            Marka
-          </span>
-
-          <strong>
-            {{ quote.brand || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Model
-          </span>
-
-          <strong>
-            {{ quote.model || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Model Yılı
-          </span>
-
-          <strong>
-            {{ quote.modelYear || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Plaka
-          </span>
-
-          <strong class="plate">
-            {{ quote.plateNumber || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Araç Değeri
-          </span>
-
-          <strong>
-            {{
-              quote.marketValue != null
-                ? (quote.marketValue | number:'1.0-2') + ' ₺'
-                : '—'
-            }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Araç ID
-          </span>
-
-          <strong class="identifier">
-            {{ quote.vehicleId }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         COVERAGES
-    ==================================================== -->
-    <section
-      class="detail-section"
-      *ngIf="quote.coverages?.length">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            04
-          </span>
-
-          <div>
-
-            <h3>
-              Teminatlar
-            </h3>
-
-            <p>
-              Teklife dahil edilen teminat ve limit bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <span class="coverage-count">
-          {{ quote.coverages?.length }}
-          teminat
-        </span>
-
-      </div>
-
-
-      <div class="coverage-table">
-
-        <!-- HEADER -->
-        <div class="coverage-table-header">
-
-          <div>
-            Teminat
-          </div>
-
-          <div>
-            Limit
-          </div>
-
-          <div>
-            Prim
-          </div>
-
-          <div>
-            Durum
-          </div>
-
-        </div>
-
-
-        <!-- ROWS -->
-        <div
-          class="coverage-table-row"
-          *ngFor="let coverage of quote.coverages">
-
-
-          <!-- NAME -->
-          <div class="coverage-name">
-
-            <span class="coverage-icon">
-              ✓
-            </span>
-
-            <div>
-
-              <strong>
-                {{ coverage.coverageName }}
-              </strong>
-
-              <small>
-                Pakete dahil
-              </small>
-
-            </div>
-
-          </div>
-
-
-          <!-- LIMIT -->
-          <div class="coverage-limit-cell">
-
-            <span
-              *ngIf="coverage.limit != null"
-              class="limit-value">
-
-              {{
-                coverage.limit
-                  | number:'1.0-2'
-              }}
-              ₺
-
-            </span>
-
-            <span
-              *ngIf="coverage.limit == null"
-              class="muted-value">
-
-              Poliçe limiti
-
-            </span>
-
-          </div>
-
-
-          <!-- PRICE -->
-          <div class="coverage-price-cell">
-
-            {{
-              coverage.calculatedPrice
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </div>
-
-
-          <!-- STATUS -->
-          <div>
-
-            <span class="coverage-status">
-              Dahil
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="coverage-footnote">
+      <div class="quick-summary-item">
 
         <span>
-          ✓
+          Müşteri
         </span>
 
-        Bu teminatlar teklif fiyatına dahil edilmiştir.
+        <strong>
+          {{ quote.customerName || '—' }}
+        </strong>
 
       </div>
 
-    </section>
 
+      <div class="quick-summary-item">
 
-    <!-- ===================================================
-         PRICING
-    ==================================================== -->
-    <section
-      class="detail-section pricing-section"
-      *ngIf="quote.pricingSnapshot">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            05
-          </span>
-
-          <div>
-
-            <h3>
-              Fiyatlandırma
-            </h3>
-
-            <p>
-              Teklifin hesaplanan ana fiyat bileşenleri
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <span class="snapshot-badge">
-          SNAPSHOT
+        <span>
+          Araç
         </span>
 
-      </div>
+        <strong>
 
+          {{ quote.brand || '—' }}
+          {{ quote.model || '' }}
 
-      <!-- ===============================================
-           MAIN PRICE SUMMARY
-      ================================================ -->
-      <div class="pricing-overview">
+        </strong>
 
-        <div class="pricing-overview-row">
-
-          <span>
-            Araç Değeri
-          </span>
-
-          <strong>
-            {{
-              quote.pricingSnapshot?.marketValue
-                | number:'1.2-2'
-            }}
-            ₺
-          </strong>
-
-        </div>
-
-
-        <div class="pricing-overview-row">
-
-          <span>
-            Teminat Primleri
-          </span>
-
-          <strong>
-            {{
-              quote.pricingSnapshot?.coveragePremium
-                | number:'1.2-2'
-            }}
-            ₺
-          </strong>
-
-        </div>
-
-
-        <div class="pricing-overview-row">
-
-          <span>
-            İndirim
-          </span>
-
-          <strong>
-            {{
-              quote.pricingSnapshot?.discount
-                | number:'1.2-2'
-            }}
-            ₺
-          </strong>
-
-        </div>
+        <small>
+          {{ quote.plateNumber || '—' }}
+        </small>
 
       </div>
 
 
-      <!-- ===============================================
-           TOTAL
-      ================================================ -->
-      <div class="total-premium-card">
+      <div class="quick-summary-item">
 
-        <div>
+        <span>
+          Geçerlilik
+        </span>
 
-          <span>
-            Toplam Prim
-          </span>
+        <strong>
+          {{ quote.validUntil | date:'dd.MM.yyyy' }}
+        </strong>
 
-          <small>
-            Teklif için hesaplanan nihai tutar
-          </small>
+      </div>
 
-        </div>
 
+      <div class="quick-summary-item price">
+
+        <span>
+          Toplam Prim
+        </span>
 
         <strong>
 
@@ -670,197 +182,758 @@
             quote.premiumAmount
               | number:'1.2-2'
           }}
+
           ₺
 
         </strong>
 
       </div>
 
+    </section>
+
+
+    <!-- ===================================================
+         MAIN GRID
+    ==================================================== -->
+
+    <div class="detail-main-grid">
+
 
       <!-- ===============================================
-           TECHNICAL DETAILS
+           LEFT
       ================================================ -->
-      <details class="calculation-details">
 
-        <summary>
+      <div class="detail-main-left">
 
-          <div>
+
+        <!-- =============================================
+             VEHICLE
+        ============================================== -->
+
+        <section class="info-card">
+
+          <div class="card-heading">
+
+            <div>
+
+              <span>
+                ARAÇ
+              </span>
+
+              <h3>
+                Araç Bilgileri
+              </h3>
+
+            </div>
+
+          </div>
+
+
+          <div class="info-grid">
+
+            <div class="info-item">
+
+              <span>
+                Marka
+              </span>
+
+              <strong>
+                {{ quote.brand || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                Model
+              </span>
+
+              <strong>
+                {{ quote.model || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                Model Yılı
+              </span>
+
+              <strong>
+                {{ quote.modelYear || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                Plaka
+              </span>
+
+              <strong class="plate">
+                {{ quote.plateNumber || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item full">
+
+              <span>
+                Araç Değeri
+              </span>
+
+              <strong>
+
+                {{
+                  quote.marketValue != null
+                    ? (
+                        quote.marketValue
+                        | number:'1.0-2'
+                      ) + ' ₺'
+                    : '—'
+                }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =============================================
+             CUSTOMER
+        ============================================== -->
+
+        <section class="info-card">
+
+          <div class="card-heading">
+
+            <div>
+
+              <span>
+                MÜŞTERİ
+              </span>
+
+              <h3>
+                Müşteri Bilgileri
+              </h3>
+
+            </div>
+
+          </div>
+
+
+          <div class="info-grid">
+
+
+            <div class="info-item">
+
+              <span>
+                Ad Soyad
+              </span>
+
+              <strong>
+                {{ quote.customerName || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                Telefon
+              </span>
+
+              <strong>
+                {{ quote.customerPhone || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                E-posta
+              </span>
+
+              <strong>
+                {{ quote.customerEmail || '—' }}
+              </strong>
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+
+        <!-- =============================================
+             COVERAGES
+        ============================================== -->
+
+        <section
+          class="info-card coverage-card"
+          *ngIf="quote.coverages?.length">
+
+
+          <div class="card-heading coverage-heading">
+
+            <div>
+
+              <span>
+                KASKO KAPSAMI
+              </span>
+
+              <h3>
+                Teminatlar
+              </h3>
+
+            </div>
+
+
+            <span class="coverage-count">
+
+              {{ quote.coverages?.length }}
+
+              teminat
+
+            </span>
+
+          </div>
+
+
+          <div class="coverage-grid">
+
+            <div
+              class="coverage-card-item"
+              *ngFor="
+                let coverage of quote.coverages
+              ">
+
+
+              <div class="coverage-check">
+                ✓
+              </div>
+
+
+              <div class="coverage-content">
+
+                <strong>
+                  {{ coverage.coverageName }}
+                </strong>
+
+                <span>
+
+                  {{
+                    coverage.calculatedPrice
+                      | number:'1.2-2'
+                  }}
+
+                  ₺
+
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="coverage-total-row">
+
+            <span>
+              Teminat Toplamı
+            </span>
 
             <strong>
-              Hesaplama Detayı
+
+              {{
+                quote.coverages
+                  ?.reduce(
+                    (total, coverage) =>
+                      total +
+                      (
+                        coverage.calculatedPrice
+                        || 0
+                      ),
+                    0
+                  )
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
             </strong>
 
-            <small>
-              Teknik fiyatlandırma katsayıları
-            </small>
-
           </div>
 
-          <span class="details-arrow">
-            ›
+        </section>
+
+
+      </div>
+
+
+      <!-- ===============================================
+           RIGHT
+      ================================================ -->
+
+      <aside class="detail-main-right">
+
+
+        <!-- =============================================
+             PACKAGE
+        ============================================== -->
+
+        <section class="package-summary-card">
+
+          <span class="package-label">
+            KASKO PAKETİ
           </span>
 
-        </summary>
+
+          <h3>
+            {{
+              quote.coverages?.length
+                ? 'Seçilen Kasko Paketi'
+                : 'Kasko Paketi'
+            }}
+          </h3>
 
 
-        <div class="calculation-body">
+          <div class="package-status">
 
-          <div class="pricing-grid">
+            <span class="check-circle">
+              ✓
+            </span>
 
-            <div class="pricing-item">
+            <span>
+              Teminatlar teklife dahil edildi
+            </span>
 
-              <span>
-                Temel Oran
-              </span>
-
-              <strong>
-                {{
-                  quote.pricingSnapshot?.baseRate
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
+          </div>
 
 
-            <div class="pricing-item">
+          <div class="package-price">
 
-              <span>
-                Yaş Faktörü
-              </span>
+            <span>
+              Toplam Prim
+            </span>
 
-              <strong>
-                {{
-                  quote.pricingSnapshot?.ageFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
+            <strong>
 
-            </div>
+              {{
+                quote.premiumAmount
+                  | number:'1.2-2'
+              }}
 
+              ₺
 
-            <div class="pricing-item">
+            </strong>
 
-              <span>
-                Kullanım Faktörü
-              </span>
+          </div>
 
-              <strong>
-                {{
-                  quote.pricingSnapshot?.usageFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
+        </section>
 
 
-            <div class="pricing-item">
+        <!-- =============================================
+             PRICING
+        ============================================== -->
 
-              <span>
-                Sürücü Faktörü
-              </span>
-
-              <strong>
-                {{
-                  quote.pricingSnapshot?.driverFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
+        <section
+          class="pricing-card"
+          *ngIf="quote.pricingSnapshot">
 
 
-            <div class="pricing-item">
+          <div class="card-heading">
+
+            <div>
 
               <span>
-                Hasar Faktörü
+                FİYATLANDIRMA
               </span>
 
-              <strong>
-                {{
-                  quote.pricingSnapshot?.claimsFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Bölge Faktörü
-              </span>
-
-              <strong>
-                {{
-                  quote.pricingSnapshot?.regionFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Paket Faktörü
-              </span>
-
-              <strong>
-                {{
-                  quote.pricingSnapshot?.packageFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Muafiyet Faktörü
-              </span>
-
-              <strong>
-                {{
-                  quote.pricingSnapshot?.deductibleFactor
-                    | number:'1.2-4'
-                }}
-              </strong>
+              <h3>
+                Fiyatlandırma Özeti
+              </h3>
 
             </div>
 
           </div>
 
-        </div>
 
-      </details>
+          <div class="pricing-row">
 
-    </section>
+            <span>
+              Araç Değeri
+            </span>
+
+            <strong>
+
+              {{
+                quote.pricingSnapshot.marketValue
+                  | number:'1.0-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <div class="pricing-row">
+  <span>
+    Teminatlar
+  </span>
+
+  <strong>
+    {{
+      quote.pricingSnapshot.coveragePremium
+        | number:'1.2-2'
+    }}
+    ₺
+  </strong>
+
+          </div>
+
+
+          <div class="pricing-row">
+
+            <span>
+              Teminatlar
+            </span>
+
+            <strong>
+
+              {{
+                quote.pricingSnapshot.coveragePremium
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <div
+            class="pricing-row"
+            *ngIf="
+              quote.pricingSnapshot.discount > 0
+            ">
+
+            <span>
+              İndirim
+            </span>
+
+            <strong class="discount">
+
+              -{{
+                quote.pricingSnapshot.discount
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <div class="pricing-divider"></div>
+
+
+          <div class="pricing-total">
+
+            <span>
+              Toplam Teklif
+            </span>
+
+            <strong>
+
+              {{
+                quote.premiumAmount
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <!-- TECHNICAL DETAILS -->
+
+          <details class="technical-details">
+
+            <summary>
+              Fiyatlandırma teknik detayları
+            </summary>
+
+
+            <div class="technical-grid">
+
+
+              <div>
+
+                <span>
+                  Temel Oran
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.baseRate
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Yaş Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.ageFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Kullanım Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.usageFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Sürücü Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.driverFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Hasar Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.claimsFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Bölge Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.regionFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Paket Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.packageFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Muafiyet Faktörü
+                </span>
+
+                <strong>
+
+                  {{
+                    quote.pricingSnapshot.deductibleFactor
+                      | number:'1.2-4'
+                  }}
+
+                </strong>
+
+              </div>
+
+
+            </div>
+
+          </details>
+
+        </section>
+
+
+        <!-- NO SNAPSHOT -->
+
+        <section
+          class="pricing-card"
+          *ngIf="!quote.pricingSnapshot">
+
+          <div class="card-heading">
+
+            <div>
+
+              <span>
+                FİYATLANDIRMA
+              </span>
+
+              <h3>
+                Teklif Tutarı
+              </h3>
+
+            </div>
+
+          </div>
+
+
+          <div class="pricing-total">
+
+            <span>
+              Toplam Teklif
+            </span>
+
+            <strong>
+
+              {{
+                quote.premiumAmount
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+        </section>
+
+
+        <!-- =============================================
+             VALIDITY
+        ============================================== -->
+
+        <section class="validity-card">
+
+          <span>
+            TEKLİF GEÇERLİLİĞİ
+          </span>
+
+          <strong>
+
+            {{ quote.validUntil | date:'dd.MM.yyyy' }}
+
+          </strong>
+
+          <small>
+            Bu tarihe kadar teklif üzerinden işlem yapılabilir.
+          </small>
+
+        </section>
+
+
+      </aside>
+
+    </div>
 
 
     <!-- ===================================================
          ACTIONS
     ==================================================== -->
+
     <div class="detail-actions">
 
 
       <!-- BACK -->
+
       <button
         type="button"
         class="action-button action-secondary"
         (click)="goBack()">
 
-        Geri Dön
+        ← Geri Dön
 
       </button>
 
 
-      <!-- DRAFT -> OFFERED -->
+      <!-- DRAFT -->
+
       <button
         *ngIf="
           quote.status === QuoteStatus.Draft
@@ -868,15 +941,18 @@
         type="button"
         class="action-button action-primary"
         (click)="
-          changeStatus(QuoteStatus.Offered)
+          changeStatus(
+            QuoteStatus.Offered
+          )
         ">
 
-        Teklif Ver
+        Teklifi Yayına Al
 
       </button>
 
 
-      <!-- OFFERED -> ACCEPTED -->
+      <!-- OFFERED -->
+
       <button
         *ngIf="
           quote.status === QuoteStatus.Offered
@@ -884,15 +960,18 @@
         type="button"
         class="action-button action-success"
         (click)="
-          changeStatus(QuoteStatus.Accepted)
+          changeStatus(
+            QuoteStatus.Accepted
+          )
         ">
 
-        Teklifi Kabul Et
+        ✓ Teklifi Kabul Et
 
       </button>
 
 
-      <!-- OFFERED -> REJECTED -->
+      <!-- REJECT -->
+
       <button
         *ngIf="
           quote.status === QuoteStatus.Offered
@@ -900,15 +979,18 @@
         type="button"
         class="action-button action-danger"
         (click)="
-          changeStatus(QuoteStatus.Rejected)
+          changeStatus(
+            QuoteStatus.Rejected
+          )
         ">
 
-        Reddet
+        Teklifi Reddet
 
       </button>
 
 
       <!-- EDIT -->
+
       <button
         *ngIf="
           quote.status === QuoteStatus.Draft ||
@@ -928,6 +1010,7 @@
 
 
       <!-- DELETE -->
+
       <button
         *ngIf="
           quote.status !== QuoteStatus.Accepted
@@ -940,7 +1023,56 @@
 
       </button>
 
+
     </div>
+@if (quote.status === QuoteStatus.Accepted) {
+
+  <div class="policy-created-info">
+
+    <span class="policy-created-icon">
+      ✓
+    </span>
+
+    <div>
+      <strong>
+        Poliçe oluşturuldu
+      </strong>
+
+      <span>
+        Bu teklif için poliçe oluşturma ve ödeme işlemi tamamlandı.
+      </span>
+    </div>
+
+  </div>
+
+}
+
+    <!-- ACCEPTED -->
+
+    <div
+      *ngIf="
+        quote.status === QuoteStatus.Accepted
+      "
+      class="accepted-notice">
+
+      <span class="accepted-icon">
+        ✓
+      </span>
+
+      <div>
+
+        <strong>
+          Teklif kabul edildi
+        </strong>
+
+        <span>
+          Teklifiniz poliçe oluşturma aşamasına geçti.
+        </span>
+
+      </div>
+
+    </div>
+
 
   </section>
 

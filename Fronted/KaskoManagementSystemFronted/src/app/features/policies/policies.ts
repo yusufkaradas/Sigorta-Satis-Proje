@@ -206,16 +206,25 @@ export class Policies {
         policy => {
 
           const matchesSearch =
-            !search ||
-            policy.policyNumber
-              ?.toLowerCase()
-              .includes(search) ||
-            policy.customerId
-              ?.toLowerCase()
-              .includes(search) ||
-            policy.vehicleId
-              ?.toLowerCase()
-              .includes(search);
+  !search ||
+  policy.policyNumber
+    ?.toLowerCase()
+    .includes(search) ||
+  policy.customerId
+    ?.toLowerCase()
+    .includes(search) ||
+  policy.vehicleId
+    ?.toLowerCase()
+    .includes(search) ||
+  policy.customerName
+    ?.toLowerCase()
+    .includes(search) ||
+  policy.brand
+    ?.toLowerCase()
+    .includes(search) ||
+  policy.model
+    ?.toLowerCase()
+    .includes(search);
 
           const matchesStatus =
             !this.selectedStatus ||

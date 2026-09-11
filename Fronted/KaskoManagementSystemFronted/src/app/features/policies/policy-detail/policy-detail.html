@@ -231,15 +231,15 @@
 
         <div class="detail-item">
 
-          <span>
-            Oluşturulma Tarihi
-          </span>
+  <span>
+    Oluşturulma Tarihi
+  </span>
 
-          <strong>
-            {{ policy.createdDate | date:'dd.MM.yyyy' }}
-          </strong>
+  <strong>
+    {{ policy.createdDate | date:'dd.MM.yyyy HH:mm' }}
+  </strong>
 
-        </div>
+</div>
 
       </div>
 
@@ -898,10 +898,15 @@
           <span class="info-label">
             İşlem No
           </span>
-
-          <strong>
-            {{ payment.transactionNumber }}
-          </strong>
+<a
+  [routerLink]="[
+    '/payments',
+    payment.id
+  ]"
+  class="payment-transaction-link"
+>
+  {{ payment.transactionNumber }}
+</a>
 
         </div>
 

@@ -1,16 +1,22 @@
 ﻿using Kasko.Business.DTOs.Customer;
-namespace Kasko.Business.Interfaces
+using Kasko.Business.DTOs.QuickQuote;
+
+namespace Kasko.Business.Interfaces;
+
+public interface ICustomerService
 {
-    public interface ICustomerService{
-            Task<IEnumerable<CustomerListDto>> GetAllAsync();
+    Task<IEnumerable<CustomerListDto>> GetAllAsync();
 
-            Task<CustomerDto?> GetByIdAsync(Guid id);
+    Task<CustomerDto?> GetByIdAsync(Guid id);
 
-            Task CreateAsync(CreateCustomerDto dto);
+    Task CreateAsync(CreateCustomerDto dto);
 
-            Task UpdateAsync(UpdateCustomerDto dto);
+    Task UpdateAsync(UpdateCustomerDto dto);
 
-            Task DeleteAsync(Guid id);
-        }
-    }
+    Task DeleteAsync(Guid id);
 
+    Task<QuickQuoteCustomerLookupResponseDto>
+        GetForQuickQuoteAsync(
+            string identityNumber,
+            string phoneNumber);
+}

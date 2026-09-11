@@ -1,207 +1,472 @@
+:host {
+  display: block;
+
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+
+  overflow: hidden;
+
+  font-family: Inter, Arial, sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
 
+
+/* =====================================================
+   APP LAYOUT
+   ===================================================== */
+
 .app-layout {
-  min-height: 100vh;
-  display: flex;
-  background: #eef4f9;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+
+  overflow: hidden;
+
+  background: #eef2f7;
 }
 
-/* SIDEBAR */
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
 
 .sidebar {
   width: 250px;
-  min-height: 100vh;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px 12px 12px;
+
+  box-sizing: border-box;
 
   background: #555555;
 
-  padding: 18px 20px;
+  border: 2px solid #000000;
+  border-radius: 0 20px 20px 0;
 
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
-.logo-box {
+
+/* =====================================================
+   LOGO
+   ===================================================== */
+
+.sidebar-logo {
+  width: 150px;
   height: 145px;
 
-  background: #ffffff;
+  flex: 0 0 auto;
 
-  border-radius: 14px;
+  margin: 0 auto 26px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  margin-bottom: 24px;
+  background: #000000;
 
-  font-size: 20px;
-  color: #111111;
+  border: 2px solid #ffffff;
+  border-radius: 18px;
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 500;
+
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.24);
 }
+
+.sidebar-logo span {
+  line-height: 1;
+}
+
+
+/* =====================================================
+   MENU
+   ===================================================== */
 
 .sidebar-menu {
+  width: 100%;
+
   display: flex;
   flex-direction: column;
+
   gap: 10px;
+
+  overflow: hidden;
 }
 
-.sidebar-menu a {
-  height: 43px;
+.menu-item {
+  width: 175px;
+  height: 50px;
 
-  background: #ffffff;
+  flex: 0 0 auto;
 
-  border-radius: 10px;
+  margin: 0 auto;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: #111111;
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  background: #000000;
+
+  border: 2px solid #ffffff;
+  border-radius: 14px;
+
+  color: #ffffff;
+
+  font-size: 21px;
+  font-weight: 400;
+
   text-decoration: none;
 
-  font-size: 15px;
-
-  transition: 0.2s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
-.sidebar-menu a:hover {
-  background: #eeeeee;
+.menu-item:hover {
+  background: #222222;
 }
 
-.sidebar-menu a.active {
-  background: #c9c9c9;
-  font-weight: 600;
+.menu-item.active {
+  background: #6b7280;
+  color: #ffffff;
 }
+
+.menu-item:active {
+  transform: translateY(1px);
+}
+
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
 
 .logout-button {
-  margin-top: auto;
+  width: 175px;
+  height: 50px;
 
-  height: 43px;
+  flex: 0 0 auto;
 
-  border: none;
-  border-radius: 10px;
+  margin: auto auto 14px;
+
+  border: 2px solid #ffffff;
+  border-radius: 14px;
 
   background: #ff3b3b;
   color: #ffffff;
 
-  font-size: 15px;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 21px;
+  font-weight: 500;
 
   cursor: pointer;
 
-  transition: 0.2s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .logout-button:hover {
-  background: #e52d2d;
+  background: #ef2f2f;
+}
+
+.logout-button:active {
+  transform: translateY(1px);
 }
 
 
-/* MAIN */
+/* =====================================================
+   MAIN
+   ===================================================== */
 
 .main-content {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  height: 100%;
 
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr);
+
+  overflow: hidden;
+
+  background: #eef2f7;
 }
 
 
-/* TOPBAR */
+/* =====================================================
+   TOPBAR
+   ===================================================== */
 
 .topbar {
-  height: 78px;
-
-  background: #ffffff;
-
-  border-bottom: 1px solid #dbe3ea;
+  width: 100%;
+  height: 76px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 28px;
-}
+  padding: 0 14px 0 24px;
 
-.topbar h2 {
-  margin: 0;
-
-  font-size: 22px;
-
-  color: #315b82;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.topbar-actions button {
-  height: 42px;
-  min-width: 42px;
-
-  border: none;
-  border-radius: 10px;
+  box-sizing: border-box;
 
   background: #555555;
 
+  border: 2px solid #000000;
+  border-top: 0;
+
+  border-radius: 0 0 18px 18px;
+
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.20);
+}
+
+
+/* =====================================================
+   TOPBAR TITLE
+   ===================================================== */
+
+.topbar-title {
+  position: absolute;
+  left: 50%;
+
+  height: 48px;
+
+  padding: 0 44px;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  background: #000000;
+
+  border: 2px solid #ffffff;
+  border-radius: 28px;
+
   color: #ffffff;
+
+  font-size: 26px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   ACTIONS
+   ===================================================== */
+
+.topbar-actions {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.topbar-icon {
+  width: 50px;
+  height: 50px;
+
+  padding: 0;
+
+  background: #000000;
+
+  border: 2px solid #ffffff;
+  border-radius: 12px;
 
   cursor: pointer;
 }
 
-.topbar-actions .user-button {
-  padding: 0 20px;
+.topbar-icon:hover {
+  background: #222222;
+}
+
+.user-button {
+  height: 50px;
+
+  padding: 0 14px;
+
+  border: 2px solid #ffffff;
+  border-radius: 18px;
+
+  background: #3b82f6;
+  color: #ffffff;
+
+  font-family: Inter, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  cursor: pointer;
 }
 
 
-/* CONTENT */
+/* =====================================================
+   CONTENT AREA
+   ===================================================== */
 
 .content-area {
-  flex: 1;
+  width: 100%;
+  height: 100%;
 
-  padding: 28px;
+  min-width: 0;
+  min-height: 0;
 
-  overflow: auto;
+  overflow: hidden;
+
+  padding: 0;
+
+  background: #eef2f7;
 }
 
 
-/* RESPONSIVE */
+/* =====================================================
+   TABLET
+   ===================================================== */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+
+  .app-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
 
   .sidebar {
-    width: 210px;
+    width: 220px;
   }
 
-  .topbar {
-    padding: 0 18px;
+  .menu-item,
+  .logout-button {
+    width: 165px;
   }
 
-  .content-area {
-    padding: 18px;
+  .topbar-title {
+    font-size: 23px;
   }
 
+  .user-button {
+    font-size: 16px;
+  }
 }
 
-@media (max-width: 700px) {
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 800px) {
+
+  :host {
+    height: auto;
+    min-height: 100dvh;
+
+    overflow-y: auto;
+  }
+
+  .app-layout {
+    height: auto;
+    min-height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: visible;
+  }
 
   .sidebar {
-    width: 180px;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+
+    border-radius: 0 0 18px 18px;
+
     padding: 12px;
   }
 
-  .logo-box {
-    height: 110px;
+  .sidebar-logo {
+    width: 110px;
+    height: 90px;
+
+    margin-bottom: 18px;
   }
 
-  .sidebar-menu a {
-    font-size: 13px;
+  .sidebar-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    overflow: visible;
   }
 
-  .topbar h2 {
-    font-size: 18px;
+  .menu-item {
+    width: auto;
+    min-width: 130px;
+
+    height: 42px;
+
+    font-size: 15px;
   }
 
+  .logout-button {
+    width: 130px;
+
+    height: 42px;
+
+    margin: 18px auto 6px;
+
+    font-size: 15px;
+  }
+
+  .main-content {
+    height: auto;
+    min-height: calc(100dvh - 300px);
+  }
+
+  .topbar {
+    height: 64px;
+  }
+
+  .topbar-title {
+    font-size: 20px;
+  }
+
+  .topbar-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .user-button {
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .content-area {
+    height: auto;
+    overflow: visible;
+  }
 }

@@ -49,23 +49,31 @@ export class Users implements OnInit {
     inject(ChangeDetectorRef);
 
 
-  users: User[] = [];
+ users: User[] = [];
 
-  filteredUsers: User[] = [];
+filteredUsers: User[] = [];
 
-  isLoading = true;
+isLoading = true;
 
-  errorMessage = '';
+errorMessage = '';
 
-  searchText = '';
+searchText = '';
 
+get activeUserCount(): number {
+  return this.users.filter(
+    user => user.isActive
+  ).length;
+}
 
-  ngOnInit(): void {
+get inactiveUserCount(): number {
+  return this.users.filter(
+    user => !user.isActive
+  ).length;
+}
 
-    this.loadUsers();
-
-  }
-
+ngOnInit(): void {
+  this.loadUsers();
+}
 
   private loadUsers(): void {
 

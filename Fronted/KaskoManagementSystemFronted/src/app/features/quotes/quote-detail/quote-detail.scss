@@ -1560,5 +1560,96 @@ summary:focus-visible {
   .total-premium-card strong {
     font-size: 20px;
   }
+/* =========================================================
+   POLICY CREATED INFO
+========================================================= */
 
+.policy-created-info {
+  margin-left: auto;
+
+  min-height: 46px;
+
+  padding: 8px 14px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #c9e3d1;
+
+  border-radius: 10px;
+
+  background: #f3faf5;
+
+  color: #36704a;
+}
+
+.policy-created-icon {
+  width: 27px;
+  height: 27px;
+
+  flex: 0 0 27px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e0f1e5;
+
+  color: #317046;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.policy-created-info > div {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.policy-created-info strong {
+  color: #2f6742;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.policy-created-info span {
+  color: #6d8877;
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   POLICY CREATED INFO - MOBILE
+========================================================= */
+
+@media (max-width: 680px) {
+
+  .policy-created-info {
+    width: 100%;
+
+    margin-left: 0;
+
+    justify-content: flex-start;
+  }
+
+}
 }

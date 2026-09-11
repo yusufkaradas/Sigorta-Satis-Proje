@@ -1,441 +1,334 @@
-<div class="vehicles-page">
+<section class="vehicles-content">
 
-  <main class="main-area">
+  <div class="vehicles-section-title">
+    İŞLEMLER
+  </div>
 
-    <section class="content">
 
-      <!-- PAGE HEADER -->
-      <div class="page-title-row">
+  <!-- İSTATİSTİKLER -->
 
-        <div class="page-title">
+  <div class="vehicle-stats-grid">
 
-          <span class="page-eyebrow">
-            ARAÇ YÖNETİMİ
+    <div class="vehicle-stat-card">
+      <span>Toplam Araç</span>
+
+      <strong>
+        {{ totalVehicleCount }}
+      </strong>
+    </div>
+
+
+    <div class="vehicle-stat-card">
+      <span>Aktif Araç</span>
+
+      <strong>
+        {{ activeVehicleCount }}
+      </strong>
+    </div>
+
+
+    <div class="vehicle-stat-card">
+      <span>Pasif Araç</span>
+
+      <strong>
+        {{ inactiveVehicleCount }}
+      </strong>
+    </div>
+
+
+    <div class="vehicle-stat-card">
+      <span>Gösterilen</span>
+
+      <strong>
+        {{ filteredVehicles.length }}
+      </strong>
+    </div>
+
+  </div>
+
+
+  <!-- ARAÇ LİSTESİ -->
+
+  <section class="vehicles-card">
+
+    <div class="vehicles-toolbar">
+
+      <div class="search-wrapper">
+
+        <span class="search-label">
+          Araç Ara
+        </span>
+
+        <div class="search-input-wrapper">
+
+          <span class="search-icon">
+            ⌕
           </span>
 
-          <h1>
-            Araç Yönetim İşlemleri
-          </h1>
-
-          <p>
-            Araç kayıtlarını ve müşteriye bağlı araçları yönetin.
-          </p>
-
-        </div>
-
-        <a
-          routerLink="/vehicles/new"
-          class="new-button"
-        >
-          + Yeni Araç
-        </a>
-
-      </div>
-
-
-      <!-- STATS -->
-      <div class="stats">
-
-        <div class="stat-card">
-
-          <span>
-            Toplam Araç
-          </span>
-
-          <strong>
-            {{ totalVehicleCount }}
-          </strong>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <span>
-            Aktif Araç
-          </span>
-
-          <strong>
-            {{ activeVehicleCount }}
-          </strong>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <span>
-            Pasif Araç
-          </span>
-
-          <strong>
-            {{ inactiveVehicleCount }}
-          </strong>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <span>
-            Gösterilen
-          </span>
-
-          <strong>
-            {{ filteredVehicles.length }}
-          </strong>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Plaka, marka, model veya müşteri ara..."
+          />
 
         </div>
 
       </div>
 
 
-      <!-- VEHICLES -->
-      <section class="vehicles-card">
+      <a
+        routerLink="/vehicles/new"
+        class="new-vehicle-button"
+      >
+        + Yeni Araç
+      </a>
 
-        <!-- TOOLBAR -->
-        <div class="toolbar">
-
-          <div class="search-box">
-
-            <span class="search-icon">
-              ⌕
-            </span>
-
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-              placeholder="Plaka, marka, model veya müşteri ara..."
-            />
-
-          </div>
-
-        </div>
+    </div>
 
 
-        <!-- LOADING -->
-        <div
-          *ngIf="isLoading"
-          class="state-message"
-        >
+    <!-- LOADING -->
 
-          <div class="state-icon">
-            ⟳
-          </div>
+    <div
+      *ngIf="isLoading"
+      class="state-message"
+    >
 
-          <strong>
-            Araçlar yükleniyor...
-          </strong>
+      <div class="state-icon">
+        ⟳
+      </div>
 
-          <span>
-            Lütfen bekleyin.
-          </span>
+      <strong>
+        Araçlar yükleniyor...
+      </strong>
 
-        </div>
+      <span>
+        Lütfen bekleyin.
+      </span>
 
-
-        <!-- ERROR -->
-        <div
-          *ngIf="
-            !isLoading &&
-            errorMessage
-          "
-          class="state-message error"
-        >
-
-          <div class="state-icon error-icon">
-            !
-          </div>
-
-          <strong>
-            Araçlar yüklenemedi
-          </strong>
-
-          <span>
-            {{ errorMessage }}
-          </span>
-
-        </div>
+    </div>
 
 
-        <!-- TABLE -->
-        <div
-          *ngIf="
-            !isLoading &&
-            !errorMessage
-          "
-          class="table-wrapper"
-        >
+    <!-- ERROR -->
 
-          <table class="vehicle-table">
+    <div
+      *ngIf="
+        !isLoading &&
+        errorMessage
+      "
+      class="state-message error"
+    >
 
-            <thead>
+      <div class="state-icon error-icon">
+        !
+      </div>
 
-              <tr>
+      <strong>
+        Araçlar yüklenemedi
+      </strong>
 
-                <th>
-                  Plaka
-                </th>
+      <span>
+        {{ errorMessage }}
+      </span>
 
-                <th>
-                  Müşteri
-                </th>
-
-                <th>
-                  Marka
-                </th>
-
-                <th>
-                  Model
-                </th>
-
-                <th>
-                  Yıl
-                </th>
-
-                <th>
-                  Araç Tipi
-                </th>
-
-                <th>
-                  Durum
-                </th>
-
-                <th>
-                  İşlemler
-                </th>
-
-              </tr>
-
-            </thead>
+    </div>
 
 
-            <tbody>
+    <!-- TABLE -->
 
-              <tr
-                *ngFor="let vehicle of pagedVehicles"
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage
+      "
+      class="vehicle-table-wrapper"
+    >
+
+      <table class="vehicle-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Plaka</th>
+            <th>Müşteri</th>
+            <th>Marka</th>
+            <th>Model</th>
+            <th>Yıl</th>
+            <th>Araç Tipi</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let vehicle of pagedVehicles"
+          >
+
+            <td>
+              <strong>
+                {{ vehicle.plateNumber || '—' }}
+              </strong>
+            </td>
+
+
+            <td>
+              {{ vehicle.customerName || '—' }}
+            </td>
+
+
+            <td>
+              {{ vehicle.brand || '—' }}
+            </td>
+
+
+            <td
+              class="model-cell"
+              [title]="vehicle.model || '—'"
+            >
+              {{ vehicle.model || '—' }}
+            </td>
+
+
+            <td>
+              {{ vehicle.modelYear || '—' }}
+            </td>
+
+
+            <td>
+              {{
+                getVehicleTypeText(
+                  vehicle.vehicleType
+                )
+              }}
+            </td>
+
+
+            <td>
+
+              <span
+                class="vehicle-status"
+                [class.active]="vehicle.isActive"
+                [class.passive]="!vehicle.isActive"
               >
+                {{
+                  vehicle.isActive
+                    ? 'Aktif'
+                    : 'Pasif'
+                }}
+              </span>
 
-                <!-- PLAKA -->
-                <td>
-
-                  <div class="plate-cell">
-
-                    <strong>
-                      {{ vehicle.plateNumber || '—' }}
-                    </strong>
-
-                  </div>
-
-                </td>
+            </td>
 
 
-                <!-- MÜŞTERİ -->
-                <td>
+            <td>
 
-                  <div class="customer-cell">
-
-                    <strong>
-                      {{ vehicle.customerName || '—' }}
-                    </strong>
-
-                  </div>
-
-                </td>
-
-
-                <!-- MARKA -->
-                <td>
-
-                  <div class="brand-cell">
-
-                    <strong>
-                      {{ vehicle.brand || '—' }}
-                    </strong>
-
-                  </div>
-
-                </td>
-
-
-                <!-- MODEL -->
-                <td>
-
-                  <div class="model-cell">
-
-                    <strong
-                      [title]="vehicle.model || '—'"
-                    >
-                      {{ vehicle.model || '—' }}
-                    </strong>
-
-                  </div>
-
-                </td>
-
-
-                <!-- YIL -->
-                <td>
-
-                  <span class="year-value">
-                    {{ vehicle.modelYear || '—' }}
-                  </span>
-
-                </td>
-
-
-                <!-- ARAÇ TİPİ -->
-                <td>
-
-                  <span class="vehicle-type">
-                    {{
-                      getVehicleTypeText(
-                        vehicle.vehicleType
-                      )
-                    }}
-                  </span>
-
-                </td>
-
-
-                <!-- DURUM -->
-                <td>
-
-                  <span
-                    class="status"
-                    [class.active]="vehicle.isActive"
-                    [class.inactive]="!vehicle.isActive"
-                  >
-                    {{
-                      vehicle.isActive
-                        ? 'Aktif'
-                        : 'Pasif'
-                    }}
-                  </span>
-
-                </td>
-
-
-                <!-- İŞLEM -->
-                <td>
-
-                  <div class="actions-cell">
-
-                    <a
-                      [routerLink]="[
-                        '/vehicles',
-                        vehicle.id
-                      ]"
-                      class="detail-button"
-                    >
-                      Detay
-                    </a>
-
-                  </div>
-
-                </td>
-
-              </tr>
-
-
-              <!-- EMPTY -->
-              <tr
-                *ngIf="
-                  pagedVehicles.length === 0
-                "
+              <a
+                [routerLink]="[
+                  '/vehicles',
+                  vehicle.id
+                ]"
+                class="detail-button"
               >
+                Detay
+              </a>
 
-                <td
-                  colspan="8"
-                  class="empty-row"
-                >
+            </td>
 
-                  <div class="empty-state-content">
-
-                    <div class="empty-icon">
-                      —
-                    </div>
-
-                    <strong>
-                      Araç bulunamadı
-                    </strong>
-
-                    <span>
-                      Arama kriterlerinizi değiştirmeyi deneyin.
-                    </span>
-
-                  </div>
-
-                </td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
+          </tr>
 
 
-        <!-- PAGINATION -->
-        <div
-          class="pagination"
-          *ngIf="
-            !isLoading &&
-            !errorMessage &&
-            filteredVehicles.length > 0
-          "
-        >
+          <!-- EMPTY -->
 
-          <button
-            type="button"
-            class="pagination-arrow"
-            (click)="previousPage()"
-            [disabled]="currentPage === 1"
+          <tr
+            *ngIf="pagedVehicles.length === 0"
           >
-            ‹
-          </button>
+
+            <td
+              colspan="8"
+              class="empty-row"
+            >
+
+              <div class="empty-state-content">
+
+                <div class="empty-icon">
+                  —
+                </div>
+
+                <strong>
+                  Araç bulunamadı
+                </strong>
+
+                <span>
+                  Arama kriterlerinizi değiştirmeyi deneyin.
+                </span>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
 
 
-          <button
-            type="button"
-            class="pagination-number"
-            *ngFor="
-              let page
-              of pageNumbers
-            "
-            (click)="goToPage(page)"
-            [class.current]="
-              currentPage === page
-            "
-          >
-            {{ page }}
-          </button>
+    <!-- PAGINATION -->
+
+    <div
+      class="pagination"
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredVehicles.length > 0
+      "
+    >
+
+      <button
+        type="button"
+        class="pagination-arrow"
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+      >
+        ‹
+      </button>
 
 
-          <button
-            type="button"
-            class="pagination-arrow"
-            (click)="nextPage()"
-            [disabled]="
-              currentPage === totalPages
-            "
-          >
-            ›
-          </button>
+      <button
+        type="button"
+        class="pagination-number"
+        *ngFor="let page of pageNumbers"
+        (click)="goToPage(page)"
+        [class.current]="currentPage === page"
+      >
+        {{ page }}
+      </button>
 
 
-          <span class="pagination-info">
-            {{ currentPage }} / {{ totalPages }}
-          </span>
+      <button
+        type="button"
+        class="pagination-arrow"
+        (click)="nextPage()"
+        [disabled]="currentPage === totalPages"
+      >
+        ›
+      </button>
 
-        </div>
 
-      </section>
+      <span class="pagination-info">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
 
-    </section>
+    </div>
 
-  </main>
+  </section>
 
-</div>
+</section>

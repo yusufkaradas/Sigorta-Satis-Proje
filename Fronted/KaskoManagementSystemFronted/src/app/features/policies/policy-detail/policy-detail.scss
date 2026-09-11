@@ -1514,5 +1514,20 @@ summary:focus-visible {
   .payment-grid {
     grid-template-columns: 1fr;
   }
+.payment-transaction-link {
+  color: #4f46e5;
 
+  font-size: 14px;
+  font-weight: 600;
+
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #4338ca;
+    text-decoration: underline;
+  }
+}
 }

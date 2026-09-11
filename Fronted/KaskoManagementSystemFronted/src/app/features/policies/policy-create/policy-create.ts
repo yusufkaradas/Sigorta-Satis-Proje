@@ -13,6 +13,13 @@ import {
 
 import { PolicyService } from '../policy.service';
 
+import {
+  Quote,
+  QuoteStatus
+} from '../../quotes/quote';
+
+import { QuoteService } from '../../quotes/quote.service';
+
 @Component({
   selector: 'app-policy-create',
   standalone: true,
@@ -32,6 +39,9 @@ export class PolicyCreate {
   private readonly policyService =
     inject(PolicyService);
 
+  private readonly quoteService =
+  inject(QuoteService);
+
   private readonly router =
     inject(Router);
   
@@ -39,10 +49,14 @@ export class PolicyCreate {
   inject(ActivatedRoute);
 
   isSubmitting = false;
+  
+  private autoCreateStarted = false;
 
   errorMessage = '';
 
   successMessage = '';
+
+  quote: Quote | null = null;
 
   policyForm = this.fb.nonNullable.group({
 
@@ -71,6 +85,7 @@ export class PolicyCreate {
       Validators.required
     ]
 
+    
   });
 
   get customerId() {
@@ -94,17 +109,23 @@ export class PolicyCreate {
   }
  
  ngOnInit(): void {
-  this.loadQuoteContext();
 
   const startDate = new Date();
 
   const endDate = new Date(startDate);
-  endDate.setFullYear(endDate.getFullYear() + 1);
+  endDate.setFullYear(
+    endDate.getFullYear() + 1
+  );
 
   this.policyForm.patchValue({
-    startDate: this.toDateInputValue(startDate),
-    endDate: this.toDateInputValue(endDate)
+    startDate:
+      this.toDateInputValue(startDate),
+
+    endDate:
+      this.toDateInputValue(endDate)
   });
+
+  this.loadQuoteContext();
 }
 
 private toDateInputValue(date: Date): string {
@@ -128,9 +149,14 @@ private loadQuoteContext(): void {
     const quoteId =
       params.get('quoteId');
 
-    if (!customerId || !vehicleId || !quoteId) {
+    if (
+      !customerId ||
+      !vehicleId ||
+      !quoteId
+    ) {
       this.errorMessage =
         'Poliçe oluşturmak için kabul edilmiş bir teklif seçilmelidir.';
+
       return;
     }
 
@@ -143,6 +169,14 @@ private loadQuoteContext(): void {
       quoteId
 
     });
+
+    if (!this.autoCreateStarted) {
+
+      this.autoCreateStarted = true;
+
+      this.createPolicy();
+
+    }
 
   });
 
@@ -204,27 +238,46 @@ private loadQuoteContext(): void {
       .create(dto)
       .subscribe({
 
-        next: (response) => {
+      next: (response) => {
 
-          console.log(
-            'POLICY CREATE RESPONSE:',
-            response
-          );
+  console.log(
+    'POLICY CREATE RESPONSE:',
+    response
+  );
 
-          this.isSubmitting = false;
 
-          this.successMessage =
-            'Poliçe başarıyla oluşturuldu.';
+  this.isSubmitting = false;
+  
 
-          setTimeout(() => {
 
-            this.router.navigate([
-              '/policies'
-            ]);
 
-          }, 800);
+  if (!response?.id) {
 
-        },
+    this.errorMessage =
+      'Poliçe oluşturuldu ancak poliçe numarası alınamadı.';
+
+    return;
+  }
+
+
+  this.successMessage =
+    'Poliçe taslak olarak oluşturuldu. Ödeme ekranına yönlendiriliyorsunuz...';
+
+
+  setTimeout(() => {
+
+    this.router.navigate(
+      ['/payments/new'],
+      {
+        queryParams: {
+          policyId: response.id
+        }
+      }
+    );
+
+  }, 800);
+
+},
 
         error: (error) => {
 

@@ -29,12 +29,61 @@
   >
     {{ errorMessage }}
   </div>
+<div
+  *ngIf="payment && payment.status === 3"
+  class="payment-success-banner"
+>
 
+  <div class="payment-success-icon">
+    ✓
+  </div>
+
+  <div class="payment-success-content">
+
+    <span class="payment-success-label">
+      ÖDEME TAMAMLANDI
+    </span>
+
+    <h2>
+      Ödemeniz başarıyla gerçekleşti
+    </h2>
+
+    <p>
+      Poliçeniz aktif hale getirildi.
+    </p>
+
+  </div>
+
+</div>
   <section
     *ngIf="!isLoading && payment"
     class="detail-card"
   >
+@if (payment?.status === 4) {
+  <div class="payment-failed-banner">
 
+    <div class="payment-failed-icon">
+      !
+    </div>
+
+    <div class="payment-failed-content">
+
+      <span class="payment-failed-label">
+        ÖDEME BAŞARISIZ
+      </span>
+
+      <h2>
+        Ödemeniz gerçekleştirilemedi
+      </h2>
+
+      <p>
+        {{ payment?.failureReason || 'Ödeme işlemi sırasında bir hata oluştu.' }}
+      </p>
+
+    </div>
+
+  </div>
+}
     <div class="detail-row">
       <span>İşlem No</span>
       <strong>
@@ -57,11 +106,20 @@
     </div>
 
     <div class="detail-row">
-      <span>Durum</span>
-      <strong>
-        {{ getStatusText(payment.status) }}
-      </strong>
-    </div>
+  <span>Durum</span>
+
+  <span
+    class="payment-status"
+    [ngClass]="{
+      success: payment.status === 3,
+      pending: payment.status === 1 || payment.status === 2,
+      failed: payment.status === 4,
+      cancelled: payment.status === 5 || payment.status === 6
+    }"
+  >
+    {{ getStatusText(payment.status) }}
+  </span>
+</div>
 
     <div class="detail-row">
       <span>Ödeme Tarihi</span>

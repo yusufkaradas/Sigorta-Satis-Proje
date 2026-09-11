@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 
+
 import { Login } from './features/auth/login/login';
+
+import { QuickQuote } from './features/quick-quotes/quick-quote/quick-quote';
+import { QuickQuoteStart } from './features/quick-quotes/quick-quote-start/quick-quote-start'; 
 
 import { Dashboard } from './features/dashboard/dashboard';
 
@@ -46,10 +50,22 @@ import { authGuard } from './core/guards/auth-guard';
 import { roleGuard } from './core/guards/role-guards';
 
 
-
-
 export const routes: Routes = [
 
+  {
+    path: '',
+    component: QuickQuote,
+    pathMatch: 'full'
+  },
+
+  {
+    path: 'quick-quote',
+    component: QuickQuote
+  },
+{
+  path: 'quick-quote/start',
+  component: QuickQuoteStart
+},
   {
     path: 'login',
     component: Login

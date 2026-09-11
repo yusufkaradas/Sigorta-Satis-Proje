@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Kasko.API.Extensions;
+using Kasko.API.Serialization;
 using Kasko.Business.Integrations.Insurer;
 using Kasko.Business.Integrations.VehicleValue;
 using Kasko.Business.Interfaces;
@@ -21,7 +22,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +51,7 @@ builder.Services.AddScoped<IPricingRuleChangeRequestRepository, PricingRuleChang
 
 
 
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -67,9 +68,11 @@ builder.Services.AddScoped<IPreviousPolicyService, PreviousPolicyService>();
 builder.Services.AddScoped<IInsurancePackageService, InsurancePackageService>();
 builder.Services.AddScoped<IPricingRuleService, PricingRuleService>();
 builder.Services.AddScoped<IPricingRuleChangeRequestService, PricingRuleChangeRequestService>();
+builder.Services.AddScoped<InsurerQuoteComparisonService>();
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerAQuoteProvider>();
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerBQuoteProvider>();
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerCQuoteProvider>();
+
 
 
 
@@ -99,7 +102,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new UtcDateTimeJsonConverter());
+    });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("LocalDevelopment", policy =>

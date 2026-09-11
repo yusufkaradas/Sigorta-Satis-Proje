@@ -1,31 +1,17 @@
-<div class="roles-page">
+<section class="roles-content">
 
-  <div class="page-header">
-
-    <div class="page-title">
-      <h1>Rol Yönetimi</h1>
-
-      <p>
-        Sistemde tanımlı rolleri görüntüleyin
-      </p>
-    </div>
-
-    <button
-      class="create-role-button"
-      routerLink="/roles/new"
-    >
-      + Yeni Rol
-    </button>
-
+  <div class="roles-section-title">
+    İŞLEMLER
   </div>
 
-  <div class="role-stats">
 
-    <div class="stat-card">
+  <!-- İSTATİSTİKLER -->
 
-      <span class="stat-title">
-        Toplam Rol
-      </span>
+  <div class="role-stats-grid">
+
+    <div class="role-stat-card">
+
+      <span>Toplam Rol</span>
 
       <strong>
         {{ roles.length }}
@@ -34,11 +20,9 @@
     </div>
 
 
-    <div class="stat-card">
+    <div class="role-stat-card">
 
-      <span class="stat-title">
-        Aktif Rol
-      </span>
+      <span>Aktif Rol</span>
 
       <strong>
         {{ roles.length }}
@@ -47,11 +31,9 @@
     </div>
 
 
-    <div class="stat-card">
+    <div class="role-stat-card">
 
-      <span class="stat-title">
-        Pasif Rol
-      </span>
+      <span>Pasif Rol</span>
 
       <strong>
         0
@@ -60,11 +42,9 @@
     </div>
 
 
-    <div class="stat-card">
+    <div class="role-stat-card">
 
-      <span class="stat-title">
-        Silinen Rol
-      </span>
+      <span>Silinen Rol</span>
 
       <strong>
         0
@@ -73,188 +53,205 @@
     </div>
 
   </div>
-  <div class="roles-card">
-
-    <div class="roles-card-header">
-
-      <h2>Roller</h2>
-
-    </div>
-    <div class="toolbar">
-
-      <input
-        type="text"
-        placeholder="Rol ara..."
-        [(ngModel)]="searchTerm"
-      />
-
-      <button
-        type="button"
-        class="filter-button"
-      >
-        Tümü ▼
-      </button>
-
-    </div>
-
-    @if (isLoading) {
-
-      <div class="loading">
-        Roller yükleniyor...
-      </div>
-
-    }
-
-    @else if (errorMessage) {
-
-      <div class="error">
-        {{ errorMessage }}
-      </div>
-
-    }
-
-    @else {
-
-      <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Rol
-              </th>
-
-              <th>
-                Rol ID
-              </th>
-<th>
-                İşlemler
-              </th>
-
-              <th>
-                Durum
-              </th>               
-              <th>
-                Oluşturma Tarihi
-              </th>
-            </tr>
-
-          </thead>
 
 
-          <tbody>
+  <!-- ROL LİSTESİ -->
 
-            @for (
-              role of filteredRoles;
-              track role.id
-            ) {
+  <section class="roles-card">
 
-              <tr>
+    <div class="roles-toolbar">
 
-                <td class="role-name">
-                  {{ role.name }}
-                </td>
+      <div class="search-wrapper">
 
-                <td class="role-id">
-                  {{ role.id }}
-                </td>
-                <td>
-                  <a
-                 class="detail-button"
-                 [routerLink]="[
-                     '/roles',
-                   role.id
-                     ]">
-
-                    Detay
-
-                   </a>
-                  </td>
-                <td>
-
-                  <span class="status-badge active">
-                    Aktif
-                  </span>
-
-                </td>
-
-                <td>
-                  -
-                </td>
-
-              </tr>
-
-            }
-
-
-            @if (filteredRoles.length === 0) {
-
-              <tr>
-
-                <td
-                  colspan="5"
-                  class="empty"
-                >
-                  Rol bulunamadı.
-                </td>
-
-              </tr>
-
-            }
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <div class="pagination">
-
-        <button
-          type="button"
-          disabled
-        >
-          ‹
-        </button>
-
-        <button
-          type="button"
-          class="active-page"
-        >
-          1
-        </button>
-
-        <button type="button">
-          2
-        </button>
-
-        <button type="button">
-          3
-        </button>
-
-        <button type="button">
-          4
-        </button>
-
-        <button type="button">
-          5
-        </button>
-
-        <button type="button">
-          ›
-        </button>
-
-        <span class="page-info">
-          1/5
+        <span class="search-label">
+          Rol Ara
         </span>
 
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Rol adı ara..."
+        />
+
       </div>
 
-    }
 
-  </div>
+      <a
+        routerLink="/roles/new"
+        class="new-role-button"
+      >
+        + Yeni Rol
+      </a>
 
-</div>
+    </div>
+
+
+    <!-- LOADING -->
+
+    <div
+      *ngIf="isLoading"
+      class="state-message"
+    >
+
+      <div class="state-icon">
+        ⟳
+      </div>
+
+      <strong>
+        Roller yükleniyor...
+      </strong>
+
+      <span>
+        Lütfen bekleyin.
+      </span>
+
+    </div>
+
+
+    <!-- ERROR -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        errorMessage
+      "
+      class="state-message error"
+    >
+
+      <div class="state-icon">
+        !
+      </div>
+
+      <strong>
+        Roller yüklenemedi
+      </strong>
+
+      <span>
+        {{ errorMessage }}
+      </span>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage
+      "
+      class="role-table-wrapper"
+    >
+
+      <table class="role-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Rol</th>
+            <th>Rol ID</th>
+            <th>Durum</th>
+            <th>Oluşturma Tarihi</th>
+            <th>İşlem</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let role of filteredRoles"
+          >
+
+            <td>
+
+              <strong class="role-name">
+                {{ role.name }}
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              <span class="role-id">
+                {{ role.id }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="role-status active">
+                Aktif
+              </span>
+
+            </td>
+
+
+            <td>
+              —
+            </td>
+
+
+            <td>
+
+              <a
+                class="detail-button"
+                [routerLink]="[
+                  '/roles',
+                  role.id
+                ]"
+              >
+                Detay
+              </a>
+
+            </td>
+
+          </tr>
+
+
+          <tr
+            *ngIf="
+              filteredRoles.length === 0
+            "
+          >
+
+            <td
+              colspan="5"
+              class="empty-row"
+            >
+
+              <div class="empty-state">
+
+                <div class="empty-icon">
+                  —
+                </div>
+
+                <strong>
+                  Rol bulunamadı
+                </strong>
+
+                <span>
+                  Arama kriterlerinizi değiştirmeyi deneyin.
+                </span>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</section>

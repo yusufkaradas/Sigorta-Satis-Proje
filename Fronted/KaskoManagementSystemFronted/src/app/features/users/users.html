@@ -1,86 +1,152 @@
-<div class="users-page">
+<section class="users-content">
 
-  <section class="page-header">
+  <div class="users-section-title">
+    İŞLEMLER
+  </div>
 
-    <div class="header-content">
 
-      <h1>
-        Kullanıcı Yönetimi
-      </h1>
+  <!-- İSTATİSTİKLER -->
 
-      <p>
-        Sistem kullanıcılarını görüntüleme
-      </p>
+  <div class="user-stats-grid">
 
+    <div class="user-stat-card">
+      <span>Toplam Kullanıcı</span>
+
+      <strong>
+        {{ users.length }}
+      </strong>
     </div>
 
-    <a
-      routerLink="/users/new"
-      class="new-user-button">
 
-      + Yeni Kullanıcı
+    <div class="user-stat-card">
+      <span>Aktif Kullanıcı</span>
 
-    </a>
+      <strong>
+        {{ activeUserCount }}
+      </strong>
+    </div>
 
-  </section>
 
+    <div class="user-stat-card">
+      <span>Pasif Kullanıcı</span>
+
+      <strong>
+        {{ inactiveUserCount }}
+      </strong>
+    </div>
+
+
+    <div class="user-stat-card">
+      <span>Gösterilen</span>
+
+      <strong>
+        {{ filteredUsers.length }}
+      </strong>
+    </div>
+
+  </div>
+
+
+  <!-- KULLANICI LİSTESİ -->
 
   <section class="users-card">
 
-    <div class="toolbar">
+    <div class="users-toolbar">
 
-      <div class="search-box">
+      <div class="search-wrapper">
+
+        <span class="search-label">
+          Kullanıcı Ara
+        </span>
 
         <input
           type="text"
-          placeholder="Kullanıcı ara..."
-          [(ngModel)]="searchText">
+          [(ngModel)]="searchText"
+          (input)="filterUsers()"
+          placeholder="Ad, e-posta, telefon veya rol ara..."
+        />
 
       </div>
 
+
+      <a
+        routerLink="/users/new"
+        class="new-user-button"
+      >
+        + Yeni Kullanıcı
+      </a>
+
     </div>
 
+
+    <!-- LOADING -->
 
     <div
       *ngIf="isLoading"
-      class="loading">
+      class="state-message"
+    >
 
-      Kullanıcılar yükleniyor...
+      <div class="state-icon">
+        ⟳
+      </div>
+
+      <strong>
+        Kullanıcılar yükleniyor...
+      </strong>
+
+      <span>
+        Lütfen bekleyin.
+      </span>
 
     </div>
 
 
-    <div
-      *ngIf="!isLoading && errorMessage"
-      class="error">
+    <!-- ERROR -->
 
-      {{ errorMessage }}
+    <div
+      *ngIf="
+        !isLoading &&
+        errorMessage
+      "
+      class="state-message error"
+    >
+
+      <div class="state-icon">
+        !
+      </div>
+
+      <strong>
+        Kullanıcılar yüklenemedi
+      </strong>
+
+      <span>
+        {{ errorMessage }}
+      </span>
 
     </div>
 
 
-    <div
-      *ngIf="!isLoading && !errorMessage"
-      class="table-wrapper">
+    <!-- TABLE -->
 
-      <table>
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage
+      "
+      class="user-table-wrapper"
+    >
+
+      <table class="user-table">
 
         <thead>
 
           <tr>
-
             <th>Ad Soyad</th>
-
             <th>E-posta</th>
-
             <th>Telefon</th>
-
             <th>Rol</th>
-
             <th>Durum</th>
-
             <th>İşlemler</th>
-
           </tr>
 
         </thead>
@@ -89,50 +155,44 @@
         <tbody>
 
           <tr
-            *ngFor="let user of filteredUsers">
+            *ngFor="let user of filteredUsers"
+          >
 
             <td>
-
-              <div class="user-name">
-
+              <strong class="user-name">
                 {{ user.firstName }}
                 {{ user.lastName }}
-
-              </div>
-
+              </strong>
             </td>
 
 
-            <td>
-
+            <td class="email-cell">
               {{ user.email }}
-
             </td>
 
 
             <td>
-
-              {{ user.phoneNumber || '-' }}
-
+              {{ user.phoneNumber || '—' }}
             </td>
 
 
             <td>
-
               {{ user.roleName || user.roleId }}
-
             </td>
 
 
             <td>
 
               <span
-                class="status"
-                [class.status-active]="user.isActive"
-                [class.status-inactive]="!user.isActive">
-
-                {{ user.isActive ? 'Aktif' : 'Pasif' }}
-
+                class="user-status"
+                [class.active]="user.isActive"
+                [class.passive]="!user.isActive"
+              >
+                {{
+                  user.isActive
+                    ? 'Aktif'
+                    : 'Pasif'
+                }}
               </span>
 
             </td>
@@ -147,10 +207,9 @@
                     '/users',
                     user.id
                   ]"
-                  class="action-button">
-
+                  class="action-button detail"
+                >
                   Detay
-
                 </a>
 
 
@@ -160,21 +219,49 @@
                     user.id,
                     'edit'
                   ]"
-                  class="action-button edit">
-
+                  class="action-button edit"
+                >
                   Düzenle
-
                 </a>
 
 
                 <button
                   type="button"
                   class="action-button delete"
-                  (click)="deleteUser(user.id)">
-
+                  (click)="deleteUser(user.id)"
+                >
                   Sil
-
                 </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+
+          <tr
+            *ngIf="filteredUsers.length === 0"
+          >
+
+            <td
+              colspan="6"
+              class="empty-row"
+            >
+
+              <div class="empty-state">
+
+                <div class="empty-icon">
+                  —
+                </div>
+
+                <strong>
+                  Kullanıcı bulunamadı
+                </strong>
+
+                <span>
+                  Arama kriterlerinizi değiştirmeyi deneyin.
+                </span>
 
               </div>
 
@@ -186,17 +273,8 @@
 
       </table>
 
-
-      <div
-        *ngIf="filteredUsers.length === 0"
-        class="empty">
-
-        Kullanıcı bulunamadı.
-
-      </div>
-
     </div>
 
   </section>
 
-</div>
+</section>

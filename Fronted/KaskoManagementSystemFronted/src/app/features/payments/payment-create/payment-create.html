@@ -1,19 +1,20 @@
 <div class="payment-create-page">
 
+  <!-- PAGE HEADER -->
   <section class="page-header">
 
     <div class="page-header-content">
 
       <span class="page-eyebrow">
-        ÖDEME İŞLEMLERİ
+        SATIN ALMA
       </span>
 
       <h1>
-        Poliçe Ödemesi
+        Onay ve Ödeme
       </h1>
 
       <p>
-        Taslak poliçeniz için ödeme işlemini tamamlayın.
+        Poliçe bilgilerinizi kontrol edin ve ödeme işlemini tamamlayın.
       </p>
 
     </div>
@@ -21,6 +22,7 @@
   </section>
 
 
+  <!-- LOADING -->
   <div
     *ngIf="isLoading"
     class="loading">
@@ -34,24 +36,39 @@
   </div>
 
 
+  <!-- ERROR -->
   <div
     *ngIf="!isLoading && errorMessage"
     class="message message-error">
 
-    {{ errorMessage }}
+    <span class="message-icon">
+      !
+    </span>
+
+    <span>
+      {{ errorMessage }}
+    </span>
 
   </div>
 
 
+  <!-- SUCCESS -->
   <div
     *ngIf="!isLoading && successMessage"
     class="message message-success">
 
-    {{ successMessage }}
+    <span class="message-icon">
+      ✓
+    </span>
+
+    <span>
+      {{ successMessage }}
+    </span>
 
   </div>
 
 
+  <!-- PAYMENT CONTENT -->
   <section
     *ngIf="
       !isLoading &&
@@ -60,17 +77,23 @@
     "
     class="payment-card">
 
+
+    <!-- HEADER -->
     <div class="payment-card-header">
 
-      <div>
+      <div class="header-content">
 
         <span class="section-label">
-          POLİÇE
+          ONAYLANAN POLİÇE
         </span>
 
         <h2>
           {{ policy.policyNumber }}
         </h2>
+
+        <p>
+          Ödeme öncesi poliçe bilgilerini kontrol edin.
+        </p>
 
       </div>
 
@@ -81,96 +104,353 @@
     </div>
 
 
-    <div class="payment-summary">
+    <!-- POLICY INFORMATION -->
+    <section class="summary-section">
 
-      <div class="summary-item">
+      <div class="section-heading">
 
-        <span>
-          Başlangıç
+        <span class="section-number">
+          01
         </span>
 
-        <strong>
-          {{ policy.startDate | date:'dd.MM.yyyy' }}
-        </strong>
+        <div>
+          <h3>
+            Poliçe Bilgileri
+          </h3>
+
+          <span>
+            Poliçenin geçerlilik süresi
+          </span>
+        </div>
 
       </div>
 
 
-      <div class="summary-item">
+      <div class="policy-summary-grid">
 
-        <span>
-          Bitiş
+        <!-- START DATE -->
+        <div class="summary-item">
+
+          <span class="summary-label">
+            Başlangıç Tarihi
+          </span>
+
+          <strong>
+            {{ policy.startDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+        </div>
+
+
+        <!-- END DATE -->
+        <div class="summary-item">
+
+          <span class="summary-label">
+            Bitiş Tarihi
+          </span>
+
+          <strong>
+            {{ policy.endDate | date:'dd.MM.yyyy' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PAYMENT SUMMARY -->
+    <section class="summary-section payment-summary-section">
+
+      <div class="section-heading">
+
+        <span class="section-number">
+          02
         </span>
 
-        <strong>
-          {{ policy.endDate | date:'dd.MM.yyyy' }}
-        </strong>
+        <div>
+          <h3>
+            Ödeme Özeti
+          </h3>
+
+          <span>
+            Ödenecek poliçe primi
+          </span>
+        </div>
 
       </div>
 
 
-      <div class="summary-item">
+      <div class="payment-price-box">
 
-        <span>
-          Ödenecek Tutar
-        </span>
+        <div class="price-content">
 
-        <strong class="amount">
+          <span class="price-label">
+            Ödenecek Tutar
+          </span>
+
+          <p>
+            Poliçe primi
+          </p>
+
+        </div>
+
+
+        <strong class="price-value">
+
           {{
             policy.premiumAmount
               | number:'1.2-2'
           }}
           ₺
+
         </strong>
 
       </div>
 
+
+      <div class="payment-info">
+
+        <div class="payment-info-icon">
+          ✓
+        </div>
+
+        <div>
+
+          <strong>
+            Güvenli ödeme
+          </strong>
+
+          <p>
+            Ödeme tutarı sistem tarafından poliçe priminden
+            otomatik olarak belirlenmektedir.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+<!-- CARD PAYMENT -->
+<section class="summary-section card-payment-section">
+
+  <div class="section-heading">
+
+    <span class="section-number">
+      03
+    </span>
+
+    <div>
+      <h3>
+        Kart Bilgileri
+      </h3>
+
+      <span>
+        Demo ödeme bilgilerini girin
+      </span>
+    </div>
+
+  </div>
+
+
+  <div class="card-form-grid">
+
+    <!-- CARD NUMBER -->
+    <div class="card-form-group card-form-group-full">
+
+      <label for="cardNumber">
+        Kart Numarası
+      </label>
+
+      <input
+  id="cardNumber"
+  type="text"
+  inputmode="numeric"
+  maxlength="19"
+  placeholder="1234 5678 9012 3456"
+  [(ngModel)]="cardNumber"
+  (ngModelChange)="formatCardNumber($event)"
+  autocomplete="off"
+/>
+
     </div>
 
 
-    <div class="payment-info">
+    <!-- CARD HOLDER -->
+    <div class="card-form-group card-form-group-full">
 
-      <strong>
-        Ödeme Bilgisi
-      </strong>
+      <label for="cardHolder">
+        Kart Üzerindeki İsim
+      </label>
 
-      <p>
-        Ödeme tutarı poliçe priminden otomatik olarak
-        belirlenmektedir.
-      </p>
+      <input
+        id="cardHolder"
+        type="text"
+        placeholder="AD SOYAD"
+        [(ngModel)]="cardHolder"
+        autocomplete="off"
+      />
+
+    </div>
+
+
+    <!-- EXPIRY -->
+    <div class="card-form-group">
+
+      <label for="expiryDate">
+        Son Kullanma
+      </label>
+
+      <input
+  id="expiryDate"
+  type="text"
+  inputmode="numeric"
+  maxlength="5"
+  placeholder="AA/YY"
+  [(ngModel)]="expiryDate"
+  (ngModelChange)="formatExpiryDate($event)"
+  autocomplete="off"
+/>
 
     </div>
 
 
-    <div class="payment-actions">
+    <!-- CVV -->
+    <div class="card-form-group">
 
-      <button
-        type="button"
-        class="action-button action-secondary"
-        (click)="goBack()"
-        [disabled]="isSubmitting">
+      <label for="cvv">
+        CVV
+      </label>
 
-        Vazgeç
-
-      </button>
-
-
-      <button
-        type="button"
-        class="action-button action-primary"
-        (click)="createPayment()"
-        [disabled]="isSubmitting">
-
-        {{
-          isSubmitting
-            ? 'Ödeme Yapılıyor...'
-            : 'Ödemeyi Tamamla'
-        }}
-
-      </button>
+      <input
+  id="cvv"
+  type="password"
+  inputmode="numeric"
+  maxlength="4"
+  placeholder="123"
+  [(ngModel)]="cvv"
+  (ngModelChange)="formatCvv($event)"
+  autocomplete="off"
+/>
 
     </div>
 
-  </section>
+  </div>
+
+
+  <!-- CARD ERROR -->
+  <div
+    *ngIf="cardErrorMessage"
+    class="card-error">
+
+    <span class="card-error-icon">
+      !
+    </span>
+
+    <span>
+      {{ cardErrorMessage }}
+    </span>
+
+  </div>
+
+
+  <!-- TERMS -->
+  <label class="terms-check">
+
+    <input
+      type="checkbox"
+      [(ngModel)]="isTermsAccepted"
+    />
+
+    <span>
+      Ödeme koşullarını ve poliçe bilgilerimi kontrol ettiğimi
+      ve devam etmeyi kabul ettiğimi onaylıyorum.
+    </span>
+
+  </label>
+
+
+  <div class="demo-payment-note">
+
+    <span class="demo-payment-icon">
+      i
+    </span>
+
+    <span>
+      Bu ekran demo ödeme akışıdır. Kart bilgileri sisteme
+      kaydedilmez.
+    </span>
+
+  </div>
+
+</section>
+    <!-- CONFIRMATION -->
+    <section class="summary-section confirmation-section">
+
+      <div class="confirmation-content">
+
+        <div class="confirmation-icon">
+          ✓
+        </div>
+
+        <div>
+
+          <strong>
+            Ödeme öncesi kontrol
+          </strong>
+
+          <p>
+            Poliçe bilgilerini ve ödenecek tutarı kontrol ettikten
+            sonra ödeme işlemini tamamlayabilirsiniz.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+   <!-- ACTIONS -->
+<div class="payment-actions">
+
+  <button
+    type="button"
+    class="action-button action-secondary"
+    (click)="goBack()"
+    [disabled]="isSubmitting">
+
+    ← Geri Dön
+
+  </button>
+
+
+  <button
+    type="button"
+    class="action-button action-primary"
+    (click)="createPayment()"
+    [disabled]="
+      isSubmitting ||
+      !isTermsAccepted ||
+      cardNumber.length !== 19 ||
+      !cardHolder.trim() ||
+      expiryDate.length !== 5 ||
+      cvv.length !== 3
+    ">
+
+    <span
+      *ngIf="isSubmitting"
+      class="button-spinner">
+    </span>
+
+    {{
+      isSubmitting
+        ? 'Ödeme Yapılıyor...'
+        : 'Ödemeyi Tamamla'
+    }}
+
+  </button>
 
 </div>

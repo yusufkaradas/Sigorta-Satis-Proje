@@ -1,95 +1,92 @@
-<div class="policies-page">
+<section class="policies-content">
 
-  <main class="main-content">
+  <!-- İŞLEMLER -->
 
-    <section class="page-header">
+  <div class="policies-section-title">
+    İŞLEMLER
+  </div>
 
-      <h1>
-        Poliçe Yönetim İşlemleri
-      </h1>
 
-    </section>
+  <!-- İSTATİSTİKLER -->
 
-    <section class="stats-grid">
+  <div class="policy-stats-grid">
 
-      <div class="stat-card">
+    <div class="policy-stat-card">
 
-        <div class="stat-card-title">
-          Toplam Poliçeler
-        </div>
+      <span>Toplam Poliçe</span>
 
-        <div class="stat-card-value">
-          {{ totalPolicies }}
-        </div>
+      <strong>
+        {{ totalPolicies }}
+      </strong>
 
-      </div>
+    </div>
 
-      <div class="stat-card">
 
-        <div class="stat-card-title">
-          Aktif Poliçeler
-        </div>
+    <div class="policy-stat-card">
 
-        <div class="stat-card-value">
-          {{ activePolicies }}
-        </div>
+      <span>Aktif Poliçe</span>
 
-      </div>
+      <strong>
+        {{ activePolicies }}
+      </strong>
 
-      <div class="stat-card">
+    </div>
 
-        <div class="stat-card-title">
-          Pasif Poliçeler
-        </div>
 
-        <div class="stat-card-value">
-          {{ draftPolicies }}
-        </div>
+    <div class="policy-stat-card">
 
-      </div>
+      <span>Taslak Poliçe</span>
 
-      <div class="stat-card">
+      <strong>
+        {{ draftPolicies }}
+      </strong>
 
-        <div class="stat-card-title">
-          Silinen Poliçeler
-        </div>
+    </div>
 
-        <div class="stat-card-value">
-          {{ cancelledPolicies }}
-        </div>
 
-      </div>
+    <div class="policy-stat-card">
 
-    </section>
+      <span>İptal Edilen</span>
 
-    <section class="policies-card">
+      <strong>
+        {{ cancelledPolicies }}
+      </strong>
 
-      <div class="policy-list-header">
+    </div>
 
-        <h2>
-          Poliçeler
-        </h2>
+  </div>
 
-        <button
-          class="primary-button"
-          type="button"
-          routerLink="/policies/new"
-        >
-          + Yeni Poliçe
-        </button>
 
-      </div>
+  <!-- POLİÇE LİSTESİ -->
 
-      <div class="filters">
+  <section class="policies-card">
+
+    <div class="policies-toolbar">
+
+      <div class="search-wrapper">
+
+        <span class="search-label">
+          Poliçe Ara
+        </span>
 
         <input
           type="text"
-          placeholder="Ara..."
+          placeholder="Poliçe no, müşteri, marka veya model ara..."
           [(ngModel)]="searchText"
           (input)="filterPolicies()"
-        >
+        />
+
+      </div>
+
+
+      <div class="filter-wrapper">
+
+        <label for="policy-status">
+          Durum
+        </label>
 
         <select
+          id="policy-status"
           [(ngModel)]="selectedStatus"
           (change)="filterPolicies()"
         >
@@ -116,184 +113,271 @@
 
         </select>
 
-        <button
-          type="button"
-          class="clear-button"
-          (click)="clearFilters()"
-        >
-          Temizle
-        </button>
-
       </div>
 
-      <div
-        *ngIf="isLoading"
-        class="loading"
+
+      <button
+        type="button"
+        class="clear-button"
+        (click)="clearFilters()"
       >
+        Temizle
+      </button>
+
+
+      <button
+        type="button"
+        class="new-policy-button"
+        routerLink="/policies/new"
+      >
+        + Yeni Poliçe
+      </button>
+
+    </div>
+
+
+    <!-- LOADING -->
+
+    <div
+      *ngIf="isLoading"
+      class="state-message"
+    >
+
+      <div class="state-icon">
+        ⟳
+      </div>
+
+      <strong>
         Poliçeler yükleniyor...
+      </strong>
+
+      <span>
+        Lütfen bekleyin.
+      </span>
+
+    </div>
+
+
+    <!-- ERROR -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        errorMessage
+      "
+      class="state-message error"
+    >
+
+      <div class="state-icon">
+        !
       </div>
 
-      <div
-        *ngIf="!isLoading && errorMessage"
-        class="error-message"
-      >
+      <strong>
+        Poliçeler yüklenemedi
+      </strong>
+
+      <span>
         {{ errorMessage }}
+      </span>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredPolicies.length > 0
+      "
+      class="policy-table-wrapper"
+    >
+
+      <table class="policy-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Poliçe No</th>
+            <th>Müşteri</th>
+            <th>Araç</th>
+            <th>Tür</th>
+            <th>Başlangıç</th>
+            <th>Bitiş</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let policy of paginatedPolicies"
+          >
+
+            <td>
+
+              <strong class="policy-number">
+                {{ policy.policyNumber }}
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              <div class="customer-cell">
+
+                <strong>
+                  {{ policy.customerName || '—' }}
+                </strong>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <div class="vehicle-cell">
+
+                <strong>
+                  {{ policy.brand || '—' }}
+                  {{ policy.model || '' }}
+                </strong>
+
+              </div>
+
+            </td>
+
+
+            <td>
+              Kasko
+            </td>
+
+
+            <td>
+              {{ policy.startDate | date:'dd.MM.yyyy' }}
+            </td>
+
+
+            <td>
+              {{ policy.endDate | date:'dd.MM.yyyy' }}
+            </td>
+
+
+            <td>
+
+              <span
+                class="policy-status"
+                [ngClass]="getStatusClass(policy.status)"
+              >
+                {{ getStatusText(policy.status) }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <button
+                type="button"
+                class="detail-button"
+                (click)="openDetail(policy.id)"
+              >
+                Detay
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- EMPTY -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredPolicies.length === 0
+      "
+      class="empty-state"
+    >
+
+      <div class="empty-state-icon">
+        —
       </div>
 
-      <div
-        *ngIf="!isLoading && !errorMessage"
-        class="table-wrapper"
+      <strong>
+        Poliçe bulunamadı
+      </strong>
+
+      <span>
+        Arama veya filtre kriterlerinizi değiştirmeyi deneyin.
+      </span>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+
+    <div
+      class="pagination"
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        totalPages > 0
+      "
+    >
+
+      <button
+        type="button"
+        class="pagination-arrow"
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
       >
+        ‹
+      </button>
 
-        <table class="policy-table">
 
-          <thead>
-
-            <tr>
-
-              <th>Poliçe No</th>
-              <th>Müşteri</th>
-              <th>Araç</th>
-              <th>Tür</th>
-              <th>Başlangıç</th>
-              <th>Bitiş</th>
-              <th>Durum</th>
-              <th>İşlem</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <tr
-              *ngFor="let policy of paginatedPolicies"
-            >
-
-              <td>
-
-                <span class="policy-number">
-                  {{ policy.policyNumber }}
-                </span>
-
-              </td>
-<td>
-  <div class="customer-cell">
-    <strong>
-      {{ policy.customerName || '—' }}
-    </strong>
-  </div>
-</td>
-
-<td>
-  <div class="vehicle-cell">
-    <strong>
-      {{ policy.brand || '—' }} {{ policy.model || '' }}
-    </strong>
-  </div>
-</td>
-
-              <td>
-                Kasko
-              </td>
-
-              <td>
-                {{ policy.startDate | date:'dd.MM.yyyy' }}
-              </td>
-
-              <td>
-                {{ policy.endDate | date:'dd.MM.yyyy' }}
-              </td>
-
-              <td>
-
-                <span
-                  class="status"
-                  [ngClass]="
-                    getStatusClass(policy.status)
-                  "
-                >
-                  {{ getStatusText(policy.status) }}
-                </span>
-
-              </td>
-
-              <td>
-
-                <button
-                  type="button"
-                  class="detail-button"
-                  (click)="openDetail(policy.id)"
-                >
-                  Detay
-                </button>
-
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <div
-        class="pagination"
-        *ngIf="
-          !isLoading &&
-          !errorMessage &&
-          totalPages > 0
-        "
+      <button
+        *ngFor="let page of pages"
+        type="button"
+        class="pagination-number"
+        [class.active]="currentPage === page"
+        (click)="goToPage(page)"
       >
+        {{ page }}
+      </button>
 
-        <button
-          type="button"
-          class="pagination-arrow"
-          [disabled]="currentPage === 1"
-          (click)="previousPage()"
-        >
-          ‹
-        </button>
 
-        <button
-          *ngFor="let page of pages"
-          type="button"
-          class="pagination-number"
-          [class.active]="currentPage === page"
-          (click)="goToPage(page)"
-        >
-          {{ page }}
-        </button>
-
-        <button
-          type="button"
-          class="pagination-arrow"
-          [disabled]="currentPage === totalPages"
-          (click)="nextPage()"
-        >
-          ›
-        </button>
-
-        <span class="pagination-info">
-          {{ currentPage }} / {{ totalPages }}
-        </span>
-
-      </div>
-
-      <div
-        *ngIf="
-          !isLoading &&
-          !errorMessage &&
-          filteredPolicies.length === 0
-        "
-        class="empty-state"
+      <button
+        type="button"
+        class="pagination-arrow"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
       >
-        Poliçe bulunamadı.
-      </div>
+        ›
+      </button>
 
-    </section>
 
-  </main>
+      <span class="pagination-info">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
 
-</div>
+    </div>
+
+  </section>
+
+</section>

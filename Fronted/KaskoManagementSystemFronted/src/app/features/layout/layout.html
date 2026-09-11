@@ -1,10 +1,12 @@
 <div class="app-layout">
 
+  <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <div class="logo-box">
+    <div class="sidebar-logo">
       <span>Logo</span>
     </div>
+
 
     <nav class="sidebar-menu">
 
@@ -12,13 +14,23 @@
         routerLink="/dashboard"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
+        class="menu-item"
       >
         Dashboard
       </a>
 
       <a
+        routerLink="/customers"
+        routerLinkActive="active"
+        class="menu-item"
+      >
+        Müşteriler
+      </a>
+
+      <a
         routerLink="/vehicles"
         routerLinkActive="active"
+        class="menu-item"
       >
         Araçlar
       </a>
@@ -26,6 +38,7 @@
       <a
         routerLink="/quotes"
         routerLinkActive="active"
+        class="menu-item"
       >
         Teklifler
       </a>
@@ -33,6 +46,7 @@
       <a
         routerLink="/policies"
         routerLinkActive="active"
+        class="menu-item"
       >
         Poliçeler
       </a>
@@ -40,6 +54,7 @@
       <a
         routerLink="/payments"
         routerLinkActive="active"
+        class="menu-item"
       >
         Ödemeler
       </a>
@@ -47,6 +62,7 @@
       <a
         routerLink="/users"
         routerLinkActive="active"
+        class="menu-item"
       >
         Kullanıcılar
       </a>
@@ -54,18 +70,13 @@
       <a
         routerLink="/roles"
         routerLinkActive="active"
+        class="menu-item"
       >
         Roller
       </a>
 
-      <a
-        routerLink="/customers"
-        routerLinkActive="active"
-      >
-        Müşteriler
-      </a>
-
     </nav>
+
 
     <button
       type="button"
@@ -78,29 +89,43 @@
   </aside>
 
 
+  <!-- MAIN -->
   <main class="main-content">
 
     <header class="topbar">
 
-      <h2>Sigorta Satış Portalı</h2>
+      <div class="topbar-title">
+        ADMİN PANELİ
+      </div>
+
 
       <div class="topbar-actions">
 
-        <button type="button">
-          ⚙
+        <button
+          type="button"
+          class="topbar-icon"
+          aria-label="Ayarlar"
+        >
         </button>
 
-        <button type="button">
-          🔔
+        <button
+          type="button"
+          class="topbar-icon"
+          aria-label="Bildirimler"
+        >
         </button>
 
-        <button type="button" class="user-button">
-          Kullanıcı Adı
+        <button
+          type="button"
+          class="user-button"
+        >
+          KULLANICI ADI
         </button>
 
       </div>
 
     </header>
+
 
     <section class="content-area">
 

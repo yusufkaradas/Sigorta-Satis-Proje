@@ -1,91 +1,84 @@
-<div class="quotes-page">
+<section class="quotes-content">
 
-  <main class="main-content">
+  <!-- İŞLEMLER -->
 
-    <section class="page-header">
+  <div class="quotes-section-title">
+    İŞLEMLER
+  </div>
 
-      <div class="page-title">
 
-        <h1>
-          Teklif Yönetim İşlemleri
-        </h1>
+  <!-- İSTATİSTİKLER -->
 
-      </div>
+  <div class="quote-stats-grid">
 
-      <button
-        type="button"
-        class="new-quote-button"
-        (click)="openCreate()"
-      >
-        + Yeni Teklif
-      </button>
+    <div class="quote-stat-card">
+      <span>Toplam Teklif</span>
 
-    </section>
+      <strong>
+        {{ totalQuotes }}
+      </strong>
+    </div>
 
-    <section class="stats-grid">
 
-      <div class="stat-card">
+    <div class="quote-stat-card">
+      <span>Aktif Teklif</span>
 
-        <div class="stat-card-title">
-          Toplam Teklif
-        </div>
+      <strong>
+        {{ activeQuotes }}
+      </strong>
+    </div>
 
-        <div class="stat-card-value">
-          {{ totalQuotes }}
-        </div>
 
-      </div>
+    <div class="quote-stat-card">
+      <span>Pasif Teklif</span>
 
-      <div class="stat-card">
+      <strong>
+        {{ passiveQuotes }}
+      </strong>
+    </div>
 
-        <div class="stat-card-title">
-          Aktif Teklif
-        </div>
 
-        <div class="stat-card-value">
-          {{ activeQuotes }}
-        </div>
+    <div class="quote-stat-card">
+      <span>Silinen Teklif</span>
 
-      </div>
+      <strong>
+        {{ deletedQuotes }}
+      </strong>
+    </div>
 
-      <div class="stat-card">
+  </div>
 
-        <div class="stat-card-title">
-          Pasif Teklif
-        </div>
 
-        <div class="stat-card-value">
-          {{ passiveQuotes }}
-        </div>
+  <!-- TEKLİFLER -->
 
-      </div>
+  <section class="quotes-card">
 
-      <div class="stat-card">
+    <div class="quotes-toolbar">
 
-        <div class="stat-card-title">
-          Silinen Teklif
-        </div>
+      <div class="search-wrapper">
 
-        <div class="stat-card-value">
-          {{ deletedQuotes }}
-        </div>
-
-      </div>
-
-    </section>
-
-    <section class="quotes-card">
-
-      <div class="filters">
+        <span class="search-label">
+          Teklif Ara
+        </span>
 
         <input
           type="text"
-          placeholder="Teklif ara..."
+          placeholder="Teklif no, müşteri veya araç ara..."
           [(ngModel)]="searchText"
           (input)="filterQuotes()"
-        >
+        />
+
+      </div>
+
+
+      <div class="filter-wrapper">
+
+        <label for="quote-status">
+          Durum
+        </label>
 
         <select
+          id="quote-status"
           [(ngModel)]="selectedStatus"
           (change)="filterQuotes()"
         >
@@ -119,203 +112,300 @@
           </option>
 
         </select>
-        
-
-        <button
-          type="button"
-          class="clear-button"
-          (click)="clearFilters()"
-        >
-          Temizle
-        </button>
 
       </div>
 
-      <div
-        *ngIf="isLoading"
-        class="loading"
+
+      <button
+        type="button"
+        class="clear-button"
+        (click)="clearFilters()"
       >
-        Teklifler yükleniyor...
-      </div>
+        Temizle
+      </button>
 
-      <div
-        *ngIf="!isLoading && errorMessage"
-        class="error-message"
+
+      <button
+        type="button"
+        class="new-quote-button"
+        (click)="openCreate()"
       >
-        {{ errorMessage }}
-      </div>
+        + Yeni Teklif
+      </button>
 
-      <div
-        *ngIf="!isLoading && quotes.length > 0"
-        class="table-wrapper"
-      >
-
-        <table class="quote-table">
-
-          <thead>
-
-            <tr>
-
-              <th>Teklif No</th>
-              <th>Müşteri</th>
-              <th>Araç</th>
-              <th>Prim Tutarı</th>
-              <th>Geçerlilik</th>
-              <th>Durum</th>
-              <th>İşlem</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-           <tr *ngFor="let quote of paginatedQuotes">
-
-  <!-- TEKLİF NO -->
-  <td>
-    <span class="quote-number">
-      {{ quote.quoteNumber }}
-    </span>
-  </td>
-
-  <!-- MÜŞTERİ -->
-  <td>
-    <div class="customer-cell">
-      <strong>
-        {{ quote.customerName || '—' }}
-      </strong>
     </div>
-  </td>
 
-  <!-- ARAÇ -->
-  <td>
-  <div class="vehicle-cell">
-    <strong>
-      {{ quote.vehicleDescription || '—' }}
-    </strong>
-  </div>
-</td>
 
-  <!-- PRİM -->
-  <td>
-    {{ quote.premiumAmount | number:'1.2-2' }} ₺
-  </td>
+    <!-- LOADING -->
 
-  <!-- GEÇERLİLİK -->
-  <td>
-    {{ quote.validUntil | date:'dd.MM.yyyy' }}
-  </td>
-
-  <!-- DURUM -->
-  <td>
-    <span
-      class="status"
-      [ngClass]="getStatusClass(quote.status)"
+    <div
+      *ngIf="isLoading"
+      class="state-message"
     >
-      {{ getStatusText(quote.status) }}
-    </span>
-  </td>
 
-  <!-- İŞLEM -->
-  <td class="actions-cell">
-
-    <button
-      type="button"
-      class="detail-button"
-      (click)="openDetail(quote.id)"
-    >
-      Detay
-    </button>
-
-    <button
-      *ngIf="quote.status === QuoteStatus.Draft"
-      type="button"
-      class="offer-button"
-      (click)="openDetail(quote.id)"
-    >
-      Teklif Ver
-    </button>
-
-    <button
-      *ngIf="quote.status === QuoteStatus.Accepted"
-      type="button"
-      class="policy-button"
-      [routerLink]="['/policies/new']"
-      [queryParams]="{
-        customerId: quote.customerId,
-        vehicleId: quote.vehicleId,
-        quoteId: quote.id
-      }"
-    >
-      Poliçe Oluştur
-    </button>
-
-  </td>
-
-</tr>
-          </tbody>
-
-        </table>
-
+      <div class="state-icon">
+        ⟳
       </div>
 
-      <div
-        *ngIf="
-          !isLoading &&
-          !errorMessage &&
-          filteredQuotes.length === 0
-        "
-        class="empty-state"
+      <strong>
+        Teklifler yükleniyor...
+      </strong>
+
+      <span>
+        Lütfen bekleyin.
+      </span>
+
+    </div>
+
+
+    <!-- ERROR -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        errorMessage
+      "
+      class="state-message error"
+    >
+
+      <div class="state-icon">
+        !
+      </div>
+
+      <strong>
+        Teklifler yüklenemedi
+      </strong>
+
+      <span>
+        {{ errorMessage }}
+      </span>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredQuotes.length > 0
+      "
+      class="quote-table-wrapper"
+    >
+
+      <table class="quote-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Teklif No</th>
+            <th>Müşteri</th>
+            <th>Araç</th>
+            <th>Prim Tutarı</th>
+            <th>Geçerlilik</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let quote of paginatedQuotes"
+          >
+
+            <td>
+
+              <span class="quote-number">
+                {{ quote.quoteNumber }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <strong class="customer-cell">
+                {{ quote.customerName || '—' }}
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              <div class="vehicle-cell">
+
+                <strong>
+                  {{ quote.vehicleDescription || '—' }}
+                </strong>
+
+                <span *ngIf="quote.plateNumber">
+                  {{ quote.plateNumber }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <strong>
+                {{ quote.premiumAmount | number:'1.2-2' }} ₺
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              {{ quote.validUntil | date:'dd.MM.yyyy' }}
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="quote-status"
+                [ngClass]="getStatusClass(quote.status)"
+              >
+                {{ getStatusText(quote.status) }}
+              </span>
+
+            </td>
+
+
+            <td class="actions-cell">
+
+              <button
+                type="button"
+                class="detail-button"
+                (click)="openDetail(quote.id)"
+              >
+                Detay
+              </button>
+
+
+              <button
+                *ngIf="
+                  quote.status === QuoteStatus.Draft
+                "
+                type="button"
+                class="offer-button"
+                (click)="openDetail(quote.id)"
+              >
+                Teklif Ver
+              </button>
+
+
+              <button
+                *ngIf="
+                  quote.status === QuoteStatus.Accepted
+                "
+                type="button"
+                class="policy-button"
+                [routerLink]="['/policies/new']"
+                [queryParams]="{
+                  customerId: quote.customerId,
+                  vehicleId: quote.vehicleId,
+                  quoteId: quote.id
+                }"
+              >
+                Poliçe Oluştur
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- EMPTY -->
+
+    <div
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredQuotes.length === 0
+      "
+      class="empty-state"
+    >
+
+      <div class="empty-state-icon">
+        —
+      </div>
+
+      <strong>
+        Teklif bulunamadı
+      </strong>
+
+      <span>
+        Arama veya filtre kriterlerinizi değiştirmeyi deneyin.
+      </span>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+
+    <div
+      class="pagination"
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        totalPages > 0
+      "
+    >
+
+      <button
+        type="button"
+        class="pagination-arrow"
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
       >
-        Teklif bulunamadı.
-      </div>
+        ‹
+      </button>
 
-      <div
-        class="pagination"
-        *ngIf="
-          !isLoading &&
-          !errorMessage &&
-          totalPages > 0
-        "
+
+      <button
+        *ngFor="let page of pages"
+        type="button"
+        class="pagination-number"
+        [class.active]="currentPage === page"
+        (click)="goToPage(page)"
       >
+        {{ page }}
+      </button>
 
-        <button
-          type="button"
-          class="pagination-arrow"
-          [disabled]="currentPage === 1"
-          (click)="previousPage()"
-        >
-          ‹
-        </button>
 
-        <button
-          *ngFor="let page of pages"
-          type="button"
-          class="pagination-number"
-          [class.active]="currentPage === page"
-          (click)="goToPage(page)"
-        >
-          {{ page }}
-        </button>
+      <button
+        type="button"
+        class="pagination-arrow"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        ›
+      </button>
 
-        <button
-          type="button"
-          class="pagination-arrow"
-          [disabled]="currentPage === totalPages"
-          (click)="nextPage()"
-        >
-          ›
-        </button>
 
-        <span class="pagination-info">
-          {{ currentPage }} / {{ totalPages }}
-        </span>
+      <span class="pagination-info">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
 
-      </div>
+    </div>
 
-    </section>
+  </section>
 
-  </main>
-
-</div>
+</section>

@@ -1,314 +1,359 @@
 :host {
   display: block;
+
   width: 100%;
   height: 100%;
-}
 
-.payments-page {
-  min-height: 100dvh;
-  display: flex;
-  background: #eef2f7;
-}
-
-.sidebar {
-  width: 220px;
-  min-width: 220px;
-
-  display: flex;
-  flex-direction: column;
-
-  padding: 16px;
-
-  background: #565656;
-}
-
-.sidebar-logo {
-  height: 140px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 22px;
-
-  background: #ffffff;
-  border-radius: 12px;
-
-  font-size: 18px;
-}
-
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 40px;
-
-  border-radius: 9px;
-
-  background: #ffffff;
-  color: #222222;
-
-  text-decoration: none;
-
-  font-size: 14px;
-}
-
-.sidebar-item:hover {
-  background: #eeeeee;
-}
-
-.sidebar-item.active {
-  background: #c9c9c9;
-}
-
-.logout-button {
-  margin-top: auto;
-
-  min-height: 40px;
-
-  border: none;
-  border-radius: 9px;
-
-  background: #ffffff;
-  color: #222222;
-
-  cursor: pointer;
-}
-
-.main-area {
-  flex: 1;
   min-width: 0;
+  min-height: 0;
 
-  display: flex;
-  flex-direction: column;
+  font-family: Inter, Arial, sans-serif;
 }
 
-.top-header {
-  height: 72px;
-  min-height: 72px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 18px;
-
-  background: #ffffff;
-
-  border: 1px solid #d9dee5;
-  border-radius: 0 0 12px 12px;
+* {
+  box-sizing: border-box;
 }
 
-.top-header h1 {
-  margin: 0;
 
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.header-icon,
-.user-button {
-  height: 40px;
-
-  border: none;
-  border-radius: 9px;
-
-  background: #565656;
-  color: #ffffff;
-
-  cursor: pointer;
-}
-
-.header-icon {
-  width: 40px;
-}
-
-.user-button {
-  padding: 0 18px;
-}
+/* =====================================================
+   PAGE
+   ===================================================== */
 
 .payments-content {
-  padding: 18px 24px 24px;
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding:
+    18px
+    24px
+    20px;
+
+  background: #eef2f7;
+
+  overflow: hidden;
 }
 
-.page-heading {
-  text-align: center;
-  margin-bottom: 18px;
-}
 
-.page-heading h2 {
-  margin: 0;
+/* =====================================================
+   TITLE
+   ===================================================== */
 
-  font-size: 18px;
+.payments-section-title {
+  width: 200px;
+  height: 42px;
+
+  flex: 0 0 auto;
+
+  align-self: center;
+
+  margin-bottom: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #6b7280;
+
+  border: 3px solid #000;
+
+  border-radius: 22px;
+
+  color: #fff;
+
+  font-size: 22px;
   font-weight: 600;
 
-  color: #697586;
+  box-shadow:
+    0 8px 14px rgba(0, 0, 0, 0.18);
 }
 
-.summary-grid {
+
+/* =====================================================
+   STATS
+   ===================================================== */
+
+.payment-stats-grid {
+  width: 100%;
+
   display: grid;
 
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
 
-  gap: 14px;
+  gap: 12px;
 
-  margin-bottom: 22px;
+  flex: 0 0 auto;
+
+  margin-bottom: 18px;
 }
 
-.summary-card {
-  min-height: 96px;
+.payment-stat-card {
+  height: 125px;
 
   display: flex;
+
   flex-direction: column;
 
   align-items: center;
   justify-content: center;
 
-  gap: 5px;
+  padding: 16px;
 
-  padding: 14px;
+  background: #6b7280;
 
-  background: #ffffff;
+  border: 3px solid #000;
 
-  border: 1px solid #d9dee5;
-  border-radius: 9px;
+  border-radius: 18px;
+
+  color: #fff;
 
   text-align: center;
+
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.16);
 }
 
-.summary-card span {
-  font-size: 14px;
+.payment-stat-card span {
+  font-size: 16px;
+  font-weight: 600;
 }
 
-.summary-card strong {
-  font-size: 22px;
+.payment-stat-card strong {
+  margin-top: 9px;
+
+  color: #fff;
+
+  font-size: 27px;
+
+  line-height: 1;
 }
+
+
+/* =====================================================
+   MAIN CARD
+   ===================================================== */
 
 .payments-card {
-  background: #ffffff;
+  width: 100%;
 
-  border: 1px solid #d9dee5;
-  border-radius: 12px;
+  min-width: 0;
+  min-height: 0;
 
-  padding: 22px;
-}
+  flex: 1 1 auto;
 
-
-.filter-row {
   display: flex;
-  justify-content: center;
 
-  margin-bottom: 22px;
+  flex-direction: column;
+
+  padding: 20px;
+
+  background: #6b7280;
+
+  border: 3px solid #000;
+
+  border-radius: 18px;
+
+  color: #fff;
+
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.16);
+
+  overflow: hidden;
 }
 
-.search-input {
-  width: 400px;
-  max-width: 100%;
 
-  height: 44px;
+/* =====================================================
+   TOOLBAR
+   ===================================================== */
+
+.payments-toolbar {
+  width: 100%;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: flex-start;
+
+  margin-bottom: 18px;
+
+  flex: 0 0 auto;
+}
+
+.search-wrapper {
+  width: min(430px, 100%);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.search-label {
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.search-wrapper input {
+  width: 100%;
+  height: 46px;
 
   padding: 0 14px;
 
-  border: none;
-  border-radius: 8px;
+  background: #808080;
 
-  background: #eef1f5;
+  border: 2px solid #fff;
 
-  outline: none;
+  border-radius: 12px;
+
+  color: #fff;
+
+  font-family: Inter, Arial, sans-serif;
 
   font-size: 14px;
+
+  outline: none;
 }
 
-.search-input:focus {
-  outline: 2px solid #d0d6de;
+.search-wrapper input::placeholder {
+  color: #eee;
 }
 
-.table-wrapper {
+.search-wrapper input:focus {
+  border-color: #fff;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.14);
+}
+
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+.payment-table-wrapper {
   width: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  flex: 1 1 auto;
 
   overflow-x: auto;
+  overflow-y: auto;
 }
 
-table {
+.payment-table {
   width: 100%;
+
+  min-width: 1050px;
 
   border-collapse: collapse;
 
   table-layout: fixed;
+}
+
+.payment-table th,
+.payment-table td {
+  padding:
+    13px 10px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.25);
+
+  text-align: left;
 
   font-size: 13px;
 }
 
-thead th {
-  text-align: left;
+.payment-table th {
+  color: #fff;
 
-  padding: 12px 10px;
+  font-size: 13px;
+  font-weight: 700;
 
-  border-bottom: 1px solid #d9dee5;
-
-  font-weight: 600;
+  background:
+    rgba(0, 0, 0, 0.10);
 }
 
-tbody td {
-  padding: 12px 10px;
-
-  border-bottom: 1px solid #edf0f3;
+.payment-table td {
+  color: #fff;
 
   vertical-align: middle;
 }
 
-thead th:nth-child(1),
-tbody td:nth-child(1) {
+.payment-table tbody tr:hover {
+  background:
+    rgba(255, 255, 255, 0.06);
+}
+
+
+/* =====================================================
+   COLUMN WIDTHS
+   ===================================================== */
+
+.payment-table th:nth-child(1),
+.payment-table td:nth-child(1) {
   width: 18%;
 }
 
-thead th:nth-child(2),
-tbody td:nth-child(2) {
+.payment-table th:nth-child(2),
+.payment-table td:nth-child(2) {
   width: 17%;
 }
 
-thead th:nth-child(3),
-tbody td:nth-child(3) {
-  width: 10%;
-}
-
-thead th:nth-child(4),
-tbody td:nth-child(4) {
+.payment-table th:nth-child(3),
+.payment-table td:nth-child(3) {
   width: 12%;
 }
 
-thead th:nth-child(5),
-tbody td:nth-child(5) {
-  width: 15%;
+.payment-table th:nth-child(4),
+.payment-table td:nth-child(4) {
+  width: 13%;
 }
 
-thead th:nth-child(6),
-tbody td:nth-child(6) {
-  width: 18%;
+.payment-table th:nth-child(5),
+.payment-table td:nth-child(5) {
+  width: 14%;
 }
 
-thead th:nth-child(7),
-tbody td:nth-child(7) {
+.payment-table th:nth-child(6),
+.payment-table td:nth-child(6) {
+  width: 16%;
+}
+
+.payment-table th:nth-child(7),
+.payment-table td:nth-child(7) {
   width: 10%;
 }
 
-tbody td {
+
+/* =====================================================
+   CELLS
+   ===================================================== */
+
+.transaction-number,
+.policy-id {
+  display: block;
+
   overflow: hidden;
+
+  white-space: nowrap;
+
   text-overflow: ellipsis;
+}
+
+.transaction-number {
+  font-weight: 700;
 }
 
 .amount {
@@ -317,10 +362,36 @@ tbody td {
 
 .date-cell {
   display: flex;
+
   flex-direction: column;
 
-  gap: 2px;
+  gap: 3px;
 }
+
+.date-value {
+  color: #fff;
+}
+
+.time-value {
+  color: #e2e5e9;
+
+  font-size: 11px;
+}
+
+.failure-reason {
+  display: block;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =====================================================
+   STATUS
+   ===================================================== */
 
 .status-badge {
   display: inline-flex;
@@ -328,13 +399,20 @@ tbody td {
   align-items: center;
   justify-content: center;
 
-  min-width: 80px;
+  min-width: 88px;
 
-  padding: 5px 9px;
+  min-height: 28px;
 
-  border-radius: 999px;
+  padding:
+    0 10px;
 
-  font-size: 12px;
+  border-radius: 14px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
 }
 
 .status-success {
@@ -359,7 +437,7 @@ tbody td {
 
 .status-cancelled {
   background: #e8e8e8;
-  color: #555555;
+  color: #555;
 }
 
 .status-refunded {
@@ -369,71 +447,155 @@ tbody td {
 
 .status-unknown {
   background: #eeeeee;
-  color: #555555;
+  color: #555;
 }
 
+
+/* =====================================================
+   DETAIL
+   ===================================================== */
+
 .detail-button {
-  padding: 6px 12px;
+  min-width: 68px;
 
-  border: none;
-  border-radius: 7px;
+  height: 32px;
 
-  background: #565656;
-  color: #ffffff;
+  padding: 0 12px;
 
-  cursor: pointer;
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #000;
+
+  border:
+    2px solid #fff;
+
+  border-radius: 9px;
+
+  color: #fff;
+
+  text-decoration: none;
+
+  font-size: 12px;
+
+  font-weight: 700;
 }
 
 .detail-button:hover {
-  opacity: 0.9;
+  background: #222;
 }
 
-.empty-row {
-  padding: 30px !important;
 
-  text-align: center;
-
-  color: #6b7280;
-}
+/* =====================================================
+   STATES
+   ===================================================== */
 
 .state-message {
-  padding: 40px;
+  flex: 1 1 auto;
+
+  min-height: 200px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  color: #fff;
 
   text-align: center;
-
-  color: #6b7280;
 }
 
 .state-message.error {
-  color: #a32626;
+  color: #ffe1e1;
 }
 
-.pagination {
+.state-icon {
+  font-size: 28px;
+}
+
+
+/* =====================================================
+   EMPTY
+   ===================================================== */
+
+.empty-row {
+  height: 220px;
+
+  border-bottom: 0 !important;
+
+  text-align: center !important;
+}
+
+.empty-state {
   display: flex;
 
-  justify-content: center;
+  flex-direction: column;
+
   align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  color: #fff;
+}
+
+.empty-icon {
+  font-size: 26px;
+}
+
+
+/* =====================================================
+   PAGINATION
+   ===================================================== */
+
+.pagination {
+  min-height: 42px;
+
+  flex: 0 0 auto;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
 
   gap: 6px;
 
-  margin-top: 22px;
+  margin-top: 14px;
 }
 
 .pagination button {
-  min-width: 34px;
-  height: 34px;
+  min-width: 36px;
+  height: 36px;
 
-  border: none;
-  border-radius: 7px;
+  padding: 0 10px;
 
-  background: #eef1f5;
+  background: #000;
+
+  border:
+    2px solid #fff;
+
+  border-radius: 9px;
+
+  color: #fff;
+
+  font-size: 13px;
 
   cursor: pointer;
 }
 
+.pagination button:hover:not(:disabled) {
+  background: #222;
+}
+
 .pagination button.active {
-  background: #565656;
-  color: #ffffff;
+  background: #6b7280;
 }
 
 .pagination button:disabled {
@@ -442,33 +604,129 @@ tbody td {
   cursor: default;
 }
 
-@media (max-width: 1100px) {
+.pagination-info {
+  margin-left: 10px;
 
-  .sidebar {
-    width: 190px;
-    min-width: 190px;
+  color: #fff;
+
+  font-size: 13px;
+}
+
+
+/* =====================================================
+   LAPTOP
+   ===================================================== */
+
+@media (max-height: 820px) and (min-width: 901px) {
+
+  .payments-content {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
-  .summary-grid {
+  .payments-section-title {
+    height: 38px;
+
+    margin-bottom: 12px;
+
+    font-size: 20px;
+  }
+
+  .payment-stat-card {
+    height: 110px;
+  }
+
+  .payments-card {
+    padding: 16px;
+  }
+
+  .payment-table th,
+  .payment-table td {
+    padding:
+      9px 8px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 1100px) {
+
+  .payment-stats-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 800px) {
+
+  :host {
+    height: auto;
+    min-height: 100%;
+
+    overflow: visible;
+  }
+
+  .payments-content {
+    height: auto;
+    min-height: 100%;
+
+    overflow: visible;
+
+    padding: 16px;
+  }
+
+  .payment-stats-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
 
+  .payments-card {
+    overflow: visible;
+  }
+
+  .payments-toolbar {
+    width: 100%;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .payment-table-wrapper {
+    overflow-x: auto;
+  }
 }
 
-@media (max-width: 700px) {
 
-  .sidebar {
-    width: 160px;
-    min-width: 160px;
-  }
+/* =====================================================
+   SMALL MOBILE
+   ===================================================== */
 
-  .payments-content {
-    padding: 14px;
-  }
+@media (max-width: 480px) {
 
-  .summary-grid {
+  .payment-stats-grid {
     grid-template-columns: 1fr;
   }
 
+  .payments-section-title {
+    width: 180px;
+  }
+
+  .payment-stat-card {
+    height: 105px;
+  }
+
+  .payments-card {
+    padding: 14px;
+  }
 }

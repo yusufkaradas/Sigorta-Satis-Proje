@@ -1,84 +1,166 @@
 <div class="login-page">
-  <section class="brand-section">
+
+  <!-- LEFT BRAND PANEL -->
+  <aside class="brand-section">
+
     <div class="brand-content">
 
       <div class="logo-box">
         <span>Logo</span>
       </div>
 
-      <h1>Şirket Adı</h1>
+      <div class="brand-company">
+        Şirket Adı
+      </div>
 
-      <p>Kasko Yönetim Sistemi</p>
+      <div class="brand-system">
+        Sigorta Yönetim Sistemi
+      </div>
 
-      <div class="brand-image-placeholder"></div>
+      <div class="brand-image-placeholder">
+        <span>Görsel</span>
+      </div>
 
     </div>
-  </section>
 
+  </aside>
+
+
+  <!-- RIGHT LOGIN AREA -->
   <section class="login-section">
-    <div class="login-card">
 
-      <h2>Giriş Yap</h2>
+    <header class="login-header">
+      <span>SİGORTA PANELİ</span>
+    </header>
 
-      <form (ngSubmit)="onSubmit()">
 
-        <div class="form-group">
-          <label for="email">E-posta Adresi</label>
+    <main class="login-main">
 
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="E-posta adresinizi girin"
-            [(ngModel)]="email"
-          />
-        </div>
+      <div class="login-title">
+        GİRİŞ EKRANI
+      </div>
 
-        <div class="form-group">
-          <label for="password">Şifre</label>
 
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Şifrenizi girin"
-            [(ngModel)]="password"
-          />
-        </div>
+      <div class="login-card">
 
-        <div class="form-options">
+        <form (ngSubmit)="onSubmit()">
 
-          <label class="remember-me">
-            <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe" />
-            <span>Beni Hatırla</span>
-          </label>
+          <div class="form-group">
 
-          <a href="#" class="forgot-password">
-            Şifremi Unuttum
-          
-          </a>
+            <label for="email">
+              E-posta Adresi:
+            </label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="E-posta adresinizi girin"
+              [(ngModel)]="email"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="password">
+              Şifre:
+            </label>
+
+            <div class="password-input-wrapper">
+
+              <input
+                id="password"
+                name="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Şifrenizi girin"
+                [(ngModel)]="password"
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="
+                  showPassword
+                    ? 'Şifreyi gizle'
+                    : 'Şifreyi göster'
+                "
+              >
+                <span
+                  class="eye-icon"
+                  [class.hidden]="showPassword"
+                ></span>
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-options">
+
+            <label class="remember-me">
+
+              <input
+                type="checkbox"
+                name="rememberMe"
+                [(ngModel)]="rememberMe"
+              />
+
+              <span>Beni Hatırla</span>
+
+            </label>
+
+
+            <a
+              href="#"
+              class="forgot-password"
+            >
+              Şifremi Unuttum
+            </a>
+
+          </div>
+
+
           @if (successMessage) {
-  <div class="success-message">
-    {{ successMessage }}
-  </div>
-}
 
-        </div>
+            <div class="success-message">
+              {{ successMessage }}
+            </div>
 
-         @if (errorMessage) {
-    <div class="input-error-message">
-      {{ errorMessage }}
-        </div>
-    }
-        <button type="submit" 
-        class="login-button"
-        [disabled]="isLoading"
-        >
-         {{isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}}
-        </button>
+          }
 
-      </form>
 
-    </div>
+          @if (errorMessage) {
+
+            <div class="input-error-message">
+              {{ errorMessage }}
+            </div>
+
+          }
+
+
+          <button
+            type="submit"
+            class="login-button"
+            [disabled]="isLoading"
+          >
+            {{ isLoading ? 'Giriş Yapılıyor...' : 'Giriş yap' }}
+          </button>
+
+        </form>
+
+      </div>
+
+    </main>
+
+
+    <footer class="login-footer">
+      © 2026 Sigorta Satış
+    </footer>
+
   </section>
+
 </div>

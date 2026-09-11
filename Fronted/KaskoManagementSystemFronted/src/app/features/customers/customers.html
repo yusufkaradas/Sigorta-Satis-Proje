@@ -1,225 +1,277 @@
-<div class="customers-page">
+<section class="customers-content">
 
-  <section class="content">
+  <div class="customers-section-title">
+    İŞLEMLER
+  </div>
 
-    <div class="page-header">
 
-      <div>
-        <h1>Müşteri Yönetim İşlemleri</h1>
+  <!-- İSTATİSTİKLER -->
 
-        <p>
-          Sistemde kayıtlı müşterileri görüntüleyin ve yönetin.
-        </p>
+  <div class="customer-stats-grid">
+
+    <div class="customer-stat-card">
+
+      <span>Toplam Müşteri</span>
+
+      <strong>
+        {{ totalCustomerCount }}
+      </strong>
+
+    </div>
+
+
+    <div class="customer-stat-card">
+
+      <span>Aktif Müşteri</span>
+
+      <strong>
+        {{ activeCustomerCount }}
+      </strong>
+
+    </div>
+
+
+    <div class="customer-stat-card">
+
+      <span>Pasif Müşteri</span>
+
+      <strong>
+        {{ inactiveCustomerCount }}
+      </strong>
+
+    </div>
+
+
+    <div class="customer-stat-card">
+
+      <span>Gösterilen</span>
+
+      <strong>
+        {{ filteredCustomers.length }}
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <!-- MÜŞTERİ LİSTESİ -->
+
+  <section class="customers-card">
+
+    <div class="customers-toolbar">
+
+      <div class="search-wrapper">
+
+        <span class="search-label">
+          Müşteri Ara
+        </span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Ad, e-posta, telefon, T.C. veya şehir..."
+        />
+
       </div>
+
 
       <a
         routerLink="/customers/new"
-        class="new-button"
+        class="new-customer-button"
       >
         + Yeni Müşteri
       </a>
 
     </div>
 
-    <div class="stats">
 
-      <div class="stat-card">
-        <span>Toplam Müşteri</span>
+    <!-- LOADING -->
 
-        <strong>
-          {{ totalCustomerCount }}
-        </strong>
-      </div>
+    <div
+      *ngIf="isLoading"
+      class="state-message"
+    >
+      Müşteriler yükleniyor...
+    </div>
 
-      <div class="stat-card">
-        <span>Aktif Müşteri</span>
 
-        <strong>
-          {{ activeCustomerCount }}
-        </strong>
-      </div>
+    <!-- ERROR -->
 
-      <div class="stat-card">
-        <span>Pasif Müşteri</span>
+    <div
+      *ngIf="!isLoading && errorMessage"
+      class="state-message error"
+    >
+      {{ errorMessage }}
+    </div>
 
-        <strong>
-          {{ inactiveCustomerCount }}
-        </strong>
-      </div>
 
-      <div class="stat-card">
-        <span>Gösterilen</span>
+    <!-- TABLE -->
 
-        <strong>
-          {{ filteredCustomers.length }}
-        </strong>
-      </div>
+    <div
+      *ngIf="!isLoading && !errorMessage"
+      class="table-container"
+    >
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Ad Soyad</th>
+
+            <th>Kimlik No</th>
+
+            <th>E-posta</th>
+
+            <th>Telefon</th>
+
+            <th>Şehir / İlçe</th>
+
+            <th>Durum</th>
+
+            <th>İşlem</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let customer of pagedCustomers"
+          >
+
+            <td class="customer-name">
+
+              {{ customer.firstName }}
+              {{ customer.lastName }}
+
+            </td>
+
+
+            <td>
+              {{ customer.identityNumber }}
+            </td>
+
+
+            <td>
+              {{ customer.email }}
+            </td>
+
+
+            <td>
+              {{ customer.phoneNumber }}
+            </td>
+
+
+            <td>
+
+              {{ customer.city }}
+              /
+              {{ customer.district }}
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="customer-status"
+                [class.active]="customer.isActive"
+                [class.passive]="!customer.isActive"
+              >
+                {{ getStatusText(customer) }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <a
+                class="detail-button"
+                [routerLink]="[
+                  '/customers',
+                  customer.id
+                ]"
+              >
+                Detay
+              </a>
+
+            </td>
+
+          </tr>
+
+
+          <tr
+            *ngIf="pagedCustomers.length === 0"
+          >
+
+            <td
+              colspan="7"
+              class="empty-row"
+            >
+              Müşteri bulunamadı.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
 
     </div>
 
-    <section class="customers-card">
 
-      <div class="toolbar">
+    <!-- PAGINATION -->
 
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-          placeholder="Müşteri ara..."
-        >
+    <div
+      class="pagination"
+      *ngIf="
+        !isLoading &&
+        !errorMessage &&
+        filteredCustomers.length > 0
+      "
+    >
 
-      </div>
-
-      <div
-        *ngIf="isLoading"
-        class="state-message"
+      <button
+        type="button"
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
       >
-        Müşteriler yükleniyor...
-      </div>
+        ‹
+      </button>
 
-      <div
-        *ngIf="!isLoading && errorMessage"
-        class="state-message error"
+
+      <button
+        type="button"
+        *ngFor="let page of pageNumbers"
+        (click)="goToPage(page)"
+        [class.current]="currentPage === page"
       >
-        {{ errorMessage }}
-      </div>
+        {{ page }}
+      </button>
 
-      <div
-        *ngIf="!isLoading && !errorMessage"
-        class="table-wrapper"
+
+      <button
+        type="button"
+        (click)="nextPage()"
+        [disabled]="currentPage === totalPages"
       >
+        ›
+      </button>
 
-        <table>
 
-          <thead>
+      <span class="page-info">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
 
-            <tr>
-              <th>Ad Soyad</th>
-              <th>Kimlik No</th>
-              <th>E-posta</th>
-              <th>Telefon</th>
-              <th>Şehir / İlçe</th>
-              <th>Durum</th>
-              <th>İşlemler</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <tr
-              *ngFor="let customer of pagedCustomers"
-            >
-
-              <td>
-                {{ customer.firstName }}
-                {{ customer.lastName }}
-              </td>
-
-              <td>
-                {{ customer.identityNumber }}
-              </td>
-
-              <td>
-                {{ customer.email }}
-              </td>
-
-              <td>
-                {{ customer.phoneNumber }}
-              </td>
-
-              <td>
-                {{ customer.city }}
-                /
-                {{ customer.district }}
-              </td>
-
-              <td>
-
-                <span
-                  class="status"
-                  [class.active]="customer.isActive"
-                  [class.passive]="!customer.isActive"
-                >
-                  {{ getStatusText(customer) }}
-                </span>
-
-              </td>
-
-              <td>
-
-                <a
-                  class="detail-button"
-                  [routerLink]="[
-                    '/customers',
-                    customer.id
-                  ]"
-                >
-                  Detay
-                </a>
-
-              </td>
-
-            </tr>
-
-            <tr
-              *ngIf="pagedCustomers.length === 0"
-            >
-
-              <td
-                colspan="7"
-                class="empty-row"
-              >
-                Müşteri bulunamadı.
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <div
-        class="pagination"
-        *ngIf="
-          !isLoading &&
-          !errorMessage &&
-          filteredCustomers.length > 0
-        "
-      >
-
-        <button
-          (click)="previousPage()"
-          [disabled]="currentPage === 1"
-        >
-          ‹
-        </button>
-
-        <button
-          *ngFor="let page of pageNumbers"
-          (click)="goToPage(page)"
-          [class.current]="currentPage === page"
-        >
-          {{ page }}
-        </button>
-
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
-        >
-          ›
-        </button>
-
-        <span>
-          {{ currentPage }}/{{ totalPages }}
-        </span>
-
-      </div>
-
-    </section>
+    </div>
 
   </section>
 
-</div>
+</section>

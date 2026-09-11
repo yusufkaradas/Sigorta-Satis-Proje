@@ -1,0 +1,15 @@
+﻿feat: Add Quick Quote feature and overhaul UI styling
+
+Backend:
+- Implement QuickQuoteController for fast quote generation
+- Add InsurerQuoteComparisonService for comparing multiple insurance provider quotes
+- Introduce DTOs for Quick Quote requests and responses
+- Update CustomerService interface and implementation
+- Add custom JSON serialization configurations
+
+Frontend:
+- Introduce new quick-quotes feature module and components
+- Overhaul HTML templates and SCSS styles across all major modules (Auth, Dashboard, Customers, Policies, Quotes, Payments, Vehicles, Roles, Users)
+- Remove unused or redundant .spec.ts test files for login, payment-create, and policy-create
+- Update global styles.scss for improved theming and layout
+- Update app.routes.ts to include new quick quotes route

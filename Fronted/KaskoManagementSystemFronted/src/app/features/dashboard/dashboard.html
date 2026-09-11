@@ -1,62 +1,61 @@
 <section class="dashboard-content">
 
-  <div class="page-heading">
-    <h1>Kasko satış ve poliçe süreçlerinin özeti</h1>
+  <div class="dashboard-section-title">
+    İŞLEMLER
   </div>
+
+
+  <!-- ÖZET KARTLARI -->
 
   <div class="summary-grid">
 
     <div class="summary-card">
-      <span class="card-title">Müşteriler</span>
+      <span class="summary-card-title">Müşteriler</span>
 
       <strong>
-        {{ dashboardData?.customers?.length ?? 0 }}
+        {{ customerCount }}
       </strong>
 
-      <span class="card-description">
+      <span class="summary-card-description">
         Toplam müşteri
       </span>
     </div>
 
 
     <div class="summary-card">
-      <span class="card-title">Araçlar</span>
+      <span class="summary-card-title">Araçlar</span>
 
       <strong>
-        {{ dashboardData?.vehicles?.length ?? 0 }}
+        {{ vehicleCount }}
       </strong>
 
-      <span class="card-description">
+      <span class="summary-card-description">
         Toplam araç
       </span>
     </div>
 
 
     <div class="summary-card">
-      <span class="card-title">Teklifler</span>
+      <span class="summary-card-title">Teklifler</span>
 
       <strong>
-        {{ dashboardData?.quotes?.length ?? 0 }}
+        {{ quoteCount }}
       </strong>
 
-      <span class="card-description">
+      <span class="summary-card-description">
         Açık teklif
       </span>
     </div>
 
 
     <div class="summary-card">
-      <span class="card-title">Aktif Poliçeler</span>
+      <span class="summary-card-title">Aktif Poliçeler</span>
 
       <strong>
-        {{
-          dashboardData?.policies?.filter(
-            p => p.status === 2
-          )?.length ?? 0
-        }}
+        {{ activePolicyCount }}
       </strong>
 
-      <span class="card-description">
+      <span class="summary-card-description">
         Aktif poliçe
       </span>
     </div>
@@ -64,22 +63,21 @@
   </div>
 
 
+  <!-- ANA DASHBOARD GRID -->
+
   <div class="dashboard-grid">
 
 
     <!-- TEKLİF DURUMLARI -->
 
-    <section class="dashboard-card">
+    <section class="dashboard-card quote-status-card">
 
       <h2>Teklif Durumları</h2>
 
       <div class="status-list">
 
         <div class="status-row">
-
-          <span class="status-label">
-            Taslak
-          </span>
+          <span class="status-label">Taslak</span>
 
           <strong class="status-count">
             {{ quoteDraftCount }}
@@ -90,15 +88,11 @@
               [style.width.%]="quoteDraftPercentage"
             ></span>
           </div>
-
         </div>
 
 
         <div class="status-row">
-
-          <span class="status-label">
-            Teklif Verildi
-          </span>
+          <span class="status-label">Teklif Verildi</span>
 
           <strong class="status-count">
             {{ quoteOfferedCount }}
@@ -109,15 +103,11 @@
               [style.width.%]="quoteOfferedPercentage"
             ></span>
           </div>
-
         </div>
 
 
         <div class="status-row">
-
-          <span class="status-label">
-            Kabul Edildi
-          </span>
+          <span class="status-label">Kabul Edildi</span>
 
           <strong class="status-count">
             {{ quoteAcceptedCount }}
@@ -128,15 +118,11 @@
               [style.width.%]="quoteAcceptedPercentage"
             ></span>
           </div>
-
         </div>
 
 
         <div class="status-row">
-
-          <span class="status-label">
-            Reddedildi
-          </span>
+          <span class="status-label">Reddedildi</span>
 
           <strong class="status-count">
             {{ quoteRejectedCount }}
@@ -147,15 +133,11 @@
               [style.width.%]="quoteRejectedPercentage"
             ></span>
           </div>
-
         </div>
 
 
         <div class="status-row">
-
-          <span class="status-label">
-            İptal Edildi
-          </span>
+          <span class="status-label">İptal Edildi</span>
 
           <strong class="status-count">
             {{ quoteCancelledCount }}
@@ -166,15 +148,11 @@
               [style.width.%]="quoteCancelledPercentage"
             ></span>
           </div>
-
         </div>
 
 
         <div class="status-row">
-
-          <span class="status-label">
-            Süresi Doldu
-          </span>
+          <span class="status-label">Süresi Doldu</span>
 
           <strong class="status-count">
             {{ quoteExpiredCount }}
@@ -185,120 +163,27 @@
               [style.width.%]="quoteExpiredPercentage"
             ></span>
           </div>
-
         </div>
 
       </div>
 
     </section>
-
-
-
-    <!-- POLİÇE DURUMLARI -->
-
-    <section class="dashboard-card">
-
-      <h2>Poliçe Durumları</h2>
-
-      <div class="status-list">
-
-        <div class="status-row">
-
-          <span class="status-label">
-            Taslak
-          </span>
-
-          <strong class="status-count">
-            {{ policyDraftCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="policyDraftPercentage"
-            ></span>
-          </div>
-
-        </div>
-
-
-        <div class="status-row">
-
-          <span class="status-label">
-            Aktif
-          </span>
-
-          <strong class="status-count">
-            {{ policyActiveCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="policyActivePercentage"
-            ></span>
-          </div>
-
-        </div>
-
-
-        <div class="status-row">
-
-          <span class="status-label">
-            İptal Edildi
-          </span>
-
-          <strong class="status-count">
-            {{ policyCancelledCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="policyCancelledPercentage"
-            ></span>
-          </div>
-
-        </div>
-
-
-        <div class="status-row">
-
-          <span class="status-label">
-            Süresi Doldu
-          </span>
-
-          <strong class="status-count">
-            {{ policyExpiredCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="policyExpiredPercentage"
-            ></span>
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
 
 
     <!-- SON İŞLEMLER -->
 
-    <section class="dashboard-card">
+    <section class="dashboard-card operations-card">
 
       <h2>Son İşlemler</h2>
 
       <div class="operations-table">
 
         <div class="table-row table-header">
-
           <span>Tür</span>
           <span>Kayıt</span>
           <span>Durum</span>
           <span>Tarih</span>
           <span>Saat</span>
-
         </div>
 
 
@@ -307,9 +192,7 @@
           *ngFor="let activity of recentActivities"
         >
 
-          <span>
-            {{ activity.type }}
-          </span>
+          <span>{{ activity.type }}</span>
 
           <span>
             {{ activity.record }}
@@ -334,92 +217,91 @@
     </section>
 
 
+    <!-- SAĞ ÖZET -->
 
-    <!-- ÖDEME ÖZETİ -->
+    <section class="dashboard-card right-summary-card">
 
-    <section class="dashboard-card payment-summary">
+      <div class="compact-section">
 
-      <h2>Ödeme Özeti</h2>
+        <h2>Poliçe Durumları</h2>
 
+        <div class="compact-status-list">
 
-      <div class="payment-summary-item">
+          <div class="compact-status-row">
+            <span>Taslak</span>
+            <strong>{{ policyDraftCount }}</strong>
+          </div>
 
-        <span>
-          Başarılı Ödemeler
-        </span>
+          <div class="compact-status-row">
+            <span>Aktif</span>
+            <strong>{{ policyActiveCount }}</strong>
+          </div>
 
-        <strong>
-          {{ successfulPaymentCount }}
-        </strong>
+          <div class="compact-status-row">
+            <span>İptal</span>
+            <strong>{{ policyCancelledCount }}</strong>
+          </div>
 
-      </div>
-
-
-      <div class="payment-summary-item">
-
-        <span>
-          Başarısız Ödemeler
-        </span>
-
-        <strong>
-          {{ failedPaymentCount }}
-        </strong>
-
-      </div>
-
-
-      <div class="payment-summary-item">
-
-        <span>
-          Bekleyen Ödemeler
-        </span>
-
-        <strong>
-          {{ pendingPaymentCount }}
-        </strong>
-
-      </div>
-
-
-      <div class="last-payment">
-
-        <span *ngIf="latestActivity">
-
-          Son işlem:
-
-          {{ latestActivity.type }}
-
-          -
-
-          {{ latestActivity.record }}
-
-          -
-
-          {{ latestActivity.date }}
-
-          {{ latestActivity.time }}
-
-        </span>
-
-
-        <span *ngIf="!latestActivity">
-
-          Son işlem bulunmuyor
-
-        </span>
-
-
-        <div class="payment-summary-footer">
-
-          <button
-            type="button"
-            class="payment-details-button"
-            routerLink="/payments"
-          >
-            Ödemelere Git
-          </button>
+          <div class="compact-status-row">
+            <span>Süresi Doldu</span>
+            <strong>{{ policyExpiredCount }}</strong>
+          </div>
 
         </div>
+
+      </div>
+
+
+      <div class="compact-divider"></div>
+
+
+      <div class="compact-section">
+
+        <h2>Ödeme Özeti</h2>
+
+        <div class="payment-summary-list">
+
+          <div class="payment-summary-item">
+            <span>Başarılı Ödemeler</span>
+            <strong>{{ successfulPaymentCount }}</strong>
+          </div>
+
+          <div class="payment-summary-item">
+            <span>Başarısız Ödemeler</span>
+            <strong>{{ failedPaymentCount }}</strong>
+          </div>
+
+          <div class="payment-summary-item">
+            <span>Bekleyen Ödemeler</span>
+            <strong>{{ pendingPaymentCount }}</strong>
+          </div>
+
+        </div>
+
+
+        <div class="last-payment">
+
+          <span *ngIf="latestActivity">
+            Son işlem:
+            {{ latestActivity.type }}
+            -
+            {{ latestActivity.record }}
+          </span>
+
+          <span *ngIf="!latestActivity">
+            Son işlem bulunmuyor
+          </span>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="payment-details-button"
+          routerLink="/payments"
+        >
+          Ödemelere Git
+        </button>
 
       </div>
 

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Kasko.Business.DTOs.Customer;
+using Kasko.Business.DTOs.QuickQuote;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
 using Kasko.DataAccess.Repositories.Abstract;
@@ -153,7 +154,94 @@ public class CustomerService : ICustomerService
 
         await _unitOfWork.SaveChangesAsync();
     }
+    public async Task<QuickQuoteCustomerLookupResponseDto>
+    GetForQuickQuoteAsync(
+        string identityNumber,
+        string phoneNumber)
+    {
+        var normalizedIdentityNumber =
+            new string(
+                identityNumber
+                    .Where(char.IsDigit)
+                    .ToArray());
 
+        var normalizedPhoneNumber =
+            new string(
+                phoneNumber
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+        var customers =
+            await _unitOfWork.Customers.FindAsync(
+                x =>
+                    x.IdentityNumber ==
+                    normalizedIdentityNumber);
+
+        var customer =
+            customers.FirstOrDefault();
+
+        if (customer == null)
+        {
+            return new QuickQuoteCustomerLookupResponseDto
+            {
+                Found = false
+            };
+        }
+
+        var storedPhone =
+            new string(
+                (customer.PhoneNumber ?? string.Empty)
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+        var inputPhone =
+            normalizedPhoneNumber;
+
+        if (
+            storedPhone.StartsWith("90") &&
+            storedPhone.Length == 12)
+        {
+            storedPhone =
+                "0" +
+                storedPhone[2..];
+        }
+
+        if (
+            inputPhone.StartsWith("90") &&
+            inputPhone.Length == 12)
+        {
+            inputPhone =
+                "0" +
+                inputPhone[2..];
+        }
+
+        if (storedPhone != inputPhone)
+        {
+            return new QuickQuoteCustomerLookupResponseDto
+            {
+                Found = false
+            };
+        }
+
+        if (!customer.IsActive || customer.IsDeleted)
+        {
+            return new QuickQuoteCustomerLookupResponseDto
+            {
+                Found = false
+            };
+        }
+
+        return new QuickQuoteCustomerLookupResponseDto
+        {
+            Found = true,
+
+            CustomerId = customer.Id,
+
+            FirstName = customer.FirstName,
+
+            LastName = customer.LastName
+        };
+    }
     public async Task DeleteAsync(Guid id)
     {
         var deletedByValue = _httpContextAccessor.HttpContext?

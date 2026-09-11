@@ -1,0 +1,1679 @@
+<div class="quick-start-page">
+
+  <!-- =========================================================
+       HEADER
+  ========================================================== -->
+
+  <header class="quick-quote-header">
+
+    <div class="brand-area">
+
+      <div class="logo-box">
+        Logo
+      </div>
+
+    </div>
+
+
+    <div class="company-name">
+      ŞİRKET ADI
+    </div>
+
+
+    <a
+      routerLink="/login"
+      class="login-button"
+    >
+      Giriş Yap
+    </a>
+
+  </header>
+
+
+
+  <!-- =========================================================
+       MAIN
+  ========================================================== -->
+
+  <main class="quick-start-main">
+
+    <div class="quick-start-title">
+      HIZLI TEKLİF
+    </div>
+
+
+    <section class="quick-start-card">
+
+
+      <!-- =====================================================
+           STEP INDICATOR
+      ====================================================== -->
+
+      <div class="step-indicator">
+
+        <span
+          [class.active]="currentStep >= 1"
+        >
+          1
+        </span>
+
+        <div
+          [class.active-line]="currentStep >= 2"
+        ></div>
+
+
+        <span
+          [class.active]="currentStep >= 2"
+        >
+          2
+        </span>
+
+        <div
+          [class.active-line]="currentStep >= 3"
+        ></div>
+
+
+        <span
+          [class.active]="currentStep >= 3"
+        >
+          3
+        </span>
+
+        <div
+          [class.active-line]="currentStep >= 4"
+        ></div>
+
+
+        <span
+          [class.active]="currentStep >= 4"
+        >
+          4
+        </span>
+
+        <div
+          [class.active-line]="currentStep >= 5"
+        ></div>
+
+
+        <span
+          [class.active]="currentStep >= 5"
+        >
+          5
+        </span>
+
+        <div
+          [class.active-line]="currentStep >= 6"
+        ></div>
+
+
+        <span
+          [class.active]="currentStep >= 6"
+        >
+          6
+        </span>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           ERROR
+      ====================================================== -->
+
+      <div
+        class="quick-quote-error"
+        *ngIf="errorMessage"
+      >
+
+        {{ errorMessage }}
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 1
+           CUSTOMER
+      ====================================================== -->
+
+      <div
+        class="quick-start-body"
+        *ngIf="currentStep === 1"
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 1
+          </span>
+
+
+          <h1>
+            Teklif Alın
+          </h1>
+
+
+          <p class="description">
+            Size en uygun kasko teklifini hazırlayabilmemiz
+            için bilgilerinizi girin.
+          </p>
+
+        </div>
+
+
+
+        <!-- TCKN / VKN -->
+
+        <div class="form-group">
+
+          <label for="identityNumber">
+            T.C. Kimlik No / Vergi No
+          </label>
+
+
+          <input
+            id="identityNumber"
+
+            type="text"
+
+            inputmode="numeric"
+
+            autocomplete="off"
+
+            maxlength="11"
+
+            [value]="identityNumber"
+
+            (input)="onIdentityInput($event)"
+
+            (keydown)="onNumericKeydown($event)"
+
+            placeholder="T.C. Kimlik No veya Vergi No"
+          />
+
+
+          <small class="field-hint">
+            Yalnızca rakam giriniz.
+          </small>
+
+        </div>
+
+
+
+        <!-- PHONE -->
+
+        <div class="form-group">
+
+          <label for="phoneNumber">
+            Cep Telefonu
+          </label>
+
+
+          <div class="phone-input">
+
+            <span class="calling-code">
+              +90
+            </span>
+
+
+            <input
+              id="phoneNumber"
+
+              type="tel"
+
+              inputmode="numeric"
+
+              autocomplete="tel-national"
+
+              maxlength="10"
+
+              [value]="phoneNumber"
+
+              (input)="onPhoneInput($event)"
+
+              (keydown)="onNumericKeydown($event)"
+
+              placeholder="5XX XXX XX XX"
+            />
+
+          </div>
+
+
+          <small class="field-hint">
+            10 haneli GSM numaranızı giriniz.
+          </small>
+
+        </div>
+
+
+
+        <p class="privacy-text">
+          Bilgileriniz yalnızca teklif oluşturma
+          amacıyla kullanılacaktır.
+        </p>
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="actions">
+
+          <a
+            routerLink="/"
+            class="back-button"
+          >
+            Geri
+          </a>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            [disabled]="
+              !canContinue() ||
+              isLoading
+            "
+
+            (click)="onContinue()"
+          >
+
+            {{
+              isLoading
+                ? 'Kontrol Ediliyor...'
+                : 'Devam Et'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 2
+           VEHICLE
+      ====================================================== -->
+
+      <div
+        class="quick-start-body"
+        *ngIf="currentStep === 2"
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 2
+          </span>
+
+
+          <h1>
+            Aracınızı Seçin
+          </h1>
+
+
+          <p class="description">
+
+            Merhaba
+
+            <strong>
+              {{ customerName }}
+            </strong>
+
+            . Teklif almak istediğiniz aracı seçin.
+
+          </p>
+
+        </div>
+
+
+        <div class="vehicle-count">
+          {{ vehicles.length }} araç kayıtlı
+        </div>
+
+
+
+        <div class="vehicle-list">
+
+          <button
+            type="button"
+
+            class="vehicle-card"
+
+            *ngFor="let vehicle of vehicles"
+
+            [class.selected]="
+              selectedVehicle?.id === vehicle.id
+            "
+
+            (click)="selectVehicle(vehicle)"
+          >
+
+            <div class="vehicle-card-top">
+
+              <span class="vehicle-brand">
+                {{ vehicle.brand }}
+              </span>
+
+
+              <span
+                class="selected-badge"
+
+                *ngIf="
+                  selectedVehicle?.id === vehicle.id
+                "
+              >
+                ✓ Seçildi
+              </span>
+
+            </div>
+
+
+
+            <h2>
+              {{ vehicle.model }}
+            </h2>
+
+
+
+            <div class="vehicle-info-grid">
+
+              <div>
+
+                <span>
+                  PLAKA
+                </span>
+
+                <strong>
+                  {{ vehicle.plateNumber }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  MODEL YILI
+                </span>
+
+                <strong>
+                  {{ vehicle.modelYear }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  ARAÇ DEĞERİ
+                </span>
+
+                <strong>
+
+                  {{
+                    vehicle.marketValue
+                      | number:'1.0-0'
+                  }}
+
+                  ₺
+
+                </strong>
+
+              </div>
+
+            </div>
+
+
+
+            <div class="vehicle-card-footer">
+
+              <span>
+                Bu aracı seç
+              </span>
+
+              <span>
+                →
+              </span>
+
+            </div>
+
+          </button>
+
+        </div>
+
+
+
+        <div class="actions">
+
+          <button
+            type="button"
+
+            class="back-button"
+
+            (click)="goToStep(1)"
+          >
+            ← Geri
+          </button>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            [disabled]="
+              !selectedVehicle ||
+              isLoading
+            "
+
+            (click)="continueWithVehicle()"
+          >
+            Aracı Seç ve Devam Et →
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 3
+           RISK
+      ====================================================== -->
+
+      <div
+        class="quick-start-body"
+        *ngIf="currentStep === 3"
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 3
+          </span>
+
+
+          <h1>
+            Risk Bilgileri
+          </h1>
+
+
+          <p class="description">
+            Teklifinizin doğru hesaplanabilmesi için
+            birkaç bilgi seçin.
+          </p>
+
+        </div>
+
+
+
+        <!-- VEHICLE SUMMARY -->
+
+        <div class="vehicle-summary">
+
+          <div>
+
+            <span>
+              SEÇİLEN ARAÇ
+            </span>
+
+            <strong>
+              {{ selectedVehicle?.brand }}
+              {{ selectedVehicle?.model }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              PLAKA
+            </span>
+
+            <strong>
+              {{ selectedVehicle?.plateNumber }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              MODEL YILI
+            </span>
+
+            <strong>
+              {{ selectedVehicle?.modelYear }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- USAGE -->
+
+        <section class="risk-section">
+
+          <div class="risk-section-header">
+
+            <div>
+
+              <strong>
+                Kullanım Şekli
+              </strong>
+
+              <small>
+                Aracınızı nasıl kullanıyorsunuz?
+              </small>
+
+            </div>
+
+
+            <span>
+              Fiyatı etkileyebilir
+            </span>
+
+          </div>
+
+
+
+          <div class="risk-options two-columns">
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                usage === 'PRIVATE'
+              "
+
+              (click)="usage = 'PRIVATE'"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="usage === 'PRIVATE'"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  Özel Kullanım
+                </strong>
+
+                <small>
+                  Günlük / bireysel kullanım
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                usage === 'COMMERCIAL'
+              "
+
+              (click)="usage = 'COMMERCIAL'"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="usage === 'COMMERCIAL'"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  Ticari Kullanım
+                </strong>
+
+                <small>
+                  Ticari / işletme kullanımı
+                </small>
+
+              </div>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- CLAIMS -->
+
+        <section class="risk-section">
+
+          <div class="risk-section-header">
+
+            <div>
+
+              <strong>
+                Hasar Geçmişi
+              </strong>
+
+              <small>
+                Son hasar durumunuzu belirtin.
+              </small>
+
+            </div>
+
+
+            <span>
+              Fiyatı etkiler
+            </span>
+
+          </div>
+
+
+
+          <div class="risk-options four-columns">
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                claimsCount === 0
+              "
+
+              (click)="claimsCount = 0"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="claimsCount === 0"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  Hasarsız
+                </strong>
+
+                <small>
+                  0 hasar
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                claimsCount === 1
+              "
+
+              (click)="claimsCount = 1"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="claimsCount === 1"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  1 Hasar
+                </strong>
+
+                <small>
+                  1 adet
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                claimsCount === 2
+              "
+
+              (click)="claimsCount = 2"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="claimsCount === 2"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  2 Hasar
+                </strong>
+
+                <small>
+                  2 adet
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                claimsCount >= 3
+              "
+
+              (click)="claimsCount = 3"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="claimsCount >= 3"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  3+ Hasar
+                </strong>
+
+                <small>
+                  3 ve üzeri
+                </small>
+
+              </div>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- DEDUCTIBLE -->
+
+        <section class="risk-section">
+
+          <div class="risk-section-header">
+
+            <div>
+
+              <strong>
+                Muafiyet
+              </strong>
+
+              <small>
+                Hasar durumunda uygulanacak tutar.
+              </small>
+
+            </div>
+
+
+            <span>
+              Seçiminize göre değişir
+            </span>
+
+          </div>
+
+
+
+          <div class="risk-options three-columns">
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                deductible === 0
+              "
+
+              (click)="deductible = 0"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="deductible === 0"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  Muafiyet Yok
+                </strong>
+
+                <small>
+                  0 ₺
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                deductible === 5000
+              "
+
+              (click)="deductible = 5000"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="deductible === 5000"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  5.000 ₺
+                </strong>
+
+                <small>
+                  Standart
+                </small>
+
+              </div>
+
+            </button>
+
+
+
+            <button
+              type="button"
+
+              class="risk-option"
+
+              [class.selected]="
+                deductible === 10000
+              "
+
+              (click)="deductible = 10000"
+            >
+
+              <span class="radio-circle">
+
+                <span
+                  *ngIf="deductible === 10000"
+                >
+                  ✓
+                </span>
+
+              </span>
+
+
+              <div>
+
+                <strong>
+                  10.000 ₺
+                </strong>
+
+                <small>
+                  Yüksek muafiyet
+                </small>
+
+              </div>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        <div class="actions">
+
+          <button
+            type="button"
+
+            class="back-button"
+
+            (click)="goToStep(2)"
+          >
+            ← Araç Değiştir
+          </button>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            [disabled]="
+              isLoading
+            "
+
+            (click)="loadPackages()"
+          >
+
+            {{
+              isLoading
+                ? 'Hesaplanıyor...'
+                : 'Teklifleri Hesapla →'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 4
+           PACKAGE
+      ====================================================== -->
+
+      <div
+        class="quick-start-body"
+        *ngIf="currentStep === 4"
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 4
+          </span>
+
+
+          <h1>
+            Kasko Paketinizi Seçin
+          </h1>
+
+
+          <p class="description">
+            Size uygun kapsamı sunan paketi seçin.
+          </p>
+
+        </div>
+
+
+
+        <div class="package-list">
+
+          <button
+            type="button"
+
+            class="package-card"
+
+            *ngFor="let package of packages"
+
+            [class.selected]="
+              selectedPackage?.id === package.id
+            "
+
+            (click)="selectPackage(package)"
+          >
+
+            <div class="package-card-code">
+              {{ package.code }}
+            </div>
+
+
+            <div class="package-card-header">
+
+              <h2>
+                {{ package.name }}
+              </h2>
+
+
+              <span
+                class="selected-badge"
+
+                *ngIf="
+                  selectedPackage?.id === package.id
+                "
+              >
+                ✓ Seçildi
+              </span>
+
+            </div>
+
+
+            <p>
+              {{ package.description }}
+            </p>
+
+
+            <div class="package-card-info">
+
+              <span>
+
+                Paket Çarpanı
+
+                <strong>
+                  {{ package.factor }}
+                </strong>
+
+              </span>
+
+
+              <span>
+
+                Teminat Sayısı
+
+                <strong>
+                  {{ package.coverages.length }}
+                </strong>
+
+              </span>
+
+            </div>
+
+
+            <div class="package-card-footer">
+
+              <span>
+                Bu paketi seç
+              </span>
+
+              <span>
+                →
+              </span>
+
+            </div>
+
+          </button>
+
+        </div>
+
+
+
+        <div class="actions">
+
+          <button
+            type="button"
+
+            class="back-button"
+
+            (click)="goToStep(3)"
+          >
+            ← Risk Bilgilerine Dön
+          </button>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            [disabled]="
+              !selectedPackage ||
+              isLoading
+            "
+
+            (click)="continueWithPackage()"
+          >
+
+            {{
+              isLoading
+                ? 'Hazırlanıyor...'
+                : 'Teminatları Gör →'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 5
+           COVERAGES
+      ====================================================== -->
+
+      <div
+        class="quick-start-body"
+        *ngIf="currentStep === 5"
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 5
+          </span>
+
+
+          <h1>
+            Teminatlarınızı Belirleyin
+          </h1>
+
+
+          <p class="description">
+
+            <strong>
+              {{ selectedPackage?.name }}
+            </strong>
+
+            kapsamında sunulan teminatları inceleyin.
+
+          </p>
+
+        </div>
+
+
+
+        <!-- SELECTED PACKAGE -->
+
+        <div
+          class="selected-package-summary"
+
+          *ngIf="selectedPackage"
+        >
+
+          <div>
+
+            <span>
+              Seçilen Paket
+            </span>
+
+
+            <strong>
+              {{ selectedPackage.name }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Paket Çarpanı
+            </span>
+
+
+            <strong>
+              {{ selectedPackage.factor }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- COVERAGE LIST -->
+
+        <div class="coverage-list">
+
+          <button
+            type="button"
+
+            class="coverage-item"
+
+            *ngFor="
+              let coverage
+              of selectedPackage?.coverages
+            "
+
+            [class.selected]="
+              isCoverageSelected(
+                coverage.coverageId
+              )
+            "
+
+            (click)="
+              toggleCoverage(
+                coverage.coverageId
+              )
+            "
+          >
+
+            <span class="coverage-check">
+
+              <span
+                *ngIf="
+                  isCoverageSelected(
+                    coverage.coverageId
+                  )
+                "
+              >
+                ✓
+              </span>
+
+            </span>
+
+
+            <span class="coverage-content">
+
+              <strong>
+                {{ coverage.coverageName }}
+              </strong>
+
+
+              <small
+                *ngIf="coverage.isDefault"
+              >
+                Paket teminatı
+              </small>
+
+            </span>
+
+
+            <span class="coverage-price">
+
+              {{
+                coverage.calculatedPrice
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </span>
+
+          </button>
+
+        </div>
+
+
+
+        <div class="actions">
+
+          <button
+            type="button"
+
+            class="back-button"
+
+            (click)="goToStep(4)"
+          >
+            ← Pakete Dön
+          </button>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            [disabled]="
+              selectedCoverageIds.length === 0 ||
+              isLoading
+            "
+
+            (click)="continueFromCoverage()"
+          >
+
+            {{
+              isLoading
+                ? 'Hesaplanıyor...'
+                : 'Fiyat Hesapla →'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           STEP 6
+           PRICE RESULT
+      ====================================================== -->
+
+      <div
+        class="quick-start-body pricing-step"
+
+        *ngIf="
+          currentStep === 6 &&
+          pricingResult
+        "
+      >
+
+        <div class="step-heading">
+
+          <span class="step-eyebrow">
+            ADIM 6
+          </span>
+
+
+          <h1>
+            Kasko Teklifiniz Hazır
+          </h1>
+
+
+          <p class="description">
+            Seçtiğiniz araç, risk bilgileri, paket ve
+            teminatlara göre hesaplanan sonuç.
+          </p>
+
+        </div>
+
+
+
+        <!-- VEHICLE / PACKAGE SUMMARY -->
+
+        <div class="pricing-summary">
+
+          <div class="pricing-summary-row">
+
+            <span>
+              Araç
+            </span>
+
+
+            <strong>
+
+              {{ selectedVehicle?.brand }}
+
+              {{ selectedVehicle?.model }}
+
+            </strong>
+
+          </div>
+
+
+          <div class="pricing-summary-row">
+
+            <span>
+              Plaka
+            </span>
+
+
+            <strong>
+              {{ selectedVehicle?.plateNumber }}
+            </strong>
+
+          </div>
+
+
+          <div class="pricing-summary-row">
+
+            <span>
+              Paket
+            </span>
+
+
+            <strong>
+              {{ selectedPackage?.name }}
+            </strong>
+
+          </div>
+
+
+          <div class="pricing-summary-row">
+
+            <span>
+              Araç Değeri
+            </span>
+
+
+            <strong>
+
+              {{
+                pricingResult.marketValue
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- MAIN PRICE -->
+
+        <div class="price-result-card">
+
+          <span class="price-label">
+            Yıllık Kasko Primi
+          </span>
+
+
+          <strong class="price-value">
+
+            {{
+              pricingResult.totalPremium
+                | number:'1.2-2'
+            }}
+
+            ₺
+
+          </strong>
+
+        </div>
+
+
+
+        <!-- CALCULATION SUMMARY -->
+
+        <div class="calculation-summary">
+
+          <div>
+
+            <span>
+              Baz Prim
+            </span>
+
+
+            <strong>
+
+              {{
+                pricingResult.basePremium
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Risk Ayarlı Prim
+            </span>
+
+
+            <strong>
+
+              {{
+                pricingResult.riskAdjustedPremium
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Teminat Primi
+            </span>
+
+
+            <strong>
+
+              {{
+                pricingResult.coveragePremium
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- COVERAGES -->
+
+        <div class="result-coverages">
+
+          <h2>
+            Seçilen Teminatlar
+          </h2>
+
+
+          <div
+            class="result-coverage-row"
+
+            *ngFor="
+              let coverage
+              of pricingResult.coverages
+            "
+          >
+
+            <span>
+              {{ coverage.coverageName }}
+            </span>
+
+
+            <strong>
+
+              {{
+                coverage.calculatedPrice
+                  | number:'1.2-2'
+              }}
+
+              ₺
+
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="actions">
+
+          <button
+            type="button"
+
+            class="back-button"
+
+            (click)="goToStep(5)"
+          >
+            ← Teminatlara Dön
+          </button>
+
+
+          <button
+            type="button"
+
+            class="continue-button"
+
+            (click)="continueToComparison()"
+          >
+            Teklifleri Karşılaştır →
+          </button>
+
+        </div>
+
+      </div>
+
+
+    </section>
+
+  </main>
+
+</div>
