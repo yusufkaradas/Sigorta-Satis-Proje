@@ -1,0 +1,93 @@
+<div class="notifications-page">
+
+  <div class="notifications-header">
+    <div>
+      <span class="notifications-eyebrow">
+        BİLDİRİMLER
+      </span>
+
+      <h1>
+        Bildirimlerim
+      </h1>
+
+      <p>
+        Poliçe, ödeme ve teklif işlemlerinizle ilgili bildirimler.
+      </p>
+    </div>
+  </div>
+
+  <div
+    *ngIf="isLoading"
+    class="notification-state"
+  >
+    Bildirimler yükleniyor...
+  </div>
+
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="notification-state error"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      notifications.length === 0
+    "
+    class="notification-state"
+  >
+    Henüz bildiriminiz bulunmuyor.
+  </div>
+
+  <div
+    *ngIf="
+      !isLoading &&
+      !errorMessage &&
+      notifications.length > 0
+    "
+    class="notification-list"
+  >
+
+    <article
+      *ngFor="let notification of notifications"
+      class="notification-card"
+      [class.unread]="!notification.isRead"
+    >
+
+      <div class="notification-icon">
+        {{ notification.isRead ? '✓' : '!' }}
+      </div>
+
+      <div class="notification-content">
+
+        <div class="notification-top">
+
+          <h2>
+            {{ notification.title }}
+          </h2>
+
+          <span class="notification-date">
+            {{ notification.createdDate | date:'dd.MM.yyyy HH:mm' }}
+          </span>
+
+        </div>
+
+        <p>
+          {{ notification.message }}
+        </p>
+
+        <span
+          class="notification-type"
+        >
+          {{ notification.type }}
+        </span>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</div>

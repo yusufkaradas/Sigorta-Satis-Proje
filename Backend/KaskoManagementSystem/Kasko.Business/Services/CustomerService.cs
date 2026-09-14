@@ -272,4 +272,57 @@ public class CustomerService : ICustomerService
 
         await _unitOfWork.SaveChangesAsync();
     }
+    public async Task<Guid> CreateForQuickQuoteAsync(
+    QuickQuoteCustomerCreateRequestDto dto)
+    {
+        var identityNumber =
+            new string(
+                dto.IdentityNumber
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+        var phoneNumber =
+            new string(
+                dto.PhoneNumber
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+        var identityExists =
+            await _unitOfWork.Customers.AnyAsync(
+                x => x.IdentityNumber == identityNumber);
+
+        if (identityExists)
+        {
+            throw new BadRequestException(
+                "Bu T.C. Kimlik No ile kayıtlı bir müşteri zaten mevcut.");
+        }
+
+        var customer = new Customer
+        {
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            IdentityNumber = identityNumber,
+            DateOfBirth = dto.DateOfBirth,
+            Email = dto.Email,
+            PhoneNumber =
+                phoneNumber.StartsWith("90") &&
+                phoneNumber.Length == 12
+                    ? $"+{phoneNumber}"
+                    : phoneNumber.StartsWith("0")
+                        ? phoneNumber
+                        : $"0{phoneNumber}",
+            Address = dto.Address,
+            City = dto.City,
+            District = dto.District,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedDate = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Customers.AddAsync(customer);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return customer.Id;
+    }
 }

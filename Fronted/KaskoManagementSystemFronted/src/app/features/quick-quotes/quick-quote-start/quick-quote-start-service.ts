@@ -62,6 +62,15 @@ export interface QuickQuotePricingRequest {
   deductible: number;
   coverageIds: string[];
 }
+export interface QuickQuoteOfferRequest {
+
+  quoteId: string;
+
+  identityNumber: string;
+
+  phoneNumber: string;
+
+}
 export interface QuickQuotePricingCoverage {
   coverageId: string;
   coverageName: string;
@@ -93,9 +102,55 @@ export interface QuickQuoteProviderResult {
   premium: number;
   calculation: QuickQuotePricingResponse;
 }
+export interface QuickQuotePolicyCreateRequest {
+
+  identityNumber: string;
+
+  phoneNumber: string;
+
+  quoteId: string;
+
+  vehicleId: string;
+
+}
+export interface QuickQuoteOfferRequest {
+  quoteId: string;
+  identityNumber: string;
+  phoneNumber: string;
+}
+export interface QuickQuotePaymentRequest {
+  identityNumber: string;
+  phoneNumber: string;
+  policyId: string;
+  simulateFailure: boolean;
+}
+export interface QuickQuotePaymentRequest {
+  identityNumber: string;
+  phoneNumber: string;
+  policyId: string;
+  simulateFailure: boolean;
+}
+export interface QuickQuotePolicyPdfRequest {
+  identityNumber: string;
+  phoneNumber: string;
+  policyId: string;
+}
+export interface Notification {
+  id: string;
+  customerId: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  readDate: string | null;
+  relatedEntityId: string | null;
+  createdDate: string;
+}
 @Injectable({
   providedIn: 'root'
-})
+}
+)
+
 export class QuickQuoteService {
 
   private readonly http =
@@ -140,6 +195,16 @@ calculatePricing(
   );
 
 }
+createQuote(
+  request: QuickQuotePricingRequest
+): Observable<any> {
+
+  return this.http.post<any>(
+    `${this.apiUrl}/create`,
+    request
+  );
+
+}
 compareQuotes(
   request: QuickQuotePricingRequest
 ): Observable<QuickQuoteProviderResult[]> {
@@ -151,5 +216,59 @@ compareQuotes(
     request
   );
 
+}
+acceptQuote(
+  request: QuickQuoteOfferRequest
+): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiUrl}/accept`,
+    request
+  );
+
+}
+offerQuote(
+  request: QuickQuoteOfferRequest
+): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiUrl}/offer`,
+    request
+  );
+
+}
+createPolicy(
+  request: QuickQuotePolicyCreateRequest
+): Observable<any> {
+
+  return this.http.post<any>(
+    `${this.apiUrl}/policy/create`,
+    request
+  );
+
+}
+createPayment(
+  request: QuickQuotePaymentRequest
+): Observable<any> {
+
+  return this.http.post<any>(
+    `${this.apiUrl}/payment/create`,
+    request
+  );
+
+}
+createPolicyPdf(
+  request: QuickQuotePolicyPdfRequest
+): Observable<Blob> {
+  return this.http.post(
+    `${this.apiUrl}/policy/pdf`,
+    request,
+    { responseType: 'blob' }
+  );
+}
+getNotifications(): Observable<Notification[]> {
+  return this.http.get<Notification[]>(
+    `${this.apiUrl}/Notification`
+  );
 }
 }

@@ -36,6 +36,7 @@ namespace Kasko.DataAccess.Repositories.Abstract
         I­GenericRepository<QuotePricingSnapshot> QuotePricingSnapshots { get; }
 
         IPricingRuleChangeRequestRepository PricingRuleChangeRequests { get; }
+        INotificationRepository Notifications { get; }
 
         Task<int> SaveChangesAsync();
 

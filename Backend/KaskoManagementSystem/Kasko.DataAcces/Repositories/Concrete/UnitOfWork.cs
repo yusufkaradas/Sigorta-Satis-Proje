@@ -35,21 +35,23 @@ namespace Kasko.DataAccess.Repositories.Concrete
         public IGenericRepository<QuotePricingSnapshot> QuotePricingSnapshots { get; }
 
         public IPricingRuleChangeRequestRepository PricingRuleChangeRequests { get; }
+        public INotificationRepository Notifications { get; }
         public UnitOfWork(KaskoContext context, IUserRepository userRepository, IRoleRepository roleRepository, 
             ICustomerRepository customerRepository, IVehicleRepository vehicleRepository,
-            IQuoteRepository quoteRepository, IPolicyRepository policyRepository, 
+            IQuoteRepository quoteRepository, IPolicyRepository policyRepository,
             IPaymentRepository paymentRepository, ICoverageRepository coverageRepository,
             IVehicleValueCatalogRepository vehicleValueCatalogRepository, IPricingRuleRepository pricingRuleRepository,
-            IQuoteCoverageRepository quoteCoverageRepository,IInsurancePackageRepository insurancePackageRepository, 
+            IQuoteCoverageRepository quoteCoverageRepository, IInsurancePackageRepository insurancePackageRepository,
             IPackageCoverageRepository packageCoverageRepository, IPreviousPolicyRepository previousPolicyRepository,
-            IGenericRepository<QuotePricingSnapshot> quotePricingSnapshotRepository, IPricingRuleChangeRequestRepository pricingRuleChangeRequestRepository)
+            IGenericRepository<QuotePricingSnapshot> quotePricingSnapshotRepository, IPricingRuleChangeRequestRepository pricingRuleChangeRequestRepository
+,           INotificationRepository notifications)
         {
             _context = context;
             Users = userRepository;
             Roles = roleRepository;
             Customers = customerRepository;
             QuoteCoverages = quoteCoverageRepository;
-            PricingRules = pricingRuleRepository;       
+            PricingRules = pricingRuleRepository;
             VehicleValueCatalogs = vehicleValueCatalogRepository;
             Coverages = coverageRepository;
             Vehicles = vehicleRepository;
@@ -61,6 +63,7 @@ namespace Kasko.DataAccess.Repositories.Concrete
             PreviousPolicies = previousPolicyRepository;
             QuotePricingSnapshots = quotePricingSnapshotRepository;
             PricingRuleChangeRequests = pricingRuleChangeRequestRepository;
+            Notifications = notifications;
         }
         public async Task<int> SaveChangesAsync()
         {

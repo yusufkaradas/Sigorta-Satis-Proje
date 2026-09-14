@@ -19,4 +19,7 @@ public interface ICustomerService
         GetForQuickQuoteAsync(
             string identityNumber,
             string phoneNumber);
+
+    Task<Guid> CreateForQuickQuoteAsync(
+    QuickQuoteCustomerCreateRequestDto dto);
 }

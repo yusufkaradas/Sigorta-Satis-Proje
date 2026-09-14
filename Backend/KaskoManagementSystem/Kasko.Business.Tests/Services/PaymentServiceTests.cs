@@ -1,5 +1,6 @@
 ﻿using Kasko.Business.DTOs.Payment;
 using Kasko.Business.Exceptions;
+using Kasko.Business.Interfaces;
 using Kasko.Business.Services.Concrete;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -14,17 +15,21 @@ namespace Kasko.Business.Tests.Services
         private Mock<IPolicyRepository> _policyRepositoryMock = null!;
         private Mock<IUnitOfWork> _unitOfWorkMock = null!;
         private PaymentService _paymentService = null!;
+        private readonly Mock<INotificationService> _notificationServiceMock;
 
         public PaymentServiceTests()
         {
             _paymentRepositoryMock = new Mock<IPaymentRepository>();
             _policyRepositoryMock = new Mock<IPolicyRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _notificationServiceMock = new Mock<INotificationService>();
 
             _paymentService = new PaymentService(
                 _paymentRepositoryMock.Object,
                 _policyRepositoryMock.Object,
-                _unitOfWorkMock.Object);
+                _unitOfWorkMock.Object,
+                _notificationServiceMock.Object
+                );
         }
 
        

@@ -1,5 +1,6 @@
 ﻿using Kasko.Business.DTOs.Payment;
 using Kasko.Business.Exceptions;
+using Kasko.Business.Interfaces;
 using Kasko.Business.Services.Abstract;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -12,14 +13,18 @@ namespace Kasko.Business.Services.Concrete
         private readonly IPaymentRepository _paymentRepository;
         private readonly IPolicyRepository _policyRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly INotificationService _notificationService;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
-            IPolicyRepository policyRepository,IUnitOfWork unitOfWork)
+            IPolicyRepository policyRepository, 
+            IUnitOfWork unitOfWork, 
+            INotificationService notificationService)
         {
             _paymentRepository = paymentRepository;
             _policyRepository = policyRepository;
             _unitOfWork = unitOfWork;
+            _notificationService = notificationService;
         }
 
         public async Task<PaymentDto> CreateAsync(
@@ -107,9 +112,17 @@ namespace Kasko.Business.Services.Concrete
                     policy.UpdatedDate = DateTime.UtcNow;
 
                     await _policyRepository.UpdateAsync(policy);
-                }
 
-                await _unitOfWork.SaveChangesAsync();
+                    await _notificationService.CreateAsync(
+                        new Kasko.Business.DTOs.Notification.NotificationCreateDto
+                        {
+                            CustomerId = policy.CustomerId,
+                            Type = "PAYMENT_SUCCESS",
+                            Title = "Ödeme Başarılı",
+                            Message = $"Poliçeniz {policy.PolicyNumber} numarasıyla aktif hale getirildi.",
+                            RelatedEntityId = policy.Id
+                        });
+                }
             });
 
             

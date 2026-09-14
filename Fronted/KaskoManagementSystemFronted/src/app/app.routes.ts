@@ -46,6 +46,8 @@ import { RoleEdit } from './features/roles/role-edit/role-edit';
 
 import { Layout } from './features/layout/layout';
 
+import { Notifications } from './features/notifications/notifications/notifications';
+
 import { authGuard } from './core/guards/auth-guard';
 import { roleGuard } from './core/guards/role-guards';
 
@@ -176,6 +178,14 @@ export const routes: Routes = [
         path: 'payments/:id',
         component: PaymentDetail
       },
+      {
+  path: 'notifications',
+  component: Notifications,
+  canActivate: [authGuard, roleGuard],
+  data: {
+    roles: ['Customer']
+  }
+},
       {
   path: 'users',
   component: Users,

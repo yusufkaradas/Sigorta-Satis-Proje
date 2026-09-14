@@ -41,6 +41,7 @@ public class KaskoContext : DbContext
     public DbSet<PreviousPolicy> PreviousPolicies { get; set; }
 
     public DbSet<QuotePricingSnapshot> QuotePricingSnapshots { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -48,6 +48,7 @@ builder.Services.AddScoped<IPackageCoverageRepository, PackageCoverageRepository
 builder.Services.AddScoped<IPreviousPolicyRepository, PreviousPolicyRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IPricingRuleChangeRequestRepository, PricingRuleChangeRequestRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
 
@@ -69,12 +70,14 @@ builder.Services.AddScoped<IInsurancePackageService, InsurancePackageService>();
 builder.Services.AddScoped<IPricingRuleService, PricingRuleService>();
 builder.Services.AddScoped<IPricingRuleChangeRequestService, PricingRuleChangeRequestService>();
 builder.Services.AddScoped<InsurerQuoteComparisonService>();
+builder.Services.AddScoped<IPolicyPdfService, PolicyPdfService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+
+
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerAQuoteProvider>();
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerBQuoteProvider>();
 builder.Services.AddScoped<IInsurerQuoteProvider, DemoInsurerCQuoteProvider>();
-
-
-
 
 
 
