@@ -11,17 +11,36 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService)
     {
         _authService = authService;
     }
 
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(LoginDto dto)
+    public async Task<IActionResult> Login(
+        LoginDto dto)
     {
-        var result = await _authService.LoginAsync(dto);
+        var result =
+            await _authService
+                .LoginAsync(dto);
 
         return Ok(result);
+    }
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register(
+        RegisterDto dto)
+    {
+        var customerId =
+            await _authService
+                .RegisterAsync(dto);
+
+        return Ok(new
+        {
+            customerId
+        });
     }
 }

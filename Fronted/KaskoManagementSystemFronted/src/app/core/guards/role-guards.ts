@@ -1,78 +1,51 @@
-import { inject } from '@angular/core';
+import {
+  inject
+} from '@angular/core';
+
 import {
   CanActivateFn,
   Router
 } from '@angular/router';
 
-import { AuthService } from '../services/authservice';
+import {
+  AuthService
+} from '../services/authservice';
 
-export const roleGuard = (
-  allowedRoles: string[]
-): CanActivateFn => {
+import {
+  homePathForRole
+} from '../services/portal-context';
 
-  return () => {
+export const roleGuard: CanActivateFn = route => {
 
-    const authService = inject(AuthService);
-    const router = inject(Router);
+  const authService =
+    inject(AuthService);
 
-    const token =
-      authService.getToken();
+  const router =
+    inject(Router);
 
-    if (!token) {
-      return router.createUrlTree([
-        '/login'
-      ]);
-    }
+  if (!authService.isAuthenticated()) {
 
-    try {
+    authService.logout();
 
-      const payload =
-        JSON.parse(
-          atob(
-            token.split('.')[1]
-          )
-        );
+    return router.createUrlTree([
+      '/login'
+    ]);
+  }
 
-      const role =
-        payload[
-          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-        ] ??
-        payload['role'] ??
-        payload['Role'];
+  const allowedRoles: string[] =
+    route.data['roles'] ?? [];
 
-      console.log(
-        'RoleGuard role:',
-        role
-      );
+  const role =
+    authService.getRole();
 
-      if (
-        typeof role === 'string' &&
-        allowedRoles.includes(role)
-      ) {
-        return true;
-      }
+  if (
+    allowedRoles.length === 0 ||
+    (role !== null && allowedRoles.includes(role))
+  ) {
+    return true;
+  }
 
-      console.warn(
-        'Yetkisiz rol:',
-        role
-      );
-
-      return router.createUrlTree([
-        '/dashboard'
-      ]);
-
-    } catch (error) {
-
-      console.error(
-        'JWT okunamadı:',
-        error
-      );
-
-      authService.logout();
-
-      return router.createUrlTree([
-        '/login'
-      ]);
-    }
-  };
+  return router.createUrlTree([
+    homePathForRole(role)
+  ]);
 };

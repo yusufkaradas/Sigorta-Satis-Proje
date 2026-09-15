@@ -1,3 +1,4 @@
+import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectorRef,
@@ -14,10 +15,15 @@ import {
 
 import { PolicyService } from './policy.service';
 
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
 @Component({
   selector: 'app-policies',
   standalone: true,
   imports: [
+    RecordNumberPipe,
     CommonModule,
     FormsModule,
     RouterLink
@@ -29,6 +35,9 @@ export class Policies {
 
   private readonly policyService =
     inject(PolicyService);
+
+  readonly portal =
+    injectPortalContext();
 
   private readonly router =
     inject(Router);
@@ -77,12 +86,30 @@ export class Policies {
     );
   }
 
-  get pages(): number[] {
+  deadlineText(value?: string | null): string {
+    if (!value) {
+      return '';
+    }
+    const target = new Date(value);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (days < 0) {
+      return 'Süresi doldu';
+    }
+    if (days === 0) {
+      return 'Bugün bitiyor';
+    }
+    return `${days} gün kaldı`;
+  }
 
-    return Array.from(
-      { length: this.totalPages },
-      (_, index) => index + 1
-    );
+  get pages(): number[] {
+    const total = this.totalPages;
+    const current = Math.min(this.currentPage, total);
+    const start = Math.max(1, Math.min(current - 2, total - 4));
+    const end = Math.min(total, start + 4);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
   // =========================
@@ -318,6 +345,21 @@ export class Policies {
   // STATISTICS
   // =========================
 
+  get activePremium(): number {
+    return this.policies
+      .filter(policy => policy.status === PolicyStatus.Active)
+      .reduce((total, policy) => total + (policy.premiumAmount ?? 0), 0);
+  }
+
+  get renewalSoonCount(): number {
+    const now = Date.now();
+    const limit = now + 30 * 24 * 60 * 60 * 1000;
+    return this.policies.filter(policy => {
+      const end = new Date(policy.endDate).getTime();
+      return policy.status === PolicyStatus.Active && end >= now && end <= limit;
+    }).length;
+  }
+
   get totalPolicies(): number {
 
     return this.policies.length;
@@ -361,7 +403,7 @@ export class Policies {
   openDetail(id: string): void {
 
     this.router.navigate([
-      '/policies',
+      this.portal.basePath + '/policies',
       id
     ]);
 

@@ -1,184 +1,60 @@
-<div class="quote-create-page">
+<div class="kf-page">
 
-  <!-- ==================================================
-       HEADER
-  ================================================== -->
+  <div class="kf-title">
+    YENİ TEKLİF
+  </div>
 
-  <section class="page-header">
+  <form
+    class="kf-panel"
+    (ngSubmit)="createQuote()"
+    #quoteForm="ngForm">
 
-    <div>
-
-      <h1>
-        Yeni Teklif Oluştur
-      </h1>
-
-      <p>
-        Müşteri, araç ve risk bilgilerine göre en uygun kasko teklifini oluşturun.
-      </p>
-
+    <div class="kf-panel-head">
+      <div>
+        <h1>Kasko Teklifi Oluştur</h1>
+        <p>
+          {{
+            isCustomerMode
+              ? 'Aracınızı seçin, size en uygun kasko teklifini birlikte oluşturalım.'
+              : 'Müşteri, araç ve risk bilgilerine göre en uygun kasko teklifini oluşturun.'
+          }}
+        </p>
+      </div>
+      <button type="button" class="kf-btn-outline" (click)="cancel()">← Tekliflere Dön</button>
     </div>
 
+    <ol class="kf-steps">
+      <li [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+        <span>{{ currentStep > 1 ? '✓' : 1 }}</span>
+        {{ isCustomerMode ? 'Araç' : 'Müşteri & Araç' }}
+      </li>
+      <li [class.active]="currentStep === 2" [class.done]="currentStep > 2">
+        <span>{{ currentStep > 2 ? '✓' : 2 }}</span>
+        Risk Bilgileri
+      </li>
+      <li [class.active]="currentStep === 3" [class.done]="currentStep > 3">
+        <span>{{ currentStep > 3 ? '✓' : 3 }}</span>
+        Paketler
+      </li>
+      <li [class.active]="currentStep === 4">
+        <span>4</span>
+        Özet
+      </li>
+    </ol>
 
-    <button
-      type="button"
-      class="back-button"
-      (click)="cancel()">
-
-      ← Tekliflere Dön
-
-    </button>
-
-  </section>
-
-
-  <!-- ==================================================
-       MAIN CARD
-  ================================================== -->
-
-  <section class="form-card">
-
-    <h2>
-      Kasko Teklifi
-    </h2>
+    <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
 
 
-    <!-- ==================================================
-         WIZARD
-    ================================================== -->
+    <!-- Adım 1 -->
 
-    <div class="wizard-steps">
+    <div *ngIf="currentStep === 1" class="kf-body" [class.kf-body-split]="!isCustomerMode">
 
+      <section *ngIf="!isCustomerMode" class="kf-section">
 
-      <!-- STEP 1 -->
+        <h2 class="kf-section-title">Müşteri</h2>
 
-      <div
-        class="wizard-step"
-        [class.active]="currentStep === 1"
-        [class.completed]="currentStep > 1">
-
-        <span class="wizard-step-number">
-          1
-        </span>
-
-        <span class="wizard-step-label">
-          Müşteri & Araç
-        </span>
-
-      </div>
-
-
-      <div class="wizard-step-line"></div>
-
-
-      <!-- STEP 2 -->
-
-      <div
-        class="wizard-step"
-        [class.active]="currentStep === 2"
-        [class.completed]="currentStep > 2">
-
-        <span class="wizard-step-number">
-          2
-        </span>
-
-        <span class="wizard-step-label">
-          Risk Bilgileri
-        </span>
-
-      </div>
-
-
-      <div class="wizard-step-line"></div>
-
-
-      <!-- STEP 3 -->
-
-      <div
-      
-        class="wizard-step"
-        [class.active]="currentStep === 3"
-        [class.completed]="currentStep > 3">
-        <span class="wizard-step-label">
-          Paketler
-        </span>
-        <span class="wizard-step-number">
-          3
-        </span>
-
-      </div>
-
-
-      <div class="wizard-step-line"></div>
-
-
-      <!-- STEP 4 -->
-
-      <div
-        class="wizard-step"
-        [class.active]="currentStep === 4">
-
-        <span class="wizard-step-number">
-          4
-        </span>
-
-        <span class="wizard-step-label">
-          Özet
-        </span>
-
-      </div>
-
-    </div>
-
-
-    <!-- ==================================================
-         ERROR
-    ================================================== -->
-
-    <div
-      *ngIf="errorMessage"
-      class="error-message">
-
-      {{ errorMessage }}
-
-    </div>
-
-
-    <form
-      (ngSubmit)="createQuote()"
-      #quoteForm="ngForm">
-
-
-      <!-- ==================================================
-           STEP 1
-           MÜŞTERİ + ARAÇ
-      ================================================== -->
-
-      <div
-        class="wizard-content"
-        *ngIf="currentStep === 1">
-
-
-        <div class="step-heading">
-
-          <h3>
-            Müşteri ve Araç
-          </h3>
-
-          <p>
-            Müşteriyi seçin ve teklif hazırlanacak araca tıklayın.
-          </p>
-
-        </div>
-
-
-        <!-- CUSTOMER -->
-
-        <div class="form-group">
-
-          <label for="customerId">
-            Müşteri *
-          </label>
-
+        <div class="kf-field">
+          <label for="customerId">Müşteri *</label>
           <select
             id="customerId"
             name="customerId"
@@ -186,1153 +62,315 @@
             (ngModelChange)="onCustomerChange()"
             [disabled]="isLoadingCustomers"
             required>
-
-            <option
-              value=""
-              disabled>
-
-              {{
-                isLoadingCustomers
-                  ? 'Müşteriler yükleniyor...'
-                  : 'Müşteri seçin'
-              }}
-
+            <option value="" disabled>
+              {{ isLoadingCustomers ? 'Müşteriler yükleniyor...' : 'Müşteri seçin' }}
             </option>
-
-
-            <option
-              *ngFor="let customer of customers"
-              [value]="customer.id">
-
-              {{ customer.firstName }}
-              {{ customer.lastName }}
-
+            <option *ngFor="let customer of customers" [value]="customer.id">
+              {{ customer.firstName }} {{ customer.lastName }}
             </option>
-
           </select>
-
         </div>
 
+        <dl *ngIf="customerId" class="kf-details kf-details-1">
+          <div><dt>Seçilen Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
+          <div><dt>Aktif Araç</dt><dd>{{ isLoadingVehicles ? '...' : vehicles.length }}</dd></div>
+        </dl>
 
-        <!-- SELECTED CUSTOMER -->
+      </section>
 
-        <div
-          class="selection-info"
-          *ngIf="customerId">
+      <section class="kf-section">
 
-          <span>
-            Seçilen müşteri
-          </span>
+        <h2 class="kf-section-title">
+          {{ isCustomerMode ? 'Aracınızı Seçin' : 'Aracı Seçin' }}
+          <small *ngIf="(customerId || isCustomerMode) && !isLoadingVehicles">{{ vehicles.length }} araç</small>
+        </h2>
 
-          <strong>
-
-            {{
-              (
-                customers.find(
-                  c => c.id === customerId
-                )
-              )?.firstName
-            }}
-
-            {{
-              (
-                customers.find(
-                  c => c.id === customerId
-                )
-              )?.lastName
-            }}
-
-          </strong>
-
+        <div *ngIf="!customerId && !isCustomerMode" class="kf-empty">
+          Araçları görmek için önce müşteri seçin.
         </div>
 
-
-        <!-- VEHICLES -->
-
-        <div
-          class="vehicle-section"
-          *ngIf="customerId">
-
-
-          <div class="section-heading-row">
-
-            <div>
-
-              <h3>
-                Aracı Seç
-              </h3>
-
-              <p>
-                Teklif oluşturmak istediğiniz araca tıklayın.
-              </p>
-
-            </div>
-
-
-            <span
-              *ngIf="!isLoadingVehicles"
-              class="vehicle-count">
-
-              {{ vehicles.length }} araç
-
-            </span>
-
-          </div>
-
-
-          <!-- LOADING -->
-
-          <div
-            *ngIf="isLoadingVehicles"
-            class="loading-state">
-
-            Müşterinin araçları yükleniyor...
-
-          </div>
-
-
-          <!-- EMPTY -->
-
-          <div
-            *ngIf="
-              !isLoadingVehicles &&
-              vehicles.length === 0
-            "
-            class="empty-state">
-
-            <strong>
-              Bu müşteriye ait aktif araç bulunamadı.
-            </strong>
-
-            <span>
-              Teklif oluşturmak için müşterinin aktif bir aracı olmalıdır.
-            </span>
-
-          </div>
-
-
-          <!-- VEHICLE CARDS -->
-
-          <div
-            *ngIf="
-              !isLoadingVehicles &&
-              vehicles.length > 0
-            "
-            class="vehicle-grid">
-
-
-            <button
-              type="button"
-              class="vehicle-card"
-              *ngFor="let vehicle of vehicles"
-              [class.selected]="vehicle.id === vehicleId"
-              (click)="selectVehicle(vehicle.id)">
-
-
-              <div class="vehicle-card-top">
-
-                <span class="vehicle-brand">
-                  {{ vehicle.brand }}
-                </span>
-
-
-                <span
-                  class="vehicle-selected"
-                  *ngIf="vehicle.id === vehicleId">
-
-                  ✓ Seçildi
-
-                </span>
-
-              </div>
-
-
-              <div class="vehicle-name">
-
-                {{ vehicle.model }}
-
-              </div>
-
-
-              <div class="vehicle-details">
-
-                <span>
-                  {{ vehicle.plateNumber }}
-                </span>
-
-                <span>
-                  {{ vehicle.modelYear }}
-                </span>
-
-              </div>
-
-
-              <div
-                class="vehicle-value"
-                *ngIf="
-                  vehicle.marketValue !== null &&
-                  vehicle.marketValue !== undefined
-                ">
-
-                <span>
-                  Araç Değeri
-                </span>
-
-                <strong>
-
-                  {{
-                    vehicle.marketValue
-                      | number:'1.0-2'
-                  }}
-
-                  ₺
-
-                </strong>
-
-              </div>
-
-
-              <div class="vehicle-card-arrow">
-
-                Bu aracı seç
-                →
-
-              </div>
-
-
-            </button>
-
-          </div>
-
-
+        <div *ngIf="(customerId || isCustomerMode) && isLoadingVehicles" class="kf-empty">
+          {{ isCustomerMode ? 'Araçlarınız yükleniyor...' : 'Müşterinin araçları yükleniyor...' }}
         </div>
 
+        <div *ngIf="(customerId || isCustomerMode) && !isLoadingVehicles && vehicles.length === 0" class="kf-empty">
+          <strong>{{ isCustomerMode ? 'Kayıtlı aktif aracınız bulunamadı.' : 'Bu müşteriye ait aktif araç bulunamadı.' }}</strong>
+          Teklif oluşturmak için aktif bir araç gerekir.
+        </div>
 
-        <div class="wizard-navigation">
-
-          <span></span>
+        <div *ngIf="(customerId || isCustomerMode) && !isLoadingVehicles && vehicles.length > 0" class="kf-choice-grid">
 
           <button
+            *ngFor="let vehicle of pagedVehicles"
             type="button"
-            class="wizard-next-button"
-            *ngIf="vehicleId"
-            (click)="nextStep()">
-
-            Risk Bilgilerine Geç →
-
+            class="kf-choice"
+            [class.selected]="vehicle.id === vehicleId"
+            (click)="selectVehicle(vehicle.id)">
+            <small>{{ vehicle.brand }}</small>
+            <strong [title]="vehicle.model">{{ vehicle.model }}</strong>
+            <small>{{ vehicle.plateNumber }} · {{ vehicle.modelYear }}</small>
+            <span *ngIf="vehicle.marketValue != null" class="kf-choice-value">
+              {{ vehicle.marketValue | number:'1.0-0' }} ₺
+            </span>
           </button>
 
         </div>
 
+        <div *ngIf="vehiclePageCount > 1" class="kf-head-actions">
+          <button type="button" class="kf-btn-outline kf-btn-sm" [disabled]="vehiclePage === 1" (click)="changeVehiclePage(-1)">‹ Önceki</button>
+          <span class="kf-muted">{{ vehiclePage }} / {{ vehiclePageCount }}</span>
+          <button type="button" class="kf-btn-outline kf-btn-sm" [disabled]="vehiclePage === vehiclePageCount" (click)="changeVehiclePage(1)">Sonraki ›</button>
+        </div>
+
+      </section>
+
+    </div>
+
+
+    <!-- Adım 2 -->
+
+    <div *ngIf="currentStep === 2" class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Seçilen Araç</h2>
+
+        <div class="kf-highlight">
+          <span>{{ selectedVehicle?.brand }} · {{ selectedVehicle?.plateNumber }}</span>
+          <strong>{{ selectedVehicle?.model }}</strong>
+        </div>
+
+        <dl class="kf-details kf-details-1">
+          <div *ngIf="!isCustomerMode"><dt>Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
+          <div><dt>Model Yılı</dt><dd>{{ selectedVehicle?.modelYear }}</dd></div>
+          <div><dt>Teklif Geçerliliği</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }} (7 gün)</dd></div>
+        </dl>
+
+      </section>
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Kullanım Şekli</h2>
+
+        <div class="kf-choice-grid kf-choice-grid-2">
+          <label class="kf-choice" [class.selected]="usage === 'PRIVATE'">
+            <input type="radio" name="usage" value="PRIVATE" [(ngModel)]="usage" (ngModelChange)="calculateQuote()" />
+            <strong>Özel Kullanım</strong>
+            <small>Günlük / bireysel kullanım</small>
+          </label>
+          <label class="kf-choice" [class.selected]="usage === 'COMMERCIAL'">
+            <input type="radio" name="usage" value="COMMERCIAL" [(ngModel)]="usage" (ngModelChange)="calculateQuote()" />
+            <strong>Ticari Kullanım</strong>
+            <small>İşletme kullanımı</small>
+          </label>
+        </div>
+
+        <h2 class="kf-section-title">
+          Önceki Poliçe
+          <small>Hasarsızlık bilgisi için</small>
+        </h2>
+
+        <div *ngIf="isLoadingPreviousPolicies" class="kf-muted">Poliçeler yükleniyor...</div>
+
+        <div *ngIf="!isLoadingPreviousPolicies" class="kf-choice-grid">
+          <label class="kf-choice" [class.selected]="!previousPolicyId">
+            <input type="radio" name="previousPolicyId" [checked]="previousPolicyId === null" (change)="previousPolicyId = null; onPreviousPolicyChange(); calculateQuote()" />
+            <strong>Önceki Poliçe Yok</strong>
+            <small>Hasar adedi 0 kabul edilir</small>
+          </label>
+          <label
+            *ngFor="let policy of previousPolicies.slice(0, 5)"
+            class="kf-choice"
+            [class.selected]="previousPolicyId === policy.id">
+            <input type="radio" name="previousPolicyId" [value]="policy.id" [(ngModel)]="previousPolicyId" (ngModelChange)="onPreviousPolicyChange(); calculateQuote()" />
+            <strong>{{ policy.previousInsurer }}</strong>
+            <small>{{ policy.policyNumber }} · {{ policy.startDate | date:'dd.MM.yyyy' }}</small>
+          </label>
+        </div>
+
+        <h2 class="kf-section-title">Muafiyet</h2>
+
+        <div class="kf-choice-grid">
+          <label class="kf-choice" [class.selected]="deductible === 0">
+            <input type="radio" name="deductible" [checked]="deductible === 0" (change)="deductible = 0; calculateQuote()" />
+            <strong>Muafiyet Yok</strong>
+            <small>0 ₺</small>
+          </label>
+          <label class="kf-choice" [class.selected]="deductible === 5000">
+            <input type="radio" name="deductible" [checked]="deductible === 5000" (change)="deductible = 5000; calculateQuote()" />
+            <strong>5.000 ₺</strong>
+            <small>Standart</small>
+          </label>
+          <label class="kf-choice" [class.selected]="deductible === 10000">
+            <input type="radio" name="deductible" [checked]="deductible === 10000" (change)="deductible = 10000; calculateQuote()" />
+            <strong>10.000 ₺</strong>
+            <small>Yüksek muafiyet</small>
+          </label>
+        </div>
+
+      </section>
+
+    </div>
+
+
+    <!-- Adım 3 -->
+
+    <div *ngIf="currentStep === 3" class="kf-body kf-body-3">
+
+      <div *ngIf="isComparingPackages" class="kf-state kf-span-all">
+        <strong>Paket fiyatları hesaplanıyor...</strong>
+        Seçtiğiniz araç ve risk bilgilerine göre teklifler hazırlanıyor.
       </div>
 
-
-      <!-- ==================================================
-           STEP 2
-           RİSK BİLGİLERİ
-      ================================================== -->
-
-      <div
-        class="wizard-content"
-        *ngIf="currentStep === 2">
-
-        <div class="step-heading compact-step-heading">
-          <div>
-            <h3>Risk Bilgileri</h3>
-            <p>Fiyatı etkileyen bilgileri kartlardan seçin.</p>
-          </div>
-        </div>
-
-        <!-- SELECTED VEHICLE -->
-        <div
-          class="selected-vehicle-summary compact-selected-vehicle"
-          *ngIf="vehicleId">
-
-          <div>
-            <span>Seçilen Araç</span>
-            <strong>
-              {{ (vehicles.find(v => v.id === vehicleId))?.brand }}
-              {{ (vehicles.find(v => v.id === vehicleId))?.model }}
-            </strong>
-          </div>
-
-          <div>
-            <span>Plaka</span>
-            <strong>
-              {{ (vehicles.find(v => v.id === vehicleId))?.plateNumber }}
-            </strong>
-          </div>
-
-          <div
-            *ngIf="marketValue !== null"
-            class="compact-value">
-            <span>Araç Değeri</span>
-            <strong>{{ marketValue | number:'1.0-2' }} ₺</strong>
-          </div>
-        </div>
-
-        <!-- USAGE -->
-        <section class="risk-card-section">
-          <div class="risk-card-section-title">
-            <span>Kullanım Şekli</span>
-            <small>Fiyatı etkileyebilir</small>
-          </div>
-
-          <div class="risk-choice-grid two-columns">
-            <label
-              class="risk-choice-card"
-              [class.selected]="usage === 'PRIVATE'">
-
-              <input
-                type="radio"
-                name="usage"
-                value="PRIVATE"
-                [(ngModel)]="usage"
-                (ngModelChange)="calculateQuote()" />
-
-              <span class="choice-check">✓</span>
-
-              <span class="choice-content">
-                <strong>Özel Kullanım</strong>
-                <small>Günlük / bireysel kullanım</small>
-              </span>
-            </label>
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="usage === 'COMMERCIAL'">
-
-              <input
-                type="radio"
-                name="usage"
-                value="COMMERCIAL"
-                [(ngModel)]="usage"
-                (ngModelChange)="calculateQuote()" />
-
-              <span class="choice-check">✓</span>
-
-              <span class="choice-content">
-                <strong>Ticari Kullanım</strong>
-                <small>Ticari / işletme kullanımı</small>
-              </span>
-            </label>
-          </div>
-        </section>
-
-        <!-- PREVIOUS POLICY -->
-        <section class="risk-card-section">
-          <div class="risk-card-section-title">
-            <span>Önceki Poliçe</span>
-            <small>Hasarsızlık bilgisi için kullanılır</small>
-          </div>
-
-          <div
-            *ngIf="isLoadingPreviousPolicies"
-            class="inline-loading">
-            Poliçeler yükleniyor...
-          </div>
-
-          <div
-            *ngIf="!isLoadingPreviousPolicies"
-            class="risk-choice-grid">
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="!previousPolicyId"
-              *ngIf="!isLoadingPreviousPolicies">
-
-              <input
-  type="radio"
-  name="previousPolicyId"
-  [checked]="previousPolicyId === null"
-  (change)="previousPolicyId = null; onPreviousPolicyChange(); calculateQuote()" />
-
-              <span class="choice-check">✓</span>
-
-              <span class="choice-content">
-                <strong>Önceki Poliçe Yok</strong>
-                <small>Hasar adedi 0 kabul edilir</small>
-              </span>
-            </label>
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="previousPolicyId === policy.id"
-              *ngFor="let policy of previousPolicies">
-
-              <input
-                type="radio"
-                name="previousPolicyId"
-                [value]="policy.id"
-                [(ngModel)]="previousPolicyId"
-                (ngModelChange)="onPreviousPolicyChange(); calculateQuote()" />
-
-              <span class="choice-check">✓</span>
-
-              <span class="choice-content">
-                <strong>
-                  {{ policy.previousInsurer }}
-                </strong>
-                <small>
-                  Poliçe {{ policy.policyNumber }} ·
-                  {{ policy.startDate | date:'dd.MM.yyyy' }}
-                </small>
-              </span>
-            </label>
-
-          </div>
-        </section>
-
-        <!-- DEDUCTIBLE -->
-        <section class="risk-card-section">
-          <div class="risk-card-section-title">
-            <span>Muafiyet</span>
-            <small>Hasar durumunda uygulanacak tutar</small>
-          </div>
-
-          <div class="risk-choice-grid three-columns">
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="deductible === 0">
-              <input
-  type="radio"
-  name="deductible"
-  [checked]="deductible === 0"
-  (change)="deductible = 0; calculateQuote()" />
-              <span class="choice-check">✓</span>
-              <span class="choice-content">
-                <strong>Muafiyet Yok</strong>
-                <small>0 ₺</small>
-              </span>
-            </label>
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="deductible === 5000">
-             <input
-  type="radio"
-  name="deductible"
-  [checked]="deductible === 5000"
-  (change)="deductible = 5000; calculateQuote()" />
-              <span class="choice-check">✓</span>
-              <span class="choice-content">
-                <strong>5.000 ₺</strong>
-                <small>Standart</small>
-              </span>
-            </label>
-
-            <label
-              class="risk-choice-card"
-              [class.selected]="deductible === 10000">
-             <input
-  type="radio"
-  name="deductible"
-  [checked]="deductible === 10000"
-  (change)="deductible = 10000; calculateQuote()" />
-              <span class="choice-check">✓</span>
-              <span class="choice-content">
-                <strong>10.000 ₺</strong>
-                <small>Yüksek muafiyet</small>
-              </span>
-            </label>
-          </div>
-        </section>
-
-        <!-- VALIDITY -->
-        <div class="validity-mini-card">
-          <div>
-            <span>Teklif Geçerliliği</span>
-            <strong>{{ validUntil | date:'dd.MM.yyyy' }}</strong>
-          </div>
-          <small>Teklif oluşturulduğu tarihten itibaren 7 gün geçerlidir.</small>
-        </div>
-
-        <!-- NAVIGATION -->
-        <div class="wizard-navigation compact-navigation">
-          <button
-            type="button"
-            class="wizard-back-button"
-            (click)="previousStep()">
-            ← Geri
-          </button>
-
-          <button
-            type="button"
-            class="wizard-next-button"
-            (click)="nextStep()">
-            Paketleri Karşılaştır →
-          </button>
-        </div>
-
+      <div *ngIf="!isComparingPackages && packageQuotes.length === 0" class="kf-state kf-span-all">
+        <strong>Karşılaştırılacak paket bulunamadı.</strong>
+        Geri dönüp araç ve risk bilgilerini kontrol edin.
       </div>
 
+      <ng-container *ngIf="!isComparingPackages">
 
-      <!-- ==================================================
-           STEP 3
-           PAKET KARŞILAŞTIRMA
-      ================================================== -->
+        <article
+          *ngFor="let option of packageQuotes; let i = index"
+          class="kf-package"
+          [class.recommended]="i === 1"
+          [class.selected]="option.package.id === packageId">
 
-      <div
-        class="wizard-content"
-        *ngIf="currentStep === 3">
-
-
-        <div class="step-heading">
-
-          <h3>
-            Kasko Paketlerini Karşılaştır
-          </h3>
-
-          <p>
-            Aynı araç ve risk bilgileri için üç farklı paket seçeneğini karşılaştırın.
-          </p>
-
-        </div>
-
-
-        <!-- CONTEXT -->
-
-        <div class="selection-bar">
-
+          <h2 class="kf-section-title">
+            {{ option.package.name }}
+            <span *ngIf="i === 1" class="kf-badge status-offered">Önerilen</span>
+          </h2>
 
           <div>
-
-            <span>
-              Araç
-            </span>
-
-            <strong>
-
-              {{
-                (
-                  vehicles.find(
-                    v => v.id === vehicleId
-                  )
-                )?.brand
-              }}
-
-              {{
-                (
-                  vehicles.find(
-                    v => v.id === vehicleId
-                  )
-                )?.model
-              }}
-
-            </strong>
-
+            <span class="kf-muted">Toplam Prim</span>
+            <div *ngIf="option.totalPremium !== null" class="kf-package-price">
+              {{ option.totalPremium | number:'1.2-2' }} ₺
+            </div>
+            <div *ngIf="option.totalPremium === null" class="kf-package-price">Hesaplanamadı</div>
           </div>
 
+          <dl class="kf-details kf-details-1">
+            <div><dt>Teminat Toplamı</dt><dd>{{ option.coverageTotal | number:'1.0-2' }} ₺</dd></div>
+            <div *ngIf="option.discount !== null"><dt>İndirim</dt><dd>{{ option.discount | number:'1.2-2' }} ₺</dd></div>
+          </dl>
 
-          <div>
-
-            <span>
-              Kullanım
-            </span>
-
-            <strong>
-
-              {{
-                usage === 'PRIVATE'
-                  ? 'Özel Kullanım'
-                  : 'Ticari Kullanım'
-              }}
-
-            </strong>
-
+          <div class="kf-chips">
+            <ng-container *ngFor="let coverage of option.package.coverages">
+              <span *ngIf="coverage.isDefault" class="kf-chip">✓ {{ coverage.coverageName }}</span>
+            </ng-container>
           </div>
-
-
-          <div>
-
-            <span>
-              Hasar
-            </span>
-
-            <strong>
-              {{ claimsCount }}
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <!-- LOADING -->
-
-        <div
-          *ngIf="isComparingPackages"
-          class="comparison-loading">
-
-          <div class="loading-spinner"></div>
-
-          <strong>
-            Paket fiyatları hesaplanıyor...
-          </strong>
-
-          <span>
-            Seçtiğiniz araç ve risk bilgilerine göre
-            teklifler hazırlanıyor.
-          </span>
-
-        </div>
-
-
-        <!-- PACKAGE GRID -->
-
-        <div
-          *ngIf="
-            !isComparingPackages &&
-            packageQuotes.length > 0
-          "
-          class="package-comparison-grid">
-
-
-          <article
-            class="package-card"
-            *ngFor="
-              let option of packageQuotes;
-              let i = index
-            "
-            [class.selected]="
-              option.package.id === packageId
-            "
-            [class.recommended]="i === 1">
-
-
-            <!-- BADGE -->
-
-            <div
-              class="package-badge"
-              *ngIf="i === 1">
-
-              Önerilen
-
-            </div>
-
-
-            <!-- HEADER -->
-
-            <div class="package-card-header">
-
-              <span>
-                Kasko Paketi
-              </span>
-
-              <h4>
-                {{ option.package.name }}
-              </h4>
-
-            </div>
-
-
-            <!-- PRICE -->
-
-            <div class="package-price-area">
-
-              <span>
-                Toplam Prim
-              </span>
-
-
-              <strong
-                *ngIf="
-                  option.totalPremium !== null
-                "
-                class="package-price">
-
-                {{
-                  option.totalPremium
-                    | number:'1.2-2'
-                }}
-
-                ₺
-
-              </strong>
-
-
-              <strong
-                *ngIf="
-                  option.totalPremium === null
-                "
-                class="package-price-error">
-
-                Hesaplanamadı
-
-              </strong>
-
-            </div>
-
-
-            <!-- COVERAGE TOTAL -->
-
-            <div class="package-coverage-total">
-
-              <span>
-                Teminat Toplamı
-              </span>
-
-              <strong>
-
-                {{
-                  option.coverageTotal
-                    | number:'1.0-2'
-                }}
-
-                ₺
-
-              </strong>
-
-            </div>
-
-
-            <!-- COVERAGES -->
-
-            <div class="package-coverages">
-
-              <div class="package-coverages-title">
-
-                Pakete Dahil Teminatlar
-
-              </div>
-
-
-              <div
-                class="package-coverage-row"
-                *ngFor="
-                  let coverage of option.package.coverages
-                "
-                [hidden]="
-                  !coverage.isDefault
-                ">
-
-                <span class="coverage-mini-check">
-                  ✓
-                </span>
-
-                <span>
-                  {{ coverage.coverageName }}
-                </span>
-
-              </div>
-
-            </div>
-
-
-            <!-- PRICING DETAILS -->
-
-            <details class="pricing-details">
-
-              <summary>
-                Fiyatlandırma detayları
-              </summary>
-
-
-              <div class="pricing-details-body">
-
-
-                <div
-                  class="pricing-detail-row"
-                  *ngIf="
-                    option.marketValue !== null
-                  ">
-
-                  <span>
-                    Araç Değeri
-                  </span>
-
-                  <strong>
-
-                    {{
-                      option.marketValue
-                        | number:'1.0-2'
-                    }}
-
-                    ₺
-
-                  </strong>
-
-                </div>
-
-
-                <div
-                  class="pricing-detail-row"
-                  *ngIf="
-                    option.coveragePremium !== null
-                  ">
-
-                  <span>
-                    Teminatlar
-                  </span>
-
-                  <strong>
-
-                    {{
-                      option.coveragePremium
-                        | number:'1.2-2'
-                    }}
-
-                    ₺
-
-                  </strong>
-
-                </div>
-
-
-                <div
-                  class="pricing-detail-row"
-                  *ngIf="
-                    option.discount !== null
-                  ">
-
-                  <span>
-                    İndirim
-                  </span>
-
-                  <strong>
-
-                    {{
-                      option.discount
-                        | number:'1.2-2'
-                    }}
-
-                    ₺
-
-                  </strong>
-
-                </div>
-
-              <div
-                class="pricing-detail-row"
-                *ngIf="
-                  option.riskAdjustedPremium !== null
-                ">
-
-                <span>
-                  Risk Düzeltilmiş Prim
-                </span>
-
-                <strong>
-
-                  {{
-                    option.riskAdjustedPremium
-                      | number:'1.2-2'
-                  }}
-
-                  ₺
-
-                </strong>
-
-              </div>
-<div class="pricing-detail-divider"></div>
-
-
-                <div
-                  class="pricing-detail-row pricing-detail-total">
-
-                  <span>
-                    Toplam Prim
-                  </span>
-
-                  <strong>
-
-                    {{
-                      option.totalPremium
-                        | number:'1.2-2'
-                    }}
-
-                    ₺
-
-                  </strong>
-
-                </div>
-
-              </div>
-
-            </details>
-
-
-            <!-- SELECT -->
-
-            <button
-              type="button"
-              class="package-select-button"
-              [class.selected]="
-                option.package.id === packageId
-              "
-              [disabled]="
-                option.totalPremium === null
-              "
-              (click)="selectPackage(option.package.id); currentStep = 4">
-
-              <span
-                *ngIf="
-                  option.package.id !== packageId
-                ">
-
-                Bu Paketi Seç
-
-              </span>
-
-
-              <span
-                *ngIf="
-                  option.package.id === packageId
-                ">
-
-                ✓ Paket Seçildi
-
-              </span>
-
-            </button>
-
-
-          </article>
-
-        </div>
-
-
-        <!-- EMPTY -->
-
-        <div
-          *ngIf="
-            !isComparingPackages &&
-            packageQuotes.length === 0
-          "
-          class="empty-state">
-
-          <strong>
-            Karşılaştırılacak paket bulunamadı.
-          </strong>
-
-          <span>
-            Geri dönüp araç ve risk bilgilerini kontrol edin.
-          </span>
-
-        </div>
-
-
-        <div class="wizard-navigation">
 
           <button
             type="button"
-            class="wizard-back-button"
-            (click)="previousStep()">
-
-            ← Geri
-
+            [class]="option.package.id === packageId ? 'kf-btn-success' : 'kf-btn'"
+            [disabled]="option.totalPremium === null"
+            (click)="selectPackage(option.package.id)">
+            {{ option.package.id === packageId ? '✓ Paket Seçildi' : 'Bu Paketi Seç' }}
           </button>
 
+        </article>
+
+      </ng-container>
+
+    </div>
+
+
+    <!-- Adım 4 -->
+
+    <div *ngIf="currentStep === 4" class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Teklif Bilgileri</h2>
+
+        <div class="kf-highlight" *ngIf="calculatedPremium !== null">
+          <span>Toplam Prim · {{ selectedPackage?.name }}</span>
+          <strong>{{ calculatedPremium | number:'1.2-2' }} ₺</strong>
         </div>
 
-      </div>
+        <dl class="kf-details">
+          <div *ngIf="!isCustomerMode" class="kf-span-all"><dt>Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
+          <div class="kf-span-all"><dt>Araç</dt><dd>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }}</dd></div>
+          <div><dt>Kullanım</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }}</dd></div>
+          <div><dt>Hasar Adedi</dt><dd>{{ claimsCount }}</dd></div>
+          <div><dt>Muafiyet</dt><dd>{{ deductible | number:'1.0-2' }} ₺</dd></div>
+          <div><dt>Geçerlilik</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }}</dd></div>
+        </dl>
+
+      </section>
+
+      <section class="kf-section" *ngIf="selectedPackage">
+
+        <h2 class="kf-section-title">
+          Teminatlar ve Fiyatlandırma
+          <small>Teminat toplamı {{ packageCoverageTotal | number:'1.0-2' }} ₺</small>
+        </h2>
+
+        <ul class="kf-list kf-list-2">
+          <ng-container *ngFor="let coverage of selectedPackage.coverages">
+            <li *ngIf="coverage.isDefault" class="kf-list-item">
+              <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
+              <span>{{ coverage.calculatedPrice | number:'1.0-2' }} ₺</span>
+            </li>
+          </ng-container>
+        </ul>
+
+        <dl class="kf-details kf-details-3">
+          <div *ngIf="marketValue !== null"><dt>Araç Değeri</dt><dd>{{ marketValue | number:'1.0-2' }} ₺</dd></div>
+          <div *ngIf="riskAdjustedPremium !== null"><dt>Risk Düzeltilmiş</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
+          <div *ngIf="coveragePremium !== null"><dt>Teminat Primi</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
+        </dl>
+
+      </section>
+
+    </div>
 
 
-      <!-- ==================================================
-           STEP 4
-           TEKLİF ÖZETİ
-      ================================================== -->
+    <div class="kf-actions kf-actions-between">
 
-      <div
-        class="wizard-content summary-content"
-        *ngIf="currentStep === 4">
+      <button
+        type="button"
+        class="kf-btn-outline"
+        [disabled]="currentStep === 1"
+        (click)="previousStep()">
+        ← Geri
+      </button>
 
-        <div class="step-heading compact-step-heading">
-          <div>
-            <h3>Teklif Özeti</h3>
-            <p>Teklifi oluşturmadan önce tüm bilgileri tek ekranda kontrol edin.</p>
-          </div>
-        </div>
+      <button
+        *ngIf="currentStep === 1"
+        type="button"
+        class="kf-btn"
+        [disabled]="!vehicleId"
+        (click)="nextStep()">
+        Risk Bilgilerine Geç →
+      </button>
 
-        <div class="summary-overview-grid">
+      <button
+        *ngIf="currentStep === 2"
+        type="button"
+        class="kf-btn"
+        (click)="nextStep()">
+        Paketleri Karşılaştır →
+      </button>
 
-          <!-- CUSTOMER -->
-          <section class="summary-mini-card">
-            <span>Müşteri</span>
-            <strong>
-              {{ (customers.find(c => c.id === customerId))?.firstName }}
-              {{ (customers.find(c => c.id === customerId))?.lastName }}
-            </strong>
-          </section>
+      <button
+        *ngIf="currentStep === 3"
+        type="button"
+        class="kf-btn"
+        [disabled]="!packageId"
+        (click)="nextStep()">
+        Özete Geç →
+      </button>
 
-          <!-- VEHICLE -->
-          <section class="summary-mini-card summary-mini-card-wide">
-            <span>Araç</span>
-            <strong>
-              {{ (vehicles.find(v => v.id === vehicleId))?.brand }}
-              {{ (vehicles.find(v => v.id === vehicleId))?.model }}
-            </strong>
-            <small>
-              {{ (vehicles.find(v => v.id === vehicleId))?.plateNumber }}
-            </small>
-          </section>
+      <button
+        *ngIf="currentStep === 4"
+        type="submit"
+        class="kf-btn-success"
+        [disabled]="!packageId || calculatedPremium === null || isSaving">
+        {{ isSaving ? 'Teklif Oluşturuluyor...' : 'Teklifi Oluştur' }}
+      </button>
 
-          <!-- VEHICLE VALUE -->
-          <section class="summary-mini-card summary-mini-card-price">
-            <span>Araç Değeri</span>
-            <strong *ngIf="marketValue !== null">
-              {{ marketValue | number:'1.0-2' }} ₺
-            </strong>
-          </section>
+    </div>
 
-          <!-- USAGE -->
-          <section class="summary-mini-card">
-            <span>Kullanım</span>
-            <strong>
-              {{ usage === 'PRIVATE' ? 'Özel Kullanım' : 'Ticari Kullanım' }}
-            </strong>
-          </section>
-
-          <!-- CLAIMS -->
-          <section class="summary-mini-card">
-            <span>Hasar Adedi</span>
-            <strong>{{ claimsCount }}</strong>
-          </section>
-
-          <!-- DEDUCTIBLE -->
-          <section class="summary-mini-card">
-            <span>Muafiyet</span>
-            <strong>{{ deductible | number:'1.0-2' }} ₺</strong>
-          </section>
-
-          <!-- VALIDITY -->
-          <section class="summary-mini-card">
-            <span>Geçerlilik</span>
-            <strong>{{ validUntil | date:'dd.MM.yyyy' }}</strong>
-          </section>
-
-        </div>
-
-        <!-- PACKAGE + PRICING -->
-        <section
-          class="summary-main-card"
-          *ngIf="selectedPackage">
-
-          <div class="summary-main-left">
-            <div class="summary-main-heading">
-              <div>
-                <span>Kasko Paketi</span>
-                <h4>{{ selectedPackage.name }}</h4>
-              </div>
-
-              <div class="summary-main-total" *ngIf="calculatedPremium !== null">
-                <span>Toplam Prim</span>
-                <strong>{{ calculatedPremium | number:'1.2-2' }} ₺</strong>
-              </div>
-            </div>
-
-            <div class="summary-coverages compact-coverages">
-              <div class="summary-coverages-title">
-                Teminatlar
-              </div>
-
-              <div class="summary-coverage-grid">
-                <div
-                  class="summary-coverage-chip"
-                  *ngFor="let coverage of selectedPackage.coverages"
-                  [hidden]="!coverage.isDefault">
-                  <span>✓</span>
-                  <strong>{{ coverage.coverageName }}</strong>
-                  <small>
-                    {{ coverage.calculatedPrice | number:'1.0-2' }} ₺
-                  </small>
-                </div>
-              </div>
-
-              <div class="summary-coverage-total">
-                <span>Teminat Toplamı</span>
-                <strong>
-                  {{ packageCoverageTotal | number:'1.0-2' }} ₺
-                </strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- PRICING -->
-          <aside
-            class="pricing-summary compact-pricing-summary"
-            *ngIf="calculatedPremium !== null">
-
-            <div class="pricing-summary-header">
-              <h4>Fiyatlandırma</h4>
-              <p>Teklif fiyatının kısa özeti</p>
-            </div>
-
-            <div class="pricing-summary-rows">
-
-              <div
-                class="pricing-summary-row"
-                *ngIf="marketValue !== null">
-                <span>Araç Değeri</span>
-                <strong>{{ marketValue | number:'1.0-2' }} ₺</strong>
-              </div>
-
-              <div
-                class="pricing-summary-row"
-                *ngIf="riskAdjustedPremium !== null">
-                <span>Risk Düzeltilmiş Prim</span>
-                <strong>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</strong>
-              </div>
-
-              <div
-                class="pricing-summary-row"
-                *ngIf="coveragePremium !== null">
-                <span>Teminatlar</span>
-                <strong>{{ coveragePremium | number:'1.2-2' }} ₺</strong>
-              </div>
-
-              <div
-                class="pricing-summary-row"
-                *ngIf="discount !== null && discount > 0">
-                <span>İndirim</span>
-                <strong>-{{ discount | number:'1.2-2' }} ₺</strong>
-              </div>
-            </div>
-
-            <div class="pricing-summary-divider"></div>
-
-            <div class="pricing-summary-total">
-              <span>Toplam Teklif</span>
-              <strong>{{ calculatedPremium | number:'1.2-2' }} ₺</strong>
-            </div>
-
-          </aside>
-
-        </section>
-
-        <div class="summary-confirmation compact-confirmation">
-          <span class="summary-confirmation-icon">✓</span>
-          <div>
-            <strong>Teklifinizi kontrol ettiniz mi?</strong>
-            <p>
-              “Teklifi Oluştur” seçeneğine bastığınızda bu bilgilerle teklif kaydı oluşturulur.
-            </p>
-          </div>
-        </div>
-
-        <div class="wizard-navigation final-navigation compact-navigation">
-          <button
-            type="button"
-            class="wizard-back-button"
-            (click)="previousStep()">
-            ← Paketlere Geri Dön
-          </button>
-
-          <button
-            type="submit"
-            class="save-button"
-            [disabled]="!packageId || calculatedPremium === null || isSaving">
-            <span *ngIf="!isSaving">Teklifi Oluştur</span>
-            <span *ngIf="isSaving">Teklif Oluşturuluyor...</span>
-          </button>
-        </div>
-
-      </div>
-
-
-    </form>
-
-  </section>
+  </form>
 
 </div>

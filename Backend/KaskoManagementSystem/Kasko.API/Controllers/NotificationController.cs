@@ -1,7 +1,6 @@
 ﻿using Kasko.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Kasko.API.Controllers;
 
@@ -21,17 +20,9 @@ public class NotificationController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMyNotifications()
     {
-        var customerIdValue =
-            User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (!Guid.TryParse(customerIdValue, out var customerId))
-        {
-            return Unauthorized();
-        }
-
         var notifications =
             await _notificationService
-                .GetByCustomerIdAsync(customerId);
+                .GetMyNotificationsAsync();
 
         return Ok(notifications);
     }

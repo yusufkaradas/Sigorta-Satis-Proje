@@ -50,6 +50,8 @@ export interface Vehicle {
 
   isActive: boolean;
 
+
+  createdDate?: string;
 }
 
 

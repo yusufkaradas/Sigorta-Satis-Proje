@@ -1,3 +1,5 @@
+import { BackendDatePipe } from '../../core/pipes/backend-date.pipe';
+import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -15,9 +17,15 @@ import {
   PaymentsService
 } from './payments.service';
 
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
 @Component({
   selector: 'app-payment-detail',
   imports: [
+    BackendDatePipe,
+    RecordNumberPipe,
     CommonModule,
     RouterLink
   ],
@@ -28,6 +36,15 @@ export class PaymentDetail {
 
   private readonly route =
     inject(ActivatedRoute);
+
+  readonly portal =
+    injectPortalContext();
+
+  readonly isCustomerMode =
+    this.portal.isCustomer;
+
+  readonly basePath =
+    this.portal.basePath;
 
   private readonly paymentsService =
     inject(PaymentsService);

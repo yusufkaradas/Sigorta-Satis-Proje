@@ -23,16 +23,45 @@ namespace Kasko.Business.Services
         public async Task<IEnumerable<VehicleListDto>> GetAllAsync(Guid? customerId = null)
         {
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
-            if (customerId.HasValue)
+
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
             {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Enumerable.Empty<VehicleListDto>();
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    return Enumerable.Empty<VehicleListDto>();
+                }
+
                 vehicles = vehicles
-                    .Where(x => x.CustomerId == customerId.Value)
+                    .Where(x =>
+                        x.CustomerId == currentUser.CustomerId.Value)
                     .ToList();
             }
-            var customers = await _unitOfWork.Customers.GetAllAsync();
+            else if (customerId.HasValue)
+            {
+                vehicles = vehicles
+                    .Where(x =>
+                        x.CustomerId == customerId.Value)
+                    .ToList();
+            }
 
-            var customerMap = customers
-                .ToDictionary(
+            var customers =
+                await _unitOfWork.Customers.GetAllAsync();
+
+            var customerMap =
+                customers.ToDictionary(
                     x => x.Id,
                     x => $"{x.FirstName} {x.LastName}");
 

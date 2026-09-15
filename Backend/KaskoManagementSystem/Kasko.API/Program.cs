@@ -65,6 +65,7 @@ builder.Services.AddScoped<ICoverageService, CoverageService>();
 builder.Services.AddScoped<IVehicleValueImportService,VehicleValueImportService>();
 builder.Services.AddScoped<IVehicleValueCatalogService, VehicleValueCatalogService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IQuickQuoteEstimateService, QuickQuoteEstimateService>();
 builder.Services.AddScoped<IPreviousPolicyService, PreviousPolicyService>(); 
 builder.Services.AddScoped<IInsurancePackageService, InsurancePackageService>();
 builder.Services.AddScoped<IPricingRuleService, PricingRuleService>();

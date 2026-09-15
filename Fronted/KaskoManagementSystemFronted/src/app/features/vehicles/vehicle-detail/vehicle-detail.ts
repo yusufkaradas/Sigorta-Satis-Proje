@@ -1,3 +1,4 @@
+import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -23,11 +24,16 @@ import {
   Customer,
   CustomerService
 } from '../../customers/customers.service';
+import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
+
 @Component({
   selector: 'app-vehicle-detail',
 
   imports: [
     CommonModule,
+    BackendDatePipe,
     RouterLink
   ],
 
@@ -42,6 +48,15 @@ export class VehicleDetail {
 
   private readonly route =
     inject(ActivatedRoute);
+
+  readonly portal =
+    injectPortalContext();
+
+  readonly isCustomerMode =
+    this.portal.isCustomer;
+
+  readonly basePath =
+    this.portal.basePath;
 
   private readonly router =
   inject(Router);
@@ -104,6 +119,15 @@ export class VehicleDetail {
   );
 
   this.vehicle = data;
+
+  if (this.isCustomerMode) {
+
+    this.isLoading = false;
+
+    this.cdr.detectChanges();
+
+    return;
+  }
 
   this.customerService
     .getCustomers()

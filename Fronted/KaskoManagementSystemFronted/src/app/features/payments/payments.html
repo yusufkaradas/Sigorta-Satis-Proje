@@ -12,46 +12,27 @@
   <div class="payment-stats-grid">
 
     <div class="payment-stat-card">
-
-      <span>Toplam Ödeme</span>
-
-      <strong>
-        {{ totalPaymentCount }}
-      </strong>
-
+      <span>Toplam Tahsilat</span>
+      <strong>{{ collectedAmount | number:'1.0-0' }} ₺</strong>
+      <small>{{ successfulPaymentCount }} başarılı ödeme</small>
     </div>
 
-
     <div class="payment-stat-card">
-
-      <span>Başarılı Ödemeler</span>
-
-      <strong>
-        {{ successfulPaymentCount }}
-      </strong>
-
+      <span>Başarı Oranı</span>
+      <strong>%{{ successRate }}</strong>
+      <small>Tamamlanan işlemler içinde</small>
     </div>
 
-
     <div class="payment-stat-card">
-
-      <span>Başarısız Ödemeler</span>
-
-      <strong>
-        {{ failedPaymentCount }}
-      </strong>
-
+      <span>Başarısız Ödeme</span>
+      <strong>{{ failedPaymentCount }}</strong>
+      <small>Müşteriyle iletişime geçin</small>
     </div>
 
-
     <div class="payment-stat-card">
-
-      <span>Bekleyen Ödemeler</span>
-
-      <strong>
-        {{ pendingPaymentCount }}
-      </strong>
-
+      <span>Bekleyen Ödeme</span>
+      <strong>{{ pendingPaymentCount }}</strong>
+      <small>İşlem sonucu bekleniyor</small>
     </div>
 
   </div>
@@ -141,170 +122,61 @@
       <table class="payment-table">
 
         <thead>
+            <tr>
+              <th>Numara</th>
+              <th class="col-wide">Poliçe / Müşteri</th>
+              <th>Tutar</th>
+              <th class="col-wide">Durum</th>
+              <th>Tarih</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
 
-          <tr>
+          <tbody>
 
-            <th>İşlem No</th>
-            <th>Poliçe</th>
-            <th>Tutar</th>
-            <th>Durum</th>
-            <th>Ödeme Tarihi</th>
-            <th>Hata Nedeni</th>
-            <th>İşlem</th>
+            <tr *ngFor="let payment of pagedPayments">
 
-          </tr>
+              <td><div class="date-cell" [title]="payment.transactionNumber"><strong class="record-no">{{ payment.transactionNumber | recordNo }}</strong><span class="time-value">{{ payment.transactionNumber | recordNo:'label' }}</span></div></td>
 
-        </thead>
-
-
-        <tbody>
-
-          <tr
-            *ngFor="let payment of pagedPayments"
-          >
-
-            <td>
-
-              <strong class="transaction-number">
-                {{ payment.transactionNumber }}
-              </strong>
-
-            </td>
-
-
-            <td>
-
-              <span class="policy-id">
-                {{ payment.policyId }}
-              </span>
-
-            </td>
-
-
-            <td class="amount">
-
-              <strong>
-                {{
-                  payment.amount
-                    | number:'1.2-2'
-                }} ₺
-              </strong>
-
-            </td>
-
-
-            <td>
-
-              <span
-                class="status-badge"
-                [ngClass]="
-                  getStatusClass(
-                    payment.status
-                  )
-                "
-              >
-                {{
-                  getStatusText(
-                    payment.status
-                  )
-                }}
-              </span>
-
-            </td>
-
-
-            <td>
-
-              <div class="date-cell">
-
-                <span class="date-value">
-                  {{
-                    formatDate(
-                      payment.paymentDate
-                    )
-                  }}
-                </span>
-
-                <span class="time-value">
-                  {{
-                    formatTime(
-                      payment.paymentDate
-                    )
-                  }}
-                </span>
-
-              </div>
-
-            </td>
-
-
-            <td>
-
-              <span
-                class="failure-reason"
-                [title]="
-                  payment.failureReason || '-'
-                "
-              >
-                {{
-                  payment.failureReason || '-'
-                }}
-              </span>
-
-            </td>
-
-
-            <td>
-
-              <a
-                class="detail-button"
-                [routerLink]="[
-                  '/payments',
-                  payment.id
-                ]"
-              >
-                Detay
-              </a>
-
-            </td>
-
-          </tr>
-
-
-          <!-- EMPTY -->
-
-          <tr
-            *ngIf="
-              pagedPayments.length === 0
-            "
-          >
-
-            <td
-              colspan="7"
-              class="empty-row"
-            >
-
-              <div class="empty-state">
-
-                <div class="empty-icon">
-                  —
+              <td class="col-wide">
+                <div class="customer-cell">
+                  <strong>{{ policyNumberOf(payment.policyId) | recordNo:'full' }}</strong>
+                  <span class="time-value">{{ customerOf(payment.policyId) }}</span>
                 </div>
+              </td>
 
-                <strong>
-                  Ödeme kaydı bulunamadı
-                </strong>
+              <td class="amount"><strong>{{ payment.amount | number:'1.2-2' }} ₺</strong></td>
 
-                <span>
-                  Arama kriterlerinizi değiştirmeyi deneyin.
-                </span>
+              <td class="col-wide">
+                <div class="date-cell">
+                  <span><span class="status-badge" [ngClass]="getStatusClass(payment.status)">{{ getStatusText(payment.status) }}</span></span>
+                  <span *ngIf="payment.failureReason" class="failure-reason" [title]="payment.failureReason">{{ payment.failureReason }}</span>
+                </div>
+              </td>
 
-              </div>
+              <td>
+                <div class="date-cell">
+                  <span>{{ formatDate(payment.paymentDate || payment.createdDate) }}</span>
+                  <span class="time-value">{{ formatTime(payment.paymentDate || payment.createdDate) }}</span>
+                </div>
+              </td>
 
-            </td>
+              <td>
+                <a class="detail-button" [routerLink]="[portal.basePath + '/payments', payment.id]">Detay</a>
+              </td>
 
-          </tr>
+            </tr>
 
-        </tbody>
+            <tr *ngIf="pagedPayments.length === 0">
+              <td colspan="6" class="empty-row">
+                <div class="empty-state-content">
+                  <strong>Ödeme kaydı bulunamadı</strong>
+                  <span>Arama kriterlerinizi değiştirmeyi deneyin.</span>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
 
       </table>
 
@@ -322,6 +194,7 @@
       class="pagination"
     >
 
+      <button type="button" class="pagination-arrow" title="İlk sayfa" [disabled]="currentPage === 1" (click)="goToPage(1)">«</button>
       <button
         type="button"
         class="pagination-arrow"
@@ -357,6 +230,7 @@
       >
         ›
       </button>
+      <button type="button" class="pagination-arrow" title="Son sayfa" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">»</button>
 
 
       <span class="pagination-info">

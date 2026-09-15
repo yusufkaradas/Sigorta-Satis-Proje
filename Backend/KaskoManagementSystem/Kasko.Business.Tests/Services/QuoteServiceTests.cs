@@ -9,6 +9,7 @@ using Kasko.Entities.Enums;
 using System.Threading;
 using Moq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
 
 namespace Kasko.Business.Tests.Services;
 
@@ -22,6 +23,7 @@ public class QuoteServiceTests
     private readonly Mock<IQuoteCoverageRepository> _quoteCoverageRepositoryMock;
     private readonly Mock<IPackageCoverageRepository> _packageCoverageRepositoryMock;
     private readonly Mock<IGenericRepository<QuotePricingSnapshot>> _quotePricingSnapshotRepositoryMock;
+    private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
 
     private readonly QuoteService _service;
 
@@ -34,8 +36,8 @@ public class QuoteServiceTests
         _pricingServiceMock = new Mock<IPricingService>();
         _quoteCoverageRepositoryMock = new Mock<IQuoteCoverageRepository>();
         _packageCoverageRepositoryMock = new Mock<IPackageCoverageRepository>();
-        _quotePricingSnapshotRepositoryMock =
-    new Mock<IGenericRepository<QuotePricingSnapshot>>();
+        _quotePricingSnapshotRepositoryMock = new Mock<IGenericRepository<QuotePricingSnapshot>>();
+        _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
         _unitOfWorkMock
             .Setup(x => x.Quotes)
@@ -60,7 +62,8 @@ public class QuoteServiceTests
 
         _service = new QuoteService(
         _unitOfWorkMock.Object,
-        _pricingServiceMock.Object);
+        _pricingServiceMock.Object,
+        _httpContextAccessorMock.Object);
     }
     [Fact]
     public async Task CalculateAsync_ShouldIncludeDefaultPackageCoverages()

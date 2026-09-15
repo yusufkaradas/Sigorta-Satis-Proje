@@ -1,6 +1,8 @@
 import {
   ChangeDetectorRef,
   Component,
+  OnDestroy,
+  OnInit,
   inject
 } from '@angular/core';
 
@@ -9,6 +11,7 @@ import {
 } from '@angular/common';
 
 import {
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -18,7 +21,8 @@ import {
   QuickQuotePricingResponse,
   QuickQuoteOfferRequest,
   QuickQuotePaymentRequest,
-  QuickQuotePolicyPdfRequest
+  QuickQuotePolicyPdfRequest,
+  QuickQuotePricingRequest
 } from './quick-quote-start-service';
 
 import {
@@ -26,8 +30,16 @@ import {
 } from '../../vehicles/vehicle.service';
 
 import {
-  QuoteService
-} from '../../quotes/quote.service';
+  QuoteStatus
+} from '../../quotes/quote';
+
+import {
+  PolicyStatus
+} from '../../policies/policy';
+
+import {
+  AuthService
+} from '../../../core/services/authservice';
 
 @Component({
   selector: 'app-quick-quote-start',
@@ -41,7 +53,40 @@ import {
   templateUrl: './quick-quote-start.html',
   styleUrl: './quick-quote-start.scss'
 })
-export class QuickQuoteStart {
+export class QuickQuoteStart implements OnInit, OnDestroy {
+
+  readonly calculationDurationMs = 10000;
+
+  readonly calculationStages = [
+    'Araç bilgileri doğrulanıyor',
+    'TSB kasko değeri alınıyor',
+    'Risk faktörleri değerlendiriliyor',
+    'Teminat primleri hesaplanıyor',
+    'Teklifiniz hazırlanıyor'
+  ];
+
+  calculationProgress = 0;
+
+  private calculationTimer: ReturnType<typeof setInterval> | null = null;
+
+  get calculationStageIndex(): number {
+    return Math.min(
+      this.calculationStages.length - 1,
+      Math.floor(this.calculationProgress / (100 / this.calculationStages.length))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.stopCalculationTimer();
+  }
+
+  private stopCalculationTimer(): void {
+    if (this.calculationTimer) {
+      clearInterval(this.calculationTimer);
+      this.calculationTimer = null;
+    }
+  }
+
 
   private readonly quickQuoteService =
     inject(QuickQuoteService);
@@ -49,8 +94,33 @@ export class QuickQuoteStart {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-  private readonly quoteService =
-    inject(QuoteService);
+  private readonly router =
+    inject(Router);
+
+  private readonly authService =
+    inject(AuthService);
+
+  readonly QuoteStatus = QuoteStatus;
+
+  readonly PolicyStatus = PolicyStatus;
+
+  readonly steps = [
+    { number: 1, label: 'Kimlik Bilgileri' },
+    { number: 2, label: 'Araç Seçimi' },
+    { number: 3, label: 'Risk Bilgileri' },
+    { number: 4, label: 'Paket Seçimi' },
+    { number: 5, label: 'Teminatlar' },
+    { number: 6, label: 'Fiyat Teklifi' },
+    { number: 7, label: 'Teklif Onayı' },
+    { number: 8, label: 'Poliçe' },
+    { number: 9, label: 'Ödeme' },
+    { number: 10, label: 'Tamamlandı' }
+  ];
+
+  readonly companyName = 'Sigorta Satış';
+
+  readonly isLoggedIn =
+    this.authService.isAuthenticated();
 
   currentStep = 1;
 
@@ -61,6 +131,8 @@ export class QuickQuoteStart {
   customerId: string | null = null;
 
   customerName = '';
+
+  customerEmail = '';
 
   vehicles: Vehicle[] = [];
 
@@ -84,7 +156,8 @@ export class QuickQuoteStart {
 
   createdPolicy: any = null;
 
-  pricingResult: QuickQuotePricingResponse | null = null;
+  pricingResult:
+    QuickQuotePricingResponse | null = null;
 
   createdPayment: any = null;
 
@@ -92,20 +165,274 @@ export class QuickQuoteStart {
 
   errorMessage = '';
 
+  ngOnInit(): void {
+
+    this.resumePurchase();
+  }
+
+  private resumePurchase(): void {
+
+    const storedData =
+      sessionStorage.getItem(
+        'quickQuotePurchase'
+      );
+
+    if (!storedData) {
+      return;
+    }
+
+    try {
+
+      const data =
+        JSON.parse(
+          storedData
+        );
+
+      this.identityNumber =
+        data.identityNumber ?? '';
+
+      this.phoneNumber =
+        this.toLocalPhoneNumber(
+          data.phoneNumber ?? ''
+        );
+
+      this.customerId =
+        data.customerId ?? null;
+
+      this.usage =
+        data.usage ?? 'PRIVATE';
+
+      this.claimsCount =
+        data.claimsCount ?? 0;
+
+      this.deductible =
+        data.deductible ?? 10000;
+
+      this.selectedCoverageIds =
+        data.coverageIds ?? [];
+
+      this.pricingResult =
+        data.pricingResult ?? null;
+
+      this.selectedVehicle =
+        data.selectedVehicle ?? null;
+
+      this.selectedPackage =
+        data.selectedPackage ?? null;
+
+      if (
+        !this.pricingResult ||
+        !this.selectedVehicle ||
+        !this.selectedPackage ||
+        !this.customerId
+      ) {
+        sessionStorage.removeItem(
+          'quickQuotePurchase'
+        );
+
+        return;
+      }
+
+      this.createQuoteAfterLogin();
+
+    } catch (error) {
+
+      console.error(
+        'QUICK QUOTE RESUME ERROR:',
+        error
+      );
+
+      sessionStorage.removeItem(
+        'quickQuotePurchase'
+      );
+    }
+  }
+
+  private createQuoteAfterLogin(): void {
+
+    if (
+      this.isLoading ||
+      !this.selectedVehicle ||
+      !this.selectedPackage
+    ) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.errorMessage = '';
+
+    const request:
+      QuickQuotePricingRequest = {
+
+      identityNumber:
+        this.identityNumber,
+
+      phoneNumber:
+        this.normalizedPhoneNumber,
+
+      vehicleId:
+        this.selectedVehicle.id,
+
+      usage:
+        this.usage,
+
+      claimsCount:
+        this.claimsCount,
+
+      packageId:
+        this.selectedPackage.id,
+
+      deductible:
+        this.deductible,
+
+      coverageIds:
+        this.selectedCoverageIds
+    };
+
+    this.quickQuoteService
+      .createQuote(request)
+      .subscribe({
+
+        next: (quote) => {
+
+          this.createdQuote =
+            quote;
+
+          this.createdQuoteId =
+            quote?.id ??
+            quote?.quoteId ??
+            null;
+
+          this.isLoading =
+            false;
+
+          if (
+            !this.createdQuoteId
+          ) {
+
+            this.errorMessage =
+              'Teklif oluşturuldu ancak teklif numarası alınamadı.';
+
+            this.cdr.detectChanges();
+
+            return;
+          }
+
+          sessionStorage.removeItem(
+            'quickQuotePurchase'
+          );
+
+          this.currentStep =
+            7;
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error) => {
+
+          console.error(
+            'QUICK QUOTE → CREATE QUOTE ERROR:',
+            error
+          );
+
+          this.isLoading =
+            false;
+
+          this.errorMessage =
+            error?.error?.message ??
+            'Teklif oluşturulurken bir hata oluştu.';
+
+          this.cdr.detectChanges();
+        }
+
+      });
+  }
+
+  get currentStepLabel(): string {
+
+    return this.steps.find(
+      step => step.number === this.currentStep
+    )?.label ?? '';
+  }
+
+  quoteStatusLabel(
+    status: QuoteStatus
+  ): string {
+
+    switch (status) {
+
+      case QuoteStatus.Draft:
+        return 'Taslak';
+
+      case QuoteStatus.Offered:
+        return 'Sunuldu';
+
+      case QuoteStatus.Accepted:
+        return 'Kabul Edildi';
+
+      case QuoteStatus.Rejected:
+        return 'Reddedildi';
+
+      default:
+        return '-';
+    }
+  }
+
+  policyStatusLabel(
+    status: PolicyStatus
+  ): string {
+
+    switch (status) {
+
+      case PolicyStatus.Draft:
+        return 'Ödeme Bekliyor';
+
+      case PolicyStatus.Active:
+        return 'Aktif';
+
+      case PolicyStatus.Expired:
+        return 'Süresi Doldu';
+
+      case PolicyStatus.Cancelled:
+        return 'İptal Edildi';
+
+      default:
+        return '-';
+    }
+  }
 
   get normalizedPhoneNumber(): string {
 
     const digits =
-      this.phoneNumber
-        .replace(/\D/g, '')
-        .replace(/^0+/, '')
-        .slice(0, 10);
+      this.toLocalPhoneNumber(
+        this.phoneNumber
+      );
 
     return digits.length === 10
       ? `+90${digits}`
       : '';
   }
 
+  private toLocalPhoneNumber(
+    value: string
+  ): string {
+
+    let digits =
+      value.replace(/\D/g, '');
+
+    if (
+      digits.length === 12 &&
+      digits.startsWith('90')
+    ) {
+      digits =
+        digits.slice(2);
+    }
+
+    return digits
+      .replace(/^0+/, '')
+      .slice(0, 10);
+  }
 
   onPhoneInput(event: Event): void {
 
@@ -122,7 +449,6 @@ export class QuickQuoteStart {
       this.phoneNumber;
   }
 
-
   onIdentityInput(event: Event): void {
 
     const input =
@@ -136,7 +462,6 @@ export class QuickQuoteStart {
     input.value =
       this.identityNumber;
   }
-
 
   onNumericKeydown(
     event: KeyboardEvent
@@ -167,22 +492,20 @@ export class QuickQuoteStart {
     }
   }
 
-
   canContinue(): boolean {
 
-  const identityValid =
-    this.identityNumber.length === 11 &&
-    this.identityNumber.charAt(0) !== '0';
+    const identityValid =
+      this.identityNumber.length === 11 &&
+      this.identityNumber.charAt(0) !== '0';
 
-  const phoneValid =
-    this.phoneNumber.length === 10;
+    const phoneValid =
+      this.phoneNumber.length === 10;
 
-  return (
-    identityValid &&
-    phoneValid
-  );
-}
-
+    return (
+      identityValid &&
+      phoneValid
+    );
+  }
 
   onContinue(): void {
 
@@ -195,6 +518,7 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     const request = {
@@ -207,21 +531,11 @@ export class QuickQuoteStart {
 
     };
 
-    console.log(
-      'QUICK QUOTE CUSTOMER LOOKUP REQUEST:',
-      request
-    );
-
     this.quickQuoteService
       .lookupCustomer(request)
       .subscribe({
 
         next: (response) => {
-
-          console.log(
-            'QUICK QUOTE CUSTOMER LOOKUP RESPONSE:',
-            response
-          );
 
           this.isLoading = false;
 
@@ -232,6 +546,9 @@ export class QuickQuoteStart {
 
             this.customerName =
               `${response.firstName ?? ''} ${response.lastName ?? ''}`.trim();
+
+            this.customerEmail =
+              response.email ?? '';
 
             this.loadCustomerVehicles();
 
@@ -245,11 +562,6 @@ export class QuickQuoteStart {
 
         error: (error) => {
 
-          console.error(
-            'QUICK QUOTE CUSTOMER LOOKUP ERROR:',
-            error
-          );
-
           this.isLoading = false;
 
           this.errorMessage =
@@ -260,9 +572,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   private loadCustomerVehicles(): void {
 
@@ -276,60 +586,59 @@ export class QuickQuoteStart {
 
     };
 
-    console.log(
-      'QUICK QUOTE VEHICLES REQUEST:',
-      request
-    );
-
     this.quickQuoteService
       .getCustomerVehicles(request)
       .subscribe({
 
         next: (vehicles) => {
 
-          console.log(
-            'QUICK QUOTE CUSTOMER VEHICLES:',
-            vehicles
-          );
-
           this.vehicles =
             vehicles;
 
-          this.selectedVehicle =
-            null;
-
-          this.isLoading = false;
+          this.isLoading =
+            false;
 
           if (
             this.vehicles.length === 0
           ) {
 
+            this.selectedVehicle =
+              null;
+
             this.errorMessage =
               'Bu müşteriye ait aktif araç bulunamadı.';
+
+            this.currentStep =
+              2;
 
             this.cdr.detectChanges();
 
             return;
           }
 
-          this.currentStep = 2;
+          if (
+            this.vehicles.length === 1
+          ) {
 
-          console.log(
-            'QUICK QUOTE → CURRENT STEP:',
-            this.currentStep
-          );
+            this.selectedVehicle =
+              this.vehicles[0];
+
+          } else {
+
+            this.selectedVehicle =
+              null;
+          }
+
+          this.currentStep =
+            2;
 
           this.cdr.detectChanges();
         },
 
         error: (error) => {
 
-          console.error(
-            'QUICK QUOTE VEHICLES ERROR:',
-            error
-          );
-
-          this.isLoading = false;
+          this.isLoading =
+            false;
 
           this.errorMessage =
             error?.error?.message ??
@@ -339,9 +648,76 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
 
+  fuelTypeLabel(
+    value: number | null | undefined
+  ): string {
+
+    switch (value) {
+
+      case 1:
+        return 'Benzin';
+
+      case 2:
+        return 'Dizel';
+
+      case 3:
+        return 'Hibrit';
+
+      case 4:
+        return 'Elektrik';
+
+      default:
+        return 'Belirtilmemiş';
+    }
+  }
+
+  transmissionTypeLabel(
+    value: number | null | undefined
+  ): string {
+
+    switch (value) {
+
+      case 1:
+        return 'Manuel';
+
+      case 2:
+        return 'Otomatik';
+
+      default:
+        return 'Belirtilmemiş';
+    }
+  }
+
+  maskVehicleNumber(
+    value: string | null | undefined
+  ): string {
+
+    if (!value) {
+      return 'Belirtilmemiş';
+    }
+
+    const normalized =
+      value.trim();
+
+    if (normalized.length <= 2) {
+      return normalized;
+    }
+
+    return (
+      normalized.charAt(0) +
+      '*'.repeat(
+        Math.max(
+          normalized.length - 2,
+          1
+        )
+      ) +
+      normalized.charAt(
+        normalized.length - 1
+      )
+    );
+  }
 
   selectVehicle(
     vehicle: Vehicle
@@ -349,70 +725,39 @@ export class QuickQuoteStart {
 
     this.selectedVehicle =
       vehicle;
-
-    console.log(
-      'QUICK QUOTE VEHICLE SELECTED:',
-      vehicle
-    );
   }
-
 
   continueWithVehicle(): void {
 
-    if (this.isLoading) {
+    if (
+      this.isLoading ||
+      !this.selectedVehicle
+    ) {
       return;
     }
 
-    if (!this.selectedVehicle) {
-      return;
-    }
-
-    this.currentStep = 3;
-
-    console.log(
-      'QUICK QUOTE → CURRENT STEP:',
-      this.currentStep
-    );
+    this.currentStep =
+      3;
   }
-
 
   loadPackages(): void {
 
-    if (this.isLoading) {
-      return;
-    }
-
-    if (!this.selectedVehicle) {
+    if (
+      this.isLoading ||
+      !this.selectedVehicle
+    ) {
       return;
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
-
-    console.log(
-      'QUICK QUOTE RISK:',
-      {
-        usage:
-          this.usage,
-
-        claimsCount:
-          this.claimsCount,
-
-        deductible:
-          this.deductible
-      }
-    );
 
     this.quickQuoteService
       .getPackages()
       .subscribe({
 
         next: (packages) => {
-
-          console.log(
-            'QUICK QUOTE PACKAGES:',
-            packages
-          );
 
           this.packages =
             packages;
@@ -423,7 +768,8 @@ export class QuickQuoteStart {
           this.selectedCoverageIds =
             [];
 
-          this.isLoading = false;
+          this.isLoading =
+            false;
 
           if (
             this.packages.length === 0
@@ -437,19 +783,16 @@ export class QuickQuoteStart {
             return;
           }
 
-          this.currentStep = 4;
+          this.currentStep =
+            4;
 
           this.cdr.detectChanges();
         },
 
         error: (error) => {
 
-          console.error(
-            'QUICK QUOTE PACKAGES ERROR:',
-            error
-          );
-
-          this.isLoading = false;
+          this.isLoading =
+            false;
 
           this.errorMessage =
             error?.error?.message ??
@@ -459,9 +802,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   selectPackage(
     packageItem: QuickQuotePackage
@@ -472,21 +813,14 @@ export class QuickQuoteStart {
 
     this.selectedCoverageIds =
       [];
-
-    console.log(
-      'QUICK QUOTE PACKAGE SELECTED:',
-      packageItem
-    );
   }
-
 
   continueWithPackage(): void {
 
-    if (this.isLoading) {
-      return;
-    }
-
-    if (!this.selectedPackage) {
+    if (
+      this.isLoading ||
+      !this.selectedPackage
+    ) {
       return;
     }
 
@@ -501,19 +835,9 @@ export class QuickQuoteStart {
             coverage.coverageId
         );
 
-    console.log(
-      'QUICK QUOTE DEFAULT COVERAGES:',
-      this.selectedCoverageIds
-    );
-
-    this.currentStep = 5;
-
-    console.log(
-      'QUICK QUOTE → CURRENT STEP:',
-      this.currentStep
-    );
+    this.currentStep =
+      5;
   }
-
 
   toggleCoverage(
     coverageId: string
@@ -540,7 +864,6 @@ export class QuickQuoteStart {
     ];
   }
 
-
   isCoverageSelected(
     coverageId: string
   ): boolean {
@@ -549,14 +872,10 @@ export class QuickQuoteStart {
       .includes(coverageId);
   }
 
-
   continueFromCoverage(): void {
 
-    if (this.isLoading) {
-      return;
-    }
-
     if (
+      this.isLoading ||
       !this.selectedVehicle ||
       !this.selectedPackage ||
       this.selectedCoverageIds.length === 0
@@ -565,7 +884,42 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
+
+    this.pricingResult = null;
+
+    this.currentStep = 6;
+
+    this.calculationProgress = 0;
+
+    this.stopCalculationTimer();
+
+    const startedAt = Date.now();
+
+    let pendingResult: QuickQuotePricingResponse | null = null;
+
+    this.calculationTimer = setInterval(() => {
+
+      const elapsed = Date.now() - startedAt;
+
+      const target = Math.min(100, (elapsed / this.calculationDurationMs) * 100);
+
+      this.calculationProgress = Math.round(pendingResult ? target : Math.min(target, 95));
+
+      if (pendingResult && elapsed >= this.calculationDurationMs) {
+
+        this.stopCalculationTimer();
+
+        this.calculationProgress = 100;
+
+        this.pricingResult = pendingResult;
+
+        this.isLoading = false;
+      }
+
+      this.cdr.detectChanges();
+    }, 100);
 
     const request = {
 
@@ -592,13 +946,7 @@ export class QuickQuoteStart {
 
       coverageIds:
         this.selectedCoverageIds
-
     };
-
-    console.log(
-      'QUICK QUOTE PRICING REQUEST:',
-      request
-    );
 
     this.quickQuoteService
       .calculatePricing(request)
@@ -609,34 +957,21 @@ export class QuickQuoteStart {
             QuickQuotePricingResponse
         ) => {
 
-          console.log(
-            'QUICK QUOTE PRICING RESPONSE:',
-            result
-          );
-
-          this.pricingResult =
+          pendingResult =
             result;
 
-          this.isLoading = false;
-
-          this.currentStep = 6;
-
-          console.log(
-            'QUICK QUOTE → CURRENT STEP:',
-            this.currentStep
-          );
-
-          this.cdr.detectChanges();
+          this.errorMessage = '';
         },
 
         error: (error) => {
 
-          console.error(
-            'QUICK QUOTE PRICING ERROR:',
-            error
-          );
+          this.stopCalculationTimer();
 
-          this.isLoading = false;
+          this.isLoading =
+            false;
+
+          this.currentStep =
+            5;
 
           this.errorMessage =
             error?.error?.message ??
@@ -646,47 +981,28 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
 
+  purchaseQuote(): void {
 
-  createQuote(): void {
-
-    if (this.isLoading) {
+    if (
+      !this.pricingResult ||
+      !this.selectedVehicle ||
+      !this.selectedPackage
+    ) {
       return;
     }
 
-    if (!this.selectedVehicle) {
-      this.errorMessage =
-        'Araç seçimi bulunamadı.';
-
-      return;
-    }
-
-    if (!this.pricingResult) {
-      this.errorMessage =
-        'Önce fiyat hesaplanmalıdır.';
-
-      return;
-    }
-
-    if (!this.customerId) {
-      this.errorMessage =
-        'Müşteri bilgisi bulunamadı.';
-
-      return;
-    }
-
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    const request = {
+    const quickQuoteData = {
 
       identityNumber:
         this.identityNumber,
 
       phoneNumber:
         this.normalizedPhoneNumber,
+
+      customerId:
+        this.customerId,
 
       vehicleId:
         this.selectedVehicle.id,
@@ -697,75 +1013,42 @@ export class QuickQuoteStart {
       claimsCount:
         this.claimsCount,
 
-      packageId:
-        this.selectedPackage?.id ??
-        null,
-
       deductible:
         this.deductible,
 
-      coverageIds:
-        this.selectedCoverageIds
+      packageId:
+        this.selectedPackage.id,
 
+      coverageIds:
+        this.selectedCoverageIds,
+
+      pricingResult:
+        this.pricingResult,
+
+      selectedVehicle:
+        this.selectedVehicle,
+
+      selectedPackage:
+        this.selectedPackage
     };
 
-    console.log(
-      'QUICK QUOTE → CREATE QUOTE REQUEST:',
-      request
+    sessionStorage.setItem(
+      'quickQuotePurchase',
+      JSON.stringify(
+        quickQuoteData
+      )
     );
 
-    this.quickQuoteService
-      .createQuote(request)
-      .subscribe({
-
-        next: (result) => {
-
-          console.log(
-            'QUICK QUOTE → QUOTE CREATED:',
-            result
-          );
-
-          this.createdQuote =
-            result;
-
-          this.createdQuoteId =
-            result?.id ??
-            null;
-
-          this.isLoading = false;
-
-          this.errorMessage = '';
-
-          console.log(
-            'QUOTE STATUS:',
-            result?.status
-          );
-
-          this.currentStep = 7;
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-
-          console.error(
-            'QUICK QUOTE → CREATE QUOTE ERROR:',
-            error
-          );
-
-          this.isLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Teklif oluşturulurken bir hata oluştu.';
-
-          this.cdr.detectChanges();
+    this.router.navigate(
+      ['/login'],
+      {
+        queryParams: {
+          email:
+            this.customerEmail
         }
-
-      });
-
+      }
+    );
   }
-
 
   goToStep(
     step: number
@@ -779,7 +1062,6 @@ export class QuickQuoteStart {
       step;
   }
 
-
   offerQuote(): void {
 
     if (
@@ -790,6 +1072,7 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     const request:
@@ -803,7 +1086,6 @@ export class QuickQuoteStart {
 
       phoneNumber:
         this.normalizedPhoneNumber
-
     };
 
     this.quickQuoteService
@@ -817,18 +1099,13 @@ export class QuickQuoteStart {
           if (this.createdQuote) {
 
             this.createdQuote.status =
-              2;
+              QuoteStatus.Offered;
           }
 
           this.cdr.detectChanges();
         },
 
         error: (error) => {
-
-          console.error(
-            'QUICK QUOTE → OFFER QUOTE ERROR:',
-            error
-          );
 
           this.isLoading = false;
 
@@ -840,9 +1117,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   acceptQuote(): void {
 
@@ -854,9 +1129,11 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
-    const request = {
+    const request:
+      QuickQuoteOfferRequest = {
 
       quoteId:
         this.createdQuoteId,
@@ -866,7 +1143,6 @@ export class QuickQuoteStart {
 
       phoneNumber:
         this.normalizedPhoneNumber
-
     };
 
     this.quickQuoteService
@@ -878,8 +1154,9 @@ export class QuickQuoteStart {
           this.isLoading = false;
 
           if (this.createdQuote) {
+
             this.createdQuote.status =
-              3;
+              QuoteStatus.Accepted;
           }
 
           this.createPolicy();
@@ -888,11 +1165,6 @@ export class QuickQuoteStart {
         },
 
         error: (error) => {
-
-          console.error(
-            'QUICK QUOTE → ACCEPT QUOTE ERROR:',
-            error
-          );
 
           this.isLoading = false;
 
@@ -904,9 +1176,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   createPolicy(): void {
 
@@ -919,6 +1189,7 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     const request = {
@@ -934,7 +1205,6 @@ export class QuickQuoteStart {
 
       vehicleId:
         this.selectedVehicle.id
-
     };
 
     this.quickQuoteService
@@ -951,20 +1221,10 @@ export class QuickQuoteStart {
           this.currentStep =
             8;
 
-          console.log(
-            'QUICK QUOTE → POLICY CREATED:',
-            policy
-          );
-
           this.cdr.detectChanges();
         },
 
         error: (error) => {
-
-          console.error(
-            'QUICK QUOTE → CREATE POLICY ERROR:',
-            error
-          );
 
           this.isLoading = false;
 
@@ -976,9 +1236,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   goToPayment(): void {
 
@@ -992,7 +1250,6 @@ export class QuickQuoteStart {
     this.cdr.detectChanges();
   }
 
-
   payPolicy(): void {
 
     if (
@@ -1003,6 +1260,7 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     const request:
@@ -1019,7 +1277,6 @@ export class QuickQuoteStart {
 
       simulateFailure:
         false
-
     };
 
     this.quickQuoteService
@@ -1037,26 +1294,16 @@ export class QuickQuoteStart {
           if (this.createdPolicy) {
 
             this.createdPolicy.status =
-              2;
+              PolicyStatus.Active;
           }
 
           this.currentStep =
             10;
 
-          console.log(
-            'QUICK QUOTE → PAYMENT SUCCESS:',
-            payment
-          );
-
           this.cdr.detectChanges();
         },
 
         error: (error) => {
-
-          console.error(
-            'QUICK QUOTE → PAYMENT ERROR:',
-            error
-          );
 
           this.isLoading =
             false;
@@ -1069,9 +1316,7 @@ export class QuickQuoteStart {
         }
 
       });
-
   }
-
 
   createPolicyPdf(): void {
 
@@ -1083,6 +1328,7 @@ export class QuickQuoteStart {
     }
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     const request:
@@ -1096,7 +1342,6 @@ export class QuickQuoteStart {
 
       policyId:
         this.createdPolicy.id
-
     };
 
     this.quickQuoteService
@@ -1114,9 +1359,7 @@ export class QuickQuoteStart {
             );
 
           const link =
-            document.createElement(
-              'a'
-            );
+            document.createElement('a');
 
           link.href = url;
 
@@ -1134,22 +1377,15 @@ export class QuickQuoteStart {
 
         error: (error) => {
 
-          console.error(
-            'QUICK QUOTE → PDF ERROR:',
-            error
-          );
-
           this.isLoading =
             false;
 
           this.errorMessage =
-            'PDF oluşturulurken bir hata oluştu.';
+            'PDF oluşturulurken hata oluştu.';
 
           this.cdr.detectChanges();
         }
 
       });
-
   }
-
 }

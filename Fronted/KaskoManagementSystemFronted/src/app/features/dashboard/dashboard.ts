@@ -1,604 +1,436 @@
 import {
-  ChangeDetectorRef,
   Component,
-  inject
+  OnInit,
+  computed,
+  inject,
+  signal
 } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 
 import { RouterLink } from '@angular/router';
 
 import {
   DashboardData,
-  DashboardService,
-  RecentActivity,
+  DashboardService
 } from './dashboard.service';
+
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
+type BadgeTone = 'success' | 'warning' | 'info' | 'danger' | 'neutral';
+
+interface ActivityRow {
+  type: string;
+  record: string;
+  detail: string;
+  amount: number | null;
+  status: string;
+  tone: BadgeTone;
+  date: Date;
+  link: string[];
+}
+
+interface FunnelStep {
+  label: string;
+  count: number;
+  percent: number;
+}
+
+interface DeadlineRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  daysLeft: number;
+  link: string[];
+}
+
+interface ApprovalRow {
+  label: string;
+  hint: string;
+  count: number;
+  tone: BadgeTone;
+  link: string;
+}
+
+interface DayBar {
+  label: string;
+  quotes: number;
+  policies: number;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
 
-  private readonly dashboardService = inject(DashboardService);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly dashboardService =
+    inject(DashboardService);
 
-  dashboardData: DashboardData | null = null;
-  recentActivities: RecentActivity[] = [];
+  readonly portal =
+    injectPortalContext();
 
-  isLoading = true;
-  errorMessage = '';
+  data = signal<DashboardData | null>(null);
 
-  ngOnInit(): void {
-    this.loadDashboard();
-  }
+  isLoading = signal(true);
 
- private loadDashboard(): void {
-  this.isLoading = true;
-  this.errorMessage = '';
+  errorMessage = signal('');
 
-  this.dashboardService.getDashboardData().subscribe({
-    next: (data) => {
-      console.log('DASHBOARD RESPONSE:', data);
+  private readonly today =
+    this.startOfDay(new Date());
 
-      console.log(
-        'customers:',
-        data.customers,
-        'count:',
-        data.customers?.length
-      );
+  monthlyCollection = computed(() => {
 
-      console.log(
-        'vehicles:',
-        data.vehicles,
-        'count:',
-        data.vehicles?.length
-      );
+    const payments =
+      this.successfulPayments();
 
-      console.log(
-        'quotes:',
-        data.quotes,
-        'count:',
-        data.quotes?.length
-      );
+    const now = new Date();
 
-      console.log(
-        'policies:',
-        data.policies,
-        'count:',
-        data.policies?.length
-      );
+    const thisMonth = payments.filter(payment =>
+      this.isSameMonth(this.paymentDate(payment), now)
+    );
 
-      console.log(
-        'payments:',
-        data.payments,
-        'count:',
-        data.payments?.length
-      );
+    const lastMonthDate =
+      new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    this.dashboardData = data;
+    const lastMonth = payments.filter(payment =>
+      this.isSameMonth(this.paymentDate(payment), lastMonthDate)
+    );
 
-try {
-  this.buildRecentActivities();
-} catch (error) {
-  console.error(
-    'BUILD RECENT ACTIVITIES HATASI:',
-    error
+    return {
+      amount: this.sum(thisMonth.map(payment => payment.amount)),
+      count: thisMonth.length,
+      lastMonthAmount: this.sum(lastMonth.map(payment => payment.amount))
+    };
+  });
+
+  activePolicies = computed(() => {
+
+    const active =
+      (this.data()?.policies ?? []).filter(policy => policy.status === 2);
+
+    return {
+      count: active.length,
+      premium: this.sum(active.map(policy => policy.premiumAmount))
+    };
+  });
+
+  openQuotes = computed(() => {
+
+    const quotes =
+      this.data()?.quotes ?? [];
+
+    const accepted =
+      quotes.filter(quote => quote.status === 3).length;
+
+    return {
+      count: quotes.filter(quote => quote.status === 1 || quote.status === 2).length,
+      conversion: this.percent(accepted, quotes.length)
+    };
+  });
+
+  customerSummary = computed(() => {
+
+    const customers =
+      this.data()?.customers ?? [];
+
+    const insuredIds = new Set(
+      (this.data()?.policies ?? [])
+        .filter(policy => policy.status === 2)
+        .map(policy => policy.customerId)
+    );
+
+    return {
+      count: customers.length,
+      vehicles: this.data()?.vehicles.length ?? 0,
+      insured: customers.filter(customer => insuredIds.has(customer.id)).length
+    };
+  });
+
+  funnel = computed<FunnelStep[]>(() => {
+
+    const data = this.data();
+
+    const quotes = data?.quotes ?? [];
+
+    const offered =
+      quotes.filter(quote => quote.status !== 1).length;
+
+    const accepted =
+      quotes.filter(quote => quote.status === 3).length;
+
+    const policies =
+      data?.policies.length ?? 0;
+
+    const paidPolicyIds = new Set(
+      this.successfulPayments().map(payment => payment.policyId)
+    );
+
+    const paid =
+      (data?.policies ?? []).filter(policy => paidPolicyIds.has(policy.id)).length;
+
+    const base = quotes.length;
+
+    return [
+      { label: 'Oluşturulan Teklif', count: base, percent: base ? 100 : 0 },
+      { label: 'Müşteriye Sunulan', count: offered, percent: this.percent(offered, base) },
+      { label: 'Kabul Edilen', count: accepted, percent: this.percent(accepted, base) },
+      { label: 'Poliçeye Dönen', count: policies, percent: this.percent(policies, base) },
+      { label: 'Ödemesi Alınan', count: paid, percent: this.percent(paid, base) }
+    ];
+  });
+
+  expiringQuotes = computed<DeadlineRow[]>(() =>
+    (this.data()?.quotes ?? [])
+      .filter(quote => quote.status === 1 || quote.status === 2)
+      .map(quote => ({
+        quote,
+        daysLeft: this.daysUntil(quote.validUntil)
+      }))
+      .filter(item => item.daysLeft >= 0 && item.daysLeft <= 3)
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 5)
+      .map(({ quote, daysLeft }) => ({
+        id: quote.id,
+        title: quote.quoteNumber ?? 'Teklif',
+        subtitle: quote.customerName || quote.plateNumber || '—',
+        daysLeft,
+        link: [this.portal.basePath + '/quotes', quote.id]
+      }))
   );
 
-  this.recentActivities = [];
-}
+  upcomingRenewals = computed<DeadlineRow[]>(() =>
+    (this.data()?.policies ?? [])
+      .filter(policy => policy.status === 2)
+      .map(policy => ({
+        policy,
+        daysLeft: this.daysUntil(policy.endDate)
+      }))
+      .filter(item => item.daysLeft >= 0 && item.daysLeft <= 30)
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 5)
+      .map(({ policy, daysLeft }) => ({
+        id: policy.id,
+        title: policy.policyNumber ?? 'Poliçe',
+        subtitle: policy.customerName || `${policy.brand ?? ''} ${policy.model ?? ''}`.trim() || '—',
+        daysLeft,
+        link: [this.portal.basePath + '/policies', policy.id]
+      }))
+  );
 
-this.isLoading = false;
+  approvals = computed<ApprovalRow[]>(() => {
 
-this.cdr.detectChanges();
+    const data = this.data();
 
-      
-      this.cdr.detectChanges();
+    const pendingRequests =
+      (data?.pricingRequests ?? []).filter(request => request.status === 'Pending').length;
 
-      console.log('customerCount:', this.customerCount);
-      console.log('vehicleCount:', this.vehicleCount);
-      console.log('quoteCount:', this.quoteCount);
-      console.log('activePolicyCount:', this.activePolicyCount);
-    },
-
-    error: (error) => {
-      console.error(
-        'DASHBOARD API HATASI:',
-        error
-      );
-
-      console.error(
-        'STATUS:',
-        error?.status
-      );
-
-      console.error(
-        'URL:',
-        error?.url
-      );
-
-      console.error(
-        'BODY:',
-        error?.error
-      );
-
-      this.errorMessage =
-        'Dashboard verileri yüklenirken bir hata oluştu.';
-
-      this.isLoading = false;
-
-      this.cdr.detectChanges();
-    }
+    return [
+      {
+        label: 'Fiyat Değişiklik Talebi',
+        hint: this.portal.isManager ? 'Admin onayı bekliyor' : 'Onayınızı bekliyor',
+        count: pendingRequests,
+        tone: pendingRequests > 0 ? 'warning' : 'neutral',
+        link: this.portal.basePath + '/pricing-requests'
+      },
+      {
+        label: 'Ödeme Bekleyen Poliçe',
+        hint: 'Tahsilat yapılmadı',
+        count: (data?.policies ?? []).filter(policy => policy.status === 1).length,
+        tone: 'info',
+        link: this.portal.basePath + '/policies'
+      },
+      {
+        label: 'Başarısız Ödeme',
+        hint: 'Müşteriyle iletişime geçin',
+        count: (data?.payments ?? []).filter(payment => payment.status === 4).length,
+        tone: 'danger',
+        link: this.portal.basePath + '/payments'
+      }
+    ];
   });
-}
 
-  private buildRecentActivities(): void {
+  recentActivities = computed<ActivityRow[]>(() => {
 
-    if (!this.dashboardData) {
-      this.recentActivities = [];
-      return;
+    const data = this.data();
+
+    if (!data) {
+      return [];
     }
 
-    const activities: RecentActivity[] = [];
+    const base = this.portal.basePath;
 
- for (const quote of this.dashboardData.quotes ?? []) {
+    const rows: ActivityRow[] = [
+      ...data.quotes.map(quote => ({
+        type: 'Teklif',
+        record: quote.quoteNumber ?? '—',
+        detail: quote.customerName || quote.plateNumber || '—',
+        amount: quote.premiumAmount,
+        status: this.quoteStatusText(quote.status),
+        tone: this.quoteTone(quote.status),
+        date: new Date(quote.createdDate),
+        link: [base + '/quotes', quote.id]
+      })),
+      ...data.policies.map(policy => ({
+        type: 'Poliçe',
+        record: policy.policyNumber ?? '—',
+        detail: policy.customerName || '—',
+        amount: policy.premiumAmount,
+        status: this.policyStatusText(policy.status),
+        tone: this.policyTone(policy.status),
+        date: new Date(policy.createdDate),
+        link: [base + '/policies', policy.id]
+      })),
+      ...data.payments.map(payment => ({
+        type: 'Ödeme',
+        record: payment.transactionNumber ?? '—',
+        detail: this.policyNumberOf(payment.policyId),
+        amount: payment.amount,
+        status: this.paymentStatusText(payment.status),
+        tone: this.paymentTone(payment.status),
+        date: this.paymentDate(payment),
+        link: [base + '/payments', payment.id]
+      })),
+      ...data.vehicles.map(vehicle => ({
+        type: 'Araç',
+        record: vehicle.plateNumber ?? '—',
+        detail: vehicle.customerName || `${vehicle.brand ?? ''} ${vehicle.model ?? ''}`.trim() || '—',
+        amount: vehicle.marketValue ?? null,
+        status: 'Kayıt Edildi',
+        tone: 'neutral' as BadgeTone,
+        date: new Date(vehicle.createdDate),
+        link: [base + '/vehicles', vehicle.id]
+      }))
+    ];
 
-  try {
-
-    const rawDate = quote.createdDate;
-    const formatted = this.formatDate(rawDate);
-
-    activities.push({
-      type: 'Teklif',
-      record: quote.quoteNumber ?? quote.id,
-      status: this.getQuoteStatusText(quote.status),
-      date: formatted.date,
-      time: formatted.time,
-      dateValue: this.getDateValue(rawDate)
-    });
-
-  } catch (error) {
-
-    console.error(
-      'Teklif activity oluşturulamadı:',
-      quote,
-      error
-    );
-  }
-}
-
-    for (const policy of this.dashboardData.policies ?? []) {
-
-      try {
-
-        const rawDate = policy.createdDate;
-        const formatted = this.formatDate(rawDate);
-
-        activities.push({
-          type: 'Poliçe',
-          record: policy.policyNumber ?? policy.id,
-          status: this.getPolicyStatusText(policy.status),
-          date: formatted.date,
-          time: formatted.time,
-          dateValue: this.getDateValue(rawDate)
-        });
-
-      } catch (error) {
-
-        console.error(
-          'Poliçe activity oluşturulamadı:',
-          policy,
-          error
-        );
-      }
-    }
-
-    for (const payment of this.dashboardData.payments ?? []) {
-
-      try {
-
-        const rawDate =
-          payment.paymentDate ??
-          payment.createdDate;
-
-        const formatted = this.formatDate(rawDate);
-        activities.push({
-          type: 'Ödeme',
-          record: payment.transactionNumber ?? payment.id,
-          status: this.getPaymentStatusText(payment.status),
-         date: formatted.date,
-         time: formatted.time,
-         dateValue: this.getDateValue(rawDate)
-        });
-
-      } catch (error) {
-
-        console.error(
-          'Ödeme activity oluşturulamadı:',
-          payment,
-          error
-        );
-      }
-    }
-
-    for (const vehicle of this.dashboardData.vehicles ?? []) {
-
-      try {
-
-        const rawDate = vehicle.createdDate;
-        const formatted = this.formatDate(rawDate);
-
-
-        activities.push({
-          type: 'Araç',
-          record: vehicle.plateNumber ?? vehicle.id,
-          status: 'Eklendi',
-          date: formatted.date,
-          time: formatted.time,
-          dateValue: this.getDateValue(rawDate)
-        });
-
-      } catch (error) {
-
-        console.error(
-          'Araç activity oluşturulamadı:',
-          vehicle,
-          error
-        );
-      }
-    }
-
-    this.recentActivities = activities
-      .filter(activity => activity.dateValue > 0)
-      .sort(
-        (a, b) =>
-          b.dateValue - a.dateValue
-      )
+    return rows
+      .filter(row => !Number.isNaN(row.date.getTime()))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5);
+  });
 
-    console.log(
-      'RECENT ACTIVITIES:',
-      this.recentActivities
-    );
+  lastSevenDays = computed<DayBar[]>(() => {
+
+    const data = this.data();
+
+    const formatter =
+      new Intl.DateTimeFormat('tr-TR', { weekday: 'short' });
+
+    return Array.from({ length: 7 }, (_, index) => {
+
+      const day =
+        new Date(this.today.getTime() - (6 - index) * DAY_MS);
+
+      const sameDay = (value: string) =>
+        this.startOfDay(new Date(value)).getTime() === day.getTime();
+
+      return {
+        label: index === 6 ? 'Bugün' : formatter.format(day),
+        quotes: (data?.quotes ?? []).filter(quote => sameDay(quote.createdDate)).length,
+        policies: (data?.policies ?? []).filter(policy => sameDay(policy.createdDate)).length
+      };
+    });
+  });
+
+  weekMax = computed(() =>
+    Math.max(
+      1,
+      ...this.lastSevenDays().map(day => Math.max(day.quotes, day.policies))
+    )
+  );
+
+  weekTotals = computed(() => ({
+    quotes: this.sum(this.lastSevenDays().map(day => day.quotes)),
+    policies: this.sum(this.lastSevenDays().map(day => day.policies))
+  }));
+
+  ngOnInit(): void {
+
+    this.dashboardService
+      .getDashboardData()
+      .subscribe({
+        next: data => {
+          this.data.set(data);
+          this.isLoading.set(false);
+        },
+        error: error => {
+          console.error('DASHBOARD API HATASI:', error);
+          this.errorMessage.set('Dashboard verileri yüklenirken bir hata oluştu.');
+          this.isLoading.set(false);
+        }
+      });
   }
 
-  private getDateValue(
-    date?: string | null
-  ): number {
-
-    if (!date) {
-      return 0;
-    }
-
-    const value =
-      new Date(date).getTime();
-
-    if (Number.isNaN(value)) {
-      return 0;
-    }
-
-    return value;
+  barHeight(value: number): number {
+    return Math.round((value / this.weekMax()) * 100);
   }
 
-  private formatDate(
-  date?: string | null
-): { date: string; time: string } {
-
-  if (!date) {
-    return {
-      date: '-',
-      time: '-'
-    };
+  daysLabel(days: number): string {
+    return days === 0 ? 'Bugün' : `${days} gün`;
   }
 
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return {
-      date: '-',
-      time: '-'
-    };
+  private successfulPayments() {
+    return (this.data()?.payments ?? []).filter(payment => payment.status === 3);
   }
 
-  const datePart = new Intl.DateTimeFormat('tr-TR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  }).format(parsedDate);
-
-  const timePart = new Intl.DateTimeFormat('tr-TR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(parsedDate);
-
-  return {
-    date: datePart,
-    time: timePart
-  };
-}
-  private getQuoteStatusText(
-    status: number
-  ): string {
-
-    switch (status) {
-
-      case 1:
-        return 'Taslak';
-
-      case 2:
-        return 'Teklif Verildi';
-
-      case 3:
-        return 'Kabul Edildi';
-
-      case 4:
-        return 'Reddedildi';
-
-      case 5:
-        return 'Süresi Doldu';
-
-      case 6:
-        return 'İptal Edildi';
-
-      default:
-        return 'Bilinmiyor';
-    }
+  private policyNumberOf(policyId?: string): string {
+    return this.data()?.policies.find(policy => policy.id === policyId)?.policyNumber ?? '—';
   }
 
-  private getPolicyStatusText(
-    status: number
-  ): string {
-
-    switch (status) {
-
-      case 1:
-        return 'Taslak';
-
-      case 2:
-        return 'Aktif';
-
-      case 3:
-        return 'Süresi Doldu';
-
-      case 4:
-        return 'İptal Edildi';
-
-      default:
-        return 'Bilinmiyor';
-    }
+  private paymentDate(payment: { paymentDate?: string | null; createdDate: string }): Date {
+    return new Date(payment.paymentDate ?? payment.createdDate);
   }
 
-  private getPaymentStatusText(
-    status: number
-  ): string {
-
-    switch (status) {
-
-      case 1:
-        return 'Bekliyor';
-
-      case 2:
-        return 'İşleniyor';
-
-      case 3:
-        return 'Başarılı';
-
-      case 4:
-        return 'Başarısız';
-
-      case 5:
-        return 'İptal Edildi';
-
-      case 6:
-        return 'İade Edildi';
-
-      default:
-        return 'Bilinmiyor';
-    }
-  }
-
-  private percentage(
-    value: number,
-    total: number
-  ): number {
-
-    if (total === 0) {
-      return 0;
-    }
-
+  private daysUntil(value: string): number {
     return Math.round(
-      (value / total) * 100
+      (this.startOfDay(new Date(value)).getTime() - this.today.getTime()) / DAY_MS
     );
   }
 
-  get customerCount(): number {
-    return this.dashboardData
-      ?.customers.length ?? 0;
+  private startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  get vehicleCount(): number {
-    return this.dashboardData
-      ?.vehicles.length ?? 0;
+  private isSameMonth(date: Date, reference: Date): boolean {
+    return date.getFullYear() === reference.getFullYear() &&
+      date.getMonth() === reference.getMonth();
   }
 
-  get quoteCount(): number {
-    return this.dashboardData
-      ?.quotes.length ?? 0;
+  private sum(values: number[]): number {
+    return values.reduce((total, value) => total + (value || 0), 0);
   }
 
-  get activePolicyCount(): number {
-    return this.dashboardData
-      ?.policies
-      .filter(x => x.status === 2)
-      .length ?? 0;
+  private percent(value: number, total: number): number {
+    return total === 0 ? 0 : Math.round((value / total) * 100);
   }
 
-  get quoteDraftCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 1)
-      .length ?? 0;
+  private quoteStatusText(status: number): string {
+    return ['', 'Taslak', 'Teklif Verildi', 'Kabul Edildi', 'Reddedildi', 'Süresi Doldu', 'İptal Edildi'][status] ?? 'Bilinmiyor';
   }
 
-  get quoteOfferedCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 2)
-      .length ?? 0;
+  private quoteTone(status: number): BadgeTone {
+    return ({ 1: 'warning', 2: 'info', 3: 'success' } as Record<number, BadgeTone>)[status] ?? 'danger';
   }
 
-  get quoteAcceptedCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 3)
-      .length ?? 0;
+  private policyStatusText(status: number): string {
+    return ['', 'Ödeme Bekliyor', 'Aktif', 'Süresi Doldu', 'İptal Edildi'][status] ?? 'Bilinmiyor';
   }
 
-  get quoteRejectedCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 4)
-      .length ?? 0;
+  private policyTone(status: number): BadgeTone {
+    return ({ 1: 'warning', 2: 'success' } as Record<number, BadgeTone>)[status] ?? 'danger';
   }
 
-  get quoteExpiredCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 5)
-      .length ?? 0;
+  private paymentStatusText(status: number): string {
+    return ['', 'Bekliyor', 'İşleniyor', 'Başarılı', 'Başarısız', 'İptal Edildi', 'İade Edildi'][status] ?? 'Bilinmiyor';
   }
 
-  get quoteCancelledCount(): number {
-    return this.dashboardData
-      ?.quotes
-      .filter(x => x.status === 6)
-      .length ?? 0;
+  private paymentTone(status: number): BadgeTone {
+    return ({ 1: 'warning', 2: 'warning', 3: 'success', 6: 'info' } as Record<number, BadgeTone>)[status] ?? 'danger';
   }
-
-  get quoteDraftPercentage(): number {
-    return this.percentage(
-      this.quoteDraftCount,
-      this.quoteCount
-    );
-  }
-
-  get quoteOfferedPercentage(): number {
-    return this.percentage(
-      this.quoteOfferedCount,
-      this.quoteCount
-    );
-  }
-
-  get quoteAcceptedPercentage(): number {
-    return this.percentage(
-      this.quoteAcceptedCount,
-      this.quoteCount
-    );
-  }
-
-  get quoteRejectedPercentage(): number {
-    return this.percentage(
-      this.quoteRejectedCount,
-      this.quoteCount
-    );
-  }
-
-  get quoteCancelledPercentage(): number {
-    return this.percentage(
-      this.quoteCancelledCount,
-      this.quoteCount
-    );
-  }
-
-  get quoteExpiredPercentage(): number {
-    return this.percentage(
-      this.quoteExpiredCount,
-      this.quoteCount
-    );
-  }
-  get policyDraftCount(): number {
-    return this.dashboardData
-      ?.policies
-      .filter(x => x.status === 1)
-      .length ?? 0;
-  }
-
-  get policyActiveCount(): number {
-    return this.dashboardData
-      ?.policies
-      .filter(x => x.status === 2)
-      .length ?? 0;
-  }
-
-  get policyExpiredCount(): number {
-    return this.dashboardData
-      ?.policies
-      .filter(x => x.status === 3)
-      .length ?? 0;
-  }
-
-  get policyCancelledCount(): number {
-    return this.dashboardData
-      ?.policies
-      .filter(x => x.status === 4)
-      .length ?? 0;
-  }
-  get policyDraftPercentage(): number {
-    return this.percentage(
-      this.policyDraftCount,
-      this.dashboardData?.policies.length ?? 0
-    );
-  }
-
-  get policyActivePercentage(): number {
-    return this.percentage(
-      this.policyActiveCount,
-      this.dashboardData?.policies.length ?? 0
-    );
-  }
-
-  get policyCancelledPercentage(): number {
-    return this.percentage(
-      this.policyCancelledCount,
-      this.dashboardData?.policies.length ?? 0
-    );
-  }
-
-  get policyExpiredPercentage(): number {
-    return this.percentage(
-      this.policyExpiredCount,
-      this.dashboardData?.policies.length ?? 0
-    );
-  }
-  get successfulPaymentCount(): number {
-    return this.dashboardData
-      ?.payments
-      .filter(x => x.status === 3)
-      .length ?? 0;
-  }
-
-  get failedPaymentCount(): number {
-    return this.dashboardData
-      ?.payments
-      .filter(x => x.status === 4)
-      .length ?? 0;
-  }
-
-  get pendingPaymentCount(): number {
-    return this.dashboardData
-      ?.payments
-      .filter(
-        x =>
-          x.status === 1 ||
-          x.status === 2
-      )
-      .length ?? 0;
-  
-    }
-    get latestActivity(): RecentActivity | null {
-  return this.recentActivities.length > 0
-    ? this.recentActivities[0]
-    : null;
-}
 }

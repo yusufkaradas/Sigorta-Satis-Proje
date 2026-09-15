@@ -1,6 +1,8 @@
 import {
   Component,
-  inject
+  OnInit,
+  inject,
+  signal
 } from '@angular/core';
 
 import {
@@ -24,6 +26,10 @@ import {
   UserService
 } from '../users.service';
 
+import {
+  Role,
+  RolesService
+} from '../../roles/roles.service';
 
 @Component({
   selector: 'app-user-create',
@@ -32,17 +38,21 @@ import {
 
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
 
   templateUrl: './user-create.html',
 
   styleUrl: './user-create.scss'
 })
-export class UserCreate {
+export class UserCreate implements OnInit {
 
   private readonly userService =
     inject(UserService);
+
+  private readonly rolesService =
+    inject(RolesService);
 
   private readonly router =
     inject(Router);
@@ -65,16 +75,37 @@ export class UserCreate {
   };
 
 
-  isLoading = false;
+  roles = signal<Role[]>([]);
 
-  errorMessage = '';
+  isLoadingRoles = signal(true);
+
+  isLoading = signal(false);
+
+  errorMessage = signal('');
+
+
+  ngOnInit(): void {
+
+    this.rolesService
+      .getAll()
+      .subscribe({
+        next: data => {
+          this.roles.set(data ?? []);
+          this.isLoadingRoles.set(false);
+        },
+        error: () => {
+          this.errorMessage.set('Roller yüklenemedi.');
+          this.isLoadingRoles.set(false);
+        }
+      });
+  }
 
 
   save(): void {
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
-    this.isLoading = true;
+    this.isLoading.set(true);
 
 
     this.userService
@@ -83,7 +114,7 @@ export class UserCreate {
 
         next: () => {
 
-          this.isLoading = false;
+          this.isLoading.set(false);
 
           this.router.navigate([
             '/users'
@@ -98,11 +129,12 @@ export class UserCreate {
             error
           );
 
-          this.errorMessage =
+          this.errorMessage.set(
             error?.error?.message ??
-            'Kullanıcı oluşturulurken bir hata oluştu.';
+            'Kullanıcı oluşturulurken bir hata oluştu.'
+          );
 
-          this.isLoading = false;
+          this.isLoading.set(false);
 
         }
 

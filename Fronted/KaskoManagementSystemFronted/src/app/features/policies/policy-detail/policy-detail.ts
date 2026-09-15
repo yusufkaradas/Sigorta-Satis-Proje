@@ -1,3 +1,5 @@
+import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
+import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -15,10 +17,16 @@ import {
   Payment,
   PaymentsService
 } from '../../payments/payments.service';
+import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
+
 @Component({
   selector: 'app-policy-detail',
   standalone: true,
   imports: [
+    BackendDatePipe,
+    RecordNumberPipe,
     CommonModule,
     RouterLink
   ],
@@ -28,6 +36,15 @@ import {
 export class PolicyDetail {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  readonly portal =
+    injectPortalContext();
+
+  readonly isCustomerMode =
+    this.portal.isCustomer;
+
+  readonly basePath =
+    this.portal.basePath;
   private readonly policyService = inject(PolicyService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly quoteService = inject(QuoteService);
@@ -294,7 +311,7 @@ deletePolicy(): void {
         );
 
         this.router.navigate([
-          '/policies'
+          this.basePath + '/policies'
         ]);
 
       },
@@ -395,7 +412,7 @@ private loadPayment(
   goBack(): void {
 
     this.router.navigate([
-      '/policies'
+      this.basePath + '/policies'
     ]);
 
   }

@@ -1,1057 +1,147 @@
-<div class="policy-detail-page">
+<div class="kf-page">
 
-  <!-- =====================================================
-       PAGE HEADER
-  ====================================================== -->
-  <section class="page-header">
+  <div class="kf-title">
+    POLİÇE DETAYI
+  </div>
 
-    <div class="page-header-content">
+  <section class="kf-panel">
 
-      <span class="page-eyebrow">
-        POLİÇE YÖNETİMİ
-      </span>
-
-      <h1>
-        Poliçe Detayı
-      </h1>
-
-      <p>
-        Poliçe bilgilerini, müşteri ve araç detaylarını
-        görüntüleyin.
-      </p>
-
+    <div class="kf-panel-head">
+      <div>
+        <h1>
+          {{ policy ? (policy.policyNumber | recordNo:'full') : 'Poliçe Detayı' }}
+          <span
+            *ngIf="policy"
+            class="kf-badge"
+            [ngClass]="getStatusClass(policy.status)">
+            {{ getStatusText(policy.status) }}
+          </span>
+        </h1>
+        <p *ngIf="policy">
+          Kasko · {{ policy.startDate | backendDate }} → {{ policy.endDate | backendDate }} · Düzenlenme: {{ policy.createdDate | backendDate:'datetime' }}
+        </p>
+      </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">← Poliçelere Dön</button>
     </div>
 
-    <button
-      type="button"
-      class="back-button"
-      (click)="goBack()">
+    <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">
+      İşlem gerçekleştirilemedi: {{ errorMessage }}
+    </div>
 
-      <span class="button-icon">
-        ←
-      </span>
+    <div *ngIf="isLoading" class="kf-state">Poliçe bilgileri yükleniyor...</div>
 
-      Poliçelere Dön
+    <div *ngIf="!isLoading && policy" class="kf-body kf-body-3">
 
-    </button>
+      <section class="kf-section">
 
-  </section>
+        <h2 class="kf-section-title">Müşteri ve Araç</h2>
 
+        <dl class="kf-details">
+          <div class="kf-span-all"><dt>Müşteri</dt><dd>{{ quote?.customerName || policy.customerName || '—' }}</dd></div>
+          <div><dt>Telefon</dt><dd>{{ quote?.customerPhone || '—' }}</dd></div>
+          <div><dt>E-posta</dt><dd [title]="quote?.customerEmail || ''">{{ quote?.customerEmail || '—' }}</dd></div>
+          <div><dt>Marka</dt><dd>{{ quote?.brand || policy.brand || '—' }}</dd></div>
+          <div><dt>Model</dt><dd [title]="quote?.model || policy.model || ''">{{ quote?.model || policy.model || '—' }}</dd></div>
+          <div><dt>Model Yılı</dt><dd>{{ quote?.modelYear || '—' }}</dd></div>
+          <div><dt>Plaka</dt><dd>{{ quote?.plateNumber || '—' }}</dd></div>
+        </dl>
 
-  <!-- =====================================================
-       LOADING
-  ====================================================== -->
-  <div
-    *ngIf="isLoading"
-    class="loading">
-
-    <div class="loading-spinner"></div>
-
-    <span>
-      Poliçe bilgileri yükleniyor...
-    </span>
-
-  </div>
+      </section>
 
 
-  <!-- =====================================================
-       ERROR
-  ====================================================== -->
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="error-message">
+      <section class="kf-section">
 
-    <strong>
-      İşlem gerçekleştirilemedi
-    </strong>
-
-    <span>
-      {{ errorMessage }}
-    </span>
-
-  </div>
-
-
-  <!-- =====================================================
-       MAIN DETAIL
-  ====================================================== -->
-  <section
-    *ngIf="!isLoading && policy"
-    class="detail-card">
-
-
-    <!-- ===================================================
-         POLICY HERO
-    ==================================================== -->
-    <div class="policy-hero">
-
-      <div class="policy-hero-left">
-
-        <span class="section-label">
-          POLİÇE
-        </span>
-
-        <h2>
-          {{ policy.policyNumber }}
+        <h2 class="kf-section-title">
+          Teminatlar
+          <small>{{ quote?.coverages?.length || 0 }} teminat</small>
         </h2>
 
-        <p class="policy-summary">
+        <div *ngIf="!quote?.coverages?.length" class="kf-empty">
+          Teminat bilgisi bulunamadı.
+        </div>
 
-          Poliçe süresi:
+        <ul *ngIf="quote?.coverages?.length" class="kf-list kf-list-2">
+          <li
+            *ngFor="let coverage of (quote?.coverages ?? []).slice(0, 10)"
+            class="kf-list-item">
+            <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
+            <span>{{ coverage.limit != null ? (coverage.limit | number:'1.0-0') + ' ₺' : (coverage.calculatedPrice | number:'1.2-2') + ' ₺' }}</span>
+          </li>
+        </ul>
 
-          <strong>
-            {{ policy.startDate | date:'dd.MM.yyyy' }}
-          </strong>
-
-          →
-
-          <strong>
-            {{ policy.endDate | date:'dd.MM.yyyy' }}
-          </strong>
-
+        <p *ngIf="(quote?.coverages?.length || 0) > 10" class="kf-muted">
+          +{{ (quote?.coverages?.length || 0) - 10 }} teminat daha
         </p>
 
-      </div>
+      </section>
 
 
-      <!-- SADECE BURADA DURUM GÖSTERİLİYOR -->
-      <div
-        class="status-badge"
-        [ngClass]="getStatusClass(policy.status)">
+      <section class="kf-section">
 
-        {{ getStatusText(policy.status) }}
+        <h2 class="kf-section-title">Prim ve Ödeme</h2>
 
-      </div>
+        <div class="kf-highlight">
+          <span>Poliçe Primi</span>
+          <strong>{{ policy.premiumAmount | number:'1.2-2' }} ₺</strong>
+        </div>
+
+        <div *ngIf="isPaymentLoading" class="kf-empty">Ödeme bilgileri yükleniyor...</div>
+
+        <dl *ngIf="!isPaymentLoading && payment" class="kf-details kf-details-1">
+          <div>
+            <dt>İşlem No</dt>
+            <dd><a [routerLink]="[basePath + '/payments', payment.id]">{{ payment.transactionNumber | recordNo:'full' }}</a></dd>
+          </div>
+          <div><dt>Ödeme Tarihi</dt><dd>{{ payment.paymentDate | backendDate:'datetime' }}</dd></div>
+          <div><dt>Durum</dt><dd><span class="kf-badge status-success">Başarılı</span></dd></div>
+        </dl>
+
+        <div *ngIf="!isPaymentLoading && !payment" class="kf-empty">
+          Bu poliçe için başarılı ödeme kaydı yok.
+        </div>
+
+      </section>
 
     </div>
 
+    <div class="kf-actions kf-actions-between">
 
-    <!-- ===================================================
-         POLICY INFORMATION
-    ==================================================== -->
-    <section class="detail-section">
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
 
-      <div class="section-heading">
+      <div *ngIf="policy && !portal.isReadOnly" class="kf-head-actions">
 
-        <div>
+        <button
+          *ngIf="policy.status === PolicyStatus.Draft || policy.status === PolicyStatus.Cancelled || policy.status === PolicyStatus.Expired"
+          type="button"
+          class="kf-btn-danger"
+          (click)="deletePolicy()">
+          Sil
+        </button>
 
-          <span class="section-index">
-            01
-          </span>
+        <button
+          *ngIf="policy.status === PolicyStatus.Active"
+          type="button"
+          class="kf-btn-danger"
+          (click)="cancelPolicy()">
+          Poliçeyi İptal Et
+        </button>
 
-          <div>
+        <a
+          *ngIf="policy.status === PolicyStatus.Draft || policy.status === PolicyStatus.Active"
+          [routerLink]="['/policies', policy.id, 'edit']"
+          class="kf-btn-outline">
+          Düzenle
+        </a>
 
-            <h3>
-              Poliçe Bilgileri
-            </h3>
-
-            <p>
-              Poliçenin temel kimlik ve geçerlilik bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid detail-grid-3">
-
-        <div class="detail-item">
-
-          <span>
-            Poliçe No
-          </span>
-
-          <strong class="policy-number">
-            {{ policy.policyNumber }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Başlangıç Tarihi
-          </span>
-
-          <strong>
-            {{ policy.startDate | date:'dd.MM.yyyy' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Bitiş Tarihi
-          </span>
-
-          <strong>
-            {{ policy.endDate | date:'dd.MM.yyyy' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Poliçe Türü
-          </span>
-
-          <strong>
-            Kasko
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Prim Tutarı
-          </span>
-
-          <strong class="premium-value">
-
-            {{
-              policy.premiumAmount
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-  <span>
-    Oluşturulma Tarihi
-  </span>
-
-  <strong>
-    {{ policy.createdDate | date:'dd.MM.yyyy HH:mm' }}
-  </strong>
-
-</div>
+        <a
+          *ngIf="policy.status === PolicyStatus.Draft"
+          [routerLink]="['/payments/new']"
+          [queryParams]="{ policyId: policy.id }"
+          class="kf-btn">
+          Ödeme Yap
+        </a>
 
       </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         CUSTOMER
-    ==================================================== -->
-    <section
-      class="detail-section"
-      *ngIf="quote">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            02
-          </span>
-
-          <div>
-
-            <h3>
-              Müşteri Bilgileri
-            </h3>
-
-            <p>
-              Poliçenin bağlı olduğu müşteri bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <div class="detail-item">
-
-          <span>
-            Müşteri
-          </span>
-
-          <strong>
-            {{ quote.customerName || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            E-posta
-          </span>
-
-          <strong>
-            {{ quote.customerEmail || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Telefon
-          </span>
-
-          <strong>
-            {{ quote.customerPhone || '—' }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         VEHICLE
-    ==================================================== -->
-    <section
-      class="detail-section"
-      *ngIf="quote">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            03
-          </span>
-
-          <div>
-
-            <h3>
-              Araç Bilgileri
-            </h3>
-
-            <p>
-              Poliçeye konu olan araç bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <div class="detail-item">
-
-          <span>
-            Marka
-          </span>
-
-          <strong>
-            {{ quote.brand || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Model
-          </span>
-
-          <strong>
-            {{ quote.model || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Model Yılı
-          </span>
-
-          <strong>
-            {{ quote.modelYear || '—' }}
-          </strong>
-
-        </div>
-
-
-        <div class="detail-item">
-
-          <span>
-            Plaka
-          </span>
-
-          <strong class="plate">
-            {{ quote.plateNumber || '—' }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         COVERAGES
-    ==================================================== -->
-    <section
-      class="detail-section"
-      *ngIf="quote?.coverages?.length">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            04
-          </span>
-
-          <div>
-
-            <h3>
-              Teminatlar
-            </h3>
-
-            <p>
-              Poliçeye dahil edilen teminat ve limit bilgileri
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <span class="coverage-count">
-          {{ quote.coverages?.length }}
-          teminat
-        </span>
-
-      </div>
-
-
-      <div class="coverage-table">
-
-        <div class="coverage-table-header">
-
-          <div>
-            Teminat
-          </div>
-
-          <div>
-            Limit
-          </div>
-
-          <div>
-            Prim
-          </div>
-
-          <div>
-            Durum
-          </div>
-
-        </div>
-
-
-        <div
-          class="coverage-table-row"
-          *ngFor="let coverage of quote.coverages">
-
-          <div class="coverage-name">
-
-            <span class="coverage-icon">
-              ✓
-            </span>
-
-            <div>
-
-              <strong>
-                {{ coverage.coverageName }}
-              </strong>
-
-              <small>
-                Poliçeye dahil
-              </small>
-
-            </div>
-
-          </div>
-
-
-          <div class="coverage-limit-cell">
-
-            <span
-              *ngIf="coverage.limit != null"
-              class="limit-value">
-
-              {{
-                coverage.limit
-                  | number:'1.0-2'
-              }}
-              ₺
-
-            </span>
-
-            <span
-              *ngIf="coverage.limit == null"
-              class="muted-value">
-
-              Poliçe limiti
-
-            </span>
-
-          </div>
-
-
-          <div class="coverage-price-cell">
-
-            {{
-              coverage.calculatedPrice
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </div>
-
-
-          <div>
-
-            <span class="coverage-status">
-              Dahil
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="coverage-footnote">
-
-        <span>
-          ✓
-        </span>
-
-        Bu teminatlar poliçe primine dahil edilmiştir.
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         PRICING
-    ==================================================== -->
-    <section
-      class="detail-section pricing-section"
-      *ngIf="quote?.pricingSnapshot">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            05
-          </span>
-
-          <div>
-
-            <h3>
-              Fiyatlandırma
-            </h3>
-
-            <p>
-              Poliçeye aktarılan teklif fiyatlandırma özeti
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <span class="snapshot-badge">
-          SNAPSHOT
-        </span>
-
-      </div>
-
-
-      <div class="pricing-overview">
-
-        <div class="pricing-overview-row">
-
-          <span>
-            Araç Değeri
-          </span>
-
-          <strong>
-
-            {{
-              quote.pricingSnapshot?.marketValue
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </strong>
-
-        </div>
-
-
-        <div class="pricing-overview-row">
-
-          <span>
-            Teminat Primleri
-          </span>
-
-          <strong>
-
-            {{
-              quote.pricingSnapshot?.coveragePremium
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </strong>
-
-        </div>
-
-
-        <div class="pricing-overview-row">
-
-          <span>
-            İndirim
-          </span>
-
-          <strong>
-
-            {{
-              quote.pricingSnapshot?.discount
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <div class="total-premium-card">
-
-        <div>
-
-          <span>
-            Poliçe Primi
-          </span>
-
-          <small>
-            Poliçeye aktarılan nihai prim tutarı
-          </small>
-
-        </div>
-
-
-        <strong>
-
-          {{
-            policy.premiumAmount
-              | number:'1.2-2'
-          }}
-          ₺
-
-        </strong>
-
-      </div>
-
-
-      <details class="calculation-details">
-
-        <summary>
-
-          <div>
-
-            <strong>
-              Hesaplama Detayı
-            </strong>
-
-            <small>
-              Teklif sırasında kullanılan fiyatlandırma katsayıları
-            </small>
-
-          </div>
-
-          <span class="details-arrow">
-            ›
-          </span>
-
-        </summary>
-
-
-        <div class="calculation-body">
-
-          <div class="pricing-grid">
-
-
-            <div class="pricing-item">
-
-              <span>
-                Yaş Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.ageFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Kullanım Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.usageFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Sürücü Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.driverFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Hasar Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.claimsFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Bölge Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.regionFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Paket Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.packageFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-
-            <div class="pricing-item">
-
-              <span>
-                Muafiyet Faktörü
-              </span>
-
-              <strong>
-
-                {{
-                  quote.pricingSnapshot?.deductibleFactor
-                    | number:'1.2-4'
-                }}
-
-              </strong>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </details>
-
-    </section>
-
-
-    <!-- ===================================================
-         PAYMENT
-    ==================================================== -->
-    <section
-      class="detail-section payment-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            06
-          </span>
-
-          <div>
-
-            <h3>
-              Ödeme Bilgileri
-            </h3>
-
-            <p>
-              Poliçenin ödeme işlemine ait bilgiler
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div
-        *ngIf="isPaymentLoading"
-        class="payment-loading">
-
-        Ödeme bilgileri yükleniyor...
-
-      </div>
-
-
-      <div
-        *ngIf="!isPaymentLoading && payment"
-        class="payment-grid">
-
-        <div class="info-card">
-
-          <span class="info-label">
-            İşlem No
-          </span>
-<a
-  [routerLink]="[
-    '/payments',
-    payment.id
-  ]"
-  class="payment-transaction-link"
->
-  {{ payment.transactionNumber }}
-</a>
-
-        </div>
-
-
-        <div class="info-card">
-
-          <span class="info-label">
-            Tutar
-          </span>
-
-          <strong class="payment-amount">
-
-            {{
-              payment.amount
-                | number:'1.2-2'
-            }}
-            ₺
-
-          </strong>
-
-        </div>
-
-
-        <div class="info-card">
-
-          <span class="info-label">
-            Durum
-          </span>
-
-          <span class="payment-status-success">
-            Başarılı
-          </span>
-
-        </div>
-
-
-        <div class="info-card">
-
-          <span class="info-label">
-            Ödeme Tarihi
-          </span>
-
-          <strong>
-
-            {{
-              payment.paymentDate
-                | date:'dd.MM.yyyy HH:mm'
-            }}
-
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <div
-        *ngIf="
-          !isPaymentLoading &&
-          !payment
-        "
-        class="payment-empty">
-
-        Bu poliçe için başarılı bir ödeme kaydı bulunmuyor.
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         ACTIONS
-    ==================================================== -->
-    <div class="detail-actions">
-
-      <button
-        type="button"
-        class="action-button action-secondary"
-        (click)="goBack()">
-
-        Geri Dön
-
-      </button>
-
-
-      <button
-        *ngIf="policy.status === PolicyStatus.Draft"
-        type="button"
-        class="action-button action-primary"
-        [routerLink]="[
-          '/payments/new'
-        ]"
-        [queryParams]="{
-          policyId: policy.id
-        }">
-
-        Ödeme Yap
-
-      </button>
-
-
-      <button
-        *ngIf="
-          policy.status === PolicyStatus.Draft ||
-          policy.status === PolicyStatus.Active
-        "
-        type="button"
-        class="action-button action-primary"
-        [routerLink]="[
-          '/policies',
-          policy.id,
-          'edit'
-        ]">
-
-        Poliçeyi Düzenle
-
-      </button>
-
-
-      <button
-        *ngIf="
-          policy.status === PolicyStatus.Active
-        "
-        type="button"
-        class="action-button action-danger"
-        (click)="cancelPolicy()">
-
-        Poliçeyi İptal Et
-
-      </button>
-
-
-      <button
-        *ngIf="
-          policy.status === PolicyStatus.Draft ||
-          policy.status === PolicyStatus.Cancelled ||
-          policy.status === PolicyStatus.Expired
-        "
-        type="button"
-        class="action-button action-delete"
-        (click)="deletePolicy()">
-
-        Poliçeyi Sil
-
-      </button>
 
     </div>
 

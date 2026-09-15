@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 
 import { LoginRequest } from '../models/login-request';
 import { LoginResponse } from '../models/login-response';
+import { RegisterRequest } from '../models/register-request';
 import { TokenStorageService } from './token-storage.service';
 
 @Injectable({
@@ -33,6 +34,16 @@ export class AuthService {
       );
   }
 
+  register(
+    request: RegisterRequest
+  ): Observable<{ customerId: string }> {
+
+    return this.http.post<{ customerId: string }>(
+      `${this.apiUrl}/register`,
+      request
+    );
+  }
+
   logout(): void {
     this.tokenStorage.clear();
   }
@@ -41,10 +52,79 @@ export class AuthService {
     return this.tokenStorage.getToken();
   }
 
-isAuthenticated(): boolean {
-  const token = this.getToken();
+  getRole(): string | null {
 
-  return !!token;
+    const payload = this.readPayload();
 
+    const role =
+      payload?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
+      payload?.['role'] ??
+      null;
+
+    return typeof role === 'string' ? role : null;
+  }
+
+  getCurrentUser(): { name: string; email: string } {
+
+    const payload = this.readPayload();
+
+    if (!payload) {
+      return { name: '', email: '' };
+    }
+
+    return {
+      name: String(
+        payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ??
+        payload['name'] ??
+        ''
+      ),
+      email: String(
+        payload['email'] ??
+        payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ??
+        ''
+      )
+    };
+  }
+
+  isAuthenticated(): boolean {
+
+    const payload = this.readPayload();
+
+    if (!payload) {
+      return false;
+    }
+
+    return typeof payload['exp'] !== 'number' ||
+      payload['exp'] * 1000 > Date.now();
+  }
+
+  private readPayload(): Record<string, unknown> | null {
+
+    const token = this.getToken();
+
+    if (!token) {
+      return null;
+    }
+
+    try {
+
+      const base64 = token
+        .split('.')[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const bytes = Uint8Array.from(
+        atob(base64),
+        char => char.charCodeAt(0)
+      );
+
+      return JSON.parse(
+        new TextDecoder().decode(bytes)
+      );
+
+    } catch {
+
+      return null;
+    }
   }
 }

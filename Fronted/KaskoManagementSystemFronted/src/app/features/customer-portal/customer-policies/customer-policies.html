@@ -1,0 +1,125 @@
+<div class="cp-page">
+
+  <div class="cp-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <section class="cp-stats">
+
+    <div class="cp-stat">
+      <span>Toplam Poliçe</span>
+      <strong>{{ policies().length }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Aktif Poliçe</span>
+      <strong>{{ activeCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Ödeme Bekleyen</span>
+      <strong>{{ draftCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Aktif Poliçe Primi</span>
+      <strong>{{ activePremiumTotal() | number:'1.2-2' }} ₺</strong>
+    </div>
+
+  </section>
+
+
+  <section class="cp-panel">
+
+    <div class="cp-panel-head">
+      <h2>Poliçe Listesi</h2>
+      <span>Poliçe belgenizi ve teminatlarınızı Detay’dan görebilirsiniz</span>
+    </div>
+
+    <div
+      *ngIf="isLoading()"
+      class="cp-state">
+      Poliçeleriniz yükleniyor...
+    </div>
+
+    <div
+      *ngIf="!isLoading() && errorMessage()"
+      class="cp-state cp-state-error">
+      {{ errorMessage() }}
+    </div>
+
+    <div
+      *ngIf="!isLoading() && !errorMessage() && policies().length === 0"
+      class="cp-state">
+      Henüz poliçeniz bulunmuyor.
+    </div>
+
+    <ng-container *ngIf="!isLoading() && !errorMessage() && policies().length > 0">
+
+      <div class="cp-table-wrap">
+
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th>Poliçe No</th>
+              <th>Araç</th>
+              <th class="cp-num">Yıllık Prim</th>
+              <th>Koruma Süresi</th>
+              <th>Durum</th>
+              <th class="cp-actions-col">İşlemler</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let policy of pagedPolicies()">
+
+              <td>
+                <div class="cp-cell" [title]="policy.policyNumber">
+                  <strong class="record-no">{{ policy.policyNumber | recordNo }}</strong>
+                  <small>Kasko Sigortası</small>
+                </div>
+              </td>
+              <td>{{ ((policy.brand ?? '') + ' ' + (policy.model ?? '')).trim() || '—' }}</td>
+              <td class="cp-num cp-strong">{{ policy.premiumAmount | number:'1.2-2' }} ₺</td>
+              <td>
+                <div class="cp-cell">
+                  <span>{{ policy.startDate | date:'dd.MM.yyyy' }} – {{ policy.endDate | date:'dd.MM.yyyy' }}</span>
+                  <small *ngIf="policy.status === PolicyStatus.Active">{{ deadlineText(policy.endDate) }}</small>
+                  <small *ngIf="policy.status === PolicyStatus.Draft">Ödeme sonrası başlar</small>
+                </div>
+              </td>
+              <td>
+                <span class="cp-badge" [ngClass]="getPolicyStatusClass(policy.status)">{{ getPolicyStatusText(policy.status) }}</span>
+              </td>
+              <td class="cp-actions">
+                <a class="cp-act" [routerLink]="['/customer/policies', policy.id]">Detay</a>
+                <a *ngIf="policy.status === PolicyStatus.Draft" class="cp-act cp-act-primary" [routerLink]="['/customer/policies', policy.id]">Öde</a>
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="cp-pager">
+
+        <span>{{ policies().length }} kayıt · Sayfa {{ page() }} / {{ totalPages() }}</span>
+
+        <div>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </section>
+
+</div>

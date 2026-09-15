@@ -1,199 +1,56 @@
-<div class="quote-edit-page">
+<div class="kf-page">
 
-  <header class="top-header">
-
-    <div class="top-title">
-      Teklif Düzenle
-    </div>
-
-    <div class="header-actions">
-
-      <button
-        type="button"
-        class="header-icon">
-        ⚙
-      </button>
-
-      <button
-        type="button"
-        class="header-icon">
-        🔔
-      </button>
-
-      <button
-        type="button"
-        class="user-button">
-        Kullanıcı Adı
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <section class="page-header">
-
-    <div>
-
-      <h1>
-        Teklif Düzenle
-      </h1>
-
-      <p>
-        Teklif geçerlilik tarihini güncelleyin.
-      </p>
-
-    </div>
-
-    <button
-      type="button"
-      class="back-button"
-      (click)="goBack()">
-
-      ← Geri Dön
-
-    </button>
-
-  </section>
-
-
-  <div
-    *ngIf="isLoading"
-    class="loading">
-
-    Teklif bilgileri yükleniyor...
-
+  <div class="kf-title">
+    TEKLİF DÜZENLE
   </div>
 
+  <section class="kf-panel">
 
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="error-message">
-
-    {{ errorMessage }}
-
-  </div>
-
-
-  <div
-    *ngIf="!isLoading && successMessage"
-    class="success-message">
-
-    {{ successMessage }}
-
-  </div>
-
-
-  <section
-    *ngIf="!isLoading && quote"
-    class="edit-card">
-
-    <h2>
-      Teklif Bilgileri
-    </h2>
-
-
-    <div class="info-grid">
-
-      <div class="info-item">
-
-        <span>
-          Teklif No
-        </span>
-
-        <strong>
-          {{ quote.quoteNumber }}
-        </strong>
-
+    <div class="kf-panel-head">
+      <div>
+        <h1>{{ quote?.quoteNumber || 'Teklif' }} Düzenle</h1>
+        <p>Teklifin geçerlilik tarihini güncelleyin.</p>
       </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">← Geri Dön</button>
+    </div>
 
+    <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
 
-      <div class="info-item">
+    <div *ngIf="!isLoading && successMessage" class="kf-alert kf-alert-success">{{ successMessage }}</div>
 
-        <span>
-          Müşteri ID
-        </span>
+    <div *ngIf="isLoading" class="kf-state">Teklif bilgileri yükleniyor...</div>
 
-        <strong>
-          {{ quote.customerId }}
-        </strong>
+    <div *ngIf="!isLoading && quote" class="kf-body kf-body-half">
 
-      </div>
+      <section class="kf-section">
+        <h2 class="kf-section-title">Teklif Bilgileri</h2>
+        <div class="kf-highlight">
+          <span>Prim Tutarı</span>
+          <strong>{{ quote.premiumAmount | number:'1.2-2' }} ₺</strong>
+        </div>
+        <dl class="kf-details">
+          <div><dt>Teklif No</dt><dd>{{ quote.quoteNumber }}</dd></div>
+          <div><dt>Müşteri</dt><dd [title]="quote.customerName || quote.customerId">{{ quote.customerName || quote.customerId }}</dd></div>
+          <div class="kf-span-all"><dt>Araç</dt><dd [title]="quote.vehicleDescription || quote.vehicleId">{{ quote.vehicleDescription || quote.plateNumber || quote.vehicleId }}</dd></div>
+        </dl>
+      </section>
 
-
-      <div class="info-item">
-
-        <span>
-          Araç ID
-        </span>
-
-        <strong>
-          {{ quote.vehicleId }}
-        </strong>
-
-      </div>
-
-
-      <div class="info-item">
-
-        <span>
-          Prim Tutarı
-        </span>
-
-        <strong>
-          {{ quote.premiumAmount | number:'1.2-2' }} ₺
-        </strong>
-
-      </div>
+      <section class="kf-section">
+        <h2 class="kf-section-title">Güncellenecek Alan</h2>
+        <div class="kf-field">
+          <label for="validUntil">Geçerlilik Tarihi *</label>
+          <input id="validUntil" type="date" [(ngModel)]="validUntil" [disabled]="isSaving" />
+          <small>Teklif bu tarihe kadar kabul edilebilir.</small>
+        </div>
+      </section>
 
     </div>
 
-
-    <div class="form-group">
-
-      <label for="validUntil">
-        Geçerlilik Tarihi
-      </label>
-
-      <input
-        id="validUntil"
-        type="date"
-        [(ngModel)]="validUntil"
-        [disabled]="isSaving"
-      />
-
-    </div>
-
-
-    <div class="form-actions">
-
-      <button
-        type="button"
-        class="cancel-button"
-        (click)="goBack()"
-        [disabled]="isSaving">
-
-        Vazgeç
-
+    <div class="kf-actions">
+      <button type="button" class="kf-btn-outline" (click)="goBack()" [disabled]="isSaving">Vazgeç</button>
+      <button type="button" class="kf-btn" (click)="save()" [disabled]="isSaving || !quote">
+        {{ isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
       </button>
-
-
-      <button
-        type="button"
-        class="save-button"
-        (click)="save()"
-        [disabled]="isSaving">
-
-        <span *ngIf="!isSaving">
-          Değişiklikleri Kaydet
-        </span>
-
-        <span *ngIf="isSaving">
-          Kaydediliyor...
-        </span>
-
-      </button>
-
     </div>
 
   </section>

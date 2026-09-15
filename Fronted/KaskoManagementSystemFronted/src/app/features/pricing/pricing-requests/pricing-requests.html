@@ -1,0 +1,214 @@
+<section class="requests-content">
+
+  <div class="requests-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <div class="request-stats-grid">
+
+    <div class="request-stat-card">
+      <span>Toplam Talep</span>
+      <strong>{{ requests().length }}</strong>
+      <small>Manager tarafından açılan</small>
+    </div>
+
+    <div class="request-stat-card">
+      <span>Onay Bekleyen</span>
+      <strong>{{ pendingCount() }}</strong>
+      <small>Admin kararı bekleniyor</small>
+    </div>
+
+    <div class="request-stat-card">
+      <span>Onaylanan</span>
+      <strong>{{ approvedCount() }}</strong>
+      <small>Yeni kural versiyonu oluşturuldu</small>
+    </div>
+
+    <div class="request-stat-card">
+      <span>Reddedilen</span>
+      <strong>{{ rejectedCount() }}</strong>
+      <small>Mevcut değer korundu</small>
+    </div>
+
+  </div>
+
+
+  <section class="requests-card">
+
+    <div class="requests-toolbar">
+
+      <div class="filter-wrapper">
+        <label for="request-status">Durum</label>
+        <select
+          id="request-status"
+          [value]="statusFilter()"
+          (change)="onFilterChange($any($event.target).value)">
+          <option value="">Tüm Durumlar</option>
+          <option value="Pending">Onay Bekliyor</option>
+          <option value="Approved">Onaylandı</option>
+          <option value="Rejected">Reddedildi</option>
+        </select>
+      </div>
+
+      <span class="requests-hint">
+        {{
+          portal.isManager
+            ? 'Yeni talep için Fiyat Kuralları ekranını kullanın.'
+            : 'Onay bekleyen talepleri onaylayabilir veya reddedebilirsiniz.'
+        }}
+      </span>
+
+    </div>
+
+    @if (actionMessage()) {
+      <div class="rules-notice">{{ actionMessage() }}</div>
+    }
+
+    @if (isLoading()) {
+      <div class="state-message">
+        <strong>Talepler yükleniyor...</strong>
+      </div>
+    } @else if (errorMessage() && requests().length === 0) {
+      <div class="state-message error">
+        <strong>{{ errorMessage() }}</strong>
+      </div>
+    } @else {
+
+      @if (errorMessage()) {
+        <div class="rules-notice rules-notice-error">{{ errorMessage() }}</div>
+      }
+
+      <div class="request-table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th class="col-rule">Değişen Kural</th>
+              <th class="col-change">Değer Değişimi</th>
+              <th class="col-reason">Gerekçe</th>
+              <th>Talep</th>
+              <th>Yürürlük</th>
+              <th>Durum</th>
+              <th class="col-actions">İşlem</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (request of pagedRequests(); track request.id) {
+              <tr>
+                <td class="col-rule">
+                  <div class="date-cell" [title]="ruleInfo(request.pricingRuleId).explanation">
+                    <strong>{{ ruleInfo(request.pricingRuleId).title }}</strong>
+                    <span class="time-value">{{ ruleInfo(request.pricingRuleId).group }}</span>
+                  </div>
+                </td>
+                <td class="col-change">
+                  <div class="date-cell" [title]="impactText(request)">
+                    <strong>{{ valueText(request.pricingRuleId, request.oldValue) }} → {{ valueText(request.pricingRuleId, request.newValue) }}</strong>
+                    <span class="time-value" [class.impact-up]="isIncrease(request)" [class.impact-down]="!isIncrease(request)">{{ isIncrease(request) ? '▲' : '▼' }} Prim {{ changeText(request) }}</span>
+                  </div>
+                </td>
+                <td class="col-reason" [title]="request.reason">{{ request.reason }}</td>
+                <td>
+                  <div class="date-cell">
+                    <span>{{ request.requestedDate | date:'dd.MM.yyyy' }}</span>
+                    <span class="time-value">{{ requesterName(request.requestedBy) }}</span>
+                  </div>
+                </td>
+                <td>{{ request.effectiveFrom | date:'dd.MM.yyyy' }}</td>
+                <td>
+                  <span class="request-status" [ngClass]="statusClass(request.status)">
+                    {{ statusText(request.status) }}
+                  </span>
+                </td>
+                <td class="actions-cell col-actions">
+                  <button type="button" class="detail-button" (click)="openDetail(request)">{{ !portal.isManager && request.status === 'Pending' ? 'İncele' : 'Detay' }}</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="empty-row">Talep bulunamadı.</td>
+              </tr>
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="pagination">
+
+        <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹</button>
+
+        @for (page of pages(); track page) {
+          <button type="button" [class.active]="currentPage() === page" (click)="goToPage(page)">{{ page }}</button>
+        }
+
+        <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">›</button>
+
+        <span class="pagination-info">{{ currentPage() }} / {{ totalPages() }}</span>
+
+      </div>
+
+    }
+
+  </section>
+
+  @if (selectedRequest(); as request) {
+
+    <div class="rule-dialog-backdrop" (click)="closeDetail()">
+
+      <div class="rule-dialog" (click)="$event.stopPropagation()">
+
+        <h2>{{ ruleInfo(request.pricingRuleId).title }}</h2>
+
+        <p class="rule-dialog-sub">
+          {{ ruleInfo(request.pricingRuleId).group }} · <span class="request-status" [ngClass]="statusClass(request.status)">{{ statusText(request.status) }}</span>
+        </p>
+
+        <p class="rule-explain">{{ ruleInfo(request.pricingRuleId).explanation }}</p>
+
+        <div class="rule-compare">
+          <div>
+            <span>Mevcut</span>
+            <strong>{{ valueText(request.pricingRuleId, request.oldValue) }}</strong>
+          </div>
+          <b>→</b>
+          <div>
+            <span>Önerilen</span>
+            <strong>{{ valueText(request.pricingRuleId, request.newValue) }}</strong>
+          </div>
+        </div>
+
+        <p class="rule-impact" [class.impact-up]="isIncrease(request)" [class.impact-down]="!isIncrease(request)">
+          {{ impactText(request) }}
+        </p>
+
+        <dl class="rule-facts">
+          <div><dt>Gerekçe</dt><dd>{{ request.reason }}</dd></div>
+          <div><dt>Talep Eden</dt><dd>{{ requesterName(request.requestedBy) }} · {{ request.requestedDate | date:'dd.MM.yyyy HH:mm' }}</dd></div>
+          <div><dt>Yürürlük</dt><dd>{{ request.effectiveFrom | date:'dd.MM.yyyy' }} tarihinden sonra verilen tekliflerde uygulanır</dd></div>
+          @if (request.approvedDate) {
+            <div><dt>Karar Tarihi</dt><dd>{{ request.approvedDate | date:'dd.MM.yyyy HH:mm' }}</dd></div>
+          }
+        </dl>
+
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="closeDetail()">Kapat</button>
+          @if (!portal.isManager && request.status === 'Pending') {
+            <button type="button" class="action-button delete" [disabled]="processingId() === request.id" (click)="reject(request)">Reddet</button>
+            <button type="button" class="policy-button" [disabled]="processingId() === request.id" (click)="approve(request)">Onayla</button>
+          }
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

@@ -1,481 +1,175 @@
-<div class="vehicle-detail-page">
+<div class="kf-page">
 
-  <!-- PAGE HEADER -->
-  <div class="detail-header">
-
-    <div class="header-content">
-
-      <span class="page-eyebrow">
-        ARAÇ YÖNETİMİ
-      </span>
-
-      <h1>
-        Araç Detayı
-      </h1>
-
-      <p>
-        Araç, teknik ve müşteri bilgilerini görüntüleyin.
-      </p>
-
-    </div>
-
-    <a
-      routerLink="/vehicles"
-      class="back-button"
-    >
-      ← Araçlara Dön
-    </a>
-
+  <div class="kf-title">
+    ARAÇ DETAYI
   </div>
 
-
-  <!-- LOADING -->
-  <div
-    *ngIf="isLoading"
-    class="state-message"
-  >
-
-    <div class="state-icon loading-icon">
-      ⟳
-    </div>
-
-    <strong>
-      Araç bilgileri yükleniyor...
-    </strong>
-
-    <span>
-      Lütfen bekleyin.
-    </span>
-
-  </div>
-
-
-  <!-- ERROR -->
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="state-message error"
-  >
-
-    <div class="state-icon error-icon">
-      !
-    </div>
-
-    <strong>
-      Araç bilgileri yüklenemedi
-    </strong>
-
-    <span>
-      {{ errorMessage }}
-    </span>
-
-  </div>
-
-
-  <!-- DETAIL -->
-  <div
-    *ngIf="
-      !isLoading &&
-      !errorMessage &&
-      vehicle
-    "
-    class="detail-card"
-  >
-
-
-    <!-- =================================================
-         TEMEL BİLGİLER
-    ================================================== -->
-
-    <section class="detail-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-eyebrow">
-            01 · GENEL
-          </span>
-
-          <h2>
-            Temel Bilgiler
-          </h2>
-
-          <p>
-            Araca ait temel tanımlama ve değer bilgileri.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <!-- PLAKA -->
-        <div class="detail-item highlight-item">
-
-          <span>
-            Plaka
-          </span>
-
-          <strong>
-            {{ vehicle.plateNumber || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- VIN -->
-        <div class="detail-item">
-
-          <span>
-            VIN
-          </span>
-
-          <strong class="identifier">
-            {{ vehicle.vin || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- MARKA -->
-        <div class="detail-item">
-
-          <span>
-            Marka
-          </span>
-
-          <strong>
-            {{ vehicle.brand || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- MODEL -->
-        <div class="detail-item">
-
-          <span>
-            Model
-          </span>
-
-          <strong>
-            {{ vehicle.model || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- MODEL YILI -->
-        <div class="detail-item">
-
-          <span>
-            Model Yılı
-          </span>
-
-          <strong>
-            {{ vehicle.modelYear || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- ARAÇ TİPİ -->
-        <div class="detail-item">
-
-          <span>
-            Araç Tipi
-          </span>
-
-          <strong>
-            {{
-              getVehicleTypeText(
-                vehicle.vehicleType
-              )
-            }}
-          </strong>
-
-        </div>
-
-
-        <!-- TSB KASKO DEĞERİ -->
-        <div class="detail-item value-card">
-
-          <div class="value-card-top">
-
-            <span>
-              TSB Kasko Değeri
-            </span>
-
-            <span class="value-badge">
-              TSB
-            </span>
-
-          </div>
-
-          <strong>
-            {{
-              vehicle.marketValue != null
-                ? (vehicle.marketValue | number:'1.0-2') + ' ₺'
-                : '—'
-            }}
-          </strong>
-
-          <small>
-            Araç değerleme kaydı
-          </small>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =================================================
-         TEKNİK BİLGİLER
-    ================================================== -->
-
-    <section class="detail-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-eyebrow">
-            02 · TEKNİK
-          </span>
-
-          <h2>
-            Teknik Bilgiler
-          </h2>
-
-          <p>
-            Aracın motor, yakıt ve kullanım özellikleri.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="detail-grid">
-
-        <!-- YAKIT -->
-        <div class="detail-item">
-
-          <span>
-            Yakıt Tipi
-          </span>
-
-          <strong>
-            {{
-              getFuelTypeText(
-                vehicle.fuelType
-              )
-            }}
-          </strong>
-
-        </div>
-
-
-        <!-- VİTES -->
-        <div class="detail-item">
-
-          <span>
-            Vites Tipi
-          </span>
-
-          <strong>
-            {{
-              getTransmissionTypeText(
-                vehicle.transmissionType
-              )
-            }}
-          </strong>
-
-        </div>
-
-
-        <!-- MOTOR HACMİ -->
-        <div class="detail-item">
-
-          <span>
-            Motor Hacmi
-          </span>
-
-          <strong>
-            {{
-              vehicle.engineVolume != null
-                ? vehicle.engineVolume
-                : '—'
-            }}
-          </strong>
-
-        </div>
-
-
-        <!-- MOTOR GÜCÜ -->
-        <div class="detail-item">
-
-          <span>
-            Motor Gücü
-          </span>
-
-          <strong>
-            {{
-              vehicle.enginePower != null
-                ? vehicle.enginePower + ' HP'
-                : '—'
-            }}
-          </strong>
-
-        </div>
-
-
-        <!-- RENK -->
-        <div class="detail-item">
-
-          <span>
-            Renk
-          </span>
-
-          <strong>
-            {{ vehicle.color || '—' }}
-          </strong>
-
-        </div>
-
-
-        <!-- DURUM -->
-        <div class="detail-item">
-
-          <span>
-            Durum
-          </span>
-
-          <strong
+  <section class="kf-panel">
+
+    <div class="kf-panel-head">
+
+      <div>
+        <h1>
+          {{ vehicle?.plateNumber || 'Araç Detayı' }}
+          <span
+            *ngIf="vehicle"
+            class="kf-badge"
             [class.active]="vehicle.isActive"
-            [class.passive]="!vehicle.isActive"
-          >
-            {{
-              getStatusText(
-                vehicle
-              )
-            }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =================================================
-         MÜŞTERİ BİLGİLERİ
-    ================================================== -->
-
-    <section class="detail-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-eyebrow">
-            03 · İLİŞKİ
+            [class.passive]="!vehicle.isActive">
+            {{ getStatusText(vehicle) }}
           </span>
-
-          <h2>
-            Müşteri
-          </h2>
-
-          <p>
-            Bu araç sistemde aşağıdaki müşteriye bağlıdır.
-          </p>
-
-        </div>
-
+        </h1>
+        <p>{{ vehicle ? vehicle.brand + ' ' + vehicle.model + ' · ' + vehicle.modelYear : 'Araç, teknik ve müşteri bilgileri' }}</p>
       </div>
-
-
-      <div class="customer-card">
-
-        <div class="customer-avatar">
-
-          {{
-            customerName
-              ? customerName.charAt(0).toUpperCase()
-              : '?'
-          }}
-
-        </div>
-
-
-        <div class="customer-info">
-
-          <span>
-            Müşteri
-          </span>
-
-          <strong>
-            {{ customerName || 'Müşteri bulunamadı' }}
-          </strong>
-
-        </div>
-
-
-        <div class="customer-status">
-
-          <span class="status-dot"></span>
-
-          Bağlı
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =================================================
-         ACTIONS
-    ================================================== -->
-
-    <div class="detail-actions">
 
       <a
-        routerLink="/vehicles"
-        class="secondary-button"
-      >
+        [routerLink]="basePath + '/vehicles'"
+        class="kf-btn-outline">
+        ← Araçlara Dön
+      </a>
+
+    </div>
+
+    <div
+      *ngIf="isLoading"
+      class="kf-state">
+      Araç bilgileri yükleniyor...
+    </div>
+
+    <div
+      *ngIf="!isLoading && errorMessage"
+      class="kf-state">
+      <strong>Araç bilgileri yüklenemedi</strong>
+      {{ errorMessage }}
+    </div>
+
+    <div
+      *ngIf="!isLoading && !errorMessage && vehicle"
+      class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Değer ve Müşteri</h2>
+
+        <div class="kf-highlight">
+          <span>TSB Kasko Değeri</span>
+          <strong>
+            {{ vehicle.marketValue != null ? (vehicle.marketValue | number:'1.0-2') + ' ₺' : '—' }}
+          </strong>
+        </div>
+
+        <dl class="kf-details kf-details-1">
+
+          <div *ngIf="!isCustomerMode">
+            <dt>Müşteri</dt>
+            <dd>{{ customerName || 'Müşteri bulunamadı' }}</dd>
+          </div>
+
+          <div>
+            <dt>Şasi No (VIN)</dt>
+            <dd [title]="vehicle.vin">{{ vehicle.vin || '—' }}</dd>
+          </div>
+
+        </dl>
+
+      </section>
+
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Araç Bilgileri</h2>
+
+        <dl class="kf-details kf-details-3">
+
+          <div>
+            <dt>Plaka</dt>
+            <dd>{{ vehicle.plateNumber || '—' }}</dd>
+          </div>
+
+          <div>
+            <dt>Marka</dt>
+            <dd>{{ vehicle.brand || '—' }}</dd>
+          </div>
+
+          <div>
+            <dt>Model</dt>
+            <dd [title]="vehicle.model">{{ vehicle.model || '—' }}</dd>
+          </div>
+
+          <div>
+            <dt>Model Yılı</dt>
+            <dd>{{ vehicle.modelYear || '—' }}</dd>
+          </div>
+
+          <div>
+            <dt>Araç Tipi</dt>
+            <dd>{{ getVehicleTypeText(vehicle.vehicleType) }}</dd>
+          </div>
+
+          <div>
+            <dt>Renk</dt>
+            <dd>{{ vehicle.color || '—' }}</dd>
+          </div>
+
+          <div>
+            <dt>Yakıt Tipi</dt>
+            <dd>{{ getFuelTypeText(vehicle.fuelType) }}</dd>
+          </div>
+
+          <div>
+            <dt>Vites Tipi</dt>
+            <dd>{{ getTransmissionTypeText(vehicle.transmissionType) }}</dd>
+          </div>
+
+          <div>
+            <dt>Kayıt Tarihi</dt>
+            <dd>{{ vehicle.createdDate | backendDate:'datetime' }}</dd>
+          </div>
+
+          <div>
+            <dt>Motor</dt>
+            <dd>
+              {{ vehicle.engineVolume != null ? vehicle.engineVolume : '—' }}
+              ·
+              {{ vehicle.enginePower != null ? vehicle.enginePower + ' HP' : '—' }}
+            </dd>
+          </div>
+
+        </dl>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions kf-actions-between">
+
+      <a
+        [routerLink]="basePath + '/vehicles'"
+        class="kf-btn-outline">
         Araçlara Dön
       </a>
 
+      <div
+        *ngIf="vehicle && !portal.isReadOnly"
+        class="kf-head-actions">
 
-      <a
-        [routerLink]="[
-          '/vehicles',
-          vehicle.id,
-          'edit'
-        ]"
-        class="primary-button"
-      >
-        Düzenle
-      </a>
+        <button
+          type="button"
+          class="kf-btn-danger"
+          (click)="deleteVehicle()">
+          Aracı Sil
+        </button>
 
+        <a
+          [routerLink]="['/vehicles', vehicle.id, 'edit']"
+          class="kf-btn">
+          Düzenle
+        </a>
 
-      <button
-        type="button"
-        class="danger-button"
-        (click)="deleteVehicle()"
-      >
-        Aracı Sil
-      </button>
+      </div>
 
     </div>
 
-
-  </div>
+  </section>
 
 </div>

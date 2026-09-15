@@ -10,46 +10,27 @@
   <div class="role-stats-grid">
 
     <div class="role-stat-card">
-
       <span>Toplam Rol</span>
-
-      <strong>
-        {{ roles.length }}
-      </strong>
-
+      <strong>{{ roles.length }}</strong>
+      <small>Tanımlı roller</small>
     </div>
 
-
     <div class="role-stat-card">
-
-      <span>Aktif Rol</span>
-
-      <strong>
-        {{ roles.length }}
-      </strong>
-
+      <span>Sistem Rolü</span>
+      <strong>{{ systemRoleCount }}</strong>
+      <small>Admin, Manager, Customer</small>
     </div>
 
-
     <div class="role-stat-card">
-
-      <span>Pasif Rol</span>
-
-      <strong>
-        0
-      </strong>
-
+      <span>Özel Rol</span>
+      <strong>{{ customRoleCount }}</strong>
+      <small>Sonradan eklenen roller</small>
     </div>
 
-
     <div class="role-stat-card">
-
-      <span>Silinen Rol</span>
-
-      <strong>
-        0
-      </strong>
-
+      <span>Atanmış Kullanıcı</span>
+      <strong>{{ assignedUserCount }}</strong>
+      <small>Rolü olan kullanıcı hesabı</small>
     </div>
 
   </div>
@@ -146,104 +127,44 @@
       <table class="role-table">
 
         <thead>
-
           <tr>
-
             <th>Rol</th>
-            <th>Rol ID</th>
-            <th>Durum</th>
-            <th>Oluşturma Tarihi</th>
+            <th class="col-wide">Açıklama</th>
+            <th>Tür</th>
+            <th>Kullanıcı</th>
             <th>İşlem</th>
-
           </tr>
-
         </thead>
-
 
         <tbody>
 
-          <tr
-            *ngFor="let role of filteredRoles"
-          >
+          <tr *ngFor="let role of pagedRoles">
+
+            <td><strong class="role-name">{{ role.name }}</strong></td>
+
+            <td class="col-wide" [title]="roleDescription(role.name)">{{ roleDescription(role.name) }}</td>
 
             <td>
-
-              <strong class="role-name">
-                {{ role.name }}
-              </strong>
-
-            </td>
-
-
-            <td>
-
-              <span class="role-id">
-                {{ role.id }}
+              <span class="role-status" [class.status-offered]="systemRoleNames.includes(role.name)" [class.status-draft]="!systemRoleNames.includes(role.name)">
+                {{ systemRoleNames.includes(role.name) ? 'Sistem' : 'Özel' }}
               </span>
-
             </td>
 
+            <td>{{ usersOf(role.id) }} kullanıcı</td>
 
             <td>
-
-              <span class="role-status active">
-                Aktif
-              </span>
-
-            </td>
-
-
-            <td>
-              —
-            </td>
-
-
-            <td>
-
-              <a
-                class="detail-button"
-                [routerLink]="[
-                  '/roles',
-                  role.id
-                ]"
-              >
-                Detay
-              </a>
-
+              <a class="detail-button" [routerLink]="['/roles', role.id]">Detay</a>
             </td>
 
           </tr>
 
-
-          <tr
-            *ngIf="
-              filteredRoles.length === 0
-            "
-          >
-
-            <td
-              colspan="5"
-              class="empty-row"
-            >
-
-              <div class="empty-state">
-
-                <div class="empty-icon">
-                  —
-                </div>
-
-                <strong>
-                  Rol bulunamadı
-                </strong>
-
-                <span>
-                  Arama kriterlerinizi değiştirmeyi deneyin.
-                </span>
-
+          <tr *ngIf="filteredRoles.length === 0">
+            <td colspan="5" class="empty-row">
+              <div class="empty-state-content">
+                <strong>Rol bulunamadı</strong>
+                <span>Arama kriterlerinizi değiştirmeyi deneyin.</span>
               </div>
-
             </td>
-
           </tr>
 
         </tbody>
@@ -251,6 +172,14 @@
       </table>
 
     </div>
+
+      <div class="pagination">
+        <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">‹</button>
+        <button type="button" *ngFor="let page of pages" [class.active]="currentPage === page" (click)="goToPage(page)">{{ page }}</button>
+        <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">›</button>
+        <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
+      </div>
+
 
   </section>
 

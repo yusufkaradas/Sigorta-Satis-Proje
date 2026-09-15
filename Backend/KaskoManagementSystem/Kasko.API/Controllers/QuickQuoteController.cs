@@ -60,6 +60,20 @@ public class QuickQuoteController : ControllerBase
             policyPdfService;
     }
 
+    [HttpPost("estimate")]
+    public async Task<IActionResult> Estimate(
+        [FromBody] QuickQuoteEstimateRequestDto dto,
+        [FromServices] IQuickQuoteEstimateService estimateService,
+        CancellationToken cancellationToken)
+    {
+        var result =
+            await estimateService.EstimateAsync(
+                dto,
+                cancellationToken);
+
+        return Ok(result);
+    }
+
     [HttpPost("customer/lookup")]
     public async Task<IActionResult> CustomerLookup(
         [FromBody]

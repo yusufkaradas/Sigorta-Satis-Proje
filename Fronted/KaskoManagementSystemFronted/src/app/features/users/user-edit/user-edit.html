@@ -1,223 +1,93 @@
-<div class="user-edit-page">
+<div class="kf-page">
 
-  <section class="page-header">
-
-    <div>
-      <h1>Kullanıcı Düzenle</h1>
-
-      <p>
-        Sistem kullanıcısının bilgilerini düzenle
-      </p>
-    </div>
-
-    <button
-      type="button"
-      class="back-button"
-      (click)="cancel()">
-
-      ← Kullanıcılara Dön
-
-    </button>
-
-  </section>
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="error-message">
-
-    {{ errorMessage }}
-
+  <div class="kf-title">
+    KULLANICI DÜZENLE
   </div>
 
+  <form
+    class="kf-panel"
+    (ngSubmit)="save()"
+    #userForm="ngForm">
 
-  <section
-    *ngIf="!isLoading && !errorMessage"
-    class="form-card">
-
-    <h2>
-      Kullanıcı Bilgileri
-    </h2>
-
-
-    <form
-      (ngSubmit)="save()"
-      #userForm="ngForm">
-
-
-      <div class="form-grid">
-
-
-        <!-- AD -->
-
-        <div class="form-group">
-
-          <label for="firstName">
-            Ad
-          </label>
-
-          <input
-            id="firstName"
-            type="text"
-            name="firstName"
-            [(ngModel)]="model.firstName"
-            required>
-
-        </div>
-
-
-        <!-- SOYAD -->
-
-        <div class="form-group">
-
-          <label for="lastName">
-            Soyad
-          </label>
-
-          <input
-            id="lastName"
-            type="text"
-            name="lastName"
-            [(ngModel)]="model.lastName"
-            required>
-
-        </div>
-
-
-        <!-- E-POSTA -->
-
-        <div class="form-group">
-
-          <label for="email">
-            E-posta
-          </label>
-
-          <input
-            id="email"
-            type="email"
-            name="email"
-            [(ngModel)]="model.email"
-            required>
-
-        </div>
-
-
-        <!-- TELEFON -->
-
-        <div class="form-group">
-
-          <label for="phoneNumber">
-            Telefon
-          </label>
-
-          <input
-            id="phoneNumber"
-            type="text"
-            name="phoneNumber"
-            [(ngModel)]="model.phoneNumber">
-
-        </div>
-
-
-        <!-- ROL -->
-<div class="form-group">
-
-  <label for="roleId">
-    Rol
-  </label>
-
-  <select
-    id="roleId"
-    name="roleId"
-    [(ngModel)]="model.roleId"
-    required>
-
-    <option value="" disabled>
-      Rol seçiniz
-    </option>
-
-    <option
-      *ngFor="let role of roles"
-      [value]="role.id">
-
-      {{ role.name }}
-
-    </option>
-
-  </select>
-
-</div>
-
-
-        <!-- DURUM -->
-
-        <div class="form-group">
-
-          <label for="isActive">
-            Durum
-          </label>
-
-          <select
-            id="isActive"
-            name="isActive"
-            [(ngModel)]="model.isActive">
-
-            <option [ngValue]="true">
-              Aktif
-            </option>
-
-            <option [ngValue]="false">
-              Pasif
-            </option>
-
-          </select>
-
-        </div>
-
-
+    <div class="kf-panel-head">
+      <div>
+        <h1>{{ model.firstName }} {{ model.lastName }}</h1>
+        <p>Kullanıcının bilgilerini, rolünü ve durumunu güncelleyin.</p>
       </div>
+      <button type="button" class="kf-btn-outline" (click)="cancel()">← Kullanıcılara Dön</button>
+    </div>
 
+    <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
 
-      <div
-        *ngIf="errorMessage"
-        class="form-error">
+    <div *ngIf="isLoading" class="kf-state">Kullanıcı yükleniyor...</div>
 
-        {{ errorMessage }}
+    <div *ngIf="!isLoading" class="kf-body kf-body-half">
 
-      </div>
+      <section class="kf-section">
 
+        <h2 class="kf-section-title">Kişisel Bilgiler</h2>
 
-      <div class="form-actions">
+        <div class="kf-grid">
 
-        <button
-          type="button"
-          class="cancel-button"
-          (click)="cancel()">
+          <div class="kf-field">
+            <label for="firstName">Ad *</label>
+            <input id="firstName" type="text" name="firstName" [(ngModel)]="model.firstName" required />
+          </div>
 
-          İptal
+          <div class="kf-field">
+            <label for="lastName">Soyad *</label>
+            <input id="lastName" type="text" name="lastName" [(ngModel)]="model.lastName" required />
+          </div>
 
-        </button>
+          <div class="kf-field kf-span-all">
+            <label for="phoneNumber">Telefon</label>
+            <input id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" />
+          </div>
 
+        </div>
 
-        <button
-          type="submit"
-          class="save-button"
-          [disabled]="
-            userForm.invalid ||
-            isSaving
-          ">
+      </section>
 
-          {{
-            isSaving
-              ? 'Kaydediliyor...'
-              : 'Kaydet'
-          }}
+      <section class="kf-section">
 
-        </button>
+        <h2 class="kf-section-title">Hesap Bilgileri</h2>
 
-      </div>
+        <div class="kf-grid">
 
+          <div class="kf-field kf-span-all">
+            <label for="email">E-posta *</label>
+            <input id="email" type="email" name="email" [(ngModel)]="model.email" required />
+          </div>
 
-    </form>
+          <div class="kf-field">
+            <label for="roleId">Rol *</label>
+            <select id="roleId" name="roleId" [(ngModel)]="model.roleId" required>
+              <option value="" disabled>Rol seçin</option>
+              <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
+            </select>
+          </div>
 
-  </section>
+          <div class="kf-field">
+            <label for="isActive">Durum</label>
+            <select id="isActive" name="isActive" [(ngModel)]="model.isActive">
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions">
+      <button type="button" class="kf-btn-outline" (click)="cancel()">İptal</button>
+      <button type="submit" class="kf-btn" [disabled]="userForm.invalid || isSaving || isLoading">
+        {{ isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+      </button>
+    </div>
+
+  </form>
 
 </div>

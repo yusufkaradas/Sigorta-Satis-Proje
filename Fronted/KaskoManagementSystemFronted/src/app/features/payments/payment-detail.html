@@ -1,145 +1,72 @@
-<div class="payment-detail-page">
+<div class="kf-page">
 
-  <div class="detail-header">
-
-    <div>
-      <h1>Ödeme Detayı</h1>
-      <p>Poliçe ödeme işlem bilgileri</p>
-    </div>
-
-    <a
-      routerLink="/payments"
-      class="back-button"
-    >
-      ← Ödemelere Dön
-    </a>
-
+  <div class="kf-title">
+    ÖDEME DETAYI
   </div>
 
-  <div
-    *ngIf="isLoading"
-    class="state-message"
-  >
-    Ödeme yükleniyor...
-  </div>
+  <section class="kf-panel">
 
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="state-message error"
-  >
-    {{ errorMessage }}
-  </div>
-<div
-  *ngIf="payment && payment.status === 3"
-  class="payment-success-banner"
->
-
-  <div class="payment-success-icon">
-    ✓
-  </div>
-
-  <div class="payment-success-content">
-
-    <span class="payment-success-label">
-      ÖDEME TAMAMLANDI
-    </span>
-
-    <h2>
-      Ödemeniz başarıyla gerçekleşti
-    </h2>
-
-    <p>
-      Poliçeniz aktif hale getirildi.
-    </p>
-
-  </div>
-
-</div>
-  <section
-    *ngIf="!isLoading && payment"
-    class="detail-card"
-  >
-@if (payment?.status === 4) {
-  <div class="payment-failed-banner">
-
-    <div class="payment-failed-icon">
-      !
+    <div class="kf-panel-head">
+      <div>
+        <h1>
+          {{ payment ? (payment.transactionNumber | recordNo:'full') : 'Ödeme Detayı' }}
+          <span
+            *ngIf="payment"
+            class="kf-badge"
+            [ngClass]="{
+              'status-success': payment.status === 3,
+              'status-pending': payment.status === 1 || payment.status === 2,
+              'status-failed': payment.status === 4 || payment.status === 5,
+              'status-refunded': payment.status === 6
+            }">
+            {{ getStatusText(payment.status) }}
+          </span>
+        </h1>
+        <p>Poliçe ödeme işlem bilgileri.</p>
+      </div>
+      <a [routerLink]="basePath + '/payments'" class="kf-btn-outline">← Ödemelere Dön</a>
     </div>
 
-    <div class="payment-failed-content">
+    <div *ngIf="payment && payment.status === 3" class="kf-alert kf-alert-success">
+      Ödeme başarıyla gerçekleşti, poliçe aktif hale getirildi.
+    </div>
 
-      <span class="payment-failed-label">
-        ÖDEME BAŞARISIZ
-      </span>
+    <div *ngIf="payment && payment.status === 4" class="kf-alert kf-alert-error">
+      Ödeme gerçekleştirilemedi: {{ payment.failureReason || 'İşlem sırasında bir hata oluştu.' }}
+    </div>
 
-      <h2>
-        Ödemeniz gerçekleştirilemedi
-      </h2>
+    <div *ngIf="isLoading" class="kf-state">Ödeme yükleniyor...</div>
 
-      <p>
-        {{ payment?.failureReason || 'Ödeme işlemi sırasında bir hata oluştu.' }}
-      </p>
+    <div *ngIf="!isLoading && errorMessage" class="kf-state">{{ errorMessage }}</div>
+
+    <div *ngIf="!isLoading && payment" class="kf-body kf-body-half">
+
+      <section class="kf-section">
+        <h2 class="kf-section-title">Tutar</h2>
+        <div class="kf-highlight">
+          <span>Ödenen Tutar</span>
+          <strong>{{ payment.amount | number:'1.2-2' }} ₺</strong>
+        </div>
+        <dl class="kf-details kf-details-1">
+          <div><dt>Durum</dt><dd>{{ getStatusText(payment.status) }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="kf-section">
+        <h2 class="kf-section-title">İşlem Bilgileri</h2>
+        <dl class="kf-details">
+          <div><dt>İşlem No</dt><dd [title]="payment.transactionNumber">{{ payment.transactionNumber | recordNo:'full' }}</dd></div>
+          <div><dt>Poliçe ID</dt><dd [title]="payment.policyId">{{ payment.policyId }}</dd></div>
+          <div><dt>Ödeme Tarihi</dt><dd>{{ payment.paymentDate | backendDate:'datetime' }}</dd></div>
+          <div><dt>Oluşturulma</dt><dd>{{ payment.createdDate | backendDate:'datetime' }}</dd></div>
+          <div class="kf-span-all"><dt>Hata Nedeni</dt><dd [title]="payment.failureReason || ''">{{ payment.failureReason || '—' }}</dd></div>
+        </dl>
+      </section>
 
     </div>
 
-  </div>
-}
-    <div class="detail-row">
-      <span>İşlem No</span>
-      <strong>
-        {{ payment.transactionNumber }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Poliçe ID</span>
-      <strong>
-        {{ payment.policyId }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Tutar</span>
-      <strong>
-        {{ payment.amount | number:'1.2-2' }} ₺
-      </strong>
-    </div>
-
-    <div class="detail-row">
-  <span>Durum</span>
-
-  <span
-    class="payment-status"
-    [ngClass]="{
-      success: payment.status === 3,
-      pending: payment.status === 1 || payment.status === 2,
-      failed: payment.status === 4,
-      cancelled: payment.status === 5 || payment.status === 6
-    }"
-  >
-    {{ getStatusText(payment.status) }}
-  </span>
-</div>
-
-    <div class="detail-row">
-      <span>Ödeme Tarihi</span>
-      <strong>
-        {{ formatDate(payment.paymentDate) }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Oluşturulma Tarihi</span>
-      <strong>
-        {{ formatDate(payment.createdDate) }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Hata Nedeni</span>
-      <strong>
-        {{ payment.failureReason || '-' }}
-      </strong>
+    <div class="kf-actions">
+      <a [routerLink]="basePath + '/payments'" class="kf-btn-outline">Ödemelere Dön</a>
     </div>
 
   </section>

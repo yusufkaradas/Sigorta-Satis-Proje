@@ -20,6 +20,7 @@ public class PreviousPolicyController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Create(
         [FromBody] CreatePreviousPolicyDto dto,
         CancellationToken cancellationToken)

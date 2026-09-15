@@ -3,6 +3,7 @@ using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
 using Kasko.Business.Services.Concrete;
 using Kasko.DataAccess.Repositories.Abstract;
+using Microsoft.AspNetCore.Http;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 using Moq;
@@ -16,6 +17,7 @@ namespace Kasko.Business.Tests.Services
         private Mock<IUnitOfWork> _unitOfWorkMock = null!;
         private PaymentService _paymentService = null!;
         private readonly Mock<INotificationService> _notificationServiceMock;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
 
         public PaymentServiceTests()
         {
@@ -23,12 +25,14 @@ namespace Kasko.Business.Tests.Services
             _policyRepositoryMock = new Mock<IPolicyRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _notificationServiceMock = new Mock<INotificationService>();
+            _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
             _paymentService = new PaymentService(
                 _paymentRepositoryMock.Object,
                 _policyRepositoryMock.Object,
                 _unitOfWorkMock.Object,
-                _notificationServiceMock.Object
+                _notificationServiceMock.Object,
+                _httpContextAccessorMock.Object
                 );
         }
 

@@ -1,125 +1,54 @@
-<div class="policy-create-page">
+<div class="kf-page">
 
-  <section class="processing-card">
+  <div class="kf-title">
+    POLİÇE OLUŞTUR
+  </div>
 
-    <!-- OTOMATİK İŞLEM -->
-    @if (isSubmitting) {
+  <section class="kf-panel">
 
-      <div class="processing-icon processing-icon-loading">
-
-        <span class="processing-spinner"></span>
-
+    <div class="kf-panel-head">
+      <div>
+        <h1>Poliçe Oluşturma</h1>
+        <p>Kabul edilen teklif üzerinden poliçe hazırlanır ve ödeme adımına geçilir.</p>
       </div>
+      <a routerLink="/quotes" class="kf-btn-outline">← Tekliflere Dön</a>
+    </div>
 
-      <span class="processing-eyebrow">
-        SATIN ALMA İŞLEMİ
-      </span>
+    <div class="kf-body kf-body-center">
 
-      <h1>
-        Poliçeniz hazırlanıyor
-      </h1>
+      <section class="kf-section kf-narrow kf-process">
 
-      <p>
-        Kabul edilen teklifiniz üzerinden poliçe oluşturuluyor.
-      </p>
+        @if (isSubmitting) {
+          <span class="kf-process-icon">⟳</span>
+          <h2 class="kf-section-title">Poliçeniz hazırlanıyor</h2>
+          <p class="kf-muted">Kabul edilen teklifiniz üzerinden poliçe oluşturuluyor.</p>
+          <ul class="kf-list">
+            <li class="kf-list-item"><strong>Teklif onaylandı</strong><span class="kf-badge status-success">Tamam</span></li>
+            <li class="kf-list-item"><strong>Poliçe hazırlanıyor</strong><span class="kf-badge status-processing">Sürüyor</span></li>
+            <li class="kf-list-item"><strong>Ödeme</strong><span class="kf-badge">Bekliyor</span></li>
+          </ul>
+        }
 
-      <div class="processing-steps">
+        @if (successMessage) {
+          <span class="kf-process-icon kf-process-success">✓</span>
+          <h2 class="kf-section-title">Poliçeniz hazır</h2>
+          <p class="kf-muted">{{ successMessage }}</p>
+          <div class="kf-alert kf-alert-info">Ödeme ekranına yönlendiriliyorsunuz...</div>
+        }
 
-        <div class="processing-step processing-step-active">
-          <span class="step-icon">
-            ✓
-          </span>
+        @if (errorMessage) {
+          <span class="kf-process-icon kf-process-error">!</span>
+          <h2 class="kf-section-title">Poliçe oluşturulamadı</h2>
+          <p class="kf-muted">{{ errorMessage }}</p>
+        }
 
-          <span>
-            Teklif onaylandı
-          </span>
-        </div>
+      </section>
 
-        <div class="processing-step processing-step-active">
-          <span class="step-icon">
-            <span class="mini-spinner"></span>
-          </span>
+    </div>
 
-          <span>
-            Poliçe hazırlanıyor
-          </span>
-        </div>
-
-        <div class="processing-step">
-          <span class="step-icon">
-            3
-          </span>
-
-          <span>
-            Ödeme
-          </span>
-        </div>
-
-      </div>
-
-    }
-
-
-    <!-- BAŞARILI -->
-    @if (successMessage) {
-
-      <div class="processing-icon processing-icon-success">
-        ✓
-      </div>
-
-      <span class="processing-eyebrow">
-        İŞLEM HAZIR
-      </span>
-
-      <h1>
-        Poliçeniz hazır
-      </h1>
-
-      <p>
-        {{ successMessage }}
-      </p>
-
-      <div class="redirect-note">
-        <span class="redirect-spinner"></span>
-
-        Ödeme ekranına yönlendiriliyorsunuz...
-      </div>
-
-    }
-
-
-    <!-- HATA -->
-    @if (errorMessage) {
-
-      <div class="processing-icon processing-icon-error">
-        !
-      </div>
-
-      <span class="processing-eyebrow">
-        İŞLEM TAMAMLANAMADI
-      </span>
-
-      <h1>
-        Poliçe oluşturulamadı
-      </h1>
-
-      <p>
-        {{ errorMessage }}
-      </p>
-
-      <div class="error-actions">
-
-        <a
-          routerLink="/quotes"
-          class="secondary-button">
-
-          Tekliflere Dön
-
-        </a>
-
-      </div>
-
-    }
+    <div class="kf-actions">
+      <a routerLink="/quotes" class="kf-btn-outline">Tekliflere Dön</a>
+    </div>
 
   </section>
 

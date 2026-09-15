@@ -1,0 +1,989 @@
+@use '../../shared/styles/kasko-theme' as k;
+
+.qq-page {
+  box-sizing: border-box;
+  font-family: k.$font;
+  color: k.$text;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  h1,
+  p,
+  dl,
+  dd,
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul,
+  ol {
+    list-style: none;
+  }
+
+  button {
+    font-family: inherit;
+    color: inherit;
+  }
+}
+
+.qq-page {
+  height: 100%;
+  display: grid;
+  grid-template-columns: k.u(248) minmax(0, 1fr);
+  background: k.$surface;
+}
+
+.qq-sidebar {
+  min-height: 0;
+  padding: k.u(35) k.u(23) 0;
+  border: 2px solid k.$black;
+  border-radius: k.u(16);
+  background: k.$primary;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: k.u(110);
+  overflow: hidden;
+}
+
+.qq-logo {
+  width: k.u(150);
+  height: k.u(150);
+  flex: 0 0 auto;
+  border: 2px solid k.$surface;
+  border-radius: k.u(16);
+  background: k.$black;
+  color: k.$surface;
+  display: grid;
+  place-items: center;
+  font-size: k.u(24);
+  text-decoration: none;
+}
+
+.qq-steps {
+  width: k.u(200);
+  height: k.u(400);
+  flex: 0 0 auto;
+  padding: k.u(16) k.u(14);
+  border: 2px solid k.$surface;
+  border-radius: k.u(22);
+  background: k.$black;
+  color: k.$surface;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.qq-steps-title {
+  display: block;
+  margin-bottom: k.u(10);
+  font-size: k.u(20);
+  font-weight: 700;
+  text-align: center;
+}
+
+.qq-steps li {
+  padding: k.u(4) k.u(2);
+  display: flex;
+  align-items: center;
+  gap: k.u(8);
+  color: k.$text-disabled;
+  font-size: k.u(13);
+  white-space: nowrap;
+}
+
+.qq-step-dot {
+  width: k.u(22);
+  height: k.u(22);
+  flex: 0 0 k.u(22);
+  border: 1px solid k.$border-button;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: k.u(11);
+  font-weight: 700;
+}
+
+.qq-steps li.active {
+  color: k.$surface;
+  font-weight: 700;
+}
+
+.qq-steps li.active .qq-step-dot {
+  border-color: k.$info;
+  background: k.$info;
+  color: k.$surface;
+}
+
+.qq-steps li.done {
+  color: k.$border;
+}
+
+.qq-steps li.done .qq-step-dot {
+  border-color: k.$success;
+  background: k.$success;
+  color: k.$surface;
+}
+
+.qq-main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: k.u(75) minmax(0, 1fr);
+}
+
+.qq-header {
+  position: relative;
+  z-index: 1;
+  padding: 0 k.u(30);
+  border: 2px solid k.$black;
+  border-radius: k.u(16);
+  background: k.$primary;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.qq-company {
+  @include k.pill(k.$black, k.$surface, k.$surface, 2px);
+  width: k.u(250);
+  height: k.u(50);
+  display: grid;
+  place-items: center;
+  font-size: k.u(24);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.qq-header-button {
+  @include k.button(primary);
+  justify-self: end;
+  width: k.u(150);
+  height: k.u(50);
+  padding: 0;
+  border: 2px solid k.$surface;
+  border-radius: k.u(16);
+  font-size: k.u(20);
+  font-weight: 400;
+}
+
+.qq-content {
+  min-height: 0;
+  padding: k.u(15) k.u(30) k.u(30);
+  border: 2px solid k.$black;
+  border-radius: k.u(16);
+  background: k.$background;
+  box-shadow: inset 0 k.u(14) k.u(18) k.u(-12) rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: k.u(14);
+}
+
+.qq-section-title {
+  @include k.section-title;
+  width: k.u(200);
+  min-width: 0;
+  padding: 0;
+  background: k.$text-secondary;
+  font-size: k.u(20);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.qq-card {
+  flex: 1;
+  min-height: 0;
+  border: 2px solid k.$black;
+  border-radius: k.u(20);
+  background: k.$text-secondary;
+  color: k.$surface;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.qq-progress {
+  height: 4px;
+  flex: 0 0 4px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.qq-progress span {
+  height: 100%;
+  background: k.$info;
+  display: block;
+  transition: width 0.3s ease;
+}
+
+.qq-mobile-step {
+  display: none;
+}
+
+.qq-error {
+  margin: 12px 24px 0;
+  padding: 9px 12px;
+  border: 1px solid k.$danger;
+  border-radius: 8px;
+  background: k.$danger-soft;
+  color: k.$danger-text;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.qq-step {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.qq-step-head {
+  flex: 0 0 auto;
+  padding: 16px 24px 10px;
+}
+
+.qq-step-head-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.qq-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: k.$border;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.qq-step-head h1,
+.qq-loading h1,
+.qq-status-card h1 {
+  color: k.$surface;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.qq-step-head p,
+.qq-loading p,
+.qq-status-card p {
+  margin-top: 4px;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+.qq-chip-summary {
+  padding: 8px 12px;
+  border: 2px solid k.$surface;
+  border-radius: 10px;
+  background: k.$primary;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.qq-chip-summary strong,
+.qq-chip-summary span {
+  display: block;
+}
+
+.qq-chip-summary strong {
+  font-size: 13px;
+}
+
+.qq-chip-summary span {
+  color: k.$border;
+  font-size: 12px;
+}
+
+.qq-body {
+  flex: 1;
+  min-height: 0;
+  padding: 4px 24px 12px;
+  overflow: hidden;
+}
+
+.qq-body-center {
+  display: grid;
+  place-items: center;
+}
+
+.qq-actions {
+  flex: 0 0 auto;
+  padding: 10px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.qq-actions-end {
+  justify-content: flex-end;
+}
+
+.qq-btn {
+  @include k.button-base;
+  height: 36px;
+  padding: 0 18px;
+  border-width: 2px;
+  border-radius: 10px;
+}
+
+.qq-btn-primary {
+  border-color: k.$surface;
+  background: k.$info;
+  color: k.$surface;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.qq-btn-ghost {
+  border-color: k.$surface;
+  background: transparent;
+  color: k.$surface;
+}
+
+.qq-form {
+  width: min(380px, 100%);
+  padding: 20px;
+  border: 2px solid k.$black;
+  border-radius: 16px;
+  background: k.$primary;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.qq-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qq-field input,
+.qq-phone {
+  width: 100%;
+  height: 40px;
+  border: 2px solid k.$surface;
+  border-radius: 10px;
+  background: k.$border-button;
+  color: k.$surface;
+  font-size: 14px;
+}
+
+.qq-field input {
+  padding: 0 12px;
+  outline: none;
+}
+
+.qq-field input::placeholder {
+  color: #d1d5db;
+}
+
+.qq-phone {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.qq-phone span {
+  height: 100%;
+  padding: 0 10px;
+  border-right: 2px solid k.$surface;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.qq-phone input {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.qq-field input:focus,
+.qq-phone:focus-within {
+  border-color: k.$info;
+}
+
+.qq-note {
+  color: k.$border;
+  font-size: 12px;
+}
+
+.qq-vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.qq-vehicle,
+.qq-package,
+.qq-option,
+.qq-coverage {
+  border: 2px solid k.$black;
+  border-radius: 12px;
+  background: k.$surface;
+  color: k.$text;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.qq-vehicle:hover,
+.qq-package:hover,
+.qq-option:hover,
+.qq-coverage:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.qq-vehicle.selected,
+.qq-package.selected,
+.qq-option.selected,
+.qq-coverage.selected {
+  border-color: k.$info;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.45);
+}
+
+.qq-vehicle {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qq-vehicle-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.qq-vehicle-top small,
+.qq-vehicle-top strong {
+  display: block;
+}
+
+.qq-vehicle-top small,
+.qq-specs dt,
+.qq-summary dt,
+.qq-option small,
+.qq-coverage-name small,
+.qq-package-head small,
+.qq-package-head p,
+.qq-vehicle-value span {
+  color: k.$text-secondary;
+}
+
+.qq-vehicle-top small {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.qq-vehicle-top strong {
+  font-size: 14px;
+}
+
+.qq-plate {
+  padding: 3px 7px;
+  border: 2px solid k.$black;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qq-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+}
+
+.qq-specs dt {
+  font-size: 11px;
+}
+
+.qq-specs dd {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qq-vehicle-value {
+  padding-top: 8px;
+  border-top: 1px solid k.$border;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.qq-risk {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.qq-risk-group {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.qq-risk-title strong,
+.qq-risk-title small,
+.qq-option strong,
+.qq-option small {
+  display: block;
+}
+
+.qq-risk-title strong {
+  font-size: 14px;
+}
+
+.qq-risk-title small {
+  margin-top: 2px;
+  color: k.$border;
+  font-size: 12px;
+}
+
+.qq-options {
+  display: grid;
+  gap: 8px;
+}
+
+.qq-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.qq-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qq-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.qq-option {
+  padding: 8px 12px;
+}
+
+.qq-option strong {
+  font-size: 13px;
+}
+
+.qq-option small {
+  font-size: 11px;
+}
+
+.qq-package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+.qq-package {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qq-package-head small {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.qq-package-head strong {
+  display: block;
+  font-size: 16px;
+}
+
+.qq-package-head p {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.qq-package-count {
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: k.$primary;
+  color: k.$surface;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.qq-package-coverages {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.qq-more {
+  color: k.$info;
+  font-weight: 600;
+}
+
+.qq-coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+
+.qq-coverage {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qq-check {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 2px solid k.$border-button;
+  border-radius: 4px;
+  color: k.$surface;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+
+.qq-coverage.selected .qq-check {
+  border-color: k.$info;
+  background: k.$info;
+}
+
+.qq-coverage-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.qq-coverage-name strong,
+.qq-coverage-name small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qq-coverage-name strong {
+  font-size: 13px;
+}
+
+.qq-coverage-name small {
+  font-size: 11px;
+}
+
+.qq-coverage-price {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qq-loading {
+  width: min(420px, 100%);
+  text-align: center;
+}
+
+.qq-spinner {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 14px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: k.$surface;
+  border-radius: 50%;
+  display: block;
+  animation: qq-spin 0.8s linear infinite;
+}
+
+.qq-progress-ring {
+  --qq-progress: 0;
+  width: k.u(120);
+  height: k.u(120);
+  margin: 0 auto k.u(16);
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, k.$text-secondary 79%, transparent 80% 100%),
+    conic-gradient(k.$info calc(var(--qq-progress) * 1%), rgba(255, 255, 255, 0.25) 0);
+  display: grid;
+  place-items: center;
+  transition: background 0.1s linear;
+
+  span {
+    color: k.$surface;
+    font-size: k.u(28);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.qq-stage-icon {
+  width: k.u(18);
+  display: inline-block;
+  font-weight: 800;
+  text-align: center;
+}
+
+.qq-loading ul {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.qq-loading li {
+  transition: color 0.3s ease, background 0.3s ease;
+  padding: 8px 12px;
+  border: 2px solid k.$black;
+  border-radius: 10px;
+  background: k.$surface;
+  color: k.$text-secondary;
+}
+
+.qq-loading li.done {
+  color: k.$success-text;
+}
+
+.qq-loading li.active {
+  color: k.$info-text;
+  font-weight: 600;
+}
+
+@keyframes qq-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.qq-result {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.qq-result-left,
+.qq-result-right {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qq-price {
+  padding: 14px 16px;
+  border: 2px solid k.$surface;
+  border-radius: 14px;
+  background: k.$primary;
+}
+
+.qq-price span,
+.qq-price strong {
+  display: block;
+}
+
+.qq-price span {
+  color: k.$border;
+  font-size: 12px;
+}
+
+.qq-price strong {
+  font-size: 26px;
+}
+
+.qq-summary,
+.qq-result-right {
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+}
+
+.qq-summary {
+  padding: 2px 14px;
+}
+
+.qq-summary > div {
+  padding: 7px 0;
+  border-bottom: 1px solid k.$border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.qq-summary > div:last-child {
+  border-bottom: 0;
+}
+
+.qq-summary dt {
+  font-size: 12px;
+}
+
+.qq-summary dd {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.qq-summary-total dd {
+  color: k.$info-text;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.qq-result-right {
+  padding: 12px 14px;
+}
+
+.qq-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qq-result-coverages {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 16px;
+  align-content: start;
+  overflow: hidden;
+}
+
+.qq-result-coverages li {
+  padding: 5px 0;
+  border-bottom: 1px dashed k.$border;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.qq-status-card {
+  width: min(440px, 100%);
+  text-align: center;
+}
+
+.qq-status-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border: 2px solid k.$surface;
+  border-radius: 50%;
+  background: k.$success;
+  color: k.$surface;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.qq-status-icon-neutral {
+  background: k.$info;
+}
+
+.qq-status-card .qq-summary {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.qq-badge {
+  @include k.badge-base;
+  background: k.$info-soft;
+  color: k.$info-text;
+}
+
+.qq-badge-success {
+  background: k.$success-soft;
+  color: k.$success-text;
+}
+
+@media (max-height: 720px) {
+
+  .qq-step-head p {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+
+  .qq-page {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-columns: 1fr;
+  }
+
+  .qq-sidebar {
+    display: none;
+  }
+
+  .qq-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .qq-header > span {
+    display: none;
+  }
+
+  .qq-company {
+    min-width: 0;
+    justify-self: start;
+    font-size: 14px;
+  }
+
+  .qq-content {
+    padding: 12px;
+  }
+
+  .qq-mobile-step {
+    display: block;
+    padding: 10px 16px 0;
+    color: k.$border;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .qq-step-head,
+  .qq-body,
+  .qq-actions {
+    padding-inline: 16px;
+  }
+
+  .qq-step-head-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .qq-body {
+    overflow: visible;
+  }
+
+  .qq-risk-group,
+  .qq-result,
+  .qq-cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .qq-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

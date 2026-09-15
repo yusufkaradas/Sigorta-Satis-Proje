@@ -7,4 +7,6 @@ public interface INotificationService
     Task CreateAsync(NotificationCreateDto dto);
 
     Task<IEnumerable<NotificationDto>> GetByCustomerIdAsync(Guid customerId);
+
+    Task<IEnumerable<NotificationDto>> GetMyNotificationsAsync();
 }

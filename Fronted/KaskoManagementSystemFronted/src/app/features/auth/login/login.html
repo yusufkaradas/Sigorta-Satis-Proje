@@ -37,7 +37,7 @@
     <main class="login-main">
 
       <div class="login-title">
-        GİRİŞ EKRANI
+        <span>GİRİŞ EKRANI</span>
       </div>
 
 
@@ -115,7 +115,8 @@
 
 
             <a
-              href="#"
+              routerLink="/forgot-password"
+              [queryParams]="email ? { email: email } : {}"
               class="forgot-password"
             >
               Şifremi Unuttum
@@ -141,14 +142,24 @@
 
           }
 
+          <div class="auth-actions">
 
-          <button
-            type="submit"
-            class="login-button"
-            [disabled]="isLoading"
-          >
-            {{ isLoading ? 'Giriş Yapılıyor...' : 'Giriş yap' }}
-          </button>
+            <button
+              type="submit"
+              class="login-button"
+              [disabled]="isLoading"
+            >
+              {{ isLoading ? 'Giriş Yapılıyor...' : 'Giriş yap' }}
+            </button>
+
+            <a
+              routerLink="/register"
+              class="login-button"
+            >
+              Kayıt Ol!
+            </a>
+
+          </div>
 
         </form>
 

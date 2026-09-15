@@ -1,0 +1,132 @@
+<div class="cp-page">
+
+  <div class="cp-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <section class="cp-stats">
+
+    <div class="cp-stat">
+      <span>Toplam Araç</span>
+      <strong>{{ vehicles().length }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Aktif Araç</span>
+      <strong>{{ activeCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Pasif Araç</span>
+      <strong>{{ passiveCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Toplam Kasko Değeri</span>
+      <strong>{{ totalMarketValue() | number:'1.0-0' }} ₺</strong>
+    </div>
+
+  </section>
+
+
+  <section class="cp-panel">
+
+    <div class="cp-panel-head">
+      <h2>Araç Listesi</h2>
+      <a
+        routerLink="/customer/quotes/new"
+        class="cp-btn">
+        Araç İçin Teklif Al
+      </a>
+    </div>
+
+    <div
+      *ngIf="isLoading()"
+      class="cp-state">
+      Araçlarınız yükleniyor...
+    </div>
+
+    <div
+      *ngIf="!isLoading() && errorMessage()"
+      class="cp-state cp-state-error">
+      {{ errorMessage() }}
+    </div>
+
+    <div
+      *ngIf="!isLoading() && !errorMessage() && vehicles().length === 0"
+      class="cp-state">
+      Henüz kayıtlı aracınız bulunmuyor.
+    </div>
+
+    <ng-container *ngIf="!isLoading() && !errorMessage() && vehicles().length > 0">
+
+      <div class="cp-table-wrap">
+
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Araç</th>
+              <th>Model Yılı</th>
+              <th class="cp-num">Kasko Değeri</th>
+              <th>Kasko Durumu</th>
+              <th class="cp-actions-col">İşlemler</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let vehicle of pagedVehicles()">
+
+              <td class="cp-strong">{{ vehicle.plateNumber || '—' }}</td>
+              <td>
+                <div class="cp-cell">
+                  <strong [title]="vehicle.brand + ' ' + vehicle.model">{{ vehicle.brand }} {{ vehicle.model }}</strong>
+                  <small>{{ vehicleDetailLine(vehicle) }}</small>
+                </div>
+              </td>
+              <td>{{ vehicle.modelYear }}</td>
+              <td class="cp-num cp-strong">{{ vehicle.marketValue ? (vehicle.marketValue | number:'1.0-0') + ' ₺' : '—' }}</td>
+              <td>
+                <div class="cp-cell" *ngIf="activePolicyOf(vehicle.id) as policy; else noPolicy">
+                  <span><span class="cp-badge cp-badge-success">Kaskolu</span></span>
+                  <small>{{ policy.endDate | date:'dd.MM.yyyy' }} tarihine kadar</small>
+                </div>
+                <ng-template #noPolicy>
+                  <div class="cp-cell">
+                    <span><span class="cp-badge cp-badge-warning">Kasko Yok</span></span>
+                    <small>Aracınız güvence altında değil</small>
+                  </div>
+                </ng-template>
+              </td>
+              <td class="cp-actions">
+                <a class="cp-act" [routerLink]="['/customer/vehicles', vehicle.id]">Detay</a>
+                <a class="cp-act cp-act-primary" routerLink="/customer/quotes/new" [queryParams]="{ vehicleId: vehicle.id }">Teklif Al</a>
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="cp-pager">
+
+        <span>{{ vehicles().length }} kayıt · Sayfa {{ page() }} / {{ totalPages() }}</span>
+
+        <div>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </section>
+
+</div>

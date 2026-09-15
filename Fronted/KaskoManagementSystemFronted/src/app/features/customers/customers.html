@@ -4,220 +4,156 @@
     İŞLEMLER
   </div>
 
-
-  <!-- İSTATİSTİKLER -->
-
   <div class="customer-stats-grid">
 
-    <div class="customer-stat-card">
-
+    <button type="button" class="customer-stat-card" (click)="onFilterChange('all')">
       <span>Toplam Müşteri</span>
+      <strong>{{ stats().total }}</strong>
+      <small>{{ stats().active }} aktif · {{ stats().passive }} pasif</small>
+    </button>
 
-      <strong>
-        {{ totalCustomerCount }}
-      </strong>
+    <button type="button" class="customer-stat-card" (click)="onFilterChange('insured')">
+      <span>Poliçesi Olan</span>
+      <strong>{{ stats().insured }}</strong>
+      <small>Müşterilerin %{{ stats().insuredRate }}'i aktif poliçeli</small>
+    </button>
 
-    </div>
+    <button type="button" class="customer-stat-card" (click)="onFilterChange('uninsured')">
+      <span>Teklif Fırsatı</span>
+      <strong>{{ stats().uninsured }}</strong>
+      <small>Aktif ama poliçesi olmayan müşteri</small>
+    </button>
 
-
-    <div class="customer-stat-card">
-
-      <span>Aktif Müşteri</span>
-
-      <strong>
-        {{ activeCustomerCount }}
-      </strong>
-
-    </div>
-
-
-    <div class="customer-stat-card">
-
-      <span>Pasif Müşteri</span>
-
-      <strong>
-        {{ inactiveCustomerCount }}
-      </strong>
-
-    </div>
-
-
-    <div class="customer-stat-card">
-
-      <span>Gösterilen</span>
-
-      <strong>
-        {{ filteredCustomers.length }}
-      </strong>
-
-    </div>
+    <button type="button" class="customer-stat-card" (click)="onFilterChange('noVehicle')">
+      <span>Aracı Kayıtsız</span>
+      <strong>{{ stats().noVehicle }}</strong>
+      <small>{{ stats().renewalSoon }} müşterinin poliçesi 30 günde bitiyor</small>
+    </button>
 
   </div>
 
-
-  <!-- MÜŞTERİ LİSTESİ -->
 
   <section class="customers-card">
 
     <div class="customers-toolbar">
 
       <div class="search-wrapper">
-
-        <span class="search-label">
-          Müşteri Ara
-        </span>
-
+        <span class="search-label">Müşteri Ara</span>
         <input
           type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-          placeholder="Ad, e-posta, telefon, T.C. veya şehir..."
-        />
-
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          placeholder="Ad, e-posta, telefon, T.C. No veya şehir..." />
       </div>
 
+      <div class="filter-wrapper">
+        <label for="customer-filter">Göster</label>
+        <select
+          id="customer-filter"
+          [value]="filter()"
+          (change)="onFilterChange($any($event.target).value)">
+          <option value="all">Tüm Müşteriler</option>
+          <option value="insured">Aktif Poliçesi Olanlar</option>
+          <option value="uninsured">Poliçesi Olmayanlar</option>
+          <option value="noVehicle">Aracı Kayıtsız Olanlar</option>
+          <option value="passive">Pasif Müşteriler</option>
+        </select>
+      </div>
+
+      <button
+        *ngIf="searchTerm() || filter() !== 'all'"
+        type="button"
+        class="clear-button"
+        (click)="clearFilters()">
+        Temizle
+      </button>
 
       <a
+        *ngIf="!portal.isManager"
         routerLink="/customers/new"
-        class="new-customer-button"
-      >
+        class="new-customer-button">
         + Yeni Müşteri
       </a>
 
     </div>
 
-
-    <!-- LOADING -->
-
-    <div
-      *ngIf="isLoading"
-      class="state-message"
-    >
-      Müşteriler yükleniyor...
+    <div *ngIf="isLoading()" class="state-message">
+      <strong>Müşteriler yükleniyor...</strong>
     </div>
 
-
-    <!-- ERROR -->
-
-    <div
-      *ngIf="!isLoading && errorMessage"
-      class="state-message error"
-    >
-      {{ errorMessage }}
+    <div *ngIf="!isLoading() && errorMessage()" class="state-message error">
+      <strong>{{ errorMessage() }}</strong>
     </div>
 
-
-    <!-- TABLE -->
-
-    <div
-      *ngIf="!isLoading && !errorMessage"
-      class="table-container"
-    >
+    <div *ngIf="!isLoading() && !errorMessage()" class="table-container">
 
       <table>
 
         <thead>
-
           <tr>
-
-            <th>Ad Soyad</th>
-
-            <th>Kimlik No</th>
-
-            <th>E-posta</th>
-
+            <th class="col-customer">Müşteri</th>
+            <th>T.C. Kimlik No</th>
             <th>Telefon</th>
-
-            <th>Şehir / İlçe</th>
-
+            <th>Konum</th>
+            <th>Araç / Poliçe</th>
             <th>Durum</th>
-
-            <th>İşlem</th>
-
+            <th class="col-action">İşlem</th>
           </tr>
-
         </thead>
-
 
         <tbody>
 
-          <tr
-            *ngFor="let customer of pagedCustomers"
-          >
+          <tr *ngFor="let row of pagedRows()">
 
-            <td class="customer-name">
-
-              {{ customer.firstName }}
-              {{ customer.lastName }}
-
+            <td class="col-customer">
+              <div class="customer-cell">
+                <strong [title]="row.fullName">{{ row.fullName }}</strong>
+                <span class="customer-email" [title]="row.customer.email">{{ row.customer.email }}</span>
+              </div>
             </td>
 
+            <td class="customer-mono" title="Kişisel veri gizlendi">{{ row.maskedIdentity }}</td>
+
+            <td class="customer-mono">{{ row.phone }}</td>
+
+            <td [title]="row.location">{{ row.location || '—' }}</td>
 
             <td>
-              {{ customer.identityNumber }}
+              <div class="customer-cell">
+                <strong>{{ row.vehicleCount }} araç</strong>
+                <span *ngIf="row.activePolicyCount > 0" class="customer-policy-ok">
+                  {{ row.activePolicyCount }} aktif poliçe{{ row.renewalSoon ? ' · yenileme yakın' : '' }}
+                </span>
+                <span *ngIf="row.activePolicyCount === 0" class="customer-policy-none">Poliçe yok</span>
+              </div>
             </td>
 
-
             <td>
-              {{ customer.email }}
-            </td>
-
-
-            <td>
-              {{ customer.phoneNumber }}
-            </td>
-
-
-            <td>
-
-              {{ customer.city }}
-              /
-              {{ customer.district }}
-
-            </td>
-
-
-            <td>
-
               <span
                 class="customer-status"
-                [class.active]="customer.isActive"
-                [class.passive]="!customer.isActive"
-              >
-                {{ getStatusText(customer) }}
+                [class.active]="row.customer.isActive"
+                [class.passive]="!row.customer.isActive">
+                {{ row.customer.isActive ? 'Aktif' : 'Pasif' }}
               </span>
-
             </td>
 
-
-            <td>
-
+            <td class="col-action">
               <a
                 class="detail-button"
-                [routerLink]="[
-                  '/customers',
-                  customer.id
-                ]"
-              >
+                [routerLink]="[portal.basePath + '/customers', row.customer.id]">
                 Detay
               </a>
-
             </td>
 
           </tr>
 
-
-          <tr
-            *ngIf="pagedCustomers.length === 0"
-          >
-
-            <td
-              colspan="7"
-              class="empty-row"
-            >
-              Müşteri bulunamadı.
+          <tr *ngIf="pagedRows().length === 0">
+            <td colspan="7" class="empty-row">
+              <div class="empty-state-content">
+                <strong>Müşteri bulunamadı</strong>
+                <span>Arama veya filtre kriterlerini değiştirmeyi deneyin.</span>
+              </div>
             </td>
-
           </tr>
 
         </tbody>
@@ -226,48 +162,26 @@
 
     </div>
 
-
-    <!-- PAGINATION -->
-
     <div
       class="pagination"
-      *ngIf="
-        !isLoading &&
-        !errorMessage &&
-        filteredCustomers.length > 0
-      "
-    >
+      *ngIf="!isLoading() && !errorMessage() && filteredRows().length > 0">
+
+      <button type="button" (click)="goToPage(1)" [disabled]="currentPage() === 1" title="İlk sayfa">«</button>
+      <button type="button" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">‹</button>
 
       <button
         type="button"
-        (click)="previousPage()"
-        [disabled]="currentPage === 1"
-      >
-        ‹
-      </button>
-
-
-      <button
-        type="button"
-        *ngFor="let page of pageNumbers"
+        *ngFor="let page of visiblePages()"
         (click)="goToPage(page)"
-        [class.current]="currentPage === page"
-      >
+        [class.current]="currentPage() === page">
         {{ page }}
       </button>
 
-
-      <button
-        type="button"
-        (click)="nextPage()"
-        [disabled]="currentPage === totalPages"
-      >
-        ›
-      </button>
-
+      <button type="button" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">›</button>
+      <button type="button" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Son sayfa">»</button>
 
       <span class="page-info">
-        {{ currentPage }} / {{ totalPages }}
+        {{ filteredRows().length }} müşteri · Sayfa {{ currentPage() }} / {{ totalPages() }}
       </span>
 
     </div>

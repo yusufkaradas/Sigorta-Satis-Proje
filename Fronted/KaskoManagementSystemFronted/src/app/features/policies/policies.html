@@ -12,46 +12,27 @@
   <div class="policy-stats-grid">
 
     <div class="policy-stat-card">
-
-      <span>Toplam Poliçe</span>
-
-      <strong>
-        {{ totalPolicies }}
-      </strong>
-
-    </div>
-
-
-    <div class="policy-stat-card">
-
       <span>Aktif Poliçe</span>
-
-      <strong>
-        {{ activePolicies }}
-      </strong>
-
+      <strong>{{ activePolicies }}</strong>
+      <small>{{ activePremium | number:'1.0-0' }} ₺ toplam prim</small>
     </div>
 
-
     <div class="policy-stat-card">
-
-      <span>Taslak Poliçe</span>
-
-      <strong>
-        {{ draftPolicies }}
-      </strong>
-
+      <span>Ödeme Bekleyen</span>
+      <strong>{{ draftPolicies }}</strong>
+      <small>Tahsilatı yapılmamış poliçe</small>
     </div>
 
+    <div class="policy-stat-card">
+      <span>30 Günde Bitecek</span>
+      <strong>{{ renewalSoonCount }}</strong>
+      <small>Yenileme için iletişime geçin</small>
+    </div>
 
     <div class="policy-stat-card">
-
       <span>İptal Edilen</span>
-
-      <strong>
-        {{ cancelledPolicies }}
-      </strong>
-
+      <strong>{{ cancelledPolicies }}</strong>
+      <small>Toplam {{ totalPolicies }} poliçeden</small>
     </div>
 
   </div>
@@ -128,6 +109,7 @@
       <button
         type="button"
         class="new-policy-button"
+        *ngIf="!portal.isManager"
         routerLink="/policies/new"
       >
         + Yeni Poliçe
@@ -197,102 +179,45 @@
       <table class="policy-table">
 
         <thead>
-
           <tr>
-
-            <th>Poliçe No</th>
+            <th>Numara</th>
             <th>Müşteri</th>
             <th>Araç</th>
-            <th>Tür</th>
+            <th>Prim</th>
             <th>Başlangıç</th>
             <th>Bitiş</th>
             <th>Durum</th>
             <th>İşlem</th>
-
           </tr>
-
         </thead>
-
 
         <tbody>
 
-          <tr
-            *ngFor="let policy of paginatedPolicies"
-          >
+          <tr *ngFor="let policy of paginatedPolicies">
+
+            <td><div class="date-cell" [title]="policy.policyNumber"><strong class="record-no">{{ policy.policyNumber | recordNo }}</strong><span class="time-value">{{ policy.policyNumber | recordNo:'label' }}</span></div></td>
+
+            <td>{{ policy.customerName || '—' }}</td>
+
+            <td [title]="(policy.brand || '') + ' ' + (policy.model || '')">{{ policy.brand || '—' }} {{ policy.model || '' }}</td>
+
+            <td><strong>{{ policy.premiumAmount | number:'1.2-2' }} ₺</strong></td>
+
+            <td>{{ policy.startDate | date:'dd.MM.yyyy' }}</td>
 
             <td>
-
-              <strong class="policy-number">
-                {{ policy.policyNumber }}
-              </strong>
-
-            </td>
-
-
-            <td>
-
-              <div class="customer-cell">
-
-                <strong>
-                  {{ policy.customerName || '—' }}
-                </strong>
-
+              <div class="date-cell">
+                <span>{{ policy.endDate | date:'dd.MM.yyyy' }}</span>
+                <span *ngIf="policy.status === PolicyStatus.Active" class="time-value">{{ deadlineText(policy.endDate) }}</span>
               </div>
-
             </td>
 
-
             <td>
-
-              <div class="vehicle-cell">
-
-                <strong>
-                  {{ policy.brand || '—' }}
-                  {{ policy.model || '' }}
-                </strong>
-
-              </div>
-
+              <span class="policy-status" [ngClass]="getStatusClass(policy.status)">{{ getStatusText(policy.status) }}</span>
             </td>
 
-
             <td>
-              Kasko
-            </td>
-
-
-            <td>
-              {{ policy.startDate | date:'dd.MM.yyyy' }}
-            </td>
-
-
-            <td>
-              {{ policy.endDate | date:'dd.MM.yyyy' }}
-            </td>
-
-
-            <td>
-
-              <span
-                class="policy-status"
-                [ngClass]="getStatusClass(policy.status)"
-              >
-                {{ getStatusText(policy.status) }}
-              </span>
-
-            </td>
-
-
-            <td>
-
-              <button
-                type="button"
-                class="detail-button"
-                (click)="openDetail(policy.id)"
-              >
-                Detay
-              </button>
-
+              <button type="button" class="detail-button" (click)="openDetail(policy.id)">Detay</button>
             </td>
 
           </tr>
@@ -341,6 +266,7 @@
       "
     >
 
+      <button type="button" class="pagination-arrow" title="İlk sayfa" [disabled]="currentPage === 1" (click)="goToPage(1)">«</button>
       <button
         type="button"
         class="pagination-arrow"
@@ -370,6 +296,7 @@
       >
         ›
       </button>
+      <button type="button" class="pagination-arrow" title="Son sayfa" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">»</button>
 
 
       <span class="pagination-info">

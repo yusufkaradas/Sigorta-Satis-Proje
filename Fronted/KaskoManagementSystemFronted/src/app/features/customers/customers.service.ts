@@ -26,6 +26,8 @@ export interface Customer {
   district: string;
 
   isActive: boolean;
+
+  createdDate?: string;
 }
 
 export interface CreateCustomerRequest {

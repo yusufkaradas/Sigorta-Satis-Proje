@@ -1,0 +1,132 @@
+<div class="cp-page">
+
+  <div class="cp-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <section class="cp-stats">
+
+    <div class="cp-stat">
+      <span>Toplam İşlem</span>
+      <strong>{{ payments().length }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Başarılı Ödeme</span>
+      <strong>{{ successfulCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Bekleyen Ödeme</span>
+      <strong>{{ pendingCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Toplam Ödenen</span>
+      <strong>{{ paidTotal() | number:'1.2-2' }} ₺</strong>
+    </div>
+
+  </section>
+
+
+  <section class="cp-panel">
+
+    <div class="cp-panel-head">
+      <h2>Ödeme Geçmişi</h2>
+      <span>En yeni işlemler üstte</span>
+    </div>
+
+    <div
+      *ngIf="isLoading()"
+      class="cp-state">
+      Ödemeleriniz yükleniyor...
+    </div>
+
+    <div
+      *ngIf="!isLoading() && errorMessage()"
+      class="cp-state cp-state-error">
+      {{ errorMessage() }}
+    </div>
+
+    <div
+      *ngIf="!isLoading() && !errorMessage() && payments().length === 0"
+      class="cp-state">
+      Henüz ödeme kaydınız bulunmuyor.
+    </div>
+
+    <ng-container *ngIf="!isLoading() && !errorMessage() && payments().length > 0">
+
+      <div class="cp-table-wrap">
+
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th>Ödeme No</th>
+              <th>Ödenen Poliçe</th>
+              <th class="cp-num">Tutar</th>
+              <th>Tarih</th>
+              <th>Durum</th>
+              <th class="cp-actions-col">İşlemler</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let payment of pagedPayments()">
+
+              <td>
+                <div class="cp-cell" [title]="payment.transactionNumber">
+                  <strong class="record-no">{{ payment.transactionNumber | recordNo }}</strong>
+                  <small>Kredi kartı ile ödeme</small>
+                </div>
+              </td>
+              <td>
+                <div class="cp-cell">
+                  <strong>{{ getPolicyNumber(payment.policyId) | recordNo:'full' }}</strong>
+                  <small>{{ getPolicyVehicle(payment.policyId) }}</small>
+                </div>
+              </td>
+              <td class="cp-num cp-strong">{{ payment.amount | number:'1.2-2' }} ₺</td>
+              <td>
+                <div class="cp-cell">
+                  <span>{{ (payment.paymentDate ?? payment.createdDate) | date:'dd.MM.yyyy' }}</span>
+                  <small>{{ (payment.paymentDate ?? payment.createdDate) | date:'HH:mm' }}</small>
+                </div>
+              </td>
+              <td>
+                <div class="cp-cell">
+                  <span><span class="cp-badge" [ngClass]="getPaymentStatusClass(payment.status)">{{ getPaymentStatusText(payment.status) }}</span></span>
+                  <small *ngIf="payment.failureReason" [title]="payment.failureReason">{{ payment.failureReason }}</small>
+                </div>
+              </td>
+              <td class="cp-actions">
+                <a class="cp-act" [routerLink]="['/customer/payments', payment.id]">Detay</a>
+                <a class="cp-act" [routerLink]="['/customer/policies', payment.policyId]">Poliçe</a>
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="cp-pager">
+
+        <span>{{ payments().length }} kayıt · Sayfa {{ page() }} / {{ totalPages() }}</span>
+
+        <div>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </section>
+
+</div>

@@ -1,132 +1,101 @@
-<h1>Yeni Müşteri</h1>
+<div class="kf-page">
 
-<a routerLink="/customers">
-  ← Müşterilere Dön
-</a>
-
-<hr />
-
-<form (ngSubmit)="submit()">
-
-  <div>
-    <label>Ad</label>
-
-    <input
-      type="text"
-      name="firstName"
-      [(ngModel)]="form.firstName"
-    />
+  <div class="kf-title">
+    YENİ MÜŞTERİ
   </div>
 
+  <form
+    class="kf-panel"
+    (ngSubmit)="submit()">
 
-  <div>
-    <label>Soyad</label>
+    <div class="kf-panel-head">
+      <div>
+        <h1>Müşteri Ekle</h1>
+        <p>Yeni müşterinin kimlik, iletişim ve adres bilgilerini girin.</p>
+      </div>
+      <a routerLink="/customers" class="kf-btn-outline">← Müşterilere Dön</a>
+    </div>
 
-    <input
-      type="text"
-      name="lastName"
-      [(ngModel)]="form.lastName"
-    />
-  </div>
+    <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
 
+    <div *ngIf="successMessage" class="kf-alert kf-alert-success">{{ successMessage }}</div>
 
-  <div>
-    <label>T.C. Kimlik No</label>
+    <div class="kf-body kf-body-half">
 
-    <input
-      type="text"
-      name="identityNumber"
-      [(ngModel)]="form.identityNumber"
-    />
-  </div>
+      <section class="kf-section">
 
+        <h2 class="kf-section-title">Kişisel Bilgiler</h2>
 
-  <div>
-    <label>Doğum Tarihi</label>
+        <div class="kf-grid">
 
-    <input
-      type="date"
-      name="dateOfBirth"
-      [(ngModel)]="form.dateOfBirth"
-    />
-  </div>
+          <div class="kf-field">
+            <label for="firstName">Ad *</label>
+            <input id="firstName" type="text" name="firstName" [(ngModel)]="form.firstName" placeholder="Ad" />
+          </div>
 
+          <div class="kf-field">
+            <label for="lastName">Soyad *</label>
+            <input id="lastName" type="text" name="lastName" [(ngModel)]="form.lastName" placeholder="Soyad" />
+          </div>
 
-  <div>
-    <label>E-posta</label>
+          <div class="kf-field">
+            <label for="identityNumber">T.C. Kimlik No *</label>
+            <input id="identityNumber" type="text" inputmode="numeric" maxlength="11" name="identityNumber" [(ngModel)]="form.identityNumber" placeholder="11 haneli" />
+          </div>
 
-    <input
-      type="email"
-      name="email"
-      [(ngModel)]="form.email"
-    />
-  </div>
+          <div class="kf-field">
+            <label for="dateOfBirth">Doğum Tarihi *</label>
+            <input id="dateOfBirth" type="date" name="dateOfBirth" [(ngModel)]="form.dateOfBirth" />
+          </div>
 
+        </div>
 
-  <div>
-    <label>Telefon</label>
+      </section>
 
-    <input
-      type="text"
-      name="phoneNumber"
-      [(ngModel)]="form.phoneNumber"
-    />
-  </div>
+      <section class="kf-section">
 
+        <h2 class="kf-section-title">İletişim ve Adres</h2>
 
-  <div>
-    <label>Adres</label>
+        <div class="kf-grid">
 
-    <textarea
-      name="address"
-      [(ngModel)]="form.address"
-    ></textarea>
-  </div>
+          <div class="kf-field">
+            <label for="email">E-posta *</label>
+            <input id="email" type="email" name="email" [(ngModel)]="form.email" placeholder="ornek@eposta.com" />
+          </div>
 
+          <div class="kf-field">
+            <label for="phoneNumber">Telefon *</label>
+            <input id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="form.phoneNumber" placeholder="5XX XXX XX XX" />
+          </div>
 
-  <div>
-    <label>Şehir</label>
+          <div class="kf-field">
+            <label for="city">Şehir *</label>
+            <input id="city" type="text" name="city" [(ngModel)]="form.city" placeholder="Şehir" />
+          </div>
 
-    <input
-      type="text"
-      name="city"
-      [(ngModel)]="form.city"
-    />
-  </div>
+          <div class="kf-field">
+            <label for="district">İlçe *</label>
+            <input id="district" type="text" name="district" [(ngModel)]="form.district" placeholder="İlçe" />
+          </div>
 
+          <div class="kf-field kf-span-all">
+            <label for="address">Adres</label>
+            <textarea id="address" rows="2" name="address" [(ngModel)]="form.address" placeholder="Açık adres"></textarea>
+          </div>
 
-  <div>
-    <label>İlçe</label>
+        </div>
 
-    <input
-      type="text"
-      name="district"
-      [(ngModel)]="form.district"
-    />
-  </div>
+      </section>
 
+    </div>
 
-  <button
-    type="submit"
-    [disabled]="isSubmitting"
-  >
+    <div class="kf-actions">
+      <a routerLink="/customers" class="kf-btn-outline">İptal</a>
+      <button type="submit" class="kf-btn" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Kaydediliyor...' : 'Müşteriyi Kaydet' }}
+      </button>
+    </div>
 
-    {{
-      isSubmitting
-        ? 'Kaydediliyor...'
-        : 'Müşteri Oluştur'
-    }}
+  </form>
 
-  </button>
-
-</form>
-
-
-<p *ngIf="successMessage">
-  {{ successMessage }}
-</p>
-
-
-<p *ngIf="errorMessage">
-  {{ errorMessage }}
-</p>
+</div>

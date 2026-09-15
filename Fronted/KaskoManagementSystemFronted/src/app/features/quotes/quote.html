@@ -13,37 +13,26 @@
 
     <div class="quote-stat-card">
       <span>Toplam Teklif</span>
-
-      <strong>
-        {{ totalQuotes }}
-      </strong>
+      <strong>{{ totalQuotes }}</strong>
+      <small>Oluşturulan tüm teklifler</small>
     </div>
 
-
     <div class="quote-stat-card">
-      <span>Aktif Teklif</span>
-
-      <strong>
-        {{ activeQuotes }}
-      </strong>
+      <span>Açık Teklif</span>
+      <strong>{{ openQuoteCount }}</strong>
+      <small>{{ openQuotePremium | number:'1.0-0' }} ₺ potansiyel prim</small>
     </div>
 
-
     <div class="quote-stat-card">
-      <span>Pasif Teklif</span>
-
-      <strong>
-        {{ passiveQuotes }}
-      </strong>
+      <span>Kabul Edilen</span>
+      <strong>{{ acceptedQuoteCount }}</strong>
+      <small>Dönüşüm oranı %{{ conversionRate }}</small>
     </div>
 
-
     <div class="quote-stat-card">
-      <span>Silinen Teklif</span>
-
-      <strong>
-        {{ deletedQuotes }}
-      </strong>
+      <span>Kaybedilen</span>
+      <strong>{{ lostQuoteCount }}</strong>
+      <small>Reddedilen, süresi dolan, iptal</small>
     </div>
 
   </div>
@@ -128,6 +117,7 @@
       <button
         type="button"
         class="new-quote-button"
+        *ngIf="!portal.isManager"
         (click)="openCreate()"
       >
         + Yeni Teklif
@@ -200,7 +190,7 @@
 
           <tr>
 
-            <th>Teklif No</th>
+            <th>Numara</th>
             <th>Müşteri</th>
             <th>Araç</th>
             <th>Prim Tutarı</th>
@@ -221,9 +211,7 @@
 
             <td>
 
-              <span class="quote-number">
-                {{ quote.quoteNumber }}
-              </span>
+              <div class="date-cell" [title]="quote.quoteNumber"><strong class="record-no">{{ quote.quoteNumber | recordNo }}</strong><span class="time-value">{{ quote.quoteNumber | recordNo:'label' }}</span></div>
 
             </td>
 
@@ -264,9 +252,10 @@
 
 
             <td>
-
-              {{ quote.validUntil | date:'dd.MM.yyyy' }}
-
+              <div class="date-cell">
+                <span>{{ quote.validUntil | date:'dd.MM.yyyy' }}</span>
+                <span *ngIf="quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered" class="time-value">{{ deadlineText(quote.validUntil) }}</span>
+              </div>
             </td>
 
 
@@ -295,7 +284,8 @@
 
               <button
                 *ngIf="
-                  quote.status === QuoteStatus.Draft
+                  quote.status === QuoteStatus.Draft &&
+                  !portal.isManager
                 "
                 type="button"
                 class="offer-button"
@@ -307,7 +297,8 @@
 
               <button
                 *ngIf="
-                  quote.status === QuoteStatus.Accepted
+                  quote.status === QuoteStatus.Accepted &&
+                  !portal.isManager
                 "
                 type="button"
                 class="policy-button"
@@ -369,6 +360,7 @@
       "
     >
 
+      <button type="button" class="pagination-arrow" title="İlk sayfa" [disabled]="currentPage === 1" (click)="goToPage(1)">«</button>
       <button
         type="button"
         class="pagination-arrow"
@@ -398,6 +390,7 @@
       >
         ›
       </button>
+      <button type="button" class="pagination-arrow" title="Son sayfa" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">»</button>
 
 
       <span class="pagination-info">

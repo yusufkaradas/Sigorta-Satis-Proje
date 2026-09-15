@@ -846,4 +846,91 @@ public class ResourceAuthorizationTests
             HttpStatusCode.NotFound,
             response.StatusCode);
     }
+
+    [Fact]
+    public async Task Manager_Can_Read_But_Cannot_Write_Operational_Data()
+    {
+        await using var factory =
+            new WebApplicationFactory<Program>();
+
+        var adminUser =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Admin");
+
+        using var adminClient =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                adminUser);
+
+        var customerId =
+            await IntegrationTestHelper.CreateCustomerAsync(
+                adminClient);
+
+        var vehicle =
+            await IntegrationTestHelper.CreateVehicleAsync(
+                factory,
+                adminClient,
+                customerId);
+
+        var quote =
+            await IntegrationTestHelper.CreateQuoteAsync(
+                adminClient,
+                customerId,
+                vehicle.Id);
+
+        var managerUser =
+            await IntegrationTestHelper.SeedUserAsync(
+                factory,
+                "Manager");
+
+        using var managerClient =
+            await IntegrationTestHelper.LoginAsync(
+                factory,
+                managerUser);
+
+        var readResponse =
+            await managerClient.GetAsync(
+                $"/api/Quote/{quote.Id}");
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            readResponse.StatusCode);
+
+        var createResponse =
+            await managerClient.PostAsJsonAsync(
+                "/api/Quote",
+                new
+                {
+                    CustomerId = customerId,
+                    VehicleId = vehicle.Id,
+                    ValidUntil = DateTime.UtcNow.AddDays(30)
+                });
+
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            createResponse.StatusCode);
+
+        var deleteResponse =
+            await managerClient.DeleteAsync(
+                $"/api/Quote/{quote.Id}");
+
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            deleteResponse.StatusCode);
+
+        var policyResponse =
+            await managerClient.PostAsJsonAsync(
+                "/api/Policy",
+                new
+                {
+                    CustomerId = customerId,
+                    VehicleId = vehicle.Id,
+                    QuoteId = quote.Id
+                });
+
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            policyResponse.StatusCode);
+    }
 }

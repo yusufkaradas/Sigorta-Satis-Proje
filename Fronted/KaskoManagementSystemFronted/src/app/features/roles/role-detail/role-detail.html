@@ -1,115 +1,44 @@
-<div class="role-detail-page">
+<div class="kf-page">
 
-  <section class="page-header">
+  <div class="kf-title">
+    ROL DETAYI
+  </div>
 
-    <div>
+  <section class="kf-panel">
 
-      <h1>Rol Detayı</h1>
+    <div class="kf-panel-head">
+      <div>
+        <h1>
+          {{ role?.name || 'Rol Detayı' }}
+          <span *ngIf="role" class="kf-badge active">Aktif</span>
+        </h1>
+        <p>Rol bilgilerini görüntüleyin.</p>
+      </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">← Rollere Dön</button>
+    </div>
 
-      <p>
-        Rol bilgilerini görüntüleyin.
-      </p>
+    <div *ngIf="isLoading" class="kf-state">Rol bilgileri yükleniyor...</div>
+
+    <div *ngIf="!isLoading && errorMessage" class="kf-state">{{ errorMessage }}</div>
+
+    <div *ngIf="!isLoading && role" class="kf-body kf-body-center">
+
+      <section class="kf-section kf-narrow">
+        <h2 class="kf-section-title">Rol Bilgileri</h2>
+        <dl class="kf-details kf-details-1">
+          <div><dt>Rol Adı</dt><dd>{{ role.name }}</dd></div>
+          <div><dt>Rol ID</dt><dd [title]="role.id">{{ role.id }}</dd></div>
+        </dl>
+      </section>
 
     </div>
 
-    <button
-      type="button"
-      class="back-button"
-      (click)="goBack()">
-
-      ← Rollere Dön
-
-    </button>
-
-  </section>
-
-
-  <div
-    *ngIf="isLoading"
-    class="loading">
-
-    Rol bilgileri yükleniyor...
-
-  </div>
-
-
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="error-message">
-
-    {{ errorMessage }}
-
-  </div>
-
-
-  <section
-    *ngIf="!isLoading && role"
-    class="detail-card">
-
-    <h2>Rol Bilgileri</h2>
-
-
-    <div class="detail-grid">
-
-      <div class="detail-item">
-
-        <span>Rol ID</span>
-
-        <strong>
-          {{ role.id }}
-        </strong>
-
+    <div class="kf-actions kf-actions-between">
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
+      <div *ngIf="role" class="kf-head-actions">
+        <button type="button" class="kf-btn-danger" (click)="deleteRole()">Rolü Sil</button>
+        <a [routerLink]="['/roles', role.id, 'edit']" class="kf-btn">Düzenle</a>
       </div>
-
-
-      <div class="detail-item">
-
-        <span>Rol Adı</span>
-
-        <strong>
-          {{ role.name }}
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button
-        type="button"
-        class="edit-button"
-        [routerLink]="[
-          '/roles',
-          role.id,
-          'edit'
-        ]">
-
-        Rolü Düzenle
-
-      </button>
-
-
-      <button
-        type="button"
-        class="delete-button"
-        (click)="deleteRole()">
-
-        Rolü Sil
-
-      </button>
-
-
-      <button
-        type="button"
-        class="back-action"
-        (click)="goBack()">
-
-        Geri Dön
-
-      </button>
-
     </div>
 
   </section>

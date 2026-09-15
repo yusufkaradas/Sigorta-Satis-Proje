@@ -1,604 +1,329 @@
-<div class="vehicle-create-page">
+<div class="kf-page">
 
-  <div class="create-header">
-
-    <div>
-      <h1>Yeni Araç</h1>
-
-      <p>
-        Sisteme yeni bir araç ekleyin
-      </p>
-    </div>
-
-    <button
-      type="button"
-      class="secondary-button"
-      (click)="cancel()"
-    >
-      Araçlara Dön
-    </button>
-
+  <div class="kf-title">
+    YENİ ARAÇ
   </div>
-
-
-  <!-- HATA -->
-
-  <div
-    *ngIf="errorMessage"
-    class="message error"
-  >
-    {{ errorMessage }}
-  </div>
-
-
-  <!-- BAŞARI -->
-
-  <div
-    *ngIf="successMessage"
-    class="message success"
-  >
-    {{ successMessage }}
-  </div>
-
 
   <form
-    class="form-card"
-    (ngSubmit)="createVehicle()"
-  >
+    class="kf-panel"
+    (ngSubmit)="createVehicle()">
 
-    <!-- MÜŞTERİ -->
+    <div class="kf-panel-head">
 
-    <section class="form-section">
-
-      <h2>Müşteri Bilgileri</h2>
-
-      <div class="form-group">
-
-        <label for="customerId">
-          Müşteri *
-        </label>
- <select
-  id="customerId"
-  name="customerId"
-  [(ngModel)]="form.customerId"
-  (ngModelChange)="loadCustomerVehicles($event)"
-  [disabled]="
-    isLoadingCustomers ||
-    isSubmitting
-  "
-  required
->
-
-          <option
-            value=""
-            disabled
-          >
-            {{
-              isLoadingCustomers
-                ? 'Müşteriler yükleniyor...'
-                : 'Müşteri seçin'
-            }}
-          </option>
-
-          <option
-            *ngFor="let customer of customers"
-            [value]="customer.id"
-          >
-            {{ customer.firstName }}
-            {{ customer.lastName }}
-          </option>
-
-        </select>
-
+      <div>
+        <h1>Araç Ekle</h1>
+        <p>Müşteriyi seçin, TSB kataloğundan aracı belirleyin ve bilgileri tamamlayın.</p>
       </div>
-
-    </section>
-<!-- MÜŞTERİNİN MEVCUT ARAÇLARI -->
-
-<section
-  class="customer-vehicles-section"
-  *ngIf="form.customerId"
->
-
-  <div class="customer-vehicles-header">
-
-    <div>
-      <h2>Müşterinin Mevcut Araçları</h2>
-
-      <p>
-        Seçilen müşteriye ait kayıtlı araçlar
-      </p>
-    </div>
-
-    <span
-      class="vehicle-count"
-      *ngIf="!isLoadingCustomerVehicles"
-    >
-      {{ customerVehicles.length }} araç
-    </span>
-
-  </div>
-
-
-  <div
-    *ngIf="isLoadingCustomerVehicles"
-    class="customer-vehicles-loading"
-  >
-    Müşterinin araçları yükleniyor...
-  </div>
-
-
-  <div
-    *ngIf="
-      !isLoadingCustomerVehicles &&
-      customerVehicles.length === 0
-    "
-    class="customer-vehicles-empty"
-  >
-    Bu müşteriye ait kayıtlı araç bulunamadı.
-  </div>
-
-
-  <div
-    *ngIf="
-      !isLoadingCustomerVehicles &&
-      customerVehicles.length > 0
-    "
-    class="customer-vehicles-list"
-  >
-
-    <button
-      type="button"
-      class="customer-vehicle-card"
-      *ngFor="
-        let vehicle of customerVehicles
-      "
-      [class.selected]="
-        selectedCustomerVehicleId === vehicle.id
-      "
-      (click)="
-        selectedCustomerVehicleId = vehicle.id
-      "
-    >
-
-      <div class="customer-vehicle-main">
-
-        <strong>
-          {{ vehicle.brand }}
-          {{ vehicle.model }}
-        </strong>
-
-        <span>
-          {{ vehicle.plateNumber || 'Plaka yok' }}
-        </span>
-
-      </div>
-
-
-      <div class="customer-vehicle-meta">
-
-        <span>
-          {{ vehicle.modelYear }}
-        </span>
-
-        <span>
-          {{
-            vehicle.marketValue
-              | number:'1.0-0'
-          }}
-          ₺
-        </span>
-
-      </div>
-
-    </button>
-
-  </div>
-
-</section>
-
-    <!-- ARAÇ BİLGİLERİ -->
-
-    <section class="form-section">
-
-      <h2>Araç Bilgileri</h2>
-
-
-      <div class="form-grid">
-
-        <!-- PLAKA -->
-
-        <div class="form-group">
-
-          <label for="plateNumber">
-            Plaka *
-          </label>
-
-          <input
-  id="plateNumber"
-  type="text"
-  name="plateNumber"
-  [(ngModel)]="form.plateNumber"
-  (input)="onPlateInput()"
-  placeholder="34ABC123"
-  maxlength="10"
-  autocomplete="off"
-  inputmode="text"
-  required
-           />
-
-        </div>
-
-
-        <!-- VIN -->
-
-        <div class="form-group">
-
-          <label for="vin">
-            VIN *
-          </label>
-
-          <input
-            id="vin"
-            type="text"
-            name="vin"
-            [(ngModel)]="form.vin"
-            placeholder="17 karakter VIN"
-            maxlength="17"
-            required
-          />
-
-        </div>
-
-
-       <div class="form-group">
-
-  <label for="brand">
-    Marka *
-  </label>
-
-  <select
-    id="brand"
-    name="brand"
-    [(ngModel)]="selectedBrandCode"
-    (ngModelChange)="onBrandChange()"
-    [disabled]="
-      isLoadingBrands ||
-      isSubmitting
-    "
-    required
-  >
-
-    <option
-      value=""
-      disabled
-    >
-      {{
-        isLoadingBrands
-          ? 'Markalar yükleniyor...'
-          : 'Marka seçin'
-      }}
-    </option>
-
-    <option
-      *ngFor="let brand of brands"
-      [ngValue]="brand.code"
-    >
-      {{ brand.name }}
-    </option>
-
-  </select>
-
-</div>
-
-
-       <div class="form-group">
-
-  <label for="model">
-    Model *
-  </label>
-
-  <select
-    id="model"
-    name="model"
-    [(ngModel)]="selectedTypeCode"
-    (ngModelChange)="onTypeChange()"
-    [disabled]="
-      !selectedBrandCode ||
-      isLoadingTypes ||
-      isSubmitting
-    "
-    required
-  >
-
-    <option
-      value=""
-      disabled
-    >
-      {{
-        !selectedBrandCode
-          ? 'Önce marka seçin'
-          : isLoadingTypes
-            ? 'Modeller yükleniyor...'
-            : 'Model seçin'
-      }}
-    </option>
-
-    <option
-      *ngFor="let type of types"
-      [ngValue]="type.code"
-    >
-      {{ type.name }}
-    </option>
-
-  </select>
-
-</div>
-
-<div class="form-group">
-
-  <label for="modelYear">
-    Model Yılı *
-  </label>
-
-  <select
-    id="modelYear"
-    name="modelYear"
-    [(ngModel)]="selectedModelYear"
-    (ngModelChange)="onYearChange()"
-    [disabled]="
-      !selectedTypeCode ||
-      isLoadingYears ||
-      isSubmitting
-    "
-    required
-  >
-
-    <option
-      [ngValue]="null"
-      disabled
-    >
-      {{
-        !selectedTypeCode
-          ? 'Önce model seçin'
-          : isLoadingYears
-            ? 'Yıllar yükleniyor...'
-            : 'Model yılı seçin'
-      }}
-    </option>
-
-    <option
-      *ngFor="let year of years"
-      [ngValue]="year"
-    >
-      {{ year }}
-    </option>
-
-  </select>
-
-</div>
-<div class="form-group">
-
-  <label for="tsbValue">
-    TSB Kasko Değeri
-  </label>
-
-  <input
-    id="tsbValue"
-    type="text"
-    name="tsbValue"
-    [value]="
-      isLoadingTsbValue
-        ? 'Değer getiriliyor...'
-        : tsbValue !== null
-          ? (tsbValue | number:'1.0-0') + ' ₺'
-          : 'Marka, model ve yıl seçin'
-    "
-    readonly
-  />
-
-</div>
-      
-
-        <div class="form-group">
-
-          <label for="vehicleType">
-            Araç Tipi *
-          </label>
-
-          <select
-            id="vehicleType"
-            name="vehicleType"
-            [(ngModel)]="form.vehicleType"
-          >
-
-            <option [ngValue]="1">
-              Sedan
-            </option>
-
-            <option [ngValue]="2">
-              Hatchback
-            </option>
-
-            <option [ngValue]="3">
-              SUV
-            </option>
-
-            <option [ngValue]="4">
-              Pickup
-            </option>
-
-            <option [ngValue]="5">
-              Coupe
-            </option>
-
-            <option [ngValue]="6">
-              Cabrio
-            </option>
-
-            <option [ngValue]="7">
-              Van
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- YAKIT -->
-
-        <div class="form-group">
-
-          <label for="fuelType">
-            Yakıt Tipi *
-          </label>
-
-          <select
-            id="fuelType"
-            name="fuelType"
-            [(ngModel)]="form.fuelType"
-          >
-
-            <option [ngValue]="1">
-              Benzin
-            </option>
-
-            <option [ngValue]="2">
-              Dizel
-            </option>
-
-            <option [ngValue]="3">
-              Hibrit
-            </option>
-
-            <option [ngValue]="4">
-              Elektrik
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- VİTES -->
-
-        <div class="form-group">
-
-          <label for="transmissionType">
-            Vites Tipi *
-          </label>
-
-          <select
-            id="transmissionType"
-            name="transmissionType"
-            [(ngModel)]="form.transmissionType"
-          >
-
-            <option [ngValue]="1">
-              Manuel
-            </option>
-
-            <option [ngValue]="2">
-              Otomatik
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- MOTOR HACMİ -->
-
-        <div class="form-group">
-
-          <label for="engineVolume">
-            Motor Hacmi
-          </label>
-
-          <input
-            id="engineVolume"
-            type="number"
-            step="0.1"
-            name="engineVolume"
-            [(ngModel)]="form.engineVolume"
-            placeholder="1.6"
-          />
-
-        </div>
-
-
-        <!-- MOTOR GÜCÜ -->
-
-        <div class="form-group">
-
-          <label for="enginePower">
-            Motor Gücü
-          </label>
-
-          <input
-            id="enginePower"
-            type="number"
-            name="enginePower"
-            [(ngModel)]="form.enginePower"
-            placeholder="132"
-          />
-
-        </div>
-
-
-        <!-- RENK -->
-
-        <div class="form-group">
-
-          <label for="color">
-            Renk *
-          </label>
-
-          <input
-            id="color"
-            type="text"
-            name="color"
-            [(ngModel)]="form.color"
-            placeholder="White"
-            maxlength="30"
-            required
-          />
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- BUTONLAR -->
-
-    <div class="form-actions">
 
       <button
         type="button"
-        class="secondary-button"
-        (click)="cancel()"
-      >
+        class="kf-btn-outline"
+        (click)="cancel()">
+        ← Araçlara Dön
+      </button>
+
+    </div>
+
+    <div
+      *ngIf="errorMessage"
+      class="kf-alert kf-alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <div
+      *ngIf="successMessage"
+      class="kf-alert kf-alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">
+          Müşteri
+        </h2>
+
+        <div class="kf-field">
+
+          <label for="customerId">Müşteri *</label>
+
+          <select
+            id="customerId"
+            name="customerId"
+            [(ngModel)]="form.customerId"
+            (ngModelChange)="loadCustomerVehicles($event)"
+            [disabled]="isLoadingCustomers || isSubmitting"
+            required>
+
+            <option value="" disabled>
+              {{ isLoadingCustomers ? 'Müşteriler yükleniyor...' : 'Müşteri seçin' }}
+            </option>
+
+            <option
+              *ngFor="let customer of customers"
+              [value]="customer.id">
+              {{ customer.firstName }} {{ customer.lastName }}
+            </option>
+
+          </select>
+
+        </div>
+
+        <h3 class="kf-section-title">
+          Mevcut Araçları
+          <small *ngIf="form.customerId && !isLoadingCustomerVehicles">
+            {{ customerVehicles.length }} araç
+          </small>
+        </h3>
+
+        <div
+          *ngIf="!form.customerId"
+          class="kf-empty">
+          Araçlarını görmek için müşteri seçin.
+        </div>
+
+        <div
+          *ngIf="form.customerId && isLoadingCustomerVehicles"
+          class="kf-empty">
+          Araçlar yükleniyor...
+        </div>
+
+        <div
+          *ngIf="form.customerId && !isLoadingCustomerVehicles && customerVehicles.length === 0"
+          class="kf-empty">
+          Bu müşteriye ait kayıtlı araç yok.
+        </div>
+
+        <ul
+          *ngIf="form.customerId && !isLoadingCustomerVehicles && customerVehicles.length > 0"
+          class="kf-list">
+
+          <li *ngFor="let vehicle of customerVehicles.slice(0, 5)">
+            <button
+              type="button"
+              class="kf-list-item"
+              [class.selected]="selectedCustomerVehicleId === vehicle.id"
+              (click)="selectedCustomerVehicleId = vehicle.id">
+              <span>
+                <strong>{{ vehicle.brand }} {{ vehicle.model }}</strong>
+                <span>{{ vehicle.plateNumber || 'Plaka yok' }} · {{ vehicle.modelYear }}</span>
+              </span>
+              <strong>{{ vehicle.marketValue | number:'1.0-0' }} ₺</strong>
+            </button>
+          </li>
+
+          <li
+            *ngIf="customerVehicles.length > 5"
+            class="kf-muted">
+            +{{ customerVehicles.length - 5 }} araç daha
+          </li>
+
+        </ul>
+
+      </section>
+
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">
+          Araç Bilgileri
+        </h2>
+
+        <div class="kf-grid kf-grid-3">
+
+          <div class="kf-field">
+            <label for="plateNumber">Plaka *</label>
+            <input
+              id="plateNumber"
+              type="text"
+              name="plateNumber"
+              [(ngModel)]="form.plateNumber"
+              (input)="onPlateInput()"
+              placeholder="34ABC123"
+              maxlength="10"
+              autocomplete="off"
+              required />
+          </div>
+
+          <div class="kf-field kf-span-2">
+            <label for="vin">Şasi No (VIN) *</label>
+            <input
+              id="vin"
+              type="text"
+              name="vin"
+              [(ngModel)]="form.vin"
+              placeholder="17 karakter"
+              maxlength="17"
+              required />
+          </div>
+
+          <div class="kf-field">
+            <label for="brand">Marka *</label>
+            <select
+              id="brand"
+              name="brand"
+              [(ngModel)]="selectedBrandCode"
+              (ngModelChange)="onBrandChange()"
+              [disabled]="isLoadingBrands || isSubmitting"
+              required>
+              <option value="" disabled>
+                {{ isLoadingBrands ? 'Markalar yükleniyor...' : 'Marka seçin' }}
+              </option>
+              <option
+                *ngFor="let brand of brands"
+                [ngValue]="brand.code">
+                {{ brand.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="model">Model *</label>
+            <select
+              id="model"
+              name="model"
+              [(ngModel)]="selectedTypeCode"
+              (ngModelChange)="onTypeChange()"
+              [disabled]="!selectedBrandCode || isLoadingTypes || isSubmitting"
+              required>
+              <option value="" disabled>
+                {{ !selectedBrandCode ? 'Önce marka seçin' : isLoadingTypes ? 'Modeller yükleniyor...' : 'Model seçin' }}
+              </option>
+              <option
+                *ngFor="let type of types"
+                [ngValue]="type.code">
+                {{ type.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="modelYear">Model Yılı *</label>
+            <select
+              id="modelYear"
+              name="modelYear"
+              [(ngModel)]="selectedModelYear"
+              (ngModelChange)="onYearChange()"
+              [disabled]="!selectedTypeCode || isLoadingYears || isSubmitting"
+              required>
+              <option [ngValue]="null" disabled>
+                {{ !selectedTypeCode ? 'Önce model seçin' : isLoadingYears ? 'Yıllar yükleniyor...' : 'Yıl seçin' }}
+              </option>
+              <option
+                *ngFor="let year of years"
+                [ngValue]="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="vehicleType">Araç Tipi *</label>
+            <select
+              id="vehicleType"
+              name="vehicleType"
+              [(ngModel)]="form.vehicleType">
+              <option [ngValue]="1">Sedan</option>
+              <option [ngValue]="2">Hatchback</option>
+              <option [ngValue]="3">SUV</option>
+              <option [ngValue]="4">Pickup</option>
+              <option [ngValue]="5">Coupe</option>
+              <option [ngValue]="6">Cabrio</option>
+              <option [ngValue]="7">Van</option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="fuelType">Yakıt Tipi *</label>
+            <select
+              id="fuelType"
+              name="fuelType"
+              [(ngModel)]="form.fuelType">
+              <option [ngValue]="1">Benzin</option>
+              <option [ngValue]="2">Dizel</option>
+              <option [ngValue]="3">Hibrit</option>
+              <option [ngValue]="4">Elektrik</option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="transmissionType">Vites Tipi *</label>
+            <select
+              id="transmissionType"
+              name="transmissionType"
+              [(ngModel)]="form.transmissionType">
+              <option [ngValue]="1">Manuel</option>
+              <option [ngValue]="2">Otomatik</option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="engineVolume">Motor Hacmi</label>
+            <input
+              id="engineVolume"
+              type="number"
+              step="0.1"
+              name="engineVolume"
+              [(ngModel)]="form.engineVolume"
+              placeholder="1.6" />
+          </div>
+
+          <div class="kf-field">
+            <label for="enginePower">Motor Gücü (HP)</label>
+            <input
+              id="enginePower"
+              type="number"
+              name="enginePower"
+              [(ngModel)]="form.enginePower"
+              placeholder="132" />
+          </div>
+
+          <div class="kf-field">
+            <label for="color">Renk *</label>
+            <input
+              id="color"
+              type="text"
+              name="color"
+              [(ngModel)]="form.color"
+              placeholder="Beyaz"
+              maxlength="30"
+              required />
+          </div>
+
+        </div>
+
+        <div class="kf-highlight">
+          <span>TSB Kasko Değeri</span>
+          <strong>
+            {{
+              isLoadingTsbValue
+                ? 'Değer getiriliyor...'
+                : tsbValue !== null
+                  ? (tsbValue | number:'1.0-0') + ' ₺'
+                  : 'Marka, model ve yıl seçin'
+            }}
+          </strong>
+        </div>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions">
+
+      <button
+        type="button"
+        class="kf-btn-outline"
+        (click)="cancel()">
         İptal
       </button>
 
-
       <button
         type="submit"
-        class="primary-button"
-        [disabled]="
-          isSubmitting ||
-          isLoadingCustomers
-        "
-      >
-
-        {{
-          isSubmitting
-            ? 'Oluşturuluyor...'
-            : 'Araç Oluştur'
-        }}
-
+        class="kf-btn"
+        [disabled]="isSubmitting || isLoadingCustomers">
+        {{ isSubmitting ? 'Oluşturuluyor...' : 'Aracı Kaydet' }}
       </button>
 
     </div>

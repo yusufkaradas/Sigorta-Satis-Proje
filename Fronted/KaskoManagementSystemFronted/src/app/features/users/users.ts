@@ -25,6 +25,17 @@ import {
   UserService
 } from './users.service';
 
+import {
+  forkJoin,
+  of
+} from 'rxjs';
+
+import {
+  catchError,
+  map,
+  switchMap
+} from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-users',
@@ -53,11 +64,67 @@ export class Users implements OnInit {
 
 filteredUsers: User[] = [];
 
+  readonly pageSize = 5;
+
+  currentPage = 1;
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+  }
+
+  get pagedUsers(): User[] {
+    const page = Math.min(this.currentPage, this.totalPages);
+    return this.filteredUsers.slice((page - 1) * this.pageSize, page * this.pageSize);
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = Math.min(this.totalPages, Math.max(1, page));
+  }
+
 isLoading = true;
 
 errorMessage = '';
 
 searchText = '';
+
+formatPhone(value?: string | null): string {
+  let digits = (value ?? '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('90')) {
+    digits = digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  if (digits.length !== 10) {
+    return value || '—';
+  }
+  return `0${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`;
+}
+
+roleLabel(roleName?: string | null): string {
+  switch (roleName) {
+    case 'Admin':
+      return 'Yönetici (Admin)';
+    case 'Manager':
+      return 'Müdür (Manager)';
+    case 'Customer':
+      return 'Müşteri';
+    default:
+      return roleName || 'Rol atanmamış';
+  }
+}
+
+get staffUserCount(): number {
+  return this.users.filter(user => user.roleName === 'Admin' || user.roleName === 'Manager').length;
+}
+
+get customerUserCount(): number {
+  return this.users.filter(user => user.roleName === 'Customer').length;
+}
 
 get activeUserCount(): number {
   return this.users.filter(
@@ -84,14 +151,23 @@ ngOnInit(): void {
 
     this.userService
       .getAll()
+      .pipe(
+        switchMap(list =>
+          (list ?? []).length === 0
+            ? of([] as User[])
+            : forkJoin(
+                (list ?? []).map(user =>
+                  this.userService.getById(user.id).pipe(
+                    map(detail => ({ ...user, ...detail })),
+                    catchError(() => of(user))
+                  )
+                )
+              )
+        )
+      )
       .subscribe({
 
         next: (data: User[]) => {
-
-          console.log(
-            'USERS API RESPONSE:',
-            data
-          );
 
           this.users =
             data ?? [];
@@ -130,6 +206,8 @@ ngOnInit(): void {
 
 
   filterUsers(): void {
+
+    this.currentPage = 1;
 
     const search =
       this.searchText

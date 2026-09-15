@@ -19,6 +19,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Create(
         [FromBody] PaymentCreateDto dto)
         {
@@ -51,6 +52,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var userIdClaim = User.FindFirst(

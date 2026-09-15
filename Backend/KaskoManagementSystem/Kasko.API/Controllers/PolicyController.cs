@@ -40,6 +40,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Create(
             [FromBody] PolicyCreateDto dto)
         {
@@ -53,6 +54,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] PolicyUpdateDto dto)
@@ -64,6 +66,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var userIdClaim = User.FindFirst(
@@ -89,6 +92,7 @@ namespace Kasko.API.Controllers
             return Ok(policies);
         }
         [HttpPost("{id:guid}/cancel")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Cancel(Guid id)
         {
             var userIdClaim = User.FindFirst(
@@ -105,6 +109,7 @@ namespace Kasko.API.Controllers
             return NoContent();
         }
         [HttpPost("renew")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Renew(
     [FromBody] PolicyRenewalDto dto)
         {
@@ -114,6 +119,7 @@ namespace Kasko.API.Controllers
             return Ok(quote);
         }
         [HttpPost("{id:guid}/expire")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Expire(Guid id)
         {
             await _policyService.ExpireAsync(id);

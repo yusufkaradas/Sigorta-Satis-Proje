@@ -11,37 +11,26 @@
 
     <div class="user-stat-card">
       <span>Toplam Kullanıcı</span>
-
-      <strong>
-        {{ users.length }}
-      </strong>
+      <strong>{{ users.length }}</strong>
+      <small>Sisteme giriş yapabilen hesaplar</small>
     </div>
-
 
     <div class="user-stat-card">
       <span>Aktif Kullanıcı</span>
-
-      <strong>
-        {{ activeUserCount }}
-      </strong>
+      <strong>{{ activeUserCount }}</strong>
+      <small>{{ inactiveUserCount }} pasif hesap</small>
     </div>
 
-
     <div class="user-stat-card">
-      <span>Pasif Kullanıcı</span>
-
-      <strong>
-        {{ inactiveUserCount }}
-      </strong>
+      <span>Yönetici</span>
+      <strong>{{ staffUserCount }}</strong>
+      <small>Admin ve Manager rolleri</small>
     </div>
 
-
     <div class="user-stat-card">
-      <span>Gösterilen</span>
-
-      <strong>
-        {{ filteredUsers.length }}
-      </strong>
+      <span>Müşteri Hesabı</span>
+      <strong>{{ customerUserCount }}</strong>
+      <small>Müşteri portalı kullanıcıları</small>
     </div>
 
   </div>
@@ -139,134 +128,55 @@
       <table class="user-table">
 
         <thead>
-
           <tr>
             <th>Ad Soyad</th>
-            <th>E-posta</th>
+            <th class="col-wide">E-posta</th>
             <th>Telefon</th>
             <th>Rol</th>
             <th>Durum</th>
             <th>İşlemler</th>
           </tr>
-
         </thead>
-
 
         <tbody>
 
-          <tr
-            *ngFor="let user of filteredUsers"
-          >
+          <tr *ngFor="let user of pagedUsers">
+
+            <td><strong class="user-name">{{ user.firstName }} {{ user.lastName }}</strong></td>
+
+            <td class="email-cell col-wide" [title]="user.email">{{ user.email }}</td>
+
+            <td>{{ formatPhone(user.phoneNumber) }}</td>
 
             <td>
-              <strong class="user-name">
-                {{ user.firstName }}
-                {{ user.lastName }}
-              </strong>
-            </td>
-
-
-            <td class="email-cell">
-              {{ user.email }}
-            </td>
-
-
-            <td>
-              {{ user.phoneNumber || '—' }}
-            </td>
-
-
-            <td>
-              {{ user.roleName || user.roleId }}
-            </td>
-
-
-            <td>
-
-              <span
-                class="user-status"
-                [class.active]="user.isActive"
-                [class.passive]="!user.isActive"
-              >
-                {{
-                  user.isActive
-                    ? 'Aktif'
-                    : 'Pasif'
-                }}
+              <span class="user-status" [class.status-offered]="user.roleName === 'Admin' || user.roleName === 'Manager'" [class.active]="user.roleName === 'Customer'">
+                {{ roleLabel(user.roleName) }}
               </span>
-
             </td>
 
+            <td>
+              <span class="user-status" [class.active]="user.isActive" [class.passive]="!user.isActive">
+                {{ user.isActive ? 'Aktif' : 'Pasif' }}
+              </span>
+            </td>
 
             <td>
-
               <div class="actions">
-
-                <a
-                  [routerLink]="[
-                    '/users',
-                    user.id
-                  ]"
-                  class="action-button detail"
-                >
-                  Detay
-                </a>
-
-
-                <a
-                  [routerLink]="[
-                    '/users',
-                    user.id,
-                    'edit'
-                  ]"
-                  class="action-button edit"
-                >
-                  Düzenle
-                </a>
-
-
-                <button
-                  type="button"
-                  class="action-button delete"
-                  (click)="deleteUser(user.id)"
-                >
-                  Sil
-                </button>
-
+                <a [routerLink]="['/users', user.id]" class="action-button detail">Detay</a>
+                <a [routerLink]="['/users', user.id, 'edit']" class="action-button edit">Düzenle</a>
+                <button type="button" class="action-button delete" (click)="deleteUser(user.id)">Sil</button>
               </div>
-
             </td>
 
           </tr>
 
-
-          <tr
-            *ngIf="filteredUsers.length === 0"
-          >
-
-            <td
-              colspan="6"
-              class="empty-row"
-            >
-
-              <div class="empty-state">
-
-                <div class="empty-icon">
-                  —
-                </div>
-
-                <strong>
-                  Kullanıcı bulunamadı
-                </strong>
-
-                <span>
-                  Arama kriterlerinizi değiştirmeyi deneyin.
-                </span>
-
+          <tr *ngIf="filteredUsers.length === 0">
+            <td colspan="6" class="empty-row">
+              <div class="empty-state-content">
+                <strong>Kullanıcı bulunamadı</strong>
+                <span>Arama kriterlerinizi değiştirmeyi deneyin.</span>
               </div>
-
             </td>
-
           </tr>
 
         </tbody>
@@ -274,6 +184,14 @@
       </table>
 
     </div>
+
+      <div class="pagination">
+        <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">‹</button>
+        <button type="button" *ngFor="let page of pages" [class.active]="currentPage === page" (click)="goToPage(page)">{{ page }}</button>
+        <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">›</button>
+        <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
+      </div>
+
 
   </section>
 

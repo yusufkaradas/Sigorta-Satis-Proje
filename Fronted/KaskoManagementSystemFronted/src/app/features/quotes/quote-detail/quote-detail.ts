@@ -1,3 +1,5 @@
+import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
+import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectorRef,
@@ -18,10 +20,16 @@ import {
 
 import { QuoteService } from '../quote.service';
 
+import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
+
 @Component({
   selector: 'app-quote-detail',
   standalone: true,
   imports: [
+    BackendDatePipe,
+    RecordNumberPipe,
     CommonModule,
     RouterLink
   ],
@@ -35,6 +43,15 @@ export class QuoteDetail {
 
   private readonly route =
     inject(ActivatedRoute);
+
+  readonly portal =
+    injectPortalContext();
+
+  readonly isCustomerMode =
+    this.portal.isCustomer;
+
+  readonly basePath =
+    this.portal.basePath;
 
   private readonly quoteService =
     inject(QuoteService);
@@ -331,7 +348,7 @@ changeStatus(status: QuoteStatus): void {
           );
 
           this.router.navigate([
-            '/quotes'
+            this.basePath + '/quotes'
           ]);
         },
 
@@ -358,7 +375,7 @@ changeStatus(status: QuoteStatus): void {
   goBack(): void {
 
     this.router.navigate([
-      '/quotes'
+      this.basePath + '/quotes'
     ]);
   }
 

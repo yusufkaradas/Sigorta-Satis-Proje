@@ -5,6 +5,8 @@ using Kasko.Business.Services.Abstract;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Kasko.Business.Services.Concrete
 {
@@ -14,17 +16,20 @@ namespace Kasko.Business.Services.Concrete
         private readonly IPolicyRepository _policyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly INotificationService _notificationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
             IPolicyRepository policyRepository, 
             IUnitOfWork unitOfWork, 
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _paymentRepository = paymentRepository;
             _policyRepository = policyRepository;
             _unitOfWork = unitOfWork;
             _notificationService = notificationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<PaymentDto> CreateAsync(
@@ -123,6 +128,8 @@ namespace Kasko.Business.Services.Concrete
                             RelatedEntityId = policy.Id
                         });
                 }
+
+                await _unitOfWork.SaveChangesAsync();
             });
 
             
@@ -145,22 +152,53 @@ namespace Kasko.Business.Services.Concrete
                 await _paymentRepository
                     .GetByIdIncludingDetailsAsync(id);
 
-            if (payment == null)
+            if (payment == null || payment.IsDeleted)
             {
                 throw new NotFoundException(
                     "Ödeme bulunamadı.");
+            }
+
+            if (_httpContextAccessor.HttpContext?
+                .User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(
+                            System.Security.Claims.ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Ödeme bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (
+                    currentUser?.CustomerId == null ||
+                    payment.Policy.CustomerId !=
+                    currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Ödeme bulunamadı.");
+                }
             }
 
             return new PaymentDto
             {
                 Id = payment.Id,
                 PolicyId = payment.PolicyId,
-                TransactionNumber = payment.TransactionNumber,
+                TransactionNumber =
+                    payment.TransactionNumber,
                 Amount = payment.Amount,
                 Status = payment.Status,
                 PaymentDate = payment.PaymentDate,
-                FailureReason = payment.FailureReason,
-                CreatedDate = payment.CreatedDate
+                FailureReason =
+                    payment.FailureReason,
+                CreatedDate =
+                    payment.CreatedDate
             };
         }
 
@@ -169,20 +207,64 @@ namespace Kasko.Business.Services.Concrete
             var payments =
                 await _paymentRepository.GetAllAsync();
 
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Enumerable.Empty<PaymentListDto>();
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    return Enumerable.Empty<PaymentListDto>();
+                }
+
+                var policies =
+                    await _policyRepository.GetAllAsync();
+
+                var customerPolicyIds =
+                    policies
+                        .Where(x =>
+                            !x.IsDeleted &&
+                            x.CustomerId ==
+                            currentUser.CustomerId.Value)
+                        .Select(x => x.Id)
+                        .ToHashSet();
+
+                payments = payments
+                    .Where(x =>
+                        customerPolicyIds.Contains(x.PolicyId))
+                    .ToList();
+            }
+
             return payments
                 .Where(x => !x.IsDeleted)
                 .Select(x => new PaymentListDto
                 {
                     Id = x.Id,
+
                     PolicyId = x.PolicyId,
-                    TransactionNumber = x.TransactionNumber,
+
+                    TransactionNumber =
+                        x.TransactionNumber,
+
                     Amount = x.Amount,
+
                     Status = x.Status,
-                    PaymentDate = x.PaymentDate
+
+                    PaymentDate =
+                        x.PaymentDate
                 })
                 .ToList();
         }
-
         public async Task DeleteAsync(
             Guid id,
             Guid? deletedBy)

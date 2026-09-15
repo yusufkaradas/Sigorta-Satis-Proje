@@ -11,37 +11,26 @@
 
     <div class="vehicle-stat-card">
       <span>Toplam Araç</span>
-
-      <strong>
-        {{ totalVehicleCount }}
-      </strong>
+      <strong>{{ totalVehicleCount }}</strong>
+      <small>{{ activeVehicleCount }} aktif · {{ inactiveVehicleCount }} pasif</small>
     </div>
 
-
     <div class="vehicle-stat-card">
-      <span>Aktif Araç</span>
-
-      <strong>
-        {{ activeVehicleCount }}
-      </strong>
+      <span>Toplam Kasko Değeri</span>
+      <strong>{{ totalMarketValue | number:'1.0-0' }} ₺</strong>
+      <small>TSB değerleri toplamı</small>
     </div>
 
-
     <div class="vehicle-stat-card">
-      <span>Pasif Araç</span>
-
-      <strong>
-        {{ inactiveVehicleCount }}
-      </strong>
+      <span>Ortalama Araç Değeri</span>
+      <strong>{{ (totalVehicleCount ? totalMarketValue / totalVehicleCount : 0) | number:'1.0-0' }} ₺</strong>
+      <small>Araç başına</small>
     </div>
 
-
     <div class="vehicle-stat-card">
-      <span>Gösterilen</span>
-
-      <strong>
-        {{ filteredVehicles.length }}
-      </strong>
+      <span>Bu Ay Eklenen</span>
+      <strong>{{ newVehicleThisMonth }}</strong>
+      <small>Bu ay kaydedilen araç</small>
     </div>
 
   </div>
@@ -78,6 +67,7 @@
 
 
       <a
+        *ngIf="!portal.isManager"
         routerLink="/vehicles/new"
         class="new-vehicle-button"
       >
@@ -147,134 +137,58 @@
       <table class="vehicle-table">
 
         <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Müşteri</th>
+              <th class="col-wide">Araç</th>
+              <th>Model Yılı</th>
+              <th>Kasko Değeri</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
 
-          <tr>
+          <tbody>
 
-            <th>Plaka</th>
-            <th>Müşteri</th>
-            <th>Marka</th>
-            <th>Model</th>
-            <th>Yıl</th>
-            <th>Araç Tipi</th>
-            <th>Durum</th>
-            <th>İşlem</th>
+            <tr *ngFor="let vehicle of pagedVehicles">
 
-          </tr>
+              <td><strong>{{ vehicle.plateNumber || '—' }}</strong></td>
 
-        </thead>
+              <td>{{ vehicle.customerName || '—' }}</td>
 
-
-        <tbody>
-
-          <tr
-            *ngFor="let vehicle of pagedVehicles"
-          >
-
-            <td>
-              <strong>
-                {{ vehicle.plateNumber || '—' }}
-              </strong>
-            </td>
-
-
-            <td>
-              {{ vehicle.customerName || '—' }}
-            </td>
-
-
-            <td>
-              {{ vehicle.brand || '—' }}
-            </td>
-
-
-            <td
-              class="model-cell"
-              [title]="vehicle.model || '—'"
-            >
-              {{ vehicle.model || '—' }}
-            </td>
-
-
-            <td>
-              {{ vehicle.modelYear || '—' }}
-            </td>
-
-
-            <td>
-              {{
-                getVehicleTypeText(
-                  vehicle.vehicleType
-                )
-              }}
-            </td>
-
-
-            <td>
-
-              <span
-                class="vehicle-status"
-                [class.active]="vehicle.isActive"
-                [class.passive]="!vehicle.isActive"
-              >
-                {{
-                  vehicle.isActive
-                    ? 'Aktif'
-                    : 'Pasif'
-                }}
-              </span>
-
-            </td>
-
-
-            <td>
-
-              <a
-                [routerLink]="[
-                  '/vehicles',
-                  vehicle.id
-                ]"
-                class="detail-button"
-              >
-                Detay
-              </a>
-
-            </td>
-
-          </tr>
-
-
-          <!-- EMPTY -->
-
-          <tr
-            *ngIf="pagedVehicles.length === 0"
-          >
-
-            <td
-              colspan="8"
-              class="empty-row"
-            >
-
-              <div class="empty-state-content">
-
-                <div class="empty-icon">
-                  —
+              <td class="col-wide">
+                <div class="vehicle-cell">
+                  <strong [title]="(vehicle.brand || '') + ' ' + (vehicle.model || '')">{{ vehicle.brand || '—' }} {{ vehicle.model || '' }}</strong>
+                  <span>{{ getVehicleTypeText(vehicle.vehicleType) }}</span>
                 </div>
+              </td>
 
-                <strong>
-                  Araç bulunamadı
-                </strong>
+              <td>{{ vehicle.modelYear || '—' }}</td>
 
-                <span>
-                  Arama kriterlerinizi değiştirmeyi deneyin.
+              <td><strong>{{ vehicle.marketValue ? (vehicle.marketValue | number:'1.0-0') + ' ₺' : '—' }}</strong></td>
+
+              <td>
+                <span class="vehicle-status" [class.active]="vehicle.isActive" [class.passive]="!vehicle.isActive">
+                  {{ vehicle.isActive ? 'Aktif' : 'Pasif' }}
                 </span>
+              </td>
 
-              </div>
+              <td>
+                <a [routerLink]="[portal.basePath + '/vehicles', vehicle.id]" class="detail-button">Detay</a>
+              </td>
 
-            </td>
+            </tr>
 
-          </tr>
+            <tr *ngIf="pagedVehicles.length === 0">
+              <td colspan="7" class="empty-row">
+                <div class="empty-state-content">
+                  <strong>Araç bulunamadı</strong>
+                  <span>Arama kriterlerinizi değiştirmeyi deneyin.</span>
+                </div>
+              </td>
+            </tr>
 
-        </tbody>
+          </tbody>
 
       </table>
 
@@ -292,6 +206,7 @@
       "
     >
 
+      <button type="button" class="pagination-arrow" title="İlk sayfa" [disabled]="currentPage === 1" (click)="goToPage(1)">«</button>
       <button
         type="button"
         class="pagination-arrow"
@@ -321,6 +236,7 @@
       >
         ›
       </button>
+      <button type="button" class="pagination-arrow" title="Son sayfa" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">»</button>
 
 
       <span class="pagination-info">

@@ -1,38 +1,77 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject
+} from '@angular/core';
 
-import { AuthService } from '../../../core/services/authservice';
-import { LoginRequest } from '../../../core/models/login-request';
-import { Router } from '@angular/router';
+import {
+  FormsModule
+} from '@angular/forms';
+
+import {
+  AuthService
+} from '../../../core/services/authservice';
+
+import {
+  LoginRequest
+} from '../../../core/models/login-request';
+
+import {
+  homePathForRole
+} from '../../../core/services/portal-context';
+
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink
+} from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    RouterLink
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
 export class Login {
 
-  private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService =
+    inject(AuthService);
 
-email = '';
-password = '';
-rememberMe = false;
+  private readonly router =
+    inject(Router);
 
-showPassword = false;
+  private readonly cdr =
+    inject(ChangeDetectorRef);
 
-isLoading = false;
-successMessage = '';
-errorMessage = '';
+  private readonly route =
+    inject(ActivatedRoute);
 
-togglePasswordVisibility(): void {
-  this.showPassword = !this.showPassword;
-}
+  email = '';
+
+  password = '';
+
+  rememberMe = false;
+
+  showPassword = false;
+
+  isLoading = false;
+
+  successMessage = '';
+
+  errorMessage = '';
+
+  togglePasswordVisibility(): void {
+    this.showPassword =
+      !this.showPassword;
+  }
+
   onSubmit(): void {
-    
+
     this.errorMessage = '';
+
     this.successMessage = '';
 
     const request: LoginRequest = {
@@ -42,42 +81,105 @@ togglePasswordVisibility(): void {
 
     this.isLoading = true;
 
-    this.authService.login(request, this.rememberMe).subscribe({
+    this.authService
+      .login(
+        request,
+        this.rememberMe
+      )
+      .subscribe({
 
-      next: (response) => {
+        next: () => {
 
-        console.log('Login başarılı:', response);
+          this.isLoading = false;
 
-        this.isLoading = false;
+          this.successMessage =
+            'Giriş başarılı. Yönlendiriliyorsunuz...';
 
-        this.successMessage =
-          'Giriş başarılı. Yönlendiriliyorsunuz...';
+          this.cdr.markForCheck();
 
-        this.cdr.markForCheck();
+          setTimeout(() => {
 
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 800);
-      },
+            const role =
+              this.authService.getRole();
 
-      error: (error) => {
+            const hasQuickQuotePurchase =
+              !!sessionStorage.getItem(
+                'quickQuotePurchase'
+              );
 
-        console.error(
-          'LOGIN API HATASI:',
-          error
-        );
+            if (
+              role === 'Customer' &&
+              hasQuickQuotePurchase
+            ) {
 
-        this.isLoading = false;
+              this.router.navigate([
+                '/quick-quote/start'
+              ]);
 
-        this.errorMessage =
-          error?.error?.detail ??
-          error?.error?.message ??
-          error?.error?.title ??
-          'E-posta veya şifre hatalı.';
+              return;
+            }
 
-        this.cdr.markForCheck();
+            if (!role) {
+
+              this.authService.logout();
+
+              this.errorMessage =
+                'Hesabınıza bir rol atanmamış. Lütfen yöneticinizle iletişime geçin.';
+
+              this.successMessage = '';
+
+              this.cdr.markForCheck();
+
+              return;
+            }
+
+            this.router.navigate([
+              homePathForRole(role)
+            ]);
+
+          }, 800);
+        },
+
+        error: (error) => {
+
+          console.error(
+            'LOGIN API HATASI:',
+            error
+          );
+
+          this.isLoading = false;
+
+          this.errorMessage =
+            error?.error?.detail ??
+            error?.error?.message ??
+            error?.error?.title ??
+            'E-posta veya şifre hatalı.';
+
+          this.cdr.markForCheck();
+        }
+
+      });
+  }
+
+  constructor() {
+
+    this.route.queryParamMap.subscribe(
+      params => {
+
+        const email =
+          params.get('email');
+
+        if (email) {
+          this.email = email;
+        }
+
+        if (params.get('expired')) {
+          this.errorMessage =
+            'Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.';
+        }
+
       }
+    );
 
-    });
   }
 }

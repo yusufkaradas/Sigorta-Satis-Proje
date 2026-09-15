@@ -1,456 +1,141 @@
-<div class="payment-create-page">
+<div class="kf-page">
 
-  <!-- PAGE HEADER -->
-  <section class="page-header">
+  <div class="kf-title">
+    ONAY VE ÖDEME
+  </div>
 
-    <div class="page-header-content">
+  <section class="kf-panel">
 
-      <span class="page-eyebrow">
-        SATIN ALMA
-      </span>
+    <div class="kf-panel-head">
+      <div>
+        <h1>
+          {{ policy?.policyNumber || 'Poliçe Ödemesi' }}
+          <span *ngIf="policy" class="kf-badge status-draft">Ödeme Bekliyor</span>
+        </h1>
+        <p>Poliçe bilgilerini kontrol edin ve demo ödeme ile poliçeyi aktifleştirin.</p>
+      </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()" [disabled]="isSubmitting">← Geri Dön</button>
+    </div>
 
-      <h1>
-        Onay ve Ödeme
-      </h1>
+    <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
 
-      <p>
-        Poliçe bilgilerinizi kontrol edin ve ödeme işlemini tamamlayın.
-      </p>
+    <div *ngIf="!isLoading && successMessage" class="kf-alert kf-alert-success">{{ successMessage }}</div>
+
+    <div *ngIf="isLoading" class="kf-state">Poliçe bilgileri yükleniyor...</div>
+
+    <div *ngIf="!isLoading && policy && !errorMessage" class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Ödeme Özeti</h2>
+
+        <div class="kf-highlight">
+          <span>Ödenecek Tutar</span>
+          <strong>{{ policy.premiumAmount | number:'1.2-2' }} ₺</strong>
+        </div>
+
+        <dl class="kf-details kf-details-1">
+          <div><dt>Poliçe No</dt><dd>{{ policy.policyNumber }}</dd></div>
+          <div><dt>Başlangıç</dt><dd>{{ policy.startDate | date:'dd.MM.yyyy' }}</dd></div>
+          <div><dt>Bitiş</dt><dd>{{ policy.endDate | date:'dd.MM.yyyy' }}</dd></div>
+        </dl>
+
+        <div class="kf-alert kf-alert-info kf-alert-inline">
+          Tutar poliçe priminden otomatik belirlenir.
+        </div>
+
+      </section>
+
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">
+          Kart Bilgileri
+          <small>Demo ödeme · kart bilgileri kaydedilmez</small>
+        </h2>
+
+        <div class="kf-grid">
+
+          <div class="kf-field kf-span-all">
+            <label for="cardNumber">Kart Numarası *</label>
+            <input
+              id="cardNumber"
+              type="text"
+              inputmode="numeric"
+              maxlength="19"
+              placeholder="1234 5678 9012 3456"
+              [(ngModel)]="cardNumber"
+              (ngModelChange)="formatCardNumber($event)"
+              autocomplete="off" />
+          </div>
+
+          <div class="kf-field kf-span-all">
+            <label for="cardHolder">Kart Üzerindeki İsim *</label>
+            <input
+              id="cardHolder"
+              type="text"
+              placeholder="AD SOYAD"
+              [(ngModel)]="cardHolder"
+              autocomplete="off" />
+          </div>
+
+          <div class="kf-field">
+            <label for="expiryDate">Son Kullanma *</label>
+            <input
+              id="expiryDate"
+              type="text"
+              inputmode="numeric"
+              maxlength="5"
+              placeholder="AA/YY"
+              [(ngModel)]="expiryDate"
+              (ngModelChange)="formatExpiryDate($event)"
+              autocomplete="off" />
+          </div>
+
+          <div class="kf-field">
+            <label for="cvv">CVV *</label>
+            <input
+              id="cvv"
+              type="password"
+              inputmode="numeric"
+              maxlength="4"
+              placeholder="123"
+              [(ngModel)]="cvv"
+              (ngModelChange)="formatCvv($event)"
+              autocomplete="off" />
+          </div>
+
+        </div>
+
+        <div *ngIf="cardErrorMessage" class="kf-alert kf-alert-error kf-alert-inline">
+          {{ cardErrorMessage }}
+        </div>
+
+        <label class="kf-check">
+          <input type="checkbox" [(ngModel)]="isTermsAccepted" />
+          Poliçe bilgilerimi ve ödeme koşullarını kontrol ettim, onaylıyorum.
+        </label>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions">
+
+      <button type="button" class="kf-btn-outline" (click)="goBack()" [disabled]="isSubmitting">
+        İptal
+      </button>
+
+      <button
+        type="button"
+        class="kf-btn-success"
+        (click)="createPayment()"
+        [disabled]="isSubmitting || !policy || !isTermsAccepted || cardNumber.length !== 19 || !cardHolder.trim() || expiryDate.length !== 5 || cvv.length !== 3">
+        {{ isSubmitting ? 'Ödeme Yapılıyor...' : 'Ödemeyi Tamamla' }}
+      </button>
 
     </div>
 
   </section>
-
-
-  <!-- LOADING -->
-  <div
-    *ngIf="isLoading"
-    class="loading">
-
-    <div class="loading-spinner"></div>
-
-    <span>
-      Poliçe bilgileri yükleniyor...
-    </span>
-
-  </div>
-
-
-  <!-- ERROR -->
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="message message-error">
-
-    <span class="message-icon">
-      !
-    </span>
-
-    <span>
-      {{ errorMessage }}
-    </span>
-
-  </div>
-
-
-  <!-- SUCCESS -->
-  <div
-    *ngIf="!isLoading && successMessage"
-    class="message message-success">
-
-    <span class="message-icon">
-      ✓
-    </span>
-
-    <span>
-      {{ successMessage }}
-    </span>
-
-  </div>
-
-
-  <!-- PAYMENT CONTENT -->
-  <section
-    *ngIf="
-      !isLoading &&
-      policy &&
-      !errorMessage
-    "
-    class="payment-card">
-
-
-    <!-- HEADER -->
-    <div class="payment-card-header">
-
-      <div class="header-content">
-
-        <span class="section-label">
-          ONAYLANAN POLİÇE
-        </span>
-
-        <h2>
-          {{ policy.policyNumber }}
-        </h2>
-
-        <p>
-          Ödeme öncesi poliçe bilgilerini kontrol edin.
-        </p>
-
-      </div>
-
-      <span class="status-badge">
-        Taslak
-      </span>
-
-    </div>
-
-
-    <!-- POLICY INFORMATION -->
-    <section class="summary-section">
-
-      <div class="section-heading">
-
-        <span class="section-number">
-          01
-        </span>
-
-        <div>
-          <h3>
-            Poliçe Bilgileri
-          </h3>
-
-          <span>
-            Poliçenin geçerlilik süresi
-          </span>
-        </div>
-
-      </div>
-
-
-      <div class="policy-summary-grid">
-
-        <!-- START DATE -->
-        <div class="summary-item">
-
-          <span class="summary-label">
-            Başlangıç Tarihi
-          </span>
-
-          <strong>
-            {{ policy.startDate | date:'dd.MM.yyyy' }}
-          </strong>
-
-        </div>
-
-
-        <!-- END DATE -->
-        <div class="summary-item">
-
-          <span class="summary-label">
-            Bitiş Tarihi
-          </span>
-
-          <strong>
-            {{ policy.endDate | date:'dd.MM.yyyy' }}
-          </strong>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- PAYMENT SUMMARY -->
-    <section class="summary-section payment-summary-section">
-
-      <div class="section-heading">
-
-        <span class="section-number">
-          02
-        </span>
-
-        <div>
-          <h3>
-            Ödeme Özeti
-          </h3>
-
-          <span>
-            Ödenecek poliçe primi
-          </span>
-        </div>
-
-      </div>
-
-
-      <div class="payment-price-box">
-
-        <div class="price-content">
-
-          <span class="price-label">
-            Ödenecek Tutar
-          </span>
-
-          <p>
-            Poliçe primi
-          </p>
-
-        </div>
-
-
-        <strong class="price-value">
-
-          {{
-            policy.premiumAmount
-              | number:'1.2-2'
-          }}
-          ₺
-
-        </strong>
-
-      </div>
-
-
-      <div class="payment-info">
-
-        <div class="payment-info-icon">
-          ✓
-        </div>
-
-        <div>
-
-          <strong>
-            Güvenli ödeme
-          </strong>
-
-          <p>
-            Ödeme tutarı sistem tarafından poliçe priminden
-            otomatik olarak belirlenmektedir.
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-
-<!-- CARD PAYMENT -->
-<section class="summary-section card-payment-section">
-
-  <div class="section-heading">
-
-    <span class="section-number">
-      03
-    </span>
-
-    <div>
-      <h3>
-        Kart Bilgileri
-      </h3>
-
-      <span>
-        Demo ödeme bilgilerini girin
-      </span>
-    </div>
-
-  </div>
-
-
-  <div class="card-form-grid">
-
-    <!-- CARD NUMBER -->
-    <div class="card-form-group card-form-group-full">
-
-      <label for="cardNumber">
-        Kart Numarası
-      </label>
-
-      <input
-  id="cardNumber"
-  type="text"
-  inputmode="numeric"
-  maxlength="19"
-  placeholder="1234 5678 9012 3456"
-  [(ngModel)]="cardNumber"
-  (ngModelChange)="formatCardNumber($event)"
-  autocomplete="off"
-/>
-
-    </div>
-
-
-    <!-- CARD HOLDER -->
-    <div class="card-form-group card-form-group-full">
-
-      <label for="cardHolder">
-        Kart Üzerindeki İsim
-      </label>
-
-      <input
-        id="cardHolder"
-        type="text"
-        placeholder="AD SOYAD"
-        [(ngModel)]="cardHolder"
-        autocomplete="off"
-      />
-
-    </div>
-
-
-    <!-- EXPIRY -->
-    <div class="card-form-group">
-
-      <label for="expiryDate">
-        Son Kullanma
-      </label>
-
-      <input
-  id="expiryDate"
-  type="text"
-  inputmode="numeric"
-  maxlength="5"
-  placeholder="AA/YY"
-  [(ngModel)]="expiryDate"
-  (ngModelChange)="formatExpiryDate($event)"
-  autocomplete="off"
-/>
-
-    </div>
-
-
-    <!-- CVV -->
-    <div class="card-form-group">
-
-      <label for="cvv">
-        CVV
-      </label>
-
-      <input
-  id="cvv"
-  type="password"
-  inputmode="numeric"
-  maxlength="4"
-  placeholder="123"
-  [(ngModel)]="cvv"
-  (ngModelChange)="formatCvv($event)"
-  autocomplete="off"
-/>
-
-    </div>
-
-  </div>
-
-
-  <!-- CARD ERROR -->
-  <div
-    *ngIf="cardErrorMessage"
-    class="card-error">
-
-    <span class="card-error-icon">
-      !
-    </span>
-
-    <span>
-      {{ cardErrorMessage }}
-    </span>
-
-  </div>
-
-
-  <!-- TERMS -->
-  <label class="terms-check">
-
-    <input
-      type="checkbox"
-      [(ngModel)]="isTermsAccepted"
-    />
-
-    <span>
-      Ödeme koşullarını ve poliçe bilgilerimi kontrol ettiğimi
-      ve devam etmeyi kabul ettiğimi onaylıyorum.
-    </span>
-
-  </label>
-
-
-  <div class="demo-payment-note">
-
-    <span class="demo-payment-icon">
-      i
-    </span>
-
-    <span>
-      Bu ekran demo ödeme akışıdır. Kart bilgileri sisteme
-      kaydedilmez.
-    </span>
-
-  </div>
-
-</section>
-    <!-- CONFIRMATION -->
-    <section class="summary-section confirmation-section">
-
-      <div class="confirmation-content">
-
-        <div class="confirmation-icon">
-          ✓
-        </div>
-
-        <div>
-
-          <strong>
-            Ödeme öncesi kontrol
-          </strong>
-
-          <p>
-            Poliçe bilgilerini ve ödenecek tutarı kontrol ettikten
-            sonra ödeme işlemini tamamlayabilirsiniz.
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-   <!-- ACTIONS -->
-<div class="payment-actions">
-
-  <button
-    type="button"
-    class="action-button action-secondary"
-    (click)="goBack()"
-    [disabled]="isSubmitting">
-
-    ← Geri Dön
-
-  </button>
-
-
-  <button
-    type="button"
-    class="action-button action-primary"
-    (click)="createPayment()"
-    [disabled]="
-      isSubmitting ||
-      !isTermsAccepted ||
-      cardNumber.length !== 19 ||
-      !cardHolder.trim() ||
-      expiryDate.length !== 5 ||
-      cvv.length !== 3
-    ">
-
-    <span
-      *ngIf="isSubmitting"
-      class="button-spinner">
-    </span>
-
-    {{
-      isSubmitting
-        ? 'Ödeme Yapılıyor...'
-        : 'Ödemeyi Tamamla'
-    }}
-
-  </button>
 
 </div>

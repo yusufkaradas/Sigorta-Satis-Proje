@@ -1,3 +1,4 @@
+import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -7,15 +8,21 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import {
   Payment,
   PaymentsService
 } from './payments.service';
 
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
 @Component({
   selector: 'app-payments',
   imports: [
+    RecordNumberPipe,
     CommonModule,
     FormsModule,
     RouterLink
@@ -27,6 +34,9 @@ export class Payments {
 
   private readonly paymentsService =
     inject(PaymentsService);
+
+  readonly portal =
+    injectPortalContext();
 
   private readonly cdr =
     inject(ChangeDetectorRef);
@@ -41,7 +51,40 @@ export class Payments {
   currentPage = 1;
   pageSize = 5;
 
+  private readonly http =
+    inject(HttpClient);
+
+  policyLookup = new Map<string, { policyNumber: string; customerName: string }>();
+
+  policyNumberOf(policyId: string): string {
+    return this.policyLookup.get(policyId)?.policyNumber ?? 'Poliçe bulunamadı';
+  }
+
+  customerOf(policyId: string): string {
+    return this.policyLookup.get(policyId)?.customerName ?? '';
+  }
+
+  private loadPolicyLookup(): void {
+    this.http
+      .get<{ id: string; policyNumber: string; customerName?: string }[]>('https://localhost:7086/api/Policy')
+      .subscribe({
+        next: policies => {
+          this.policyLookup = new Map(
+            (policies ?? []).map(policy => [
+              policy.id,
+              { policyNumber: policy.policyNumber, customerName: policy.customerName ?? '' }
+            ])
+          );
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.policyLookup = new Map();
+        }
+      });
+  }
+
   ngOnInit(): void {
+    this.loadPolicyLookup();
     this.loadPayments();
   }
 
@@ -83,6 +126,17 @@ export class Payments {
       }
     });
   }
+  get collectedAmount(): number {
+    return this.payments
+      .filter(payment => payment.status === 3)
+      .reduce((total, payment) => total + (payment.amount ?? 0), 0);
+  }
+
+  get successRate(): number {
+    const finished = this.payments.filter(payment => payment.status === 3 || payment.status === 4).length;
+    return finished ? Math.round((this.successfulPaymentCount / finished) * 100) : 0;
+  }
+
   get totalPaymentCount(): number {
     return this.payments.length;
   }
@@ -164,11 +218,11 @@ export class Payments {
   }
 
   get pageNumbers(): number[] {
-
-    return Array.from(
-      { length: this.totalPages },
-      (_, index) => index + 1
-    );
+    const total = this.totalPages;
+    const current = Math.min(this.currentPage, total);
+    const start = Math.max(1, Math.min(current - 2, total - 4));
+    const end = Math.min(total, start + 4);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
   onSearch(): void {

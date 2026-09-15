@@ -1,123 +1,65 @@
-<div class="customer-detail-page">
+<div class="kf-page">
 
-  <div class="detail-header">
-
-    <div>
-      <h1>Müşteri Detayı</h1>
-      <p>Müşteri bilgilerinin görüntülenmesi</p>
-    </div>
-
-    <a
-      routerLink="/customers"
-      class="back-button"
-    >
-      ← Müşterilere Dön
-    </a>
-
-<a
-  class="edit-button"
-  [routerLink]="[
-    '/customers',
-    customer?.id,
-    'edit'
-  ]"
->
-  Düzenle
- </a>
-
-  <button
-    *ngIf="customer"
-    type="button"
-    class="delete-button"
-    (click)="deleteCustomer()"
-  >
-    Müşteriyi Sil
-  </button>
-
-</div>
-
-  <div
-     *ngIf="customer"
-    type="button"
-    class="delete-button"
-    (click)="deleteCustomer()"
-  >
-    Müşteri bilgileri yükleniyor...
+  <div class="kf-title">
+    MÜŞTERİ DETAYI
   </div>
 
-  <div
-    *ngIf="
-      !isLoading &&
-      errorMessage
-    "
-    class="state-message error"
-  >
-    {{ errorMessage }}
-  </div>
+  <section class="kf-panel">
 
-  <section
-    *ngIf="
-      !isLoading &&
-      customer
-    "
-    class="detail-card"
-  >
-
-    <div class="detail-row">
-      <span>Ad Soyad</span>
-      <strong>
-        {{ customer.firstName }}
-        {{ customer.lastName }}
-      </strong>
+    <div class="kf-panel-head">
+      <div>
+        <h1>
+          {{ customer ? customer.firstName + ' ' + customer.lastName : 'Müşteri Detayı' }}
+          <span
+            *ngIf="customer"
+            class="kf-badge"
+            [class.active]="customer.isActive"
+            [class.passive]="!customer.isActive">
+            {{ getStatusText() }}
+          </span>
+        </h1>
+        <p>Müşterinin kimlik, iletişim ve adres bilgileri.</p>
+      </div>
+      <a [routerLink]="portal.basePath + '/customers'" class="kf-btn-outline">← Müşterilere Dön</a>
     </div>
 
-    <div class="detail-row">
-      <span>T.C. Kimlik No</span>
-      <strong>
-        {{ customer.identityNumber }}
-      </strong>
+    <div *ngIf="isLoading" class="kf-state">Müşteri bilgileri yükleniyor...</div>
+
+    <div *ngIf="!isLoading && errorMessage" class="kf-state">{{ errorMessage }}</div>
+
+    <div *ngIf="!isLoading && customer" class="kf-body kf-body-half">
+
+      <section class="kf-section">
+        <h2 class="kf-section-title">Kişisel Bilgiler</h2>
+        <dl class="kf-details">
+          <div><dt>Ad</dt><dd>{{ customer.firstName }}</dd></div>
+          <div><dt>Soyad</dt><dd>{{ customer.lastName }}</dd></div>
+          <div><dt>T.C. Kimlik No</dt><dd>{{ customer.identityNumber }}</dd></div>
+          <div><dt>Durum</dt><dd>{{ getStatusText() }}</dd></div>
+          <div><dt>Doğum Tarihi</dt><dd>{{ customer.dateOfBirth | backendDate:'date' }}</dd></div>
+          <div><dt>Kayıt Tarihi</dt><dd>{{ customer.createdDate | backendDate:'datetime' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="kf-section">
+        <h2 class="kf-section-title">İletişim ve Adres</h2>
+        <dl class="kf-details">
+          <div><dt>E-posta</dt><dd [title]="customer.email">{{ customer.email }}</dd></div>
+          <div><dt>Telefon</dt><dd>{{ customer.phoneNumber }}</dd></div>
+          <div><dt>Şehir</dt><dd>{{ customer.city }}</dd></div>
+          <div><dt>İlçe</dt><dd>{{ customer.district }}</dd></div>
+          <div class="kf-span-all"><dt>Adres</dt><dd [title]="customer.address || ''">{{ customer.address || '—' }}</dd></div>
+        </dl>
+      </section>
+
     </div>
 
-    <div class="detail-row">
-      <span>E-posta</span>
-      <strong>
-        {{ customer.email }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Telefon</span>
-      <strong>
-        {{ customer.phoneNumber }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Adres</span>
-      <strong>
-        {{ customer.address || '-' }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Şehir</span>
-      <strong>
-        {{ customer.city }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>İlçe</span>
-      <strong>
-        {{ customer.district }}
-      </strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Durum</span>
-      <strong>
-        {{ getStatusText() }}
-      </strong>
+    <div class="kf-actions kf-actions-between">
+      <a [routerLink]="portal.basePath + '/customers'" class="kf-btn-outline">Müşterilere Dön</a>
+      <div *ngIf="customer && !portal.isReadOnly" class="kf-head-actions">
+        <button type="button" class="kf-btn-danger" (click)="deleteCustomer()">Müşteriyi Sil</button>
+        <a [routerLink]="['/customers', customer.id, 'edit']" class="kf-btn">Düzenle</a>
+      </div>
     </div>
 
   </section>

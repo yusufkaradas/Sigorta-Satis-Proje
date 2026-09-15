@@ -1,0 +1,112 @@
+<div class="kl-layout">
+
+  <aside class="kl-sidebar">
+
+    <a
+      routerLink="/customer"
+      class="kl-logo">
+      Logo
+    </a>
+
+    <nav class="kl-menu">
+
+      <a
+        *ngFor="let item of menuItems"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: item.exact }"
+        class="kl-menu-item">
+        {{ item.label }}
+      </a>
+
+    </nav>
+
+    <button
+      type="button"
+      class="kl-logout"
+      (click)="logout()">
+      Çıkış
+    </button>
+
+  </aside>
+
+
+  <div class="kl-main">
+
+    <header class="kl-header">
+
+      <span></span>
+
+      <h1 class="kl-title">
+        {{ pageTitle }}
+      </h1>
+
+      <div class="kl-header-actions">
+
+        <div class="kl-dropdown-wrap">
+
+          <button
+            type="button"
+            class="kl-icon-button"
+            aria-label="Bildirimler"
+            (click)="toggleNotification()">
+            🔔
+          </button>
+
+          <div
+            *ngIf="isNotificationOpen"
+            class="kl-dropdown">
+            <strong>Bildirimler</strong>
+            <p>Yeni bildiriminiz bulunmuyor.</p>
+          </div>
+
+        </div>
+
+        <a
+          routerLink="/customer/quotes/new"
+          class="kl-icon-button"
+          title="Yeni Teklif Al"
+          aria-label="Yeni Teklif Al">
+          +
+        </a>
+
+        <div class="kl-dropdown-wrap">
+
+          <button
+            type="button"
+            class="kl-user-button"
+            (click)="toggleUserMenu()">
+            {{ user.name || 'Kullanıcı Adı' }}
+          </button>
+
+          <div
+            *ngIf="isUserMenuOpen"
+            class="kl-dropdown">
+
+            <strong>{{ user.name || 'Müşteri' }}</strong>
+
+            <p *ngIf="user.email">{{ user.email }}</p>
+
+            <button
+              type="button"
+              class="kl-dropdown-action"
+              (click)="logout()">
+              Çıkış Yap
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <main class="kl-content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+</div>

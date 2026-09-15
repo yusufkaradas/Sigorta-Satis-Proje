@@ -4,306 +4,195 @@
     İŞLEMLER
   </div>
 
-
-  <!-- ÖZET KARTLARI -->
+  @if (errorMessage()) {
+    <div class="db-alert">{{ errorMessage() }}</div>
+  }
 
   <div class="summary-grid">
 
-    <div class="summary-card">
-      <span class="summary-card-title">Müşteriler</span>
+    <a class="summary-card" [routerLink]="portal.basePath + '/payments'">
+      <span>Bu Ay Tahsilat</span>
+      <strong>{{ monthlyCollection().amount | number:'1.0-0' }} ₺</strong>
+      <small>
+        {{ monthlyCollection().count }} başarılı ödeme · geçen ay {{ monthlyCollection().lastMonthAmount | number:'1.0-0' }} ₺
+      </small>
+    </a>
 
-      <strong>
-        {{ customerCount }}
-      </strong>
+    <a class="summary-card" [routerLink]="portal.basePath + '/policies'">
+      <span>Aktif Poliçe</span>
+      <strong>{{ activePolicies().count }}</strong>
+      <small>Toplam prim {{ activePolicies().premium | number:'1.0-0' }} ₺</small>
+    </a>
 
-      <span class="summary-card-description">
-        Toplam müşteri
-      </span>
-    </div>
+    <a class="summary-card" [routerLink]="portal.basePath + '/quotes'">
+      <span>Açık Teklif</span>
+      <strong>{{ openQuotes().count }}</strong>
+      <small>Teklif → kabul dönüşümü %{{ openQuotes().conversion }}</small>
+    </a>
 
-
-    <div class="summary-card">
-      <span class="summary-card-title">Araçlar</span>
-
-      <strong>
-        {{ vehicleCount }}
-      </strong>
-
-      <span class="summary-card-description">
-        Toplam araç
-      </span>
-    </div>
-
-
-    <div class="summary-card">
-      <span class="summary-card-title">Teklifler</span>
-
-      <strong>
-        {{ quoteCount }}
-      </strong>
-
-      <span class="summary-card-description">
-        Açık teklif
-      </span>
-    </div>
-
-
-    <div class="summary-card">
-      <span class="summary-card-title">Aktif Poliçeler</span>
-
-      <strong>
-        {{ activePolicyCount }}
-      </strong>
-
-      <span class="summary-card-description">
-        Aktif poliçe
-      </span>
-    </div>
+    <a class="summary-card" [routerLink]="portal.basePath + '/customers'">
+      <span>Müşteri</span>
+      <strong>{{ customerSummary().count }}</strong>
+      <small>{{ customerSummary().vehicles }} araç · {{ customerSummary().insured }} poliçeli müşteri</small>
+    </a>
 
   </div>
 
 
-  <!-- ANA DASHBOARD GRID -->
-
   <div class="dashboard-grid">
 
+    <!-- Sol: satış hunisi ve süresi yaklaşan teklifler -->
 
-    <!-- TEKLİF DURUMLARI -->
+    <section class="dashboard-card">
 
-    <section class="dashboard-card quote-status-card">
+      <h2>Satış Hunisi</h2>
 
-      <h2>Teklif Durumları</h2>
+      <ul class="db-funnel">
+        @for (step of funnel(); track step.label) {
+          <li>
+            <span class="db-funnel-label">{{ step.label }}</span>
+            <strong>{{ step.count }}</strong>
+            <span class="db-bar"><span [style.width.%]="step.percent"></span></span>
+            <small>%{{ step.percent }}</small>
+          </li>
+        }
+      </ul>
 
-      <div class="status-list">
+      <h2 class="db-sub-head">
+        Süresi Yaklaşan Teklifler
+        <small>3 gün içinde</small>
+      </h2>
 
-        <div class="status-row">
-          <span class="status-label">Taslak</span>
-
-          <strong class="status-count">
-            {{ quoteDraftCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteDraftPercentage"
-            ></span>
-          </div>
-        </div>
-
-
-        <div class="status-row">
-          <span class="status-label">Teklif Verildi</span>
-
-          <strong class="status-count">
-            {{ quoteOfferedCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteOfferedPercentage"
-            ></span>
-          </div>
-        </div>
-
-
-        <div class="status-row">
-          <span class="status-label">Kabul Edildi</span>
-
-          <strong class="status-count">
-            {{ quoteAcceptedCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteAcceptedPercentage"
-            ></span>
-          </div>
-        </div>
-
-
-        <div class="status-row">
-          <span class="status-label">Reddedildi</span>
-
-          <strong class="status-count">
-            {{ quoteRejectedCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteRejectedPercentage"
-            ></span>
-          </div>
-        </div>
-
-
-        <div class="status-row">
-          <span class="status-label">İptal Edildi</span>
-
-          <strong class="status-count">
-            {{ quoteCancelledCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteCancelledPercentage"
-            ></span>
-          </div>
-        </div>
-
-
-        <div class="status-row">
-          <span class="status-label">Süresi Doldu</span>
-
-          <strong class="status-count">
-            {{ quoteExpiredCount }}
-          </strong>
-
-          <div class="status-bar">
-            <span
-              [style.width.%]="quoteExpiredPercentage"
-            ></span>
-          </div>
-        </div>
-
-      </div>
+      <ul class="db-list">
+        @for (item of expiringQuotes(); track item.id) {
+          <li>
+            <a [routerLink]="item.link">
+              <span>
+                <strong>{{ item.title }}</strong>
+                <small>{{ item.subtitle }}</small>
+              </span>
+              <span class="db-badge" [class.danger]="item.daysLeft <= 1" [class.warning]="item.daysLeft > 1">
+                {{ daysLabel(item.daysLeft) }}
+              </span>
+            </a>
+          </li>
+        } @empty {
+          <li class="db-empty">Süresi yaklaşan teklif yok.</li>
+        }
+      </ul>
 
     </section>
 
 
-    <!-- SON İŞLEMLER -->
+    <!-- Orta: son işlemler ve haftalık hareket -->
 
-    <section class="dashboard-card operations-card">
+    <section class="dashboard-card">
 
-      <h2>Son İşlemler</h2>
+      <h2>
+        Son İşlemler
+        <small>Kayda gitmek için satıra tıklayın</small>
+      </h2>
 
-      <div class="operations-table">
+      <div class="db-table">
 
-        <div class="table-row table-header">
+        <div class="db-row db-row-head">
           <span>Tür</span>
           <span>Kayıt</span>
+          <span>Tutar</span>
           <span>Durum</span>
           <span>Tarih</span>
-          <span>Saat</span>
         </div>
 
+        @if (isLoading()) {
+          <div class="db-empty">Yükleniyor...</div>
+        }
 
-        <div
-          class="table-row"
-          *ngFor="let activity of recentActivities"
-        >
+        @for (activity of recentActivities(); track activity.type + activity.record) {
+          <a class="db-row" [routerLink]="activity.link">
+            <span><span class="db-type">{{ activity.type }}</span></span>
+            <span class="db-record">
+              <strong>{{ activity.record }}</strong>
+              <small>{{ activity.detail }}</small>
+            </span>
+            <span class="db-amount">
+              {{ activity.amount !== null ? (activity.amount | number:'1.0-0') + ' ₺' : '—' }}
+            </span>
+            <span><span class="db-badge" [ngClass]="activity.tone">{{ activity.status }}</span></span>
+            <span class="db-date">{{ activity.date | date:'dd.MM.yyyy HH:mm' }}</span>
+          </a>
+        } @empty {
+          @if (!isLoading()) {
+            <div class="db-empty">Henüz işlem yok.</div>
+          }
+        }
 
-          <span>{{ activity.type }}</span>
+      </div>
 
-          <span>
-            {{ activity.record }}
-          </span>
+      <h2 class="db-sub-head">
+        Son 7 Gün
+        <small class="db-legend">
+          <i class="db-dot quotes"></i> Teklif {{ weekTotals().quotes }}
+          <i class="db-dot policies"></i> Poliçe {{ weekTotals().policies }}
+        </small>
+      </h2>
 
-          <span>
-            {{ activity.status }}
-          </span>
-
-          <span>
-            {{ activity.date }}
-          </span>
-
-          <span>
-            {{ activity.time }}
-          </span>
-
-        </div>
-
+      <div class="db-chart">
+        @for (day of lastSevenDays(); track day.label) {
+          <div class="db-chart-day">
+            <div class="db-chart-bars">
+              <span class="quotes" [style.height.%]="barHeight(day.quotes)" [title]="day.quotes + ' teklif'"></span>
+              <span class="policies" [style.height.%]="barHeight(day.policies)" [title]="day.policies + ' poliçe'"></span>
+            </div>
+            <small>{{ day.label }}</small>
+          </div>
+        }
       </div>
 
     </section>
 
 
-    <!-- SAĞ ÖZET -->
+    <!-- Sağ: onay bekleyenler ve yaklaşan yenilemeler -->
 
-    <section class="dashboard-card right-summary-card">
+    <section class="dashboard-card">
 
-      <div class="compact-section">
+      <h2>Onay Bekleyenler</h2>
 
-        <h2>Poliçe Durumları</h2>
+      <ul class="db-list">
+        @for (item of approvals(); track item.label) {
+          <li>
+            <a [routerLink]="item.link">
+              <span>
+                <strong>{{ item.label }}</strong>
+                <small>{{ item.hint }}</small>
+              </span>
+              <span class="db-count" [ngClass]="item.count > 0 ? item.tone : 'neutral'">{{ item.count }}</span>
+            </a>
+          </li>
+        }
+      </ul>
 
-        <div class="compact-status-list">
+      <h2 class="db-sub-head">
+        Yaklaşan Yenilemeler
+        <small>30 gün içinde</small>
+      </h2>
 
-          <div class="compact-status-row">
-            <span>Taslak</span>
-            <strong>{{ policyDraftCount }}</strong>
-          </div>
-
-          <div class="compact-status-row">
-            <span>Aktif</span>
-            <strong>{{ policyActiveCount }}</strong>
-          </div>
-
-          <div class="compact-status-row">
-            <span>İptal</span>
-            <strong>{{ policyCancelledCount }}</strong>
-          </div>
-
-          <div class="compact-status-row">
-            <span>Süresi Doldu</span>
-            <strong>{{ policyExpiredCount }}</strong>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="compact-divider"></div>
-
-
-      <div class="compact-section">
-
-        <h2>Ödeme Özeti</h2>
-
-        <div class="payment-summary-list">
-
-          <div class="payment-summary-item">
-            <span>Başarılı Ödemeler</span>
-            <strong>{{ successfulPaymentCount }}</strong>
-          </div>
-
-          <div class="payment-summary-item">
-            <span>Başarısız Ödemeler</span>
-            <strong>{{ failedPaymentCount }}</strong>
-          </div>
-
-          <div class="payment-summary-item">
-            <span>Bekleyen Ödemeler</span>
-            <strong>{{ pendingPaymentCount }}</strong>
-          </div>
-
-        </div>
-
-
-        <div class="last-payment">
-
-          <span *ngIf="latestActivity">
-            Son işlem:
-            {{ latestActivity.type }}
-            -
-            {{ latestActivity.record }}
-          </span>
-
-          <span *ngIf="!latestActivity">
-            Son işlem bulunmuyor
-          </span>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="payment-details-button"
-          routerLink="/payments"
-        >
-          Ödemelere Git
-        </button>
-
-      </div>
+      <ul class="db-list">
+        @for (item of upcomingRenewals(); track item.id) {
+          <li>
+            <a [routerLink]="item.link">
+              <span>
+                <strong>{{ item.title }}</strong>
+                <small>{{ item.subtitle }}</small>
+              </span>
+              <span class="db-badge" [class.warning]="item.daysLeft <= 7" [class.info]="item.daysLeft > 7">
+                {{ daysLabel(item.daysLeft) }}
+              </span>
+            </a>
+          </li>
+        } @empty {
+          <li class="db-empty">30 gün içinde bitecek poliçe yok.</li>
+        }
+      </ul>
 
     </section>
 

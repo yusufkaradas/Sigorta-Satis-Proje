@@ -1,3 +1,4 @@
+import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -17,10 +18,15 @@ import {
   CustomerService
 } from '../customers.service';
 
+import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
+
 @Component({
   selector: 'app-customer-detail',
   imports: [
     CommonModule,
+    BackendDatePipe,
     RouterLink
   ],
   templateUrl: './customer-detail.html',
@@ -33,6 +39,9 @@ export class CustomerDetail {
 
   private readonly customerService =
     inject(CustomerService);
+
+  readonly portal =
+    injectPortalContext();
 
   private readonly cdr =
     inject(ChangeDetectorRef);

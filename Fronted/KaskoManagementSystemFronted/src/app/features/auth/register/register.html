@@ -1,0 +1,373 @@
+<div class="register-page">
+
+  <aside class="brand-section">
+
+    <div class="brand-content">
+
+      <div class="logo-box">
+        <span>Logo</span>
+      </div>
+
+      <div class="brand-company">
+        Şirket Adı
+      </div>
+
+      <div class="brand-system">
+        Sigorta Yönetim Sistemi
+      </div>
+
+      <div class="brand-image-placeholder">
+        <span>Görsel</span>
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <section class="register-section">
+
+    <header class="register-header">
+      <span>SİGORTA PANELİ</span>
+    </header>
+
+
+    <main class="register-main">
+
+      <div class="register-title">
+        <span>HESAP OLUŞTUR</span>
+      </div>
+
+
+      <div class="register-card">
+
+        <div class="register-heading">
+
+          <h1>
+            Hesabınızı Oluşturun
+          </h1>
+
+          <p>
+            Teklifinizi satın almak ve poliçenizi
+            yönetmek için bilgilerinizi tamamlayın.
+          </p>
+
+        </div>
+
+
+        <form
+          (ngSubmit)="onSubmit()"
+        >
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label for="firstName">
+                Ad
+              </label>
+
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autocomplete="given-name"
+                placeholder="Adınız"
+                [(ngModel)]="firstName"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="lastName">
+                Soyad
+              </label>
+
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autocomplete="family-name"
+                placeholder="Soyadınız"
+                [(ngModel)]="lastName"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="identityNumber">
+                T.C. Kimlik No
+              </label>
+
+              <input
+                id="identityNumber"
+                name="identityNumber"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="11"
+                placeholder="11 haneli T.C. Kimlik No"
+                [value]="identityNumber"
+                (input)="onIdentityInput($event)"
+                (keydown)="onNumericKeydown($event)"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="dateOfBirth">
+                Doğum Tarihi
+              </label>
+
+              <input
+                id="dateOfBirth"
+                name="dateOfBirth"
+                type="date"
+                [(ngModel)]="dateOfBirth"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="email">
+                E-posta Adresi
+              </label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="E-posta adresiniz"
+                [(ngModel)]="email"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="phoneNumber">
+                Cep Telefonu
+              </label>
+
+              <div class="phone-input">
+
+                <span class="phone-prefix">
+                  +90
+                </span>
+
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  inputmode="numeric"
+                  autocomplete="tel-national"
+                  maxlength="10"
+                  placeholder="5XX XXX XX XX"
+                  [value]="phoneNumber"
+                  (input)="onPhoneInput($event)"
+                  (keydown)="onNumericKeydown($event)"
+                />
+
+              </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="city">
+                İl
+              </label>
+
+              <input
+                id="city"
+                name="city"
+                type="text"
+                autocomplete="address-level1"
+                placeholder="İl"
+                [(ngModel)]="city"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="district">
+                İlçe
+              </label>
+
+              <input
+                id="district"
+                name="district"
+                type="text"
+                autocomplete="address-level2"
+                placeholder="İlçe"
+                [(ngModel)]="district"
+              />
+
+            </div>
+
+
+            <div class="form-group form-group-full">
+
+              <label for="address">
+                Adres
+              </label>
+
+              <textarea
+                id="address"
+                name="address"
+                rows="1"
+                autocomplete="street-address"
+                placeholder="Açık adresiniz"
+                [(ngModel)]="address"
+              ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="password">
+                Şifre
+              </label>
+
+              <div class="password-input-wrapper">
+
+                <input
+                  id="password"
+                  name="password"
+                  [type]="
+                    showPassword
+                      ? 'text'
+                      : 'password'
+                  "
+                  autocomplete="new-password"
+                  placeholder="En az 8 karakter"
+                  [(ngModel)]="password"
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()"
+                >
+                  <span
+                    class="eye-icon"
+                    [class.hidden]="showPassword"
+                  ></span>
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="passwordConfirm">
+                Şifre Tekrar
+              </label>
+
+              <div class="password-input-wrapper">
+
+                <input
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  [type]="
+                    showPasswordConfirm
+                      ? 'text'
+                      : 'password'
+                  "
+                  autocomplete="new-password"
+                  placeholder="Şifrenizi tekrar girin"
+                  [(ngModel)]="passwordConfirm"
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordConfirmVisibility()"
+                >
+                  <span
+                    class="eye-icon"
+                    [class.hidden]="showPasswordConfirm"
+                  ></span>
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          @if (errorMessage) {
+
+            <div class="input-error-message">
+              {{ errorMessage }}
+            </div>
+
+          }
+
+
+          @if (successMessage) {
+
+            <div class="success-message">
+              {{ successMessage }}
+            </div>
+
+          }
+
+
+          <div class="register-actions">
+
+            <a
+              routerLink="/login"
+              class="back-button"
+            >
+              Giriş Ekranına Dön
+            </a>
+
+
+            <button
+              type="submit"
+              class="register-button"
+              [disabled]="
+                !canSubmit() || isLoading
+              "
+            >
+              {{
+                isLoading
+                  ? 'Hesap Oluşturuluyor...'
+                  : 'Hesap Oluştur'
+              }}
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </main>
+
+
+    <footer class="register-footer">
+      © 2026 Sigorta Satış
+    </footer>
+
+  </section>
+
+</div>

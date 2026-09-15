@@ -1,230 +1,62 @@
-<div class="user-detail-page">
+<div class="kf-page">
 
-  <!-- SAYFA BAŞLIĞI -->
-  <section class="page-header">
-
-    <div>
-      <h1>Kullanıcı Detayı</h1>
-
-      <p>
-        Sistem kullanıcısının bilgilerini görüntüleyin
-      </p>
-    </div>
-
-    <button
-      type="button"
-      class="back-button"
-      (click)="goBack()">
-
-      ← Kullanıcılara Dön
-
-    </button>
-
-  </section>
-
-
-  <!-- LOADING -->
-  <div
-    *ngIf="isLoading"
-    class="loading">
-
-    <div class="loading-card">
-      Kullanıcı bilgileri yükleniyor...
-    </div>
-
+  <div class="kf-title">
+    KULLANICI DETAYI
   </div>
 
+  <section class="kf-panel">
 
-  <!-- ERROR -->
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="error-message">
-
-    {{ errorMessage }}
-
-  </div>
-
-
-  <!-- DETAY -->
-  <section
-    *ngIf="!isLoading && user"
-    class="detail-card">
-
-
-    <!-- KART BAŞLIĞI -->
-    <div class="card-header">
-
+    <div class="kf-panel-head">
       <div>
-
-        <h2>
-          Kullanıcı Bilgileri
-        </h2>
-
-        <p>
-          Kullanıcı hesabına ait temel bilgiler
-        </p>
-
+        <h1>
+          {{ user ? user.firstName + ' ' + user.lastName : 'Kullanıcı Detayı' }}
+          <span
+            *ngIf="user"
+            class="kf-badge"
+            [class.active]="user.isActive"
+            [class.passive]="!user.isActive">
+            {{ user.isActive ? 'Aktif' : 'Pasif' }}
+          </span>
+        </h1>
+        <p>Kullanıcı hesabına ait bilgiler.</p>
       </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">← Kullanıcılara Dön</button>
+    </div>
 
+    <div *ngIf="isLoading" class="kf-state">Kullanıcı bilgileri yükleniyor...</div>
 
-      <span
-        class="status-badge"
-        [class.active]="user.isActive"
-        [class.passive]="!user.isActive">
+    <div *ngIf="!isLoading && errorMessage" class="kf-state">{{ errorMessage }}</div>
 
-        <span class="status-dot"></span>
+    <div *ngIf="!isLoading && user" class="kf-body kf-body-half">
 
-        {{ user.isActive ? 'Aktif' : 'Pasif' }}
+      <section class="kf-section">
+        <h2 class="kf-section-title">Kişisel Bilgiler</h2>
+        <dl class="kf-details">
+          <div><dt>Ad</dt><dd>{{ user.firstName }}</dd></div>
+          <div><dt>Soyad</dt><dd>{{ user.lastName }}</dd></div>
+          <div class="kf-span-all"><dt>Telefon</dt><dd>{{ user.phoneNumber || '—' }}</dd></div>
+        </dl>
+      </section>
 
-      </span>
+      <section class="kf-section">
+        <h2 class="kf-section-title">Hesap Bilgileri</h2>
+        <dl class="kf-details">
+          <div class="kf-span-all"><dt>E-posta</dt><dd [title]="user.email">{{ user.email }}</dd></div>
+          <div><dt>Rol</dt><dd>{{ user.roleName || user.roleId }}</dd></div>
+          <div><dt>Durum</dt><dd>{{ user.isActive ? 'Aktif' : 'Pasif' }}</dd></div>
+          <div class="kf-span-all"><dt>Kullanıcı ID</dt><dd [title]="user.id">{{ user.id }}</dd></div>
+        </dl>
+      </section>
 
     </div>
 
-
-    <!-- BİLGİLER -->
-    <div class="detail-grid">
-
-
-      <!-- AD -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Ad
-        </span>
-
-        <strong>
-          {{ user.firstName }}
-        </strong>
-
+    <div class="kf-actions kf-actions-between">
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
+      <div *ngIf="user" class="kf-head-actions">
+        <button type="button" class="kf-btn-danger" (click)="deleteUser()">Kullanıcıyı Sil</button>
+        <a [routerLink]="['/users', user.id, 'edit']" class="kf-btn">Düzenle</a>
       </div>
-
-
-      <!-- SOYAD -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Soyad
-        </span>
-
-        <strong>
-          {{ user.lastName }}
-        </strong>
-
-      </div>
-
-
-      <!-- E POSTA -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          E-posta
-        </span>
-
-        <strong>
-          {{ user.email }}
-        </strong>
-
-      </div>
-
-
-      <!-- TELEFON -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Telefon
-        </span>
-
-        <strong>
-          {{ user.phoneNumber || '-' }}
-        </strong>
-
-      </div>
-
-
-      <!-- ROL -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Rol
-        </span>
-
-        <strong>
-          {{ user.roleName || user.roleId }}
-        </strong>
-
-      </div>
-
-
-      <!-- DURUM -->
-      <div class="detail-item">
-
-        <span class="detail-label">
-          Durum
-        </span>
-
-        <strong>
-          {{ user.isActive ? 'Aktif' : 'Pasif' }}
-        </strong>
-
-      </div>
-
-
-      <!-- USER ID -->
-      <div class="detail-item full-width">
-
-        <span class="detail-label">
-          Kullanıcı ID
-        </span>
-
-        <strong class="id-value">
-          {{ user.id }}
-        </strong>
-
-      </div>
-
-
     </div>
-
-
-    <!-- İŞLEMLER -->
-    <div class="detail-actions">
-
-
-      <button
-        type="button"
-        class="secondary-button"
-        (click)="goBack()">
-
-        Geri Dön
-
-      </button>
-
-
-      <a
-        class="edit-button"
-        [routerLink]="[
-          '/users',
-          user.id,
-          'edit'
-        ]">
-
-        Düzenle
-
-      </a>
-
-
-      <button
-        type="button"
-        class="delete-button"
-        (click)="deleteUser()">
-
-        Sil
-
-      </button>
-
-
-    </div>
-
 
   </section>
 

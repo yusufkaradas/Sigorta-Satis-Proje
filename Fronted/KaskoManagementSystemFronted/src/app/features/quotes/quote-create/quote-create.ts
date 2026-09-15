@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 
 import {
+  ActivatedRoute,
   Router
 } from '@angular/router';
 
@@ -100,6 +101,12 @@ export class QuoteCreate implements OnInit {
   private readonly router =
     inject(Router);
 
+  private readonly route =
+    inject(ActivatedRoute);
+
+  readonly isCustomerMode =
+    this.route.snapshot.data['mode'] === 'customer';
+
   private readonly cdr =
     inject(ChangeDetectorRef);
 
@@ -123,6 +130,32 @@ export class QuoteCreate implements OnInit {
   customers: Customer[] = [];
 
   vehicles: Vehicle[] = [];
+
+  readonly vehiclePageSize = 6;
+
+  vehiclePage = 1;
+
+  get vehiclePageCount(): number {
+    return Math.max(1, Math.ceil(this.vehicles.length / this.vehiclePageSize));
+  }
+
+  get pagedVehicles(): Vehicle[] {
+    const page = Math.min(this.vehiclePage, this.vehiclePageCount);
+    return this.vehicles.slice((page - 1) * this.vehiclePageSize, page * this.vehiclePageSize);
+  }
+
+  get selectedVehicle(): Vehicle | undefined {
+    return this.vehicles.find(vehicle => vehicle.id === this.vehicleId);
+  }
+
+  get selectedCustomerName(): string {
+    const customer = this.customers.find(item => item.id === this.customerId);
+    return customer ? `${customer.firstName} ${customer.lastName}` : '';
+  }
+
+  changeVehiclePage(delta: number): void {
+    this.vehiclePage = Math.min(this.vehiclePageCount, Math.max(1, this.vehiclePage + delta));
+  }
 
   packages: InsurancePackage[] = [];
 
@@ -231,7 +264,16 @@ export class QuoteCreate implements OnInit {
 
     this.setDefaultValidUntil();
 
-    this.loadCustomers();
+    if (this.isCustomerMode) {
+
+      this.isLoadingCustomers = false;
+
+      this.loadCustomerVehicles();
+
+    } else {
+
+      this.loadCustomers();
+    }
 
     this.loadPackages();
   }
@@ -306,6 +348,8 @@ export class QuoteCreate implements OnInit {
 
   onCustomerChange(): void {
 
+    this.vehiclePage = 1;
+
     this.vehicleId = '';
 
     this.vehicles = [];
@@ -348,14 +392,21 @@ export class QuoteCreate implements OnInit {
 
   private loadCustomerVehicles(): void {
 
-    if (!this.customerId) {
+    if (
+      !this.customerId &&
+      !this.isCustomerMode
+    ) {
       return;
     }
 
     this.isLoadingVehicles = true;
 
     this.vehicleService
-      .getVehicles(this.customerId)
+      .getVehicles(
+        this.isCustomerMode
+          ? undefined
+          : this.customerId
+      )
       .subscribe({
 
         next: (data) => {
@@ -416,6 +467,13 @@ export class QuoteCreate implements OnInit {
 
           this.isLoadingVehicles = false;
 
+          const preselectedVehicleId =
+            this.route.snapshot.queryParamMap.get('vehicleId');
+
+          if (preselectedVehicleId && !this.vehicleId) {
+            this.selectVehicle(preselectedVehicleId);
+          }
+
           console.log(
             'CUSTOMER SELECTED:',
             this.customerId
@@ -473,6 +531,17 @@ export class QuoteCreate implements OnInit {
 
     this.vehicleId =
       selectedVehicle.id;
+
+    if (
+      this.isCustomerMode &&
+      this.customerId !== selectedVehicle.customerId
+    ) {
+
+      this.customerId =
+        selectedVehicle.customerId;
+
+      this.loadPreviousPolicies();
+    }
 
     this.packageId = '';
 
@@ -1610,10 +1679,11 @@ export class QuoteCreate implements OnInit {
    * Kullanıcıyı listeye değil,
    * oluşturulan teklifin detayına götürüyoruz.
    */
-  this.router.navigate([
-    '/quotes',
-    response.id
-  ]);
+  this.router.navigate(
+    this.isCustomerMode
+      ? ['/customer/quotes', response.id]
+      : ['/quotes', response.id]
+  );
 
 },
 
@@ -1643,7 +1713,9 @@ export class QuoteCreate implements OnInit {
   cancel(): void {
 
     this.router.navigate([
-      '/quotes'
+      this.isCustomerMode
+        ? '/customer/quotes'
+        : '/quotes'
     ]);
   }
 

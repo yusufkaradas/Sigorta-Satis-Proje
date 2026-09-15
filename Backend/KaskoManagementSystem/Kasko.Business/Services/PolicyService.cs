@@ -228,23 +228,55 @@ namespace Kasko.Business.Services.Concrete
 
         public async Task<IEnumerable<PolicyListDto>> GetAllAsync()
         {
-            var policies = await _unitOfWork.Policies.GetAllAsync();
-            var customers = await _unitOfWork.Customers.GetAllAsync();
-            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+            var policies =
+                await _unitOfWork.Policies.GetAllAsync();
 
-            var customerMap = customers
-                .ToDictionary(
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Enumerable.Empty<PolicyListDto>();
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    return Enumerable.Empty<PolicyListDto>();
+                }
+
+                policies = policies
+                    .Where(x =>
+                        x.CustomerId ==
+                        currentUser.CustomerId.Value)
+                    .ToList();
+            }
+
+            var customers =
+                await _unitOfWork.Customers.GetAllAsync();
+
+            var vehicles =
+                await _unitOfWork.Vehicles.GetAllAsync();
+
+            var customerMap =
+                customers.ToDictionary(
                     x => x.Id,
                     x => $"{x.FirstName} {x.LastName}");
 
-            var vehicleMap = vehicles
-     .ToDictionary(
-         x => x.Id,
-         x => new
-         {
-             x.Brand,
-             x.Model
-         });
+            var vehicleMap =
+                vehicles.ToDictionary(
+                    x => x.Id,
+                    x => new
+                    {
+                        x.Brand,
+                        x.Model
+                    });
 
             return policies
                 .Where(x => !x.IsDeleted)
@@ -261,18 +293,34 @@ namespace Kasko.Business.Services.Concrete
                     return new PolicyListDto
                     {
                         Id = x.Id,
+
                         CustomerId = x.CustomerId,
-                        CustomerName = customerName ?? "—",
+
+                        CustomerName =
+                            customerName ?? "—",
 
                         VehicleId = x.VehicleId,
-                        Brand = vehicle?.Brand ?? "—",
-                        Model = vehicle?.Model ?? "—",
 
-                        PolicyNumber = x.PolicyNumber,
-                        PremiumAmount = x.PremiumAmount,
-                        StartDate = x.StartDate,
-                        EndDate = x.EndDate,
-                        Status = x.Status
+                        Brand =
+                            vehicle?.Brand ?? "—",
+
+                        Model =
+                            vehicle?.Model ?? "—",
+
+                        PolicyNumber =
+                            x.PolicyNumber,
+
+                        PremiumAmount =
+                            x.PremiumAmount,
+
+                        StartDate =
+                            x.StartDate,
+
+                        EndDate =
+                            x.EndDate,
+
+                        Status =
+                            x.Status
                     };
                 })
                 .ToList();

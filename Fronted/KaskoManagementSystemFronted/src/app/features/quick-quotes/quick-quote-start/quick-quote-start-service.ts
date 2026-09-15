@@ -34,6 +34,7 @@ export interface QuickQuoteCustomerLookupResponse {
 
   lastName: string;
 
+  email: string;
 }
 export interface QuickQuotePackageCoverage {
   coverageId: string;

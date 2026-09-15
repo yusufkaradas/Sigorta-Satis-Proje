@@ -44,6 +44,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost("calculate")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Calculate(
     [FromBody] CreateQuoteDto dto)
         {
@@ -53,6 +54,7 @@ namespace Kasko.API.Controllers
             return Ok(result);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Create(
             [FromBody] CreateQuoteDto dto)
         {
@@ -66,6 +68,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] UpdateQuoteDto dto)
@@ -77,6 +80,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _quoteService.DeleteAsync(id);
@@ -85,6 +89,7 @@ namespace Kasko.API.Controllers
         }
         
         [HttpPatch("{id:guid}/status")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> ChangeStatus(
     Guid id,
     [FromQuery] QuoteStatus status)

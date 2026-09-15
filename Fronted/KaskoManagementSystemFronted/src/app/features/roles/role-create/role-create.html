@@ -1,92 +1,52 @@
-<div class="role-create-page">
+<div class="kf-page">
 
-  <div class="page-header">
+  <div class="kf-title">
+    YENİ ROL
+  </div>
 
-    <div>
+  <form
+    class="kf-panel"
+    (ngSubmit)="onSubmit()">
 
-      <h1>Yeni Rol</h1>
+    <div class="kf-panel-head">
+      <div>
+        <h1>Rol Ekle</h1>
+        <p>Kullanıcılara atanabilecek yeni bir rol tanımlayın.</p>
+      </div>
+      <button type="button" class="kf-btn-outline" (click)="goBack()" [disabled]="isLoading">← Rollere Dön</button>
+    </div>
 
-      <p>
-        Sisteme yeni bir rol ekleyin.
-      </p>
+    @if (errorMessage) {
+      <div class="kf-alert kf-alert-error">{{ errorMessage }}</div>
+    }
+
+    @if (successMessage) {
+      <div class="kf-alert kf-alert-success">{{ successMessage }}</div>
+    }
+
+    <div class="kf-body kf-body-center">
+
+      <section class="kf-section kf-narrow">
+
+        <h2 class="kf-section-title">Rol Bilgisi</h2>
+
+        <div class="kf-field">
+          <label for="roleName">Rol Adı *</label>
+          <input id="roleName" name="roleName" type="text" placeholder="Örn. Manager" [(ngModel)]="name" [disabled]="isLoading" />
+          <small>Sistemde tanımlı roller: Admin, Manager, Customer.</small>
+        </div>
+
+      </section>
 
     </div>
 
-  </div>
+    <div class="kf-actions">
+      <button type="button" class="kf-btn-outline" (click)="goBack()" [disabled]="isLoading">Vazgeç</button>
+      <button type="submit" class="kf-btn" [disabled]="isLoading">
+        {{ isLoading ? 'Oluşturuluyor...' : 'Rolü Kaydet' }}
+      </button>
+    </div>
 
-
-  <div class="form-card">
-
-    <form
-      (ngSubmit)="onSubmit()"
-    >
-
-      <div class="form-group">
-
-        <label for="roleName">
-          Rol Adı
-        </label>
-
-        <input
-          id="roleName"
-          name="roleName"
-          type="text"
-          placeholder="Örn. Manager"
-          [(ngModel)]="name"
-          [disabled]="isLoading"
-        />
-
-      </div>
-
-
-      @if (errorMessage) {
-
-        <div class="error-message">
-          {{ errorMessage }}
-        </div>
-
-      }
-
-
-      @if (successMessage) {
-
-        <div class="success-message">
-          {{ successMessage }}
-        </div>
-
-      }
-
-
-      <div class="form-actions">
-
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="goBack()"
-          [disabled]="isLoading"
-        >
-          Vazgeç
-        </button>
-
-
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="isLoading"
-        >
-
-          {{
-            isLoading
-              ? 'Oluşturuluyor...'
-              : 'Rol Oluştur'
-          }}
-
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
+  </form>
 
 </div>

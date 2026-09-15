@@ -1,0 +1,133 @@
+<div class="cp-page">
+
+  <div class="cp-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <section class="cp-stats">
+
+    <div class="cp-stat">
+      <span>Toplam Teklif</span>
+      <strong>{{ quotes().length }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Bekleyen Teklif</span>
+      <strong>{{ activeCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>Kabul Edilen</span>
+      <strong>{{ acceptedCount() }}</strong>
+    </div>
+
+    <div class="cp-stat">
+      <span>En Uygun Prim</span>
+      <strong>{{ lowestPremium() | number:'1.2-2' }} ₺</strong>
+    </div>
+
+  </section>
+
+
+  <section class="cp-panel">
+
+    <div class="cp-panel-head">
+      <h2>Teklif Listesi</h2>
+      <a
+        routerLink="/customer/quotes/new"
+        class="cp-btn">
+        + Yeni Teklif Al
+      </a>
+    </div>
+
+    <div
+      *ngIf="isLoading()"
+      class="cp-state">
+      Teklifleriniz yükleniyor...
+    </div>
+
+    <div
+      *ngIf="!isLoading() && errorMessage()"
+      class="cp-state cp-state-error">
+      {{ errorMessage() }}
+    </div>
+
+    <div
+      *ngIf="!isLoading() && !errorMessage() && quotes().length === 0"
+      class="cp-state">
+      Henüz teklifiniz bulunmuyor.
+    </div>
+
+    <ng-container *ngIf="!isLoading() && !errorMessage() && quotes().length > 0">
+
+      <div class="cp-table-wrap">
+
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th>Teklif No</th>
+              <th>Araç</th>
+              <th class="cp-num">Yıllık Prim</th>
+              <th>Geçerlilik</th>
+              <th>Durum</th>
+              <th class="cp-actions-col">İşlemler</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let quote of pagedQuotes()">
+
+              <td>
+                <div class="cp-cell" [title]="quote.quoteNumber">
+                  <strong class="record-no">{{ quote.quoteNumber | recordNo }}</strong>
+                  <small>{{ quote.createdDate | date:'dd.MM.yyyy' }} tarihinde oluşturuldu</small>
+                </div>
+              </td>
+              <td>
+                <div class="cp-cell">
+                  <strong [title]="quote.vehicleDescription">{{ quote.vehicleDescription || '—' }}</strong>
+                  <small>{{ quote.plateNumber }}</small>
+                </div>
+              </td>
+              <td class="cp-num cp-strong">{{ quote.premiumAmount | number:'1.2-2' }} ₺</td>
+              <td>
+                <div class="cp-cell">
+                  <span>{{ quote.validUntil | date:'dd.MM.yyyy' }}</span>
+                  <small *ngIf="isPending(quote)">{{ deadlineText(quote.validUntil) }}</small>
+                </div>
+              </td>
+              <td>
+                <span class="cp-badge" [ngClass]="getQuoteStatusClass(quote.status)">{{ getQuoteStatusText(quote.status) }}</span>
+              </td>
+              <td class="cp-actions">
+                <a class="cp-act" [routerLink]="['/customer/quotes', quote.id]">Detay</a>
+                <button *ngIf="canDelete(quote)" type="button" class="cp-act cp-act-danger" [disabled]="deletingId() === quote.id" (click)="deleteQuote(quote)">Sil</button>
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="cp-pager">
+
+        <span>{{ quotes().length }} kayıt · Sayfa {{ page() }} / {{ totalPages() }}</span>
+
+        <div>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
+          <button type="button" class="cp-btn cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </section>
+
+</div>

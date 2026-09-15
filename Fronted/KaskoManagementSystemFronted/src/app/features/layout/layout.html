@@ -1,138 +1,127 @@
-<div class="app-layout">
+<div class="kl-layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="kl-sidebar">
 
-    <div class="sidebar-logo">
-      <span>Logo</span>
-    </div>
+    <a
+      [routerLink]="homePath"
+      class="kl-logo">
+      Logo
+    </a>
 
+    <nav
+      class="kl-menu"
+      [class.kl-menu-dense]="menuItems.length > 8">
 
-    <nav class="sidebar-menu">
-
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="menu-item"
-      >
-        Dashboard
-      </a>
-
-      <a
-        routerLink="/customers"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Müşteriler
-      </a>
-
-      <a
-        routerLink="/vehicles"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Araçlar
-      </a>
-
-      <a
-        routerLink="/quotes"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Teklifler
-      </a>
-
-      <a
-        routerLink="/policies"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Poliçeler
-      </a>
-
-      <a
-        routerLink="/payments"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Ödemeler
-      </a>
-
-      <a
-        routerLink="/users"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Kullanıcılar
-      </a>
-
-      <a
-        routerLink="/roles"
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        Roller
-      </a>
+      @for (item of menuItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+          class="kl-menu-item">
+          {{ item.label }}
+        </a>
+      }
 
     </nav>
 
-
     <button
       type="button"
-      class="logout-button"
-      (click)="logout()"
-    >
+      class="kl-logout"
+      (click)="logout()">
       Çıkış
     </button>
 
   </aside>
 
 
-  <!-- MAIN -->
-  <main class="main-content">
+  <div class="kl-main">
 
-    <header class="topbar">
+    <header class="kl-header">
 
-      <div class="topbar-title">
-        ADMİN PANELİ
-      </div>
+      <span></span>
 
+      <h1 class="kl-title">
+        {{ pageTitle }}
+      </h1>
 
-      <div class="topbar-actions">
+      <div class="kl-header-actions">
 
-        <button
-          type="button"
-          class="topbar-icon"
-          aria-label="Ayarlar"
-        >
-        </button>
+        <div class="kl-dropdown-wrap">
 
-        <button
-          type="button"
-          class="topbar-icon"
-          aria-label="Bildirimler"
-        >
-        </button>
+          <button
+            type="button"
+            class="kl-icon-button"
+            aria-label="Bildirimler"
+            (click)="toggleNotification()">
+            🔔
+          </button>
 
-        <button
-          type="button"
-          class="user-button"
-        >
-          KULLANICI ADI
-        </button>
+          @if (isNotificationOpen) {
+            <div class="kl-dropdown">
+              <strong>Bildirimler</strong>
+              @if (isManager) {
+                <p>Onay bekleyen fiyat taleplerinizi Fiyat Talepleri ekranından takip edebilirsiniz.</p>
+                <a
+                  routerLink="/manager/pricing-requests"
+                  class="kl-dropdown-link"
+                  (click)="isNotificationOpen = false">
+                  Taleplere Git
+                </a>
+              } @else {
+                <p>Onay bekleyen fiyat taleplerini inceleyin.</p>
+                <a
+                  routerLink="/pricing-requests"
+                  class="kl-dropdown-link"
+                  (click)="isNotificationOpen = false">
+                  Fiyat Taleplerine Git
+                </a>
+              }
+            </div>
+          }
+
+        </div>
+
+        <a
+          [routerLink]="isManager ? '/manager/pricing-rules' : '/users'"
+          class="kl-icon-button"
+          [attr.aria-label]="isManager ? 'Fiyat Kuralları' : 'Kullanıcılar'"
+          [title]="isManager ? 'Fiyat Kuralları' : 'Kullanıcılar'">
+          ⚙
+        </a>
+
+        <div class="kl-dropdown-wrap">
+
+          <button
+            type="button"
+            class="kl-user-button"
+            (click)="toggleUserMenu()">
+            {{ user.name || 'Kullanıcı Adı' }}
+          </button>
+
+          @if (isUserMenuOpen) {
+            <div class="kl-dropdown">
+              <strong>{{ user.name || (isManager ? 'Yönetici' : 'Admin') }}</strong>
+              <p>{{ isManager ? 'Manager' : 'Admin' }}{{ user.email ? ' · ' + user.email : '' }}</p>
+              <button
+                type="button"
+                class="kl-dropdown-action"
+                (click)="logout()">
+                Çıkış Yap
+              </button>
+            </div>
+          }
+
+        </div>
 
       </div>
 
     </header>
 
 
-    <section class="content-area">
-
+    <main class="kl-content">
       <router-outlet></router-outlet>
+    </main>
 
-    </section>
-
-  </main>
+  </div>
 
 </div>

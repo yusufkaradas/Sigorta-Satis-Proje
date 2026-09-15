@@ -22,6 +22,10 @@ import {
 } from './vehicle.service';
 
 
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
 @Component({
   selector: 'app-vehicle',
 
@@ -39,6 +43,9 @@ export class Vehicle {
 
   private readonly vehicleService =
     inject(VehiclesService);
+
+  readonly portal =
+    injectPortalContext();
 
   private readonly cdr =
     inject(ChangeDetectorRef);
@@ -126,6 +133,23 @@ export class Vehicle {
   }
 
 
+  get totalMarketValue(): number {
+    return this.vehicles.reduce((total, vehicle) => total + (vehicle.marketValue ?? 0), 0);
+  }
+
+  get newVehicleThisMonth(): number {
+    return this.vehicles.filter(vehicle => this.isThisMonth(vehicle.createdDate)).length;
+  }
+
+  private isThisMonth(value?: string | null): boolean {
+    if (!value) {
+      return false;
+    }
+    const date = new Date(value);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  }
+
   get totalVehicleCount(): number {
     return this.vehicles.length;
   }
@@ -203,13 +227,11 @@ export class Vehicle {
 
 
   get pageNumbers(): number[] {
-
-    return Array.from(
-      {
-        length: this.totalPages
-      },
-      (_, index) => index + 1
-    );
+    const total = this.totalPages;
+    const current = Math.min(this.currentPage, total);
+    const start = Math.max(1, Math.min(current - 2, total - 4));
+    const end = Math.min(total, start + 4);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
 

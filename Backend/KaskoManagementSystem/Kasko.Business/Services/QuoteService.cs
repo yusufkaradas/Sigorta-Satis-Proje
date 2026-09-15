@@ -17,27 +17,59 @@ namespace Kasko.Business.Services
 
         public QuoteService(
             IUnitOfWork unitOfWork,
-            IPricingService pricingService)
+            IPricingService pricingService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _pricingService = pricingService;
-            _httpContextAccessor = new HttpContextAccessor();
-
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IEnumerable<QuoteListDto>> GetAllAsync()
         {
-            var quotes = await _unitOfWork.Quotes.GetAllAsync();
-            var customers = await _unitOfWork.Customers.GetAllAsync();
-            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+            var quotes =
+                await _unitOfWork.Quotes.GetAllAsync();
 
-            var customerMap = customers
-                .ToDictionary(
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Enumerable.Empty<QuoteListDto>();
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    return Enumerable.Empty<QuoteListDto>();
+                }
+
+                quotes = quotes
+                    .Where(x =>
+                        x.CustomerId ==
+                        currentUser.CustomerId.Value)
+                    .ToList();
+            }
+
+            var customers =
+                await _unitOfWork.Customers.GetAllAsync();
+
+            var vehicles =
+                await _unitOfWork.Vehicles.GetAllAsync();
+
+            var customerMap =
+                customers.ToDictionary(
                     x => x.Id,
                     x => $"{x.FirstName} {x.LastName}");
 
-            var vehicleMap = vehicles
-                .ToDictionary(
+            var vehicleMap =
+                vehicles.ToDictionary(
                     x => x.Id,
                     x => new
                     {
@@ -71,10 +103,7 @@ namespace Kasko.Business.Services
                         VehicleId = x.VehicleId,
 
                         VehicleDescription =
-    vehicleInfo == null
-        ? "—"
-        : $"{vehicleInfo.Description.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]} " +
-          $"{vehicleInfo.Description.Split(' ', StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(1)}",
+                            vehicleInfo?.Description ?? "—",
 
                         PlateNumber =
                             vehicleInfo?.PlateNumber ?? "—",
@@ -276,6 +305,30 @@ namespace Kasko.Business.Services
                     "Müşteri bulunamadı.");
             }
 
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Müşteri bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    dto.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Müşteri bulunamadı.");
+                }
+            }
+
             var vehicle = await _unitOfWork.Vehicles
                 .GetByIdAsync(dto.VehicleId);
 
@@ -385,6 +438,30 @@ namespace Kasko.Business.Services
             {
                 throw new NotFoundException(
                     "Müşteri bulunamadı.");
+            }
+
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var userIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    throw new NotFoundException(
+                        "Müşteri bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(userId);
+
+                if (currentUser?.CustomerId == null ||
+                    dto.CustomerId != currentUser.CustomerId.Value)
+                {
+                    throw new NotFoundException(
+                        "Müşteri bulunamadı.");
+                }
             }
 
             var vehicle = await _unitOfWork.Vehicles

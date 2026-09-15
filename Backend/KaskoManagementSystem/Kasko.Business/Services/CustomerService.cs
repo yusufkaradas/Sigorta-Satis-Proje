@@ -239,7 +239,9 @@ public class CustomerService : ICustomerService
 
             FirstName = customer.FirstName,
 
-            LastName = customer.LastName
+            LastName = customer.LastName,
+
+            Email = customer.Email ?? string.Empty
         };
     }
     public async Task DeleteAsync(Guid id)

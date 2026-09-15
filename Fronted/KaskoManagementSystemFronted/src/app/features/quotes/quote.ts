@@ -1,3 +1,4 @@
+import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -121,6 +122,10 @@ export interface QuoteUpdateDto {
 }
 
 
+import {
+  injectPortalContext
+} from '../../core/services/portal-context';
+
 @Component({
 
   selector: 'app-quotes',
@@ -128,7 +133,7 @@ export interface QuoteUpdateDto {
   standalone: true,
 
   imports: [
-
+    RecordNumberPipe,
     CommonModule,
 
     FormsModule,
@@ -151,6 +156,9 @@ readonly instanceId =
   private readonly quoteService =
 
     inject(QuoteService);
+
+  readonly portal =
+    injectPortalContext();
 
 
   private readonly router =
@@ -225,17 +233,30 @@ readonly instanceId =
   }
 
 
+  deadlineText(value?: string | null): string {
+    if (!value) {
+      return '';
+    }
+    const target = new Date(value);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (days < 0) {
+      return 'Süresi doldu';
+    }
+    if (days === 0) {
+      return 'Bugün bitiyor';
+    }
+    return `${days} gün kaldı`;
+  }
+
   get pages(): number[] {
-
-    return Array.from(
-
-      { length: this.totalPages },
-
-      (_, index) => index + 1
-
-    );
-    
-
+    const total = this.totalPages;
+    const current = Math.min(this.currentPage, total);
+    const start = Math.max(1, Math.min(current - 2, total - 4));
+    const end = Math.min(total, start + 4);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
 ngOnInit(): void {
@@ -487,6 +508,34 @@ loadQuotes(): void {
   }
 
 
+  get openQuoteCount(): number {
+    return this.quotes.filter(quote =>
+      quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered
+    ).length;
+  }
+
+  get openQuotePremium(): number {
+    return this.quotes
+      .filter(quote => quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered)
+      .reduce((total, quote) => total + (quote.premiumAmount ?? 0), 0);
+  }
+
+  get acceptedQuoteCount(): number {
+    return this.quotes.filter(quote => quote.status === QuoteStatus.Accepted).length;
+  }
+
+  get conversionRate(): number {
+    return this.quotes.length ? Math.round((this.acceptedQuoteCount / this.quotes.length) * 100) : 0;
+  }
+
+  get lostQuoteCount(): number {
+    return this.quotes.filter(quote =>
+      quote.status === QuoteStatus.Rejected ||
+      quote.status === QuoteStatus.Expired ||
+      quote.status === QuoteStatus.Cancelled
+    ).length;
+  }
+
   get totalQuotes(): number {
 
     return this.quotes.length;
@@ -553,7 +602,7 @@ loadQuotes(): void {
 
     this.router.navigate([
 
-      '/quotes',
+      this.portal.basePath + '/quotes',
 
       id
 

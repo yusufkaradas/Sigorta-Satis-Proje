@@ -1,0 +1,176 @@
+<div class="cp-page">
+
+  <div class="cp-section-title">
+    İŞLEMLER
+  </div>
+
+
+  <section class="cp-stats">
+
+    <a
+      routerLink="/customer/vehicles"
+      class="cp-stat">
+      <span>Araçlarım</span>
+      <strong>{{ vehicles().length }}</strong>
+      <small>Kayıtlı araç</small>
+    </a>
+
+    <a
+      routerLink="/customer/quotes"
+      class="cp-stat">
+      <span>Tekliflerim</span>
+      <strong>{{ quotes().length }}</strong>
+      <small>{{ activeQuoteCount() }} bekleyen teklif</small>
+    </a>
+
+    <a
+      routerLink="/customer/policies"
+      class="cp-stat">
+      <span>Aktif Poliçelerim</span>
+      <strong>{{ activePolicyCount() }}</strong>
+      <small>Toplam {{ policies().length }} poliçe</small>
+    </a>
+
+    <a
+      routerLink="/customer/payments"
+      class="cp-stat">
+      <span>Ödemelerim</span>
+      <strong>{{ paidTotal() | number:'1.0-0' }} ₺</strong>
+      <small>{{ payments().length }} işlem</small>
+    </a>
+
+  </section>
+
+
+  <section class="cd-grid">
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
+        <h2>Teklif Durumları</h2>
+      </div>
+
+      <ul class="cd-status-list">
+
+        <li *ngFor="let item of quoteStatusCounts()">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.count }}</strong>
+          <span class="cd-bar">
+            <span [style.width.%]="barWidth(item.count, quoteStatusCounts())"></span>
+          </span>
+        </li>
+
+      </ul>
+
+      <div class="cd-panel-foot">
+        <a
+          routerLink="/customer/quotes/new"
+          class="cp-btn">
+          + Yeni Teklif Al
+        </a>
+      </div>
+
+    </article>
+
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
+        <h2>Son İşlemlerim</h2>
+        <span>Teklif, poliçe ve ödemeleriniz</span>
+      </div>
+
+      <div
+        *ngIf="isLoading()"
+        class="cp-state">
+        İşlemleriniz yükleniyor...
+      </div>
+
+      <div
+        *ngIf="!isLoading() && recentActivities().length === 0"
+        class="cp-state">
+        Henüz bir işleminiz bulunmuyor.
+      </div>
+
+      <div
+        *ngIf="!isLoading() && recentActivities().length > 0"
+        class="cp-table-wrap">
+
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th class="cd-col-type">Tür</th>
+              <th>Numara</th>
+              <th>Durum</th>
+              <th class="cd-col-date">Tarih</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let row of recentActivities()"
+              [routerLink]="row.link">
+              <td class="cp-muted">{{ row.type }}</td>
+              <td class="cp-strong record-no" [title]="row.number">{{ row.number | recordNo }}</td>
+              <td>
+                <span
+                  class="cp-badge"
+                  [ngClass]="row.statusClass">
+                  {{ row.statusText }}
+                </span>
+              </td>
+              <td class="cp-muted">{{ row.date | date:'dd.MM.yyyy HH:mm' }}</td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
+        <h2>Poliçe Durumları</h2>
+      </div>
+
+      <ul class="cd-summary-list">
+
+        <li *ngFor="let item of policyStatusCounts()">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.count }}</strong>
+        </li>
+
+      </ul>
+
+      <div class="cp-panel-head cd-sub-head">
+        <h2>Ödeme Özeti</h2>
+      </div>
+
+      <ul class="cd-summary-list">
+
+        <li *ngFor="let item of paymentSummary()">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.count }}</strong>
+        </li>
+
+      </ul>
+
+      <div class="cd-panel-foot">
+        <a
+          routerLink="/customer/payments"
+          class="cp-btn cd-btn-dark">
+          Ödemelerime Git
+        </a>
+      </div>
+
+    </article>
+
+  </section>
+
+</div>
