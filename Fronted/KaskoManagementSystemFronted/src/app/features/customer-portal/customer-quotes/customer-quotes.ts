@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 
 import {
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -150,6 +151,13 @@ export class CustomerQuotes implements OnInit {
 
   isPending(quote: Quote): boolean {
     return quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered;
+  }
+
+  private readonly router =
+    inject(Router);
+
+  openDetail(id: string): void {
+    this.router.navigate(['/customer/quotes', id]);
   }
 
   ngOnInit(): void {

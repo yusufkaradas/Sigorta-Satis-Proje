@@ -1,4 +1,4 @@
-﻿using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +37,82 @@ public class VehicleValueCatalogRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveBrandsAsync(
+        string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            return await GetActiveBrandsAsync();
+        }
+
+        return await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.VehicleCategory == category)
+            .Select(x => new
+            {
+                x.BrandCode,
+                x.BrandName
+            })
+            .Distinct()
+            .OrderBy(x => x.BrandName)
+            .Select(x => new VehicleValueCatalog
+            {
+                BrandCode = x.BrandCode,
+                BrandName = x.BrandName
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<string>> GetActiveCategoriesAsync()
+    {
+        return await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.VehicleCategory != null &&
+                x.VehicleCategory != "")
+            .Select(x => x.VehicleCategory)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync();
+    }
+
+    public async Task<int> ReclassifyAsync(
+        Func<string, string, string> classify)
+    {
+        var pairs = await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Select(x => new { x.BrandName, x.TypeName })
+            .Distinct()
+            .ToListAsync();
+
+        var updated = 0;
+
+        foreach (var pair in pairs)
+        {
+            var category =
+                classify(pair.BrandName, pair.TypeName);
+
+            updated += await _context
+                .VehicleValueCatalogs
+                .Where(x =>
+                    x.BrandName == pair.BrandName &&
+                    x.TypeName == pair.TypeName &&
+                    x.VehicleCategory != category)
+                .ExecuteUpdateAsync(setters =>
+                    setters.SetProperty(x => x.VehicleCategory, category));
+        }
+
+        return updated;
+    }
+
     public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(
     string brandCode)
     {
@@ -56,6 +132,33 @@ public class VehicleValueCatalogRepository
             .OrderBy(x => x.TypeName)
             .ToListAsync();
     }
+    public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(
+        string brandCode,
+        string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            return await GetActiveTypesAsync(brandCode);
+        }
+
+        return await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.BrandCode == brandCode &&
+                x.VehicleCategory == category)
+            .Select(x => new VehicleValueCatalog
+            {
+                TypeCode = x.TypeCode,
+                TypeName = x.TypeName
+            })
+            .Distinct()
+            .OrderBy(x => x.TypeName)
+            .ToListAsync();
+    }
+
     public async Task<IReadOnlyList<int>> GetActiveYearsAsync(
      string brandCode,
      string typeCode)

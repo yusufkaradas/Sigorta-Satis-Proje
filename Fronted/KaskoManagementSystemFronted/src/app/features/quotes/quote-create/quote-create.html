@@ -95,7 +95,8 @@
 
         <div *ngIf="(customerId || isCustomerMode) && !isLoadingVehicles && vehicles.length === 0" class="kf-empty">
           <strong>{{ isCustomerMode ? 'Kayıtlı aktif aracınız bulunamadı.' : 'Bu müşteriye ait aktif araç bulunamadı.' }}</strong>
-          Teklif oluşturmak için aktif bir araç gerekir.
+          Teklif oluşturmak için önce aracı tanımlayın.
+          <a class="kf-btn" [routerLink]="isCustomerMode ? '/customer/vehicles/new' : '/vehicles/new'">+ Araç Ekle</a>
         </div>
 
         <div *ngIf="(customerId || isCustomerMode) && !isLoadingVehicles && vehicles.length > 0" class="kf-choice-grid">

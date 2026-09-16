@@ -48,6 +48,16 @@ import {
 })
 export class VehicleEdit {
 
+  readonly vehicleColors = [
+    'Beyaz',
+    'Siyah',
+    'Gri',
+    'Gümüş',
+    'Kırmızı',
+    'Mavi',
+    'Lacivert'
+  ];
+
   private readonly vehicleService =
     inject(VehiclesService);
   

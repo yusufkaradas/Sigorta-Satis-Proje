@@ -246,7 +246,7 @@ a {
   padding: 0 k.u(16);
   border-top: 1px solid k.$border;
   display: grid;
-  grid-template-columns: k.u(70) minmax(0, 1.6fr) minmax(0, 0.8fr) minmax(0, 0.9fr) k.u(118);
+  grid-template-columns: k.u(70) minmax(0, 1.6fr) minmax(0, 0.7fr) minmax(0, 0.9fr) k.u(78) k.u(44);
   align-items: center;
   gap: k.u(10);
   font-size: k.u(13);
@@ -394,4 +394,8 @@ a.db-row:hover {
   .db-chart {
     min-height: 160px;
   }
+}
+
+.db-time {
+  color: k.$text-secondary;
 }

@@ -1,126 +1,77 @@
-﻿namespace Kasko.Business.Services;
+namespace Kasko.Business.Services;
 
 public static class VehicleCategoryClassifier
 {
+    public const string Otomobil = "Otomobil";
+
+    public static readonly string[] Categories =
+    {
+        "Otomobil",
+        "Kamyonet",
+        "Kamyon",
+        "Cekici",
+        "Minibus",
+        "Otobus",
+        "Motosiklet",
+        "Traktor",
+        "Diger"
+    };
+
+    private static readonly (string Category, string[] Terms)[] Rules =
+    {
+        ("Traktor", new[] { "ZIRAI TRAKTOR", "TRAKTOR", "TRACTOR" }),
+        ("Motosiklet", new[] { "MOTORSIKLET", "MOTOSIKLET", "MOTORCYCLE", "SCOOTER", "ATV", "QUAD" }),
+        ("Diger", new[] { "KARAVAN", "MOTOKARAVAN", "MOTORHOME", "CARAVAN", "ROMORK", "DORSE", "TREYLER" }),
+        ("Cekici", new[] { "CEKICI", "TRACTOR HEAD" }),
+        ("Otobus", new[] { "OTOBUS", "MIDIBUS", "AUTOBUS" }),
+        ("Minibus", new[] { "MINIBUS" }),
+        ("Kamyonet", new[] { "KAMYONET", "PANELVAN", "PANEL VAN", "PICKUP", "PICK-UP", "PICK UP", "KAPALI KASA", "ACIK KASA" }),
+        ("Kamyon", new[] { "KAMYON", "TRUCK" })
+    };
+
     public static string Classify(string? typeName)
     {
-        if (string.IsNullOrWhiteSpace(typeName))
-        {
-            return "Diger";
-        }
-
-        var value = typeName.Trim().ToUpperInvariant();
-
-        if (ContainsAny(value,
-                "MOTOSIKLET",
-                "MOTORCYCLE",
-                "SCOOTER",
-                "ATV",
-                "QUAD"))
-        {
-            return "Motosiklet";
-        }
-
-        if (ContainsAny(value,
-                "MOTOKARAVAN",
-                "MOTORHOME"))
-        {
-            return "Motokaravan";
-        }
-
-        if (ContainsAny(value,
-                "MINIBUS",
-                "MIDIBUS"))
-        {
-            return "Minibus";
-        }
-
-        if (ContainsAny(value,
-                "OTOBUS",
-                "AUTOBUS"))
-        {
-            return "Otobus";
-        }
-
-        if (ContainsAny(value,
-                "CEKICI",
-                "TRACTOR HEAD"))
-        {
-            return "Cekici";
-        }
-
-        if (ContainsAny(value,
-                "KAMYONET",
-                "PANELVAN",
-                "PANEL VAN"))
-        {
-            return "Kamyonet";
-        }
-
-        if (ContainsAny(value,
-                "KAMYON",
-                "TRUCK"))
-        {
-            return "Kamyon";
-        }
-
-        if (ContainsAny(value,
-                "TRAKTOR",
-                "TRACTOR"))
-        {
-            return "Traktor";
-        }
-
-        if (ContainsAny(value, "SEDAN"))
-        {
-            return "Sedan";
-        }
-
-        if (ContainsAny(value,
-                "HATCHBACK",
-                "HATCH"))
-        {
-            return "Hatchback";
-        }
-
-        if (ContainsAny(value, "SUV"))
-        {
-            return "SUV";
-        }
-
-        if (ContainsAny(value,
-                "COUPE",
-                "COUPÉ"))
-        {
-            return "Coupe";
-        }
-
-        if (ContainsAny(value,
-                "CABRIO",
-                "CONVERTIBLE"))
-        {
-            return "Convertible";
-        }
-
-        if (ContainsAny(value,
-                "PICKUP",
-                "PICK-UP"))
-        {
-            return "Pickup";
-        }
-
-        if (ContainsAny(value, "VAN"))
-        {
-            return "Van";
-        }
-
-        return "Diger";
+        return Classify(null, typeName);
     }
 
-    private static bool ContainsAny(
-        string value,
-        params string[] terms)
+    public static string Classify(string? brandName, string? typeName)
     {
-        return terms.Any(value.Contains);
+        var value =
+            $"{Normalize(brandName)} {Normalize(typeName)}".Trim();
+
+        if (value.Length == 0)
+        {
+            return Otomobil;
+        }
+
+        foreach (var rule in Rules)
+        {
+            if (rule.Terms.Any(value.Contains))
+            {
+                return rule.Category;
+            }
+        }
+
+        return Otomobil;
+    }
+
+    private static string Normalize(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return value
+            .Trim()
+            .ToUpperInvariant()
+            .Replace('İ', 'I')
+            .Replace('Ş', 'S')
+            .Replace('Ğ', 'G')
+            .Replace('Ü', 'U')
+            .Replace('Ö', 'O')
+            .Replace('Ç', 'C')
+            .Replace('ı', 'I')
+            .Replace('İ', 'I');
     }
 }

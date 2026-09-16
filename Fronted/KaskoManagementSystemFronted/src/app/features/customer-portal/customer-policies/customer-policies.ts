@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 
 import {
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -122,6 +123,13 @@ export class CustomerPolicies implements OnInit {
   }
 
   readonly PolicyStatus = PolicyStatus;
+
+  private readonly router =
+    inject(Router);
+
+  openDetail(id: string): void {
+    this.router.navigate(['/customer/policies', id]);
+  }
 
   ngOnInit(): void {
     this.loadPolicies();

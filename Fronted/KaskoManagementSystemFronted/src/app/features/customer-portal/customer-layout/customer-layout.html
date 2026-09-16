@@ -5,7 +5,8 @@
     <a
       routerLink="/customer"
       class="kl-logo">
-      Logo
+      <img *ngIf="brand().logoImage" [src]="brand().logoImage" [alt]="brand().companyName" />
+      <ng-container *ngIf="!brand().logoImage">Logo</ng-container>
     </a>
 
     <nav class="kl-menu">
@@ -38,7 +39,7 @@
       <span></span>
 
       <h1 class="kl-title">
-        {{ pageTitle }}
+        {{ brand().companyName }}
       </h1>
 
       <div class="kl-header-actions">

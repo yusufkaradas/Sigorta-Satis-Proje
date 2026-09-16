@@ -1,3 +1,4 @@
+import { BrandService } from '../../../core/services/brand.service';
 import {
   ChangeDetectorRef,
   Component,
@@ -37,6 +38,10 @@ import {
 })
 export class Login {
 
+  private readonly brandService = inject(BrandService);
+
+  readonly brand = this.brandService.brand;
+
   private readonly authService =
     inject(AuthService);
 
@@ -50,6 +55,8 @@ export class Login {
     inject(ActivatedRoute);
 
   email = '';
+
+  emailPrefilled = false;
 
   password = '';
 
@@ -171,6 +178,13 @@ export class Login {
 
         if (email) {
           this.email = email;
+          this.emailPrefilled = true;
+
+          setTimeout(() => {
+            const input = document.getElementById('email') as HTMLInputElement | null;
+            input?.focus();
+            input?.select();
+          });
         }
 
         if (params.get('expired')) {

@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Vehicle;
+using Kasko.Business.DTOs.Vehicle;
 using Kasko.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +48,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Create(
             [FromBody] CreateVehicleDto dto)
         {

@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.VehicleValue;
+using Kasko.Business.DTOs.VehicleValue;
 using Kasko.Business.Interfaces;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -74,11 +74,51 @@ public class VehicleValueCatalogService
             TypeCode = record.TypeCode,
             BrandName = record.BrandName,
             TypeName = record.TypeName,
+            VehicleCategory = record.VehicleCategory,
             ModelYear = record.ModelYear,
             Value = record.Value,
             Source = record.Source,
             EffectiveDate = record.EffectiveDate
         };
+    }
+
+    public async Task<IReadOnlyList<string>> GetCategoriesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var stored =
+            await _unitOfWork
+                .VehicleValueCatalogs
+                .GetActiveCategoriesAsync();
+
+        return VehicleCategoryClassifier.Categories
+            .Where(stored.Contains)
+            .ToList();
+    }
+
+    public async Task<int> ReclassifyAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _unitOfWork
+            .VehicleValueCatalogs
+            .ReclassifyAsync(VehicleCategoryClassifier.Classify);
+    }
+
+    public async Task<IReadOnlyList<VehicleValueBrandDto>> GetBrandsAsync(
+        string? category,
+        CancellationToken cancellationToken)
+    {
+        var records =
+            await _unitOfWork
+                .VehicleValueCatalogs
+                .GetActiveBrandsAsync(category);
+
+        return records
+            .Select(x => new VehicleValueBrandDto
+            {
+                Code = x.BrandCode,
+                Name = x.BrandName
+            })
+            .ToList();
     }
 
     public async Task<IReadOnlyList<VehicleValueBrandDto>> GetBrandsAsync(
@@ -94,6 +134,32 @@ public class VehicleValueCatalogService
             {
                 Code = x.BrandCode,
                 Name = x.BrandName
+            })
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
+        string brandCode,
+        string? category,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(brandCode))
+        {
+            throw new ArgumentException(
+                "Marka kodu boş olamaz.",
+                nameof(brandCode));
+        }
+
+        var records =
+            await _unitOfWork
+                .VehicleValueCatalogs
+                .GetActiveTypesAsync(brandCode, category);
+
+        return records
+            .Select(x => new VehicleValueTypeDto
+            {
+                Code = x.TypeCode,
+                Name = x.TypeName
             })
             .ToList();
     }

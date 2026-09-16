@@ -238,13 +238,14 @@
 
           <div class="kf-field">
             <label for="color">Renk *</label>
-            <input
+            <select
               id="color"
-              type="text"
               name="color"
               [(ngModel)]="form.color"
-              maxlength="30"
-              required />
+              required>
+              <option value="" disabled>Renk seçin</option>
+              <option *ngFor="let item of vehicleColors" [ngValue]="item">{{ item }}</option>
+            </select>
           </div>
 
         </div>

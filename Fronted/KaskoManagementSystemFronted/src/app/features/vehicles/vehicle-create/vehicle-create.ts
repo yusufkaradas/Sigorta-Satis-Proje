@@ -1,4 +1,8 @@
 import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
+
+import {
   ChangeDetectorRef,
   Component,
   inject
@@ -25,6 +29,7 @@ import {
 import {
   VehicleValueBrand,
   VehicleValueType,
+  VehicleValueLookup,
   VehicleValueService
 } from '../vehicle-value.service';
 
@@ -64,6 +69,113 @@ export class VehicleCreate {
 
   private readonly cdr =
     inject(ChangeDetectorRef);
+
+  readonly portal =
+    injectPortalContext();
+
+  get isCustomerMode(): boolean {
+    return this.portal.isCustomer;
+  }
+
+  catalogInfo: VehicleValueLookup | null = null;
+
+  categories: string[] = [];
+
+  selectedCategory = '';
+
+  isLoadingCategories = false;
+
+  readonly categoryLabels: Record<string, string> = {
+    'Otomobil': 'Otomobil',
+    'Kamyonet': 'Kamyonet / Panelvan',
+    'Kamyon': 'Kamyon',
+    'Cekici': 'Çekici',
+    'Minibus': 'Minibüs',
+    'Otobus': 'Otobüs',
+    'Motosiklet': 'Motosiklet',
+    'Traktor': 'Traktör',
+    'Diger': 'Diğer'
+  };
+
+  categoryLabel(value: string): string {
+    return this.categoryLabels[value] ?? value;
+  }
+
+  readonly vehicleColors = [
+    'Beyaz',
+    'Siyah',
+    'Gri',
+    'Gümüş',
+    'Kırmızı',
+    'Mavi',
+    'Lacivert'
+  ];
+
+  get showEngineDetails(): boolean {
+    return this.selectedCategory === 'Otomobil' ||
+           this.selectedCategory === 'Kamyonet' ||
+           this.selectedCategory === 'Motosiklet';
+  }
+
+  get showBodyDetails(): boolean {
+    return this.selectedCategory === 'Otomobil' || this.selectedCategory === 'Kamyonet';
+  }
+
+  onCategoryChange(): void {
+
+    this.selectedBrandCode = '';
+    this.selectedTypeCode = '';
+    this.selectedModelYear = null;
+    this.brands = [];
+    this.types = [];
+    this.years = [];
+    this.tsbValue = null;
+    this.catalogInfo = null;
+    this.form.brand = '';
+    this.form.model = '';
+    this.form.brandCode = '';
+    this.form.typeCode = '';
+    this.form.marketValue = 0;
+
+    if (!this.showBodyDetails) {
+      this.form.vehicleType = 0;
+      this.form.fuelType = 0;
+      this.form.transmissionType = 0;
+    }
+
+    if (!this.showEngineDetails) {
+      this.form.engineVolume = null;
+      this.form.enginePower = null;
+    }
+
+    if (this.selectedCategory) {
+      this.loadBrands();
+    }
+  }
+
+  private loadCategories(): void {
+
+    this.isLoadingCategories = true;
+
+    this.vehicleValueService
+      .getCategories()
+      .subscribe({
+        next: data => {
+          this.categories = data ?? [];
+          this.isLoadingCategories = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+          this.isLoadingCategories = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  get catalogCategory(): string {
+    return this.catalogInfo?.vehicleCategory || '';
+  }
 
 
 customers: Customer[] = [];
@@ -123,11 +235,11 @@ isLoadingTsbValue = false;
     modelYear:
       new Date().getFullYear(),
 
-    vehicleType: 1,
+    vehicleType: 0,
 
-    fuelType: 1,
+    fuelType: 0,
 
-    transmissionType: 1,
+    transmissionType: 0,
 
     engineVolume: null,
 
@@ -142,9 +254,14 @@ isLoadingTsbValue = false;
 
   ngOnInit(): void {
 
-    this.loadCustomers();
+    if (this.isCustomerMode) {
+      this.isLoadingCustomers = false;
+      this.loadCustomerVehicles('');
+    } else {
+      this.loadCustomers();
+    }
 
-    this.loadBrands();
+    this.loadCategories();
 
   }
 
@@ -278,7 +395,7 @@ private loadBrands(): void {
   this.isLoadingBrands = true;
 
   this.vehicleValueService
-    .getBrands()
+    .getBrands(this.selectedCategory)
     .subscribe({
 
       next: (data) => {
@@ -339,10 +456,38 @@ onPlateInput(): void {
     this.successMessage = '';
 
 
-    if (!this.form.customerId) {
+    if (!this.isCustomerMode && !this.form.customerId) {
 
       this.errorMessage =
         'Lütfen müşteri seçin.';
+
+      return;
+
+    }
+
+    if (!this.selectedCategory) {
+
+      this.errorMessage =
+        'Lütfen araç sınıfını seçin.';
+
+      return;
+
+    }
+
+    if (this.showBodyDetails &&
+        (!this.form.vehicleType || !this.form.fuelType || !this.form.transmissionType)) {
+
+      this.errorMessage =
+        'Kasa tipi, yakıt tipi ve vites tipini seçin.';
+
+      return;
+
+    }
+
+    if (!this.form.color.trim()) {
+
+      this.errorMessage =
+        'Lütfen aracın rengini yazın.';
 
       return;
 
@@ -373,9 +518,20 @@ onPlateInput(): void {
 
           setTimeout(() => {
 
-            this.router.navigate(
-              ['/vehicles']
-            );
+            if (this.isCustomerMode) {
+
+              this.router.navigate(
+                ['/customer/quotes/new'],
+                { queryParams: { vehicleId: response?.id } }
+              );
+
+            } else {
+
+              this.router.navigate(
+                [this.portal.basePath + '/vehicles']
+              );
+
+            }
 
           }, 800);
 
@@ -462,7 +618,7 @@ onBrandChange(): void {
   this.isLoadingTypes = true;
 
   this.vehicleValueService
-    .getTypes(this.selectedBrandCode)
+    .getTypes(this.selectedBrandCode, this.selectedCategory)
     .subscribe({
 
       next: (data) => {
@@ -573,6 +729,8 @@ onYearChange(): void {
 
   this.tsbValue = null;
 
+  this.catalogInfo = null;
+
   if (!this.selectedBrandCode ||
       !this.selectedTypeCode ||
       !this.selectedModelYear) {
@@ -595,6 +753,8 @@ onYearChange(): void {
     .subscribe({
 
   next: (result) => {
+
+    this.catalogInfo = result;
 
     this.tsbValue =
       result.value;
@@ -643,7 +803,7 @@ onYearChange(): void {
   cancel(): void {
 
     this.router.navigate(
-      ['/vehicles']
+      [this.portal.basePath + '/vehicles']
     );
 
   }

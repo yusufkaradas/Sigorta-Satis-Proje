@@ -1,7 +1,7 @@
 <section class="dashboard-content">
 
   <div class="dashboard-section-title">
-    İŞLEMLER
+    DASHBOARD
   </div>
 
   @if (errorMessage()) {
@@ -101,6 +101,7 @@
           <span>Tutar</span>
           <span>Durum</span>
           <span>Tarih</span>
+          <span>Saat</span>
         </div>
 
         @if (isLoading()) {
@@ -111,14 +112,15 @@
           <a class="db-row" [routerLink]="activity.link">
             <span><span class="db-type">{{ activity.type }}</span></span>
             <span class="db-record">
-              <strong>{{ activity.record }}</strong>
+              <strong class="record-no" [title]="activity.record">{{ activity.record | recordNo:'full' }}</strong>
               <small>{{ activity.detail }}</small>
             </span>
             <span class="db-amount">
               {{ activity.amount !== null ? (activity.amount | number:'1.0-0') + ' ₺' : '—' }}
             </span>
             <span><span class="db-badge" [ngClass]="activity.tone">{{ activity.status }}</span></span>
-            <span class="db-date">{{ activity.date | date:'dd.MM.yyyy HH:mm' }}</span>
+            <span class="db-date">{{ activity.date | backendDate:'date' }}</span>
+            <span class="db-date db-time">{{ activity.date | backendTime }}</span>
           </a>
         } @empty {
           @if (!isLoading()) {

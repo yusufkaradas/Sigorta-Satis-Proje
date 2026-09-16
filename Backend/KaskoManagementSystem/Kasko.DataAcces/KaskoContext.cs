@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Kasko.Entities.Abstract;
 using Microsoft.EntityFrameworkCore;
 using Kasko.Entities.Concrete;
@@ -42,6 +42,8 @@ public class KaskoContext : DbContext
 
     public DbSet<QuotePricingSnapshot> QuotePricingSnapshots { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+
+    public DbSet<BrandSetting> BrandSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

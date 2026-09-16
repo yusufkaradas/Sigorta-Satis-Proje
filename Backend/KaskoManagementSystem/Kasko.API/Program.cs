@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Kasko.API.Extensions;
 using Kasko.API.Serialization;
@@ -73,6 +73,8 @@ builder.Services.AddScoped<IPricingRuleChangeRequestService, PricingRuleChangeRe
 builder.Services.AddScoped<InsurerQuoteComparisonService>();
 builder.Services.AddScoped<IPolicyPdfService, PolicyPdfService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBrandSettingService, BrandSettingService>();
+builder.Services.AddSingleton<IQuickQuoteVerificationService, QuickQuoteVerificationService>();
 
 
 

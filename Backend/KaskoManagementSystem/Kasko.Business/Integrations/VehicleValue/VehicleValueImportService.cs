@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Kasko.Business.Services;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -221,7 +221,7 @@ public class VehicleValueImportService
                             importedAt,
 
                         VehicleCategory =
-                                          VehicleCategoryClassifier.Classify(typeName),
+                                          VehicleCategoryClassifier.Classify(brandName, typeName),
                     };
 
                 await _unitOfWork

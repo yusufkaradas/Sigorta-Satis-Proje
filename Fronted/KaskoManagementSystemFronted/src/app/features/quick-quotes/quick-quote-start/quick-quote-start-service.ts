@@ -248,6 +248,16 @@ createPolicy(
   );
 
 }
+purchase(
+  request: { quoteId: string; identityNumber: string; phoneNumber: string; acceptedTerms: boolean; simulateFailure: boolean }
+): Observable<{ policy: any; payment: any }> {
+
+  return this.http.post<{ policy: any; payment: any }>(
+    `${this.apiUrl}/purchase`,
+    request
+  );
+
+}
 createPayment(
   request: QuickQuotePaymentRequest
 ): Observable<any> {

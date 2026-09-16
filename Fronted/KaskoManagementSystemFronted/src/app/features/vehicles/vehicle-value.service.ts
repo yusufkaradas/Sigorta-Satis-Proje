@@ -17,6 +17,7 @@ export interface VehicleValueLookup {
   typeCode: string;
   brandName: string;
   typeName: string;
+  vehicleCategory: string;
   modelYear: number;
   value: number;
   source: string;
@@ -33,18 +34,35 @@ export class VehicleValueService {
   private readonly apiUrl =
     'https://localhost:7086/api/VehicleValueCatalog';
 
-  getBrands(): Observable<VehicleValueBrand[]> {
+  getCategories(): Observable<string[]> {
+    return this.http.get<string[]>(
+      `${this.apiUrl}/categories`
+    );
+  }
+
+  getBrands(category?: string): Observable<VehicleValueBrand[]> {
+
+    const params = category
+      ? new HttpParams().set('category', category)
+      : new HttpParams();
+
     return this.http.get<VehicleValueBrand[]>(
-      `${this.apiUrl}/brands`
+      `${this.apiUrl}/brands`,
+      { params }
     );
   }
 
   getTypes(
-    brandCode: string
+    brandCode: string,
+    category?: string
   ): Observable<VehicleValueType[]> {
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('brandCode', brandCode);
+
+    if (category) {
+      params = params.set('category', category);
+    }
 
     return this.http.get<VehicleValueType[]>(
       `${this.apiUrl}/types`,

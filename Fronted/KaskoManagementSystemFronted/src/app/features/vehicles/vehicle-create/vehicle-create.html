@@ -12,14 +12,15 @@
 
       <div>
         <h1>Araç Ekle</h1>
-        <p>Müşteriyi seçin, TSB kataloğundan aracı belirleyin ve bilgileri tamamlayın.</p>
+        <p *ngIf="!isCustomerMode">Müşteriyi seçin, TSB kataloğundan aracı belirleyin ve bilgileri tamamlayın.</p>
+        <p *ngIf="isCustomerMode">Aracınızı TSB kataloğundan seçin, kalan bilgileri siz tamamlayın.</p>
       </div>
 
       <button
         type="button"
         class="kf-btn-outline"
         (click)="cancel()">
-        ← Araçlara Dön
+        {{ isCustomerMode ? '← Araçlarıma Dön' : '← Araçlara Dön' }}
       </button>
 
     </div>
@@ -38,7 +39,7 @@
 
     <div class="kf-body kf-body-split">
 
-      <section class="kf-section">
+      <section class="kf-section" *ngIf="!isCustomerMode">
 
         <h2 class="kf-section-title">
           Müşteri
@@ -158,6 +159,24 @@
               required />
           </div>
 
+          <div class="kf-field kf-span-2">
+            <label for="category">Araç Sınıfı *</label>
+            <select
+              id="category"
+              name="category"
+              [(ngModel)]="selectedCategory"
+              (ngModelChange)="onCategoryChange()"
+              [disabled]="isLoadingCategories || isSubmitting"
+              required>
+              <option value="" disabled>
+                {{ isLoadingCategories ? 'Sınıflar yükleniyor...' : 'Araç sınıfı seçin' }}
+              </option>
+              <option *ngFor="let category of categories" [ngValue]="category">
+                {{ categoryLabel(category) }}
+              </option>
+            </select>
+          </div>
+
           <div class="kf-field">
             <label for="brand">Marka *</label>
             <select
@@ -165,10 +184,10 @@
               name="brand"
               [(ngModel)]="selectedBrandCode"
               (ngModelChange)="onBrandChange()"
-              [disabled]="isLoadingBrands || isSubmitting"
+              [disabled]="!selectedCategory || isLoadingBrands || isSubmitting"
               required>
               <option value="" disabled>
-                {{ isLoadingBrands ? 'Markalar yükleniyor...' : 'Marka seçin' }}
+                {{ !selectedCategory ? 'Önce sınıf seçin' : isLoadingBrands ? 'Markalar yükleniyor...' : 'Marka seçin' }}
               </option>
               <option
                 *ngFor="let brand of brands"
@@ -218,12 +237,14 @@
             </select>
           </div>
 
-          <div class="kf-field">
-            <label for="vehicleType">Araç Tipi *</label>
+          <div class="kf-field" *ngIf="showBodyDetails">
+            <label for="vehicleType">Kasa Tipi *</label>
             <select
               id="vehicleType"
               name="vehicleType"
-              [(ngModel)]="form.vehicleType">
+              [(ngModel)]="form.vehicleType"
+              required>
+              <option [ngValue]="0" disabled>Kasa tipini seçin</option>
               <option [ngValue]="1">Sedan</option>
               <option [ngValue]="2">Hatchback</option>
               <option [ngValue]="3">SUV</option>
@@ -234,12 +255,14 @@
             </select>
           </div>
 
-          <div class="kf-field">
+          <div class="kf-field" *ngIf="showBodyDetails">
             <label for="fuelType">Yakıt Tipi *</label>
             <select
               id="fuelType"
               name="fuelType"
-              [(ngModel)]="form.fuelType">
+              [(ngModel)]="form.fuelType"
+              required>
+              <option [ngValue]="0" disabled>Yakıt tipini seçin</option>
               <option [ngValue]="1">Benzin</option>
               <option [ngValue]="2">Dizel</option>
               <option [ngValue]="3">Hibrit</option>
@@ -247,18 +270,20 @@
             </select>
           </div>
 
-          <div class="kf-field">
+          <div class="kf-field" *ngIf="showBodyDetails">
             <label for="transmissionType">Vites Tipi *</label>
             <select
               id="transmissionType"
               name="transmissionType"
-              [(ngModel)]="form.transmissionType">
+              [(ngModel)]="form.transmissionType"
+              required>
+              <option [ngValue]="0" disabled>Vites tipini seçin</option>
               <option [ngValue]="1">Manuel</option>
               <option [ngValue]="2">Otomatik</option>
             </select>
           </div>
 
-          <div class="kf-field">
+          <div class="kf-field" *ngIf="showEngineDetails">
             <label for="engineVolume">Motor Hacmi</label>
             <input
               id="engineVolume"
@@ -269,7 +294,7 @@
               placeholder="1.6" />
           </div>
 
-          <div class="kf-field">
+          <div class="kf-field" *ngIf="showEngineDetails">
             <label for="enginePower">Motor Gücü (HP)</label>
             <input
               id="enginePower"
@@ -281,16 +306,27 @@
 
           <div class="kf-field">
             <label for="color">Renk *</label>
-            <input
+            <select
               id="color"
-              type="text"
               name="color"
               [(ngModel)]="form.color"
-              placeholder="Beyaz"
-              maxlength="30"
-              required />
+              required>
+              <option value="" disabled>Renk seçin</option>
+              <option *ngFor="let item of vehicleColors" [ngValue]="item">{{ item }}</option>
+            </select>
           </div>
 
+        </div>
+
+        <div class="kf-guess" *ngIf="catalogInfo">
+          <span>TSB kataloğundan gelen bilgiler</span>
+          <div>
+            <span class="kf-guess-chip">{{ catalogInfo.brandName }}</span>
+            <span class="kf-guess-chip">{{ catalogInfo.typeName }}</span>
+            <span class="kf-guess-chip" *ngIf="catalogCategory">Sınıf: {{ catalogCategory }}</span>
+            <span class="kf-guess-chip">{{ catalogInfo.modelYear }}</span>
+          </div>
+          <small>{{ showBodyDetails ? 'Yakıt, vites ve kasa bilgisi TSB kataloğunda yer almıyor; aşağıdan siz seçin.' : 'Bu sınıfta kasa, yakıt ve vites bilgisi sorulmaz.' }}</small>
         </div>
 
         <div class="kf-highlight">

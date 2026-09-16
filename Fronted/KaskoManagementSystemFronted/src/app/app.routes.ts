@@ -11,6 +11,10 @@ import {
 } from './features/quick-quotes/quick-quote-start/quick-quote-start';
 
 import {
+  QuickQuoteGuest
+} from './features/quick-quotes/quick-quote-guest/quick-quote-guest';
+
+import {
   Dashboard
 } from './features/dashboard/dashboard';
 
@@ -37,6 +41,10 @@ import {
 import {
   Vehicle
 } from './features/vehicles/vehicle';
+
+import {
+  Settings
+} from './features/settings/settings';
 
 import {
   VehicleCreate
@@ -192,6 +200,10 @@ export const routes: Routes = [
     path: 'quick-quote/start',
     component: QuickQuoteStart
   },
+  {
+    path: 'quick-quote/new',
+    component: QuickQuoteGuest
+  },
 
   {
     path: 'login',
@@ -222,6 +234,13 @@ export const routes: Routes = [
     {
       path: 'vehicles',
       component: CustomerVehicles
+    },
+    {
+      path: 'vehicles/new',
+      component: VehicleCreate,
+      data: {
+        mode: 'customer'
+      }
     },
     {
       path: 'vehicles/:id',
@@ -287,6 +306,7 @@ export const routes: Routes = [
       { path: 'vehicles', component: Vehicle, data: { mode: 'manager' } },
       { path: 'vehicles/:id', component: VehicleDetail, data: { mode: 'manager' } },
       { path: 'quotes', component: Quotes, data: { mode: 'manager' } },
+      { path: 'quotes/new', component: QuoteCreate, data: { mode: 'manager' } },
       { path: 'quotes/:id', component: QuoteDetail, data: { mode: 'manager' } },
       { path: 'policies', component: Policies, data: { mode: 'manager' } },
       { path: 'policies/:id', component: PolicyDetail, data: { mode: 'manager' } },
@@ -308,6 +328,14 @@ export const routes: Routes = [
 
     children: [
 
+      {
+        path: 'settings',
+        component: Settings,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['Admin']
+        }
+      },
       {
         path: 'pricing-requests',
         component: PricingRequests

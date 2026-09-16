@@ -409,6 +409,36 @@ private loadPayment(
 
     });
 }
+  isDownloading = false;
+
+  downloadPdf(): void {
+
+    if (!this.policy?.id || this.isDownloading) {
+      return;
+    }
+
+    this.isDownloading = true;
+    this.errorMessage = '';
+
+    this.policyService.downloadPdf(this.policy.id).subscribe({
+      next: blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${this.policy?.policyNumber ?? "police"}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isDownloading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isDownloading = false;
+        this.errorMessage = 'Poliçe belgesi oluşturulamadı. Belge ödeme tamamlanan poliçeler için hazırlanır.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   goBack(): void {
 
     this.router.navigate([

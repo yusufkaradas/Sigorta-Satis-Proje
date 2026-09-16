@@ -1,0 +1,106 @@
+<div class="kf-page">
+
+  <div class="kf-title">
+    AYARLAR
+  </div>
+
+  <form class="kf-panel" (ngSubmit)="save()">
+
+    <div class="kf-panel-head">
+      <div>
+        <h1>Görünüm Ayarları</h1>
+        <p>Şirket adı, logo ve giriş ekranı görseli tüm kullanıcılara buradan yansır.</p>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="kf-alert kf-alert-error">{{ errorMessage() }}</div>
+    }
+
+    @if (successMessage()) {
+      <div class="kf-alert kf-alert-success">{{ successMessage() }}</div>
+    }
+
+    <div class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Şirket Bilgileri</h2>
+
+        <div class="kf-field">
+          <label for="companyName">Şirket Adı *</label>
+          <input id="companyName" name="companyName" type="text" maxlength="60" [(ngModel)]="companyName" placeholder="Örn. Anadolu Sigorta Acentesi" />
+        </div>
+
+        <div class="kf-field">
+          <label for="systemName">Sistem Adı *</label>
+          <input id="systemName" name="systemName" type="text" maxlength="60" [(ngModel)]="systemName" placeholder="Örn. Sigorta Yönetim Sistemi" />
+        </div>
+
+        <p class="kf-note">Bu iki yazı giriş ekranının sol panelinde görünür.</p>
+
+      </section>
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Görseller</h2>
+
+        <div class="kf-brand-row">
+          <div class="kf-brand-preview">
+            @if (logoImage()) {
+              <img [src]="logoImage()" alt="Logo" />
+            } @else {
+              <span>Logo yok</span>
+            }
+          </div>
+          <div class="kf-brand-actions">
+            <strong>Logo</strong>
+            <small>Menüde ve giriş ekranında görünür. PNG, JPG veya SVG, en fazla 2 MB.</small>
+            <div>
+              <label class="kf-file-button">
+                Dosya Seç
+                <input type="file" accept="image/*" (change)="onFileSelected($event, 'logo')" hidden />
+              </label>
+              @if (logoImage()) {
+                <button type="button" class="kf-btn-outline" (click)="clearImage('logo')">Kaldır</button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="kf-brand-row">
+          <div class="kf-brand-preview kf-brand-preview-wide">
+            @if (loginImage()) {
+              <img [src]="loginImage()" alt="Giriş görseli" />
+            } @else {
+              <span>Görsel yok</span>
+            }
+          </div>
+          <div class="kf-brand-actions">
+            <strong>Giriş Ekranı Görseli</strong>
+            <small>Giriş, kayıt ve şifre ekranlarının sol panelinde görünür.</small>
+            <div>
+              <label class="kf-file-button">
+                Dosya Seç
+                <input type="file" accept="image/*" (change)="onFileSelected($event, 'login')" hidden />
+              </label>
+              @if (loginImage()) {
+                <button type="button" class="kf-btn-outline" (click)="clearImage('login')">Kaldır</button>
+              }
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions">
+      <button type="submit" class="kf-btn" [disabled]="isSaving()">
+        {{ isSaving() ? 'Kaydediliyor...' : 'Ayarları Kaydet' }}
+      </button>
+    </div>
+
+  </form>
+
+</div>

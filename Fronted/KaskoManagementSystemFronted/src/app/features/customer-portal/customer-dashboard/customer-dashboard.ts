@@ -1,3 +1,4 @@
+import { BackendDatePipe, BackendTimePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
   CommonModule
@@ -63,6 +64,8 @@ interface StatusCount {
   imports: [
     CommonModule,
     RecordNumberPipe,
+    BackendDatePipe,
+    BackendTimePipe,
     RouterLink
   ],
   templateUrl: './customer-dashboard.html',

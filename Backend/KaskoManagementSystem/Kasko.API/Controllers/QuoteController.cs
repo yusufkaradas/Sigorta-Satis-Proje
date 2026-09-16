@@ -1,4 +1,5 @@
-﻿using Kasko.Business.DTOs.Quote;
+using Kasko.Business.DTOs.Quote;
+using Kasko.Business.Services.Abstract;
 using Kasko.Business.Services;
 using Kasko.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -44,7 +45,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost("calculate")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin,Manager,Customer")]
         public async Task<IActionResult> Calculate(
     [FromBody] CreateQuoteDto dto)
         {
@@ -54,7 +55,7 @@ namespace Kasko.API.Controllers
             return Ok(result);
         }
         [HttpPost]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin,Manager,Customer")]
         public async Task<IActionResult> Create(
             [FromBody] CreateQuoteDto dto)
         {
@@ -88,8 +89,98 @@ namespace Kasko.API.Controllers
             return NoContent();
         }
         
-        [HttpPatch("{id:guid}/status")]
+        [HttpPost("{id:guid}/offer")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Offer(Guid id)
+        {
+            var quote = await _quoteService.GetByIdAsync(id);
+
+            if (quote == null)
+            {
+                return NotFound();
+            }
+
+            if (quote.Status != QuoteStatus.Draft)
+            {
+                return BadRequest(new
+                {
+                    message = "Sadece taslak teklifler müşteriye sunulabilir."
+                });
+            }
+
+            await _quoteService.ChangeStatusAsync(id, QuoteStatus.Offered);
+
+            return NoContent();
+        }
+
+        [HttpPost("{id:guid}/purchase")]
         [Authorize(Roles = "Admin,Customer")]
+        public async Task<IActionResult> Purchase(
+            Guid id,
+            [FromBody] QuotePurchaseRequestDto dto,
+            [FromServices] IPolicyService policyService,
+            [FromServices] IPaymentService paymentService)
+        {
+            if (!dto.AcceptedTerms)
+            {
+                return BadRequest(new
+                {
+                    message = "Satın almak için bilgilendirme metinlerini onaylamanız gerekiyor."
+                });
+            }
+
+            var quote = await _quoteService.GetByIdAsync(id);
+
+            if (quote == null)
+            {
+                return NotFound();
+            }
+
+            if (quote.Status != QuoteStatus.Offered &&
+                quote.Status != QuoteStatus.Draft)
+            {
+                return BadRequest(new
+                {
+                    message = "Bu teklif satın alınamaz. Süresi dolmuş veya daha önce işlem görmüş olabilir."
+                });
+            }
+
+            if (quote.Status == QuoteStatus.Draft)
+            {
+                await _quoteService.ChangeStatusAsync(id, QuoteStatus.Offered);
+            }
+
+            await _quoteService.ChangeStatusAsync(id, QuoteStatus.Accepted);
+
+            var policy =
+                await policyService.CreateAsync(
+                    new Kasko.Business.DTOs.Policy.PolicyCreateDto
+                    {
+                        CustomerId = quote.CustomerId,
+                        VehicleId = quote.VehicleId,
+                        QuoteId = id,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddYears(1)
+                    });
+
+            var payment =
+                await paymentService.CreateAsync(
+                    new Kasko.Business.DTOs.Payment.PaymentCreateDto
+                    {
+                        PolicyId = policy.Id,
+                        SimulateFailure = false
+                    });
+
+            return Ok(new
+            {
+                policyId = policy.Id,
+                policyNumber = policy.PolicyNumber,
+                paymentId = payment.Id
+            });
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeStatus(
     Guid id,
     [FromQuery] QuoteStatus status)

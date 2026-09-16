@@ -169,7 +169,7 @@ a.cp-stat:hover {
 }
 
 .cp-actions-col {
-  width: 1%;
+  width: 190px;
   white-space: nowrap;
 }
 
@@ -213,4 +213,18 @@ a.cp-stat:hover {
 .cp-act-danger {
   border-color: #EF4444;
   color: #EF4444;
+}
+
+.cp-head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cp-table td.cp-actions {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.cp-table tbody tr {
+  cursor: pointer;
 }

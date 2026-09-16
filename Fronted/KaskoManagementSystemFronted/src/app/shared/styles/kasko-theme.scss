@@ -924,7 +924,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       min-height: 0;
       border: 4px solid $black;
       border-radius: 0;
-      background: $primary;
+      background: $text-secondary;
       overflow: hidden;
     }
 
@@ -942,7 +942,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       height: u(150);
       border: 2px solid $surface;
       border-radius: u(8);
-      background: $black;
+      background: $text-disabled;
       color: $surface;
       display: grid;
       place-items: center;
@@ -951,7 +951,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .brand-company,
     .brand-system {
-      @include pill($black, $surface, $surface, 2px);
+      @include pill($text-disabled, $surface, $surface, 2px);
       height: u(50);
       display: grid;
       place-items: center;
@@ -973,7 +973,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       height: u(250);
       border: 2px solid $surface;
       border-radius: u(22);
-      background: $text-secondary;
+      background: $text-disabled;
       color: $surface;
       display: grid;
       place-items: center;
@@ -996,14 +996,14 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       border: 4px solid $black;
       border-left: 0;
       border-radius: 0;
-      background: $primary;
+      background: $text-secondary;
       box-shadow: 0 u(14) u(22) rgba(0, 0, 0, 0.22);
       display: grid;
       place-items: center;
     }
 
     .#{$p}-header span {
-      @include pill($black, $surface, $surface, 2px);
+      @include pill($text-disabled, $surface, $surface, 2px);
       width: u(250);
       height: u(50);
       display: grid;

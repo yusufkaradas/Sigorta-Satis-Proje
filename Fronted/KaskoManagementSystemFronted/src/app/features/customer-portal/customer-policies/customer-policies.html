@@ -1,7 +1,7 @@
 <div class="cp-page">
 
   <div class="cp-section-title">
-    İŞLEMLER
+    POLİÇELERİM
   </div>
 
 
@@ -74,7 +74,7 @@
 
           <tbody>
 
-            <tr *ngFor="let policy of pagedPolicies()">
+            <tr *ngFor="let policy of pagedPolicies()" (click)="openDetail(policy.id)" title="Detayları görmek için tıklayın">
 
               <td>
                 <div class="cp-cell" [title]="policy.policyNumber">
@@ -94,7 +94,7 @@
               <td>
                 <span class="cp-badge" [ngClass]="getPolicyStatusClass(policy.status)">{{ getPolicyStatusText(policy.status) }}</span>
               </td>
-              <td class="cp-actions">
+              <td class="cp-actions" (click)="$event.stopPropagation()">
                 <a class="cp-act" [routerLink]="['/customer/policies', policy.id]">Detay</a>
                 <a *ngIf="policy.status === PolicyStatus.Draft" class="cp-act cp-act-primary" [routerLink]="['/customer/policies', policy.id]">Öde</a>
               </td>

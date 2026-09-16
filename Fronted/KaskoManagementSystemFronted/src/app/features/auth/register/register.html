@@ -5,19 +5,27 @@
     <div class="brand-content">
 
       <div class="logo-box">
-        <span>Logo</span>
+        @if (brand().logoImage) {
+          <img [src]="brand().logoImage" alt="Logo" />
+        } @else {
+          <span>Logo</span>
+        }
       </div>
 
       <div class="brand-company">
-        Şirket Adı
+        {{ brand().companyName }}
       </div>
 
       <div class="brand-system">
-        Sigorta Yönetim Sistemi
+        {{ brand().systemName }}
       </div>
 
       <div class="brand-image-placeholder">
-        <span>Görsel</span>
+        @if (brand().loginImage) {
+          <img [src]="brand().loginImage" alt="Görsel" />
+        } @else {
+          <span>Görsel</span>
+        }
       </div>
 
     </div>

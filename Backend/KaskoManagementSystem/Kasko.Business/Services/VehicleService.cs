@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Vehicle;
+using Kasko.Business.DTOs.Vehicle;
 using Kasko.Business.Exceptions;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -156,6 +156,29 @@ namespace Kasko.Business.Services
 
         public async Task<VehicleDto> CreateAsync(CreateVehicleDto dto)
         {
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var currentUserIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                if (!Guid.TryParse(currentUserIdValue, out var currentUserId))
+                {
+                    throw new NotFoundException("Müşteri bulunamadı.");
+                }
+
+                var currentUser =
+                    await _unitOfWork.Users.GetByIdAsync(currentUserId);
+
+                if (currentUser?.CustomerId == null)
+                {
+                    throw new NotFoundException("Müşteri bulunamadı.");
+                }
+
+                dto.CustomerId = currentUser.CustomerId.Value;
+            }
+
             var customer = await _unitOfWork.Customers
                 .GetByIdAsync(dto.CustomerId);
 

@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.VehicleValue;
+using Kasko.Business.DTOs.VehicleValue;
 using Kasko.Entities.Concrete;
 
 namespace Kasko.Business.Interfaces;
@@ -11,8 +11,23 @@ public interface IVehicleValueCatalogService
         int modelYear,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<string>> GetCategoriesAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<int> ReclassifyAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<VehicleValueBrandDto>> GetBrandsAsync(
+        string? category,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<VehicleValueBrandDto>> GetBrandsAsync(
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
+        string brandCode,
+        string? category,
+        CancellationToken cancellationToken);
 
     Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
         string brandCode,

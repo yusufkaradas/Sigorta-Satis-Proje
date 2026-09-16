@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 
 import {
+  RouterLink,
   ActivatedRoute,
   Router
 } from '@angular/router';
@@ -87,6 +88,7 @@ interface PackageQuoteOption {
   selector: 'app-quote-create',
   standalone: true,
   imports: [
+    RouterLink,
     CommonModule,
     FormsModule
   ],
@@ -1680,9 +1682,7 @@ export class QuoteCreate implements OnInit {
    * oluşturulan teklifin detayına götürüyoruz.
    */
   this.router.navigate(
-    this.isCustomerMode
-      ? ['/customer/quotes', response.id]
-      : ['/quotes', response.id]
+    [this.route.snapshot.data['mode'] === 'manager' ? '/manager/quotes' : this.isCustomerMode ? '/customer/quotes' : '/quotes', response.id]
   );
 
 },
@@ -1713,9 +1713,11 @@ export class QuoteCreate implements OnInit {
   cancel(): void {
 
     this.router.navigate([
-      this.isCustomerMode
-        ? '/customer/quotes'
-        : '/quotes'
+      this.route.snapshot.data['mode'] === 'manager'
+        ? '/manager/quotes'
+        : this.isCustomerMode
+          ? '/customer/quotes'
+          : '/quotes'
     ]);
   }
 

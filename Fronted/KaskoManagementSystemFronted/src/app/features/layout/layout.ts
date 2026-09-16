@@ -1,3 +1,4 @@
+import { BrandService } from '../../core/services/brand.service';
 import {
   Component,
   inject
@@ -56,6 +57,10 @@ const MANAGER_MENU: MenuItem[] = [
   styleUrl: './layout.scss'
 })
 export class Layout {
+
+  private readonly brandService = inject(BrandService);
+
+  readonly brand = this.brandService.brand;
 
   private readonly router =
     inject(Router);

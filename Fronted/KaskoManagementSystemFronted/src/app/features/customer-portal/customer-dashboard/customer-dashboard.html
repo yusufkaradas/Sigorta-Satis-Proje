@@ -1,7 +1,7 @@
 <div class="cp-page">
 
   <div class="cp-section-title">
-    İŞLEMLER
+    ANA SAYFA
   </div>
 
 
@@ -104,6 +104,7 @@
               <th>Numara</th>
               <th>Durum</th>
               <th class="cd-col-date">Tarih</th>
+              <th>Saat</th>
             </tr>
           </thead>
 
@@ -121,7 +122,8 @@
                   {{ row.statusText }}
                 </span>
               </td>
-              <td class="cp-muted">{{ row.date | date:'dd.MM.yyyy HH:mm' }}</td>
+              <td class="cp-muted">{{ row.date | backendDate:'date' }}</td>
+              <td class="cp-muted">{{ row.date | backendTime }}</td>
             </tr>
 
           </tbody>

@@ -105,22 +105,74 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
   readonly PolicyStatus = PolicyStatus;
 
   readonly steps = [
-    { number: 1, label: 'Kimlik Bilgileri' },
-    { number: 2, label: 'Araç Seçimi' },
-    { number: 3, label: 'Risk Bilgileri' },
-    { number: 4, label: 'Paket Seçimi' },
-    { number: 5, label: 'Teminatlar' },
-    { number: 6, label: 'Fiyat Teklifi' },
-    { number: 7, label: 'Teklif Onayı' },
-    { number: 8, label: 'Poliçe' },
-    { number: 9, label: 'Ödeme' },
-    { number: 10, label: 'Tamamlandı' }
+    { number: 1, label: 'Bilgileriniz', steps: [1, 2, 3] },
+    { number: 2, label: 'Teklifiniz', steps: [4, 5, 6] },
+    { number: 3, label: 'Özet ve Ödeme', steps: [7, 8, 9] },
+    { number: 4, label: 'Poliçeniz', steps: [10] }
   ];
+
+  isStageActive(stage: { steps: number[] }): boolean {
+    return stage.steps.includes(this.currentStep);
+  }
+
+  isStageDone(stage: { steps: number[] }): boolean {
+    return this.currentStep > Math.max(...stage.steps);
+  }
+
 
   readonly companyName = 'Sigorta Satış';
 
   readonly isLoggedIn =
     this.authService.isAuthenticated();
+
+  notFound = false;
+
+  showPriceDetail = false;
+
+  acceptedTerms = false;
+
+  acceptedKvkk = false;
+
+  completePurchase(): void {
+
+    if (!this.createdQuoteId || this.isLoading) {
+      return;
+    }
+
+    if (!this.acceptedTerms || !this.acceptedKvkk) {
+      this.errorMessage = 'Satın almak için bilgilendirme metinlerini onaylayın.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.quickQuoteService
+      .purchase({
+        quoteId: this.createdQuoteId,
+        identityNumber: this.identityNumber,
+        phoneNumber: this.normalizedPhoneNumber,
+        acceptedTerms: true,
+        simulateFailure: false
+      })
+      .subscribe({
+        next: result => {
+          this.createdPolicy = result.policy;
+          this.createdPayment = result.payment;
+          this.isLoading = false;
+          this.currentStep = 10;
+          this.cdr.detectChanges();
+        },
+        error: error => {
+          this.isLoading = false;
+          this.errorMessage =
+            error?.error?.message ??
+            error?.error?.detail ??
+            'Ödeme sırasında bir hata oluştu. Kartınızdan tutar çekilmedi.';
+          this.cdr.detectChanges();
+        }
+      });
+  }
 
   currentStep = 1;
 
@@ -260,6 +312,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
+    this.notFound = false;
+
     this.errorMessage = '';
 
     const request:
@@ -352,7 +406,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
   get currentStepLabel(): string {
 
     return this.steps.find(
-      step => step.number === this.currentStep
+      step => step.steps.includes(this.currentStep)
     )?.label ?? '';
   }
 
@@ -555,7 +609,10 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
             return;
           }
 
-          this.currentStep = 2;
+          this.notFound = true;
+
+          this.errorMessage =
+            'Bu T.C. Kimlik No ve telefon ile kayıtlı müşteri bulunamadı. Bilgilerinizi kontrol edin veya kayıt olmadan teklif alın.';
 
           this.cdr.detectChanges();
         },
@@ -563,6 +620,16 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
         error: (error) => {
 
           this.isLoading = false;
+
+          if (error?.status === 404) {
+            this.notFound = true;
+
+            this.errorMessage =
+              'Bu T.C. Kimlik No ve telefon ile kayıtlı müşteri bulunamadı. Bilgilerinizi kontrol edin veya kayıt olmadan teklif alın.';
+
+            this.cdr.detectChanges();
+            return;
+          }
 
           this.errorMessage =
             error?.error?.message ??
@@ -648,6 +715,28 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
         }
 
       });
+  }
+
+  getVehicleTypeText(value: number | null | undefined): string {
+
+    switch (value) {
+      case 1:
+        return 'Sedan';
+      case 2:
+        return 'Hatchback';
+      case 3:
+        return 'SUV';
+      case 4:
+        return 'Pickup';
+      case 5:
+        return 'Coupe';
+      case 6:
+        return 'Cabrio';
+      case 7:
+        return 'Van';
+      default:
+        return '—';
+    }
   }
 
   fuelTypeLabel(

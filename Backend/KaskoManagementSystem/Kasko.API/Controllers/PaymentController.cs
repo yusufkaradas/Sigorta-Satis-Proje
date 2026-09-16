@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Payment;
+using Kasko.Business.DTOs.Payment;
 using Kasko.Business.Services.Abstract;
 using Kasko.Entities.Concrete;
 using Microsoft.AspNetCore.Authorization;
@@ -52,7 +52,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var userIdClaim = User.FindFirst(

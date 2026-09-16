@@ -246,6 +246,54 @@ formatCreatedDate(
   }
 
 
+acceptedTerms = false;
+
+acceptedKvkk = false;
+
+offerQuote(): void {
+  if (!this.quote) {
+    return;
+  }
+
+  if (!window.confirm('Teklif müşteriye sunulsun mu? Müşteri portalında satın alabilir hale gelecek.')) {
+    return;
+  }
+
+  const quoteId = this.quote.id;
+  this.isLoading = true;
+  this.errorMessage = '';
+
+  this.quoteService.offer(quoteId).subscribe({
+    next: () => this.loadQuote(quoteId),
+    error: error => {
+      this.isLoading = false;
+      this.errorMessage = error?.error?.message ?? 'Teklif sunulamadı.';
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+purchaseQuote(): void {
+  if (!this.quote || !this.acceptedTerms || !this.acceptedKvkk) {
+    return;
+  }
+
+  this.isLoading = true;
+  this.errorMessage = '';
+
+  this.quoteService.purchase(this.quote.id).subscribe({
+    next: result => {
+      this.isLoading = false;
+      this.router.navigate([this.basePath + '/policies', result.policyId]);
+    },
+    error: error => {
+      this.isLoading = false;
+      this.errorMessage = error?.error?.message ?? 'Satın alma tamamlanamadı.';
+      this.cdr.detectChanges();
+    }
+  });
+}
+
 changeStatus(status: QuoteStatus): void {
   if (!this.quote) {
     return;

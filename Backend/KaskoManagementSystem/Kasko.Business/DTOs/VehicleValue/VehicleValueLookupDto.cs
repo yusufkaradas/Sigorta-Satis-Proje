@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.DTOs.VehicleValue;
+namespace Kasko.Business.DTOs.VehicleValue;
 
 public class VehicleValueLookupDto
 {
@@ -9,6 +9,8 @@ public class VehicleValueLookupDto
     public string BrandName { get; set; } = string.Empty;
 
     public string TypeName { get; set; } = string.Empty;
+
+    public string VehicleCategory { get; set; } = string.Empty;
 
     public int ModelYear { get; set; }
 

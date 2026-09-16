@@ -1,3 +1,4 @@
+import { BackendDatePipe, BackendTimePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
   CommonModule
@@ -12,6 +13,7 @@ import {
 } from '@angular/core';
 
 import {
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -34,6 +36,8 @@ import {
   imports: [
     CommonModule,
     RecordNumberPipe,
+    BackendDatePipe,
+    BackendTimePipe,
     RouterLink
   ],
   templateUrl: './customer-payments.html',
@@ -110,6 +114,13 @@ export class CustomerPayments implements OnInit {
         this.page() * this.pageSize
       )
   );
+
+  private readonly router =
+    inject(Router);
+
+  openDetail(id: string): void {
+    this.router.navigate(['/customer/payments', id]);
+  }
 
   ngOnInit(): void {
     this.loadPayments();

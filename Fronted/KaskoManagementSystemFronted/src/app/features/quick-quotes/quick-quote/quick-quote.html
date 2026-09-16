@@ -1,67 +1,76 @@
-<div class="quick-quote-page">
+<div class="qq-page">
 
-  <!-- HEADER -->
+  <aside class="qq-sidebar">
 
-  <header class="quick-quote-header">
-
-    <div class="brand-area">
-
-      <div class="logo-box">
+    <a routerLink="/" class="qq-logo">
+      @if (brand().logoImage) {
+        <img [src]="brand().logoImage" [alt]="brand().companyName" />
+      } @else {
         Logo
-      </div>
-
-    </div>
-
-
-    <div class="company-name">
-      ŞİRKET ADI
-    </div>
-
-
-    <a
-      routerLink="/login"
-      class="login-button"
-    >
-      Giriş Yap
+      }
     </a>
 
-  </header>
+    <div class="qq-steps">
 
+      <span class="qq-steps-title">Teklif Adımları</span>
 
-  <!-- CONTENT -->
+      <ol>
+        @for (step of steps; track step.number) {
+          <li>
+            <span class="qq-step-dot">{{ step.number }}</span>
+            <span>{{ step.label }}</span>
+          </li>
+        }
+      </ol>
 
-  <main class="quick-quote-main">
-
-    <div class="quick-quote-title">
-      HIZLI TEKLİF
     </div>
 
-
-    <section class="quick-quote-card">
-
-      <div class="quick-quote-placeholder">
-
-        <h1>
-          Teklif Sistemimiz
-        </h1>
-
-        <p>
-          Aracınız için hızlı ve kolay
-          kasko teklifi alın.
-        </p>
+  </aside>
 
 
-        <a
-          routerLink="/quick-quote/start"
-          class="start-button"
-        >
-          Hızlı Teklif Al
-        </a>
+  <div class="qq-main">
 
-      </div>
+    <header class="qq-header">
 
-    </section>
+      <span></span>
 
-  </main>
+      <div class="qq-company">{{ brand().companyName }}</div>
+
+      <a [routerLink]="isLoggedIn ? '/customer' : '/login'" class="qq-header-button">
+        {{ isLoggedIn ? 'Hesabım' : 'Giriş Yap' }}
+      </a>
+
+    </header>
+
+
+    <main class="qq-content">
+
+      <div class="qq-section-title">HIZLI TEKLİF</div>
+
+      <section class="qq-card">
+
+        <div class="qq-landing">
+
+          <h1>Teklif Sistemimiz</h1>
+
+          <p>Aracınız için hızlı ve kolay kasko teklifi alın. Üyelik gerekmez.</p>
+
+          <div class="qq-landing-actions">
+
+            <a routerLink="/quick-quote/new" class="qq-btn qq-btn-primary">Hemen Teklif Al</a>
+
+            <a routerLink="/quick-quote/start" class="qq-btn qq-btn-ghost">Kayıtlı Müşteriyim</a>
+
+          </div>
+
+          <span class="qq-landing-note">Teklifiniz 3 adımda, yaklaşık 1 dakikada hazır olur.</span>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
 
 </div>

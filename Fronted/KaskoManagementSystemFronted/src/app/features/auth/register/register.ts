@@ -1,3 +1,4 @@
+import { BrandService } from '../../../core/services/brand.service';
 import {
   ChangeDetectorRef,
   Component,
@@ -31,6 +32,10 @@ import {
   styleUrl: './register.scss'
 })
 export class Register {
+
+  private readonly brandService = inject(BrandService);
+
+  readonly brand = this.brandService.brand;
 
   private readonly authService =
     inject(AuthService);

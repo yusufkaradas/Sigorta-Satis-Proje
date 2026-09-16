@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Policy;
+using Kasko.Business.DTOs.Policy;
 using Kasko.Business.Services.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -66,7 +66,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var userIdClaim = User.FindFirst(
@@ -82,6 +82,32 @@ namespace Kasko.API.Controllers
 
             return NoContent();
         }
+        [HttpGet("{id:guid}/pdf")]
+        public async Task<IActionResult> DownloadPdf(
+            Guid id,
+            [FromServices] Kasko.Business.Interfaces.IPolicyPdfService pdfService)
+        {
+            var policy = await _policyService.GetByIdAsync(id);
+
+            if (policy == null)
+            {
+                return NotFound();
+            }
+
+            if (policy.Status != Kasko.Entities.Enums.PolicyStatus.Active &&
+                policy.Status != Kasko.Entities.Enums.PolicyStatus.Expired)
+            {
+                return BadRequest(new
+                {
+                    message = "Poliçe belgesi ödeme tamamlandıktan sonra oluşturulur."
+                });
+            }
+
+            var pdf = await pdfService.GenerateAsync(id);
+
+            return File(pdf, "application/pdf", $"{policy.PolicyNumber}.pdf");
+        }
+
         [HttpGet("upcoming-renewals")]
         public async Task<IActionResult> GetUpcomingRenewals(
     [FromQuery] int daysAhead = 30)
@@ -119,7 +145,7 @@ namespace Kasko.API.Controllers
             return Ok(quote);
         }
         [HttpPost("{id:guid}/expire")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Expire(Guid id)
         {
             await _policyService.ExpireAsync(id);

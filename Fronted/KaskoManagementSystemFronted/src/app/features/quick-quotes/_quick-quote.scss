@@ -44,7 +44,7 @@
   padding: k.u(35) k.u(23) 0;
   border: 2px solid k.$black;
   border-radius: k.u(16);
-  background: k.$primary;
+  background: k.$text-secondary;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -58,11 +58,12 @@
   flex: 0 0 auto;
   border: 2px solid k.$surface;
   border-radius: k.u(16);
-  background: k.$black;
+  background: k.$text-disabled;
   color: k.$surface;
   display: grid;
   place-items: center;
   font-size: k.u(24);
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -73,7 +74,7 @@
   padding: k.u(16) k.u(14);
   border: 2px solid k.$surface;
   border-radius: k.u(22);
-  background: k.$black;
+  background: k.$text-disabled;
   color: k.$surface;
   display: flex;
   flex-direction: column;
@@ -145,14 +146,14 @@
   padding: 0 k.u(30);
   border: 2px solid k.$black;
   border-radius: k.u(16);
-  background: k.$primary;
+  background: k.$text-secondary;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
 }
 
 .qq-company {
-  @include k.pill(k.$black, k.$surface, k.$surface, 2px);
+  @include k.pill(k.$text-disabled, k.$surface, k.$surface, 2px);
   width: k.u(250);
   height: k.u(50);
   display: grid;
@@ -191,7 +192,7 @@
   width: k.u(200);
   min-width: 0;
   padding: 0;
-  background: k.$text-secondary;
+  background: k.$primary;
   font-size: k.u(20);
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
@@ -370,6 +371,7 @@
   font-weight: 700;
 }
 
+.qq-field select,
 .qq-field input,
 .qq-phone {
   width: 100%;
@@ -381,9 +383,15 @@
   font-size: 14px;
 }
 
-.qq-field input {
+.qq-field input,
+.qq-field select {
   padding: 0 12px;
   outline: none;
+}
+
+.qq-field select option {
+  color: #000;
+  background: #fff;
 }
 
 .qq-field input::placeholder {
@@ -986,4 +994,427 @@
   .qq-cols-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+.qg-offers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.qg-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+  text-align: left;
+  cursor: pointer;
+}
+
+.qg-offer.selected {
+  border-color: k.$info;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.qg-offer-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qg-offer-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: k.$black;
+
+  small {
+    font-size: 11px;
+    font-weight: 600;
+    color: k.$text-secondary;
+  }
+}
+
+.qg-offer-note {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: k.$background;
+  color: k.$text-secondary;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.qg-offer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: k.$text;
+
+  li::before {
+    content: '✓ ';
+    color: k.$success;
+    font-weight: 700;
+  }
+
+  .qg-more::before {
+    content: '';
+  }
+
+  .qg-more {
+    color: k.$text-secondary;
+  }
+}
+
+.qg-offer-pick {
+  margin-top: auto;
+  padding-top: 8px;
+  color: k.$info;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.qg-offer.selected .qg-offer-pick {
+  color: k.$success;
+}
+
+.qg-total {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  small {
+    display: block;
+    color: k.$text-secondary;
+    font-size: 11px;
+  }
+
+  strong {
+    font-size: 15px;
+  }
+}
+
+.qg-total-price {
+  text-align: right;
+
+  strong {
+    font-size: 22px;
+    color: k.$black;
+  }
+}
+
+@media (max-width: 900px) {
+  .qg-offers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.qg-offer-toggle {
+  align-self: flex-start;
+  color: k.$info;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.qg-offer-list {
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.qq-vehicle,
+.qq-option,
+.qq-coverage {
+  color: k.$text;
+}
+
+.qq-plate {
+  color: k.$text;
+}
+
+.qq-steps li {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.qq-steps li.active,
+.qq-steps li.done {
+  color: k.$surface;
+  font-weight: 600;
+}
+
+.qq-steps li.active .qq-step-dot {
+  border-color: k.$info;
+  background: k.$info;
+  color: k.$surface;
+}
+
+.qq-steps li.done .qq-step-dot {
+  border-color: k.$success;
+  background: k.$success;
+  color: k.$surface;
+}
+
+.qq-field-inline {
+  max-width: 220px;
+}
+
+.qq-page .qq-vehicle,
+.qq-page .qq-package,
+.qq-page .qq-option,
+.qq-page .qq-coverage,
+.qq-page .qg-offer {
+  color: k.$text;
+}
+
+.qq-page .qq-vehicle-top strong,
+.qq-page .qq-specs dd,
+.qq-page .qq-vehicle-value strong,
+.qq-page .qq-option strong,
+.qq-page .qg-offer-price {
+  color: k.$text;
+}
+
+.qq-landing {
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+
+  h1 {
+    color: k.$surface;
+    font-size: 30px;
+  }
+
+  p {
+    max-width: 420px;
+    color: #e5e7eb;
+    font-size: 14px;
+  }
+}
+
+.qq-landing-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 260px;
+}
+
+.qq-landing-note {
+  color: k.$border;
+  font-size: 12px;
+}
+
+.qo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.qo-left,
+.qo-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.qo-price {
+  padding: 18px 20px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    color: k.$black;
+    font-size: 34px;
+    line-height: 1.1;
+  }
+}
+
+.qo-price-label,
+.qo-price-sub {
+  color: k.$text-secondary;
+  font-size: 12px;
+}
+
+.qo-facts,
+.qo-breakdown {
+  margin: 0;
+  padding: 4px 14px;
+  list-style: none;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+
+  li {
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  li + li {
+    border-top: 1px solid k.$border;
+  }
+
+  span {
+    color: k.$text-secondary;
+  }
+
+  strong {
+    text-align: right;
+  }
+}
+
+.qo-breakdown-total strong {
+  color: k.$black;
+  font-size: 15px;
+}
+
+.qo-benefits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: k.$surface;
+
+  li::before {
+    content: '✓ ';
+    color: k.$success;
+    font-weight: 800;
+  }
+}
+
+.qo-detail-toggle {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: k.$surface;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.qo-right {
+  padding: 14px 16px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+}
+
+.qo-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.qo-coverages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  font-size: 13px;
+
+  li::before {
+    content: '✓ ';
+    color: k.$success;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 900px) {
+  .qo-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.qq-page {
+  gap: 0;
+}
+
+.qq-page .qq-sidebar {
+  border: 0;
+  border-right: 2px solid k.$black;
+  border-radius: 0;
+}
+
+.qq-page .qq-header {
+  border: 0;
+  border-bottom: 2px solid k.$black;
+  border-radius: 0;
+  box-shadow: 0 k.u(12) k.u(20) rgba(0, 0, 0, 0.18);
+}
+
+.qq-logo {
+  overflow: hidden;
+  padding: k.u(10);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+.qo-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid k.$border;
+  font-size: 13px;
+  line-height: 1.45;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    flex: 0 0 auto;
+    accent-color: k.$info;
+  }
+}
+
+.qo-demo-note {
+  margin-top: auto;
+  color: k.$text-secondary;
+  font-size: 12px;
 }

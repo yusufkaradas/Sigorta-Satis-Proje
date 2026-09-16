@@ -1,3 +1,4 @@
+import { BrandService } from '../../../core/services/brand.service';
 import {
   Component,
   inject,
@@ -24,6 +25,10 @@ import {
   styleUrl: './forgot-password.scss'
 })
 export class ForgotPassword {
+
+  private readonly brandService = inject(BrandService);
+
+  readonly brand = this.brandService.brand;
 
   private readonly route =
     inject(ActivatedRoute);

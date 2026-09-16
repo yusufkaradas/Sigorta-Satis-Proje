@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Payment;
+using Kasko.Business.DTOs.Payment;
 using Kasko.Business.DTOs.Policy;
 using Kasko.Business.DTOs.QuickQuote;
 using Kasko.Business.DTOs.Quote;
@@ -26,6 +26,8 @@ public class QuickQuoteController : ControllerBase
     private readonly IPaymentService _paymentService;
     private readonly IPolicyPdfService _policyPdfService;
 
+    private readonly IQuickQuoteVerificationService _verificationService;
+
     public QuickQuoteController(
         ICustomerService customerService,
         IQuoteService quoteService,
@@ -34,8 +36,12 @@ public class QuickQuoteController : ControllerBase
         InsurerQuoteComparisonService comparisonService,
         IPolicyService policyService,
         IPaymentService paymentService,
-        IPolicyPdfService policyPdfService)
+        IPolicyPdfService policyPdfService,
+        IQuickQuoteVerificationService verificationService)
     {
+        _verificationService =
+            verificationService;
+
         _customerService =
             customerService;
 
@@ -72,6 +78,154 @@ public class QuickQuoteController : ControllerBase
                 cancellationToken);
 
         return Ok(result);
+    }
+
+    private string? ResolveVerificationToken()
+    {
+        return Request.Headers["X-QuickQuote-Token"].FirstOrDefault();
+    }
+
+    private void EnsureCaller(string? token, string identityNumber, string phoneNumber)
+    {
+        if (User.Identity?.IsAuthenticated == true &&
+            (User.IsInRole("Customer") || User.IsInRole("Admin")))
+        {
+            return;
+        }
+
+        _verificationService.EnsureVerified(token, identityNumber, phoneNumber);
+    }
+
+    [HttpPost("purchase")]
+    public async Task<IActionResult> Purchase(
+        [FromBody] QuickQuotePurchaseRequestDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
+            string.IsNullOrWhiteSpace(dto.PhoneNumber) ||
+            dto.QuoteId == Guid.Empty)
+        {
+            return BadRequest(new
+            {
+                message = "Teklif ve müşteri bilgileri zorunludur."
+            });
+        }
+
+        if (!dto.AcceptedTerms)
+        {
+            return BadRequest(new
+            {
+                message = "Satın almak için bilgilendirme metnini onaylamanız gerekiyor."
+            });
+        }
+
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
+        var customer =
+            await _customerService.GetForQuickQuoteAsync(
+                dto.IdentityNumber,
+                dto.PhoneNumber);
+
+        if (!customer.Found || !customer.CustomerId.HasValue)
+        {
+            return NotFound(new
+            {
+                message = "Müşteri doğrulanamadı."
+            });
+        }
+
+        var quote =
+            await _quoteService.GetByIdAsync(dto.QuoteId);
+
+        if (quote == null ||
+            quote.CustomerId != customer.CustomerId.Value)
+        {
+            return NotFound(new
+            {
+                message = "Teklif bulunamadı."
+            });
+        }
+
+        if (quote.Status == QuoteStatus.Draft)
+        {
+            await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Offered);
+        }
+
+        if (quote.Status != QuoteStatus.Accepted)
+        {
+            await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Accepted);
+        }
+
+        var policy =
+            await _policyService.CreateAsync(
+                new PolicyCreateDto
+                {
+                    CustomerId = customer.CustomerId.Value,
+                    VehicleId = quote.VehicleId,
+                    QuoteId = dto.QuoteId,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddYears(1)
+                });
+
+        var payment =
+            await _paymentService.CreateAsync(
+                new PaymentCreateDto
+                {
+                    PolicyId = policy.Id,
+                    SimulateFailure = dto.SimulateFailure
+                });
+
+        var activePolicy =
+            await _policyService.GetByIdAsync(policy.Id);
+
+        return Ok(new
+        {
+            policy = activePolicy ?? policy,
+            payment
+        });
+    }
+
+    [HttpPost("otp/send")]
+    public IActionResult SendOtp(
+        [FromBody] QuickQuoteCustomerLookupRequestDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
+            string.IsNullOrWhiteSpace(dto.PhoneNumber))
+        {
+            return BadRequest(new
+            {
+                message = "T.C. Kimlik No ve telefon numarası zorunludur."
+            });
+        }
+
+        var code =
+            _verificationService.SendCode(
+                dto.IdentityNumber,
+                dto.PhoneNumber);
+
+        return Ok(new
+        {
+            message = "Doğrulama kodu telefonunuza gönderildi.",
+            demoCode = code
+        });
+    }
+
+    [HttpPost("otp/verify")]
+    public IActionResult VerifyOtp(
+        [FromBody] QuickQuoteOtpVerifyRequestDto dto)
+    {
+        var token =
+            _verificationService.VerifyCode(
+                dto.IdentityNumber,
+                dto.PhoneNumber,
+                dto.Code);
+
+        return Ok(new
+        {
+            verificationToken = token
+        });
     }
 
     [HttpPost("customer/lookup")]
@@ -441,7 +595,16 @@ public class QuickQuoteController : ControllerBase
             await _quoteService
                 .CreateAsync(createQuoteDto);
 
-        return Ok(quote);
+        await _quoteService
+            .ChangeStatusAsync(
+                quote.Id,
+                QuoteStatus.Offered);
+
+        var offeredQuote =
+            await _quoteService
+                .GetByIdAsync(quote.Id);
+
+        return Ok(offeredQuote ?? quote);
     }
     [HttpPost("offer")]
     public async Task<IActionResult> Offer(
@@ -519,6 +682,11 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> Accept(
     [FromBody] QuickQuoteOfferRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -581,6 +749,11 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> CreatePolicy(
     [FromBody] QuickQuotePolicyCreateRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -631,6 +804,11 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> CreatePayment(
     [FromBody] QuickQuotePaymentRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -689,6 +867,11 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> GeneratePolicyPdf(
     [FromBody] QuickQuotePolicyPdfRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (dto.PolicyId == Guid.Empty)
         {
             return BadRequest(new
@@ -738,6 +921,11 @@ public class QuickQuoteController : ControllerBase
     [FromBody]
     QuickQuoteCustomerCreateRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             dto.IdentityNumber.Length != 11)

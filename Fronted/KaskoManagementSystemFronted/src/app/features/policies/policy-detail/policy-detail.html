@@ -21,7 +21,17 @@
           Kasko · {{ policy.startDate | backendDate }} → {{ policy.endDate | backendDate }} · Düzenlenme: {{ policy.createdDate | backendDate:'datetime' }}
         </p>
       </div>
-      <button type="button" class="kf-btn-outline" (click)="goBack()">← Poliçelere Dön</button>
+      <div class="kf-head-actions">
+        <button
+          *ngIf="policy && (policy.status === PolicyStatus.Active || policy.status === PolicyStatus.Expired)"
+          type="button"
+          class="kf-btn"
+          [disabled]="isDownloading"
+          (click)="downloadPdf()">
+          {{ isDownloading ? 'Hazırlanıyor...' : 'Poliçe PDF İndir' }}
+        </button>
+        <button type="button" class="kf-btn-outline" (click)="goBack()">← Poliçelere Dön</button>
+      </div>
     </div>
 
     <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">

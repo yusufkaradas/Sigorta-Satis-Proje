@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Kasko.Business.DTOs.Customer;
 using Kasko.Business.DTOs.QuickQuote;
 using Kasko.Business.Exceptions;
@@ -22,6 +22,23 @@ public class CustomerService : ICustomerService
         _httpContextAccessor = httpContextAccessor;
     }
 
+    private async Task<Guid?> GetCurrentCustomerIdAsync()
+    {
+        var userIdValue =
+            _httpContextAccessor.HttpContext?.User
+                .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?
+                .Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return null;
+        }
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        return user?.CustomerId;
+    }
+
     public async Task<IEnumerable<CustomerListDto>> GetAllAsync()
     {
         var customers = await _unitOfWork.Customers.GetAllAsync();
@@ -42,6 +59,12 @@ public class CustomerService : ICustomerService
 
     public async Task<CustomerDto?> GetByIdAsync(Guid id)
     {
+        if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true &&
+            await GetCurrentCustomerIdAsync() != id)
+        {
+            return null;
+        }
+
         var customer = await _unitOfWork.Customers.GetByIdAsync(id);
 
         if (customer == null)

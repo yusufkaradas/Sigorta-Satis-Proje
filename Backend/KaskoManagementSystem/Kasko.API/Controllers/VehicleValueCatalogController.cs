@@ -1,4 +1,4 @@
-﻿using Kasko.Business.Integrations.VehicleValue;
+using Kasko.Business.Integrations.VehicleValue;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +23,7 @@ public class VehicleValueCatalogController : ControllerBase
     }
 
     [HttpGet("lookup")]
+    [AllowAnonymous]
     public async Task<IActionResult> Lookup(
         [FromQuery] string brandCode,
         [FromQuery] string typeCode,
@@ -45,18 +46,22 @@ public class VehicleValueCatalogController : ControllerBase
         return Ok(result);
     }
     [HttpGet("types")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetTypes(
     [FromQuery] string brandCode,
+    [FromQuery] string? category,
     CancellationToken cancellationToken)
     {
         var result =
             await _catalogService.GetTypesAsync(
                 brandCode,
+                category,
                 cancellationToken);
 
         return Ok(result);
     }
     [HttpGet("years")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetYears(
     [FromQuery] string brandCode,
     [FromQuery] string typeCode,
@@ -71,14 +76,39 @@ public class VehicleValueCatalogController : ControllerBase
         return Ok(result);
     }
     [HttpGet("brands")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetBrands(
+    [FromQuery] string? category,
     CancellationToken cancellationToken)
     {
         var result =
             await _catalogService.GetBrandsAsync(
+                category,
                 cancellationToken);
 
         return Ok(result);
+    }
+
+    [HttpGet("categories")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCategories(
+        CancellationToken cancellationToken)
+    {
+        var result =
+            await _catalogService.GetCategoriesAsync(cancellationToken);
+
+        return Ok(result);
+    }
+
+    [HttpPost("reclassify")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Reclassify(
+        CancellationToken cancellationToken)
+    {
+        var updated =
+            await _catalogService.ReclassifyAsync(cancellationToken);
+
+        return Ok(new { updated });
     }
     [HttpPost("import")]
     [Authorize(Roles = "Admin")]

@@ -1,3 +1,4 @@
+import { BrandService } from '../../../core/services/brand.service';
 import {
   CommonModule
 } from '@angular/common';
@@ -31,6 +32,10 @@ import {
   styleUrl: './customer-layout.scss'
 })
 export class CustomerLayout {
+
+  private readonly brandService = inject(BrandService);
+
+  readonly brand = this.brandService.brand;
 
   private readonly router =
     inject(Router);

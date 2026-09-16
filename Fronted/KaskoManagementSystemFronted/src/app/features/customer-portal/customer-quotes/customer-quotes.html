@@ -1,7 +1,7 @@
 <div class="cp-page">
 
   <div class="cp-section-title">
-    İŞLEMLER
+    TEKLİFLERİM
   </div>
 
 
@@ -78,7 +78,7 @@
 
           <tbody>
 
-            <tr *ngFor="let quote of pagedQuotes()">
+            <tr *ngFor="let quote of pagedQuotes()" (click)="openDetail(quote.id)" title="Detayları görmek için tıklayın">
 
               <td>
                 <div class="cp-cell" [title]="quote.quoteNumber">
@@ -102,8 +102,9 @@
               <td>
                 <span class="cp-badge" [ngClass]="getQuoteStatusClass(quote.status)">{{ getQuoteStatusText(quote.status) }}</span>
               </td>
-              <td class="cp-actions">
+              <td class="cp-actions" (click)="$event.stopPropagation()">
                 <a class="cp-act" [routerLink]="['/customer/quotes', quote.id]">Detay</a>
+                <a *ngIf="isPending(quote)" class="cp-act cp-act-primary" [routerLink]="['/customer/quotes', quote.id]">Satın Al</a>
                 <button *ngIf="canDelete(quote)" type="button" class="cp-act cp-act-danger" [disabled]="deletingId() === quote.id" (click)="deleteQuote(quote)">Sil</button>
               </td>
 

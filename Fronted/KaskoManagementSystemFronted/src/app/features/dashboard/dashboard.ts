@@ -1,3 +1,5 @@
+import { BackendDatePipe, BackendTimePipe } from '../../core/pipes/backend-date.pipe';
+import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import {
   Component,
   OnInit,
@@ -64,7 +66,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, BackendDatePipe, BackendTimePipe, RecordNumberPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

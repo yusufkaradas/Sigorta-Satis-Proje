@@ -5,7 +5,11 @@
     <a
       [routerLink]="homePath"
       class="kl-logo">
-      Logo
+      @if (brand().logoImage) {
+        <img [src]="brand().logoImage" [alt]="brand().companyName" />
+      } @else {
+        Logo
+      }
     </a>
 
     <nav
@@ -41,7 +45,7 @@
       <span></span>
 
       <h1 class="kl-title">
-        {{ pageTitle }}
+        {{ brand().companyName }}
       </h1>
 
       <div class="kl-header-actions">
@@ -82,10 +86,10 @@
         </div>
 
         <a
-          [routerLink]="isManager ? '/manager/pricing-rules' : '/users'"
+          [routerLink]="isManager ? '/manager/pricing-rules' : '/settings'"
           class="kl-icon-button"
-          [attr.aria-label]="isManager ? 'Fiyat Kuralları' : 'Kullanıcılar'"
-          [title]="isManager ? 'Fiyat Kuralları' : 'Kullanıcılar'">
+          [attr.aria-label]="isManager ? 'Fiyat Kuralları' : 'Ayarlar'"
+          [title]="isManager ? 'Fiyat Kuralları' : 'Ayarlar'">
           ⚙
         </a>
 

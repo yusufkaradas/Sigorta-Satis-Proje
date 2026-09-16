@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import {
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -128,6 +129,13 @@ export class CustomerVehicles implements OnInit {
     return [this.vehicleTypeLabel(vehicle.vehicleType), this.fuelTypeLabel(vehicle.fuelType), this.transmissionTypeLabel(vehicle.transmissionType)]
       .filter(item => item && item !== '-')
       .join(' · ');
+  }
+
+  private readonly router =
+    inject(Router);
+
+  openDetail(id: string): void {
+    this.router.navigate(['/customer/vehicles', id]);
   }
 
   ngOnInit(): void {

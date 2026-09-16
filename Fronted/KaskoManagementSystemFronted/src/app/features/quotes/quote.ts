@@ -613,7 +613,7 @@ loadQuotes(): void {
 openCreate(): void {
 
   this.router.navigate([
-    '/quotes/new'
+    this.portal.basePath + '/quotes/new'
   ]);
 
 }

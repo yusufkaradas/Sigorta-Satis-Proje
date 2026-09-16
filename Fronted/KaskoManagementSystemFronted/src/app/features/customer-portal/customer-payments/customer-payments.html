@@ -1,7 +1,7 @@
 <div class="cp-page">
 
   <div class="cp-section-title">
-    İŞLEMLER
+    ÖDEMELERİM
   </div>
 
 
@@ -67,6 +67,7 @@
               <th>Ödenen Poliçe</th>
               <th class="cp-num">Tutar</th>
               <th>Tarih</th>
+              <th>Saat</th>
               <th>Durum</th>
               <th class="cp-actions-col">İşlemler</th>
             </tr>
@@ -74,7 +75,7 @@
 
           <tbody>
 
-            <tr *ngFor="let payment of pagedPayments()">
+            <tr *ngFor="let payment of pagedPayments()" (click)="openDetail(payment.id)" title="Detayları görmek için tıklayın">
 
               <td>
                 <div class="cp-cell" [title]="payment.transactionNumber">
@@ -89,19 +90,15 @@
                 </div>
               </td>
               <td class="cp-num cp-strong">{{ payment.amount | number:'1.2-2' }} ₺</td>
-              <td>
-                <div class="cp-cell">
-                  <span>{{ (payment.paymentDate ?? payment.createdDate) | date:'dd.MM.yyyy' }}</span>
-                  <small>{{ (payment.paymentDate ?? payment.createdDate) | date:'HH:mm' }}</small>
-                </div>
-              </td>
+              <td class="cp-muted">{{ (payment.paymentDate ?? payment.createdDate) | backendDate:'date' }}</td>
+              <td class="cp-muted">{{ (payment.paymentDate ?? payment.createdDate) | backendTime }}</td>
               <td>
                 <div class="cp-cell">
                   <span><span class="cp-badge" [ngClass]="getPaymentStatusClass(payment.status)">{{ getPaymentStatusText(payment.status) }}</span></span>
                   <small *ngIf="payment.failureReason" [title]="payment.failureReason">{{ payment.failureReason }}</small>
                 </div>
               </td>
-              <td class="cp-actions">
+              <td class="cp-actions" (click)="$event.stopPropagation()">
                 <a class="cp-act" [routerLink]="['/customer/payments', payment.id]">Detay</a>
                 <a class="cp-act" [routerLink]="['/customer/policies', payment.policyId]">Poliçe</a>
               </td>

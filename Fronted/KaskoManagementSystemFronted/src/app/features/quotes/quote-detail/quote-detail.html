@@ -108,10 +108,10 @@
 
       <button type="button" class="kf-btn-outline" (click)="goBack()">← Geri Dön</button>
 
-      <div *ngIf="quote && !portal.isReadOnly" class="kf-head-actions">
+      <div *ngIf="quote && !isCustomerMode" class="kf-head-actions">
 
         <button
-          *ngIf="quote.status !== QuoteStatus.Accepted"
+          *ngIf="!portal.isManager && quote.status !== QuoteStatus.Accepted"
           type="button"
           class="kf-btn-danger"
           (click)="deleteQuote()">
@@ -119,34 +119,45 @@
         </button>
 
         <a
-          *ngIf="quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered"
+          *ngIf="!portal.isManager && (quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered)"
           [routerLink]="['/quotes', quote.id, 'edit']"
           class="kf-btn-outline">
           Düzenle
         </a>
 
         <button
-          *ngIf="quote.status === QuoteStatus.Offered"
-          type="button"
-          class="kf-btn-danger"
-          (click)="changeStatus(QuoteStatus.Rejected)">
-          Reddet
-        </button>
-
-        <button
           *ngIf="quote.status === QuoteStatus.Draft"
           type="button"
           class="kf-btn"
-          (click)="changeStatus(QuoteStatus.Offered)">
-          Teklifi Yayına Al
+          [disabled]="isLoading"
+          (click)="offerQuote()">
+          Müşteriye Sun
         </button>
 
+        <span *ngIf="quote.status === QuoteStatus.Offered" class="kf-note">
+          Teklif müşteriye sunuldu, müşterinin satın alması bekleniyor.
+        </span>
+
+      </div>
+
+      <div *ngIf="quote && isCustomerMode && (quote.status === QuoteStatus.Offered || quote.status === QuoteStatus.Draft)" class="kf-purchase">
+
+        <label class="kf-consent">
+          <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />
+          Genel şartları ve ön bilgilendirme formunu okudum.
+        </label>
+
+        <label class="kf-consent">
+          <input type="checkbox" [checked]="acceptedKvkk" (change)="acceptedKvkk = $any($event.target).checked" />
+          KVKK aydınlatma metnini okudum.
+        </label>
+
         <button
-          *ngIf="quote.status === QuoteStatus.Offered"
           type="button"
-          class="kf-btn-success"
-          (click)="changeStatus(QuoteStatus.Accepted)">
-          ✓ Kabul Et
+          class="kf-btn"
+          [disabled]="isLoading || !acceptedTerms || !acceptedKvkk"
+          (click)="purchaseQuote()">
+          {{ isLoading ? 'Ödeme alınıyor...' : 'Satın Al · ' + (quote.premiumAmount | number:'1.2-2') + ' ₺' }}
         </button>
 
       </div>
