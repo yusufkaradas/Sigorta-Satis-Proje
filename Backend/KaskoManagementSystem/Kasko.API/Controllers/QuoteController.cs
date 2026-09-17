@@ -1,3 +1,4 @@
+using Kasko.Business.Interfaces;
 using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Services.Abstract;
 using Kasko.Business.Services;
@@ -91,7 +92,9 @@ namespace Kasko.API.Controllers
         
         [HttpPost("{id:guid}/offer")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> Offer(Guid id)
+        public async Task<IActionResult> Offer(
+            Guid id,
+            [FromServices] INotificationService notificationService)
         {
             var quote = await _quoteService.GetByIdAsync(id);
 
@@ -109,6 +112,16 @@ namespace Kasko.API.Controllers
             }
 
             await _quoteService.ChangeStatusAsync(id, QuoteStatus.Offered);
+
+            await notificationService.CreateAsync(
+                new Kasko.Business.DTOs.Notification.NotificationCreateDto
+                {
+                    CustomerId = quote.CustomerId,
+                    Type = "QUOTE_OFFERED",
+                    Title = "Teklifiniz hazır",
+                    Message = $"{quote.PremiumAmount:N2} ₺ tutarındaki kasko teklifiniz onaylandı. {quote.ValidUntil:dd.MM.yyyy} tarihine kadar satın alabilirsiniz.",
+                    RelatedEntityId = quote.Id
+                });
 
             return NoContent();
         }

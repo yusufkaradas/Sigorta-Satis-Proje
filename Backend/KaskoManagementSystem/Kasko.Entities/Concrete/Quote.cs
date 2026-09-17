@@ -1,4 +1,4 @@
-﻿using Kasko.Entities.Abstract;
+using Kasko.Entities.Abstract;
 using Kasko.Entities.Enums;
 
 namespace Kasko.Entities.Concrete
@@ -12,6 +12,12 @@ namespace Kasko.Entities.Concrete
         public decimal PremiumAmount { get; set; }
         public QuoteStatus Status { get; set; }
         public DateTime ValidUntil { get; set; }
+
+        public Guid? PackageId { get; set; }
+
+        public string? PackageName { get; set; }
+
+        public string? ReviewReason { get; set; }
 
         public virtual Customer Customer { get; set; } = null!;
         public virtual Vehicle Vehicle { get; set; } = null!;

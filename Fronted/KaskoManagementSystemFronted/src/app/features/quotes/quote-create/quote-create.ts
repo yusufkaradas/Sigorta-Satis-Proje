@@ -5,6 +5,7 @@ import {
 import {
   Component,
   inject,
+  OnDestroy,
   OnInit,
   ChangeDetectorRef
 } from '@angular/core';
@@ -96,7 +97,7 @@ interface PackageQuoteOption {
   templateUrl: './quote-create.html',
   styleUrl: './quote-create.scss'
 })
-export class QuoteCreate implements OnInit {
+export class QuoteCreate implements OnInit, OnDestroy {
 
   private readonly quoteService =
     inject(QuoteService);
@@ -237,9 +238,63 @@ export class QuoteCreate implements OnInit {
 
   changeOption(coverageId: string, optionId: string): void {
     this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
-    const keepPackageId = this.packageId;
-    this.calculatePackageComparisons();
-    this.packageId = keepPackageId;
+    this.calculatePackageComparisons(false);
+  }
+
+  readonly comparisonStages = [
+    'Araç ve TSB kasko değeri kontrol ediliyor',
+    'Risk bilgileri değerlendiriliyor',
+    'Paket fiyatları hesaplanıyor',
+    'Teklifler hazırlanıyor'
+  ];
+
+  readonly comparisonDurationMs = 4000;
+
+  comparisonProgress = 0;
+
+  private comparisonTimer: ReturnType<typeof setInterval> | null = null;
+
+  get comparisonStageIndex(): number {
+    return Math.min(
+      this.comparisonStages.length - 1,
+      Math.floor(this.comparisonProgress / (100 / this.comparisonStages.length))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.stopComparisonTimer();
+  }
+
+  private stopComparisonTimer(): void {
+    if (this.comparisonTimer) {
+      clearInterval(this.comparisonTimer);
+      this.comparisonTimer = null;
+    }
+  }
+
+  private applyComparisonResults(results: PackageQuoteOption[]): void {
+    this.stopComparisonTimer();
+    this.comparisonProgress = 100;
+    this.packageQuotes = results;
+    this.isComparingPackages = false;
+    this.isCalculating = false;
+
+    const priced = results.filter(result => result.totalPremium !== null);
+
+    if (priced.length === 0) {
+      this.currentStep = 2;
+      this.errorMessage =
+        results.find(result => result.errorMessage)?.errorMessage ??
+        'Paket fiyatları hesaplanamadı.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const current = priced.find(result => result.package.id === this.packageId);
+    const recommended = current ?? priced[Math.min(1, priced.length - 1)];
+
+    this.selectPackage(recommended.package.id);
+    this.cdr.detectChanges();
   }
 
 
@@ -898,7 +953,7 @@ export class QuoteCreate implements OnInit {
   // PACKAGE COMPARISON
   // ==================================================
 
-  calculatePackageComparisons(): void {
+  calculatePackageComparisons(animate = true): void {
 
     if (
       !this.customerId ||
@@ -941,13 +996,23 @@ export class QuoteCreate implements OnInit {
       ++this.calculationRequestId;
 
 
-    this.isComparingPackages = true;
-
     this.isCalculating = true;
 
     this.errorMessage = '';
 
-    this.packageQuotes =
+    const startedAt = Date.now();
+
+    if (animate) {
+      this.isComparingPackages = true;
+      this.comparisonProgress = 0;
+      this.stopComparisonTimer();
+      this.comparisonTimer = setInterval(() => {
+        this.comparisonProgress = Math.round(Math.min(95, ((Date.now() - startedAt) / this.comparisonDurationMs) * 100));
+        this.cdr.detectChanges();
+      }, 100);
+    }
+
+    if (animate) this.packageQuotes =
       this.comparisonPackages.map(
         insurancePackage => ({
 
@@ -1007,7 +1072,7 @@ export class QuoteCreate implements OnInit {
             );
 
           return this.quoteService
-            .calculate(dto)
+            .calculate(dto, true)
             .pipe(
 
               map(response => ({
@@ -1097,6 +1162,8 @@ export class QuoteCreate implements OnInit {
                     false,
 
                   errorMessage:
+                    error?.error?.message ??
+                    error?.error?.detail ??
                     'Bu paket için fiyat hesaplanamadı.'
                 });
               })
@@ -1117,34 +1184,15 @@ export class QuoteCreate implements OnInit {
             return;
           }
 
-          this.packageQuotes =
-            results;
+          const wait = animate
+            ? Math.max(0, this.comparisonDurationMs - (Date.now() - startedAt))
+            : 0;
 
-          this.isComparingPackages = false;
-
-          this.isCalculating = false;
-
-          const failedCount =
-            results.filter(
-              result =>
-                result.errorMessage !== null
-            ).length;
-
-          if (
-            failedCount ===
-            results.length
-          ) {
-
-            this.errorMessage =
-              'Paket fiyatları hesaplanamadı.';
-          }
-
-          console.log(
-            'PACKAGE QUOTE COMPARISON:',
-            results
-          );
-
-          this.cdr.detectChanges();
+          setTimeout(() => {
+            if (requestId === this.calculationRequestId) {
+              this.applyComparisonResults(results);
+            }
+          }, wait);
         },
 
         error: (error) => {
@@ -1160,6 +1208,8 @@ export class QuoteCreate implements OnInit {
             'PACKAGE COMPARISON ERROR:',
             error
           );
+
+          this.stopComparisonTimer();
 
           this.isComparingPackages = false;
 

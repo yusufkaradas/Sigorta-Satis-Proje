@@ -46,12 +46,14 @@ export class QuoteService {
   }
   
 calculate(
-  dto: QuoteCreateDto
+  dto: QuoteCreateDto,
+  silent = false
 ): Observable<any> {
 
   return this.http.post<any>(
     `${this.apiUrl}/calculate`,
-    dto
+    dto,
+    silent ? { headers: { 'X-Silent-Error': '1' } } : {}
   );
 
 }

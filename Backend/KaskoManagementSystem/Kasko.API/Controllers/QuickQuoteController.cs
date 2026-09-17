@@ -150,17 +150,20 @@ public class QuickQuoteController : ControllerBase
             });
         }
 
+        if (quote.Status != QuoteStatus.Offered && quote.Status != QuoteStatus.Accepted)
+        {
+            return BadRequest(new
+            {
+                message = "Teklifiniz yetkili onayında. Onaylandığında satın alabilirsiniz."
+            });
+        }
+
         PolicyDto? policy = null;
 
         PaymentDto? payment = null;
 
         await unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            if (quote.Status == QuoteStatus.Draft)
-            {
-                await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Offered);
-            }
-
             if (quote.Status != QuoteStatus.Accepted)
             {
                 await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Accepted);
@@ -242,6 +245,11 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuoteCustomerLookupRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -269,6 +277,11 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuoteCustomerLookupRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -320,6 +333,11 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuotePricingRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -421,6 +439,11 @@ public class QuickQuoteController : ControllerBase
     [FromBody]
     QuickQuotePricingRequestDto dto)
     {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
         if (
             string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -498,11 +521,6 @@ public class QuickQuoteController : ControllerBase
         var quote =
             await _quoteService
                 .CreateAsync(createQuoteDto);
-
-        await _quoteService
-            .ChangeStatusAsync(
-                quote.Id,
-                QuoteStatus.Offered);
 
         var offeredQuote =
             await _quoteService

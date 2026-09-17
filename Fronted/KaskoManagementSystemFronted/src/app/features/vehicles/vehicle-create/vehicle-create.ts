@@ -263,8 +263,8 @@ isLoadingTsbValue = false;
 
     this.loadCategories();
 
-  }
 
+  }
 
   private loadCustomers(): void {
 

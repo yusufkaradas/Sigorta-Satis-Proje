@@ -173,13 +173,52 @@ export class QuickQuoteService {
   private readonly apiUrl =
     'https://localhost:7086/api/QuickQuote';
 
+  private readonly tokenKey = 'quickQuoteVerificationToken';
+
+  setVerificationToken(token: string | null): void {
+    try {
+      if (token) {
+        sessionStorage.setItem(this.tokenKey, token);
+      } else {
+        sessionStorage.removeItem(this.tokenKey);
+      }
+    } catch {
+      return;
+    }
+  }
+
+  private headers(silent = false): Record<string, string> {
+    const headers: Record<string, string> = {};
+    try {
+      const token = sessionStorage.getItem(this.tokenKey);
+      if (token) {
+        headers['X-QuickQuote-Token'] = token;
+      }
+    } catch {
+      return headers;
+    }
+    if (silent) {
+      headers['X-Silent-Error'] = '1';
+    }
+    return headers;
+  }
+
+  sendOtp(request: QuickQuoteCustomerLookupRequest): Observable<{ message: string; demoCode: string }> {
+    return this.http.post<{ message: string; demoCode: string }>(`${this.apiUrl}/otp/send`, request);
+  }
+
+  verifyOtp(request: QuickQuoteCustomerLookupRequest & { code: string }): Observable<{ verificationToken: string }> {
+    return this.http.post<{ verificationToken: string }>(`${this.apiUrl}/otp/verify`, request);
+  }
+
 getCustomerVehicles(
   request: QuickQuoteCustomerLookupRequest
 ): Observable<Vehicle[]> {
 
   return this.http.post<Vehicle[]>(
     `${this.apiUrl}/customer/vehicles`,
-    request
+    request,
+    { headers: this.headers() }
   );
 
 }
@@ -189,7 +228,8 @@ getCustomerVehicles(
 
     return this.http.post<QuickQuoteCustomerLookupResponse>(
       `${this.apiUrl}/customer/lookup`,
-      request
+      request,
+      { headers: this.headers() }
     );
 
   }
@@ -199,12 +239,14 @@ getPackages(): Observable<QuickQuotePackage[]> {
   );
 }
 calculatePricing(
-  request: QuickQuotePricingRequest
+  request: QuickQuotePricingRequest,
+  silent = false
 ): Observable<QuickQuotePricingResponse> {
 
   return this.http.post<QuickQuotePricingResponse>(
     `${this.apiUrl}/calculate`,
-    request
+    request,
+    { headers: this.headers(silent) }
   );
 
 }
@@ -214,7 +256,8 @@ createQuote(
 
   return this.http.post<any>(
     `${this.apiUrl}/create`,
-    request
+    request,
+    { headers: this.headers() }
   );
 
 }
@@ -224,7 +267,8 @@ purchase(
 
   return this.http.post<{ policy: any; payment: any }>(
     `${this.apiUrl}/purchase`,
-    request
+    request,
+    { headers: this.headers() }
   );
 
 }
@@ -234,7 +278,7 @@ createPolicyPdf(
   return this.http.post(
     `${this.apiUrl}/policy/pdf`,
     request,
-    { responseType: 'blob' }
+    { responseType: 'blob', headers: this.headers() }
   );
 }
 getNotifications(): Observable<Notification[]> {

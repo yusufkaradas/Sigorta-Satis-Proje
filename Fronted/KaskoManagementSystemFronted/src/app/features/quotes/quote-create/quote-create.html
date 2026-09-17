@@ -34,7 +34,7 @@
       </li>
       <li [class.active]="currentStep === 3" [class.done]="currentStep > 3">
         <span>{{ currentStep > 3 ? '✓' : 3 }}</span>
-        Paketler
+        Teklifler
       </li>
       <li [class.active]="currentStep === 4">
         <span>4</span>
@@ -189,29 +189,9 @@
           </label>
         </div>
 
-        <h2 class="kf-section-title">Muafiyet <small>Hasarda sizin ödeyeceğiniz kısım</small></h2>
-
-        <div class="kf-choice-grid">
-          <label class="kf-choice" [class.selected]="deductible === 0">
-            <input type="radio" name="deductible" [checked]="deductible === 0" (change)="deductible = 0; calculateQuote()" />
-            <strong>Muafiyet Yok</strong>
-            <small>0 ₺</small>
-          </label>
-          <label class="kf-choice" [class.selected]="deductible === 5000">
-            <input type="radio" name="deductible" [checked]="deductible === 5000" (change)="deductible = 5000; calculateQuote()" />
-            <strong>5.000 ₺</strong>
-            <small>Standart</small>
-          </label>
-          <label class="kf-choice" [class.selected]="deductible === 10000">
-            <input type="radio" name="deductible" [checked]="deductible === 10000" (change)="deductible = 10000; calculateQuote()" />
-            <strong>10.000 ₺</strong>
-            <small>Yüksek muafiyet</small>
-          </label>
-        </div>
-
-        <div class="kf-alert kf-alert-info kf-alert-inline qc-info">
+                <div class="kf-alert kf-alert-info kf-alert-inline qc-info">
           <strong>Seçimler primi nasıl etkiler?</strong>
-          <span>Ticari kullanım primi artırır. Önceki poliçedeki hasarsızlık indirim sağlar, her hasar primi yükseltir. Muafiyet tutarı arttıkça yıllık prim düşer.</span>
+          <span>Ticari kullanım primi artırır. Önceki poliçedeki hasarsızlık indirim sağlar, her hasar primi yükseltir.</span>
         </div>
 
       </section>
@@ -223,13 +203,24 @@
 
     <div *ngIf="currentStep === 3" class="kf-body kf-body-3">
 
-      <div *ngIf="isComparingPackages" class="kf-state kf-span-all">
-        <strong>Paket fiyatları hesaplanıyor...</strong>
-        Seçtiğiniz araç ve risk bilgilerine göre teklifler hazırlanıyor.
+      <div *ngIf="isComparingPackages" class="qc-loading kf-span-all">
+        <div class="qc-ring" [style.--qc-progress]="comparisonProgress">
+          <span>%{{ comparisonProgress }}</span>
+        </div>
+        <h2>Teklifleriniz Hazırlanıyor</h2>
+        <p>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }} · Kasko değeri {{ selectedVehicle?.marketValue | number:'1.0-0' }} ₺</p>
+        <ul>
+          <li
+            *ngFor="let stage of comparisonStages; let i = index"
+            [class.done]="i < comparisonStageIndex"
+            [class.active]="i === comparisonStageIndex">
+            {{ i < comparisonStageIndex ? '✓' : '•' }} {{ stage }}
+          </li>
+        </ul>
       </div>
 
       <div *ngIf="!isComparingPackages && packageQuotes.length === 0" class="kf-state kf-span-all">
-        <strong>Karşılaştırılacak paket bulunamadı.</strong>
+        <strong>Teklif hesaplanamadı.</strong>
         Geri dönüp araç ve risk bilgilerini kontrol edin.
       </div>
 
@@ -265,7 +256,7 @@
           <button
             type="button"
             [class]="option.package.id === packageId ? 'kf-btn-success' : 'kf-btn'"
-            [disabled]="option.totalPremium === null"
+            [disabled]="option.totalPremium === null || isCalculating"
             (click)="selectPackage(option.package.id)">
             {{ option.package.id === packageId ? '✓ Paket Seçildi' : 'Bu Paketi Seç' }}
           </button>
@@ -276,7 +267,7 @@
           <strong>Limit seçenekleri</strong>
           <label *ngFor="let row of optionRows" class="qc-limit">
             <small>{{ row.coverageName }}</small>
-            <select [value]="selectedOptionId(row)" (change)="changeOption(row.coverageId, $any($event.target).value)">
+            <select [value]="selectedOptionId(row)" [disabled]="isCalculating" (change)="changeOption(row.coverageId, $any($event.target).value)">
               <option *ngFor="let item of row.options" [value]="item.id" [selected]="item.id === selectedOptionId(row)">
                 {{ item.name }}{{ item.extraPrice > 0 ? ' (+' + (item.extraPrice | number:'1.0-0') + ' ₺)' : '' }}
               </option>
@@ -307,7 +298,6 @@
           <div class="kf-span-all"><dt>Araç</dt><dd>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }}</dd></div>
           <div><dt>Kullanım</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }}</dd></div>
           <div><dt>Hasar Adedi</dt><dd>{{ claimsCount }}</dd></div>
-          <div><dt>Muafiyet</dt><dd>{{ deductible | number:'1.0-2' }} ₺</dd></div>
           <div><dt>Geçerlilik</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }}</dd></div>
         </dl>
 
@@ -365,7 +355,7 @@
         type="button"
         class="kf-btn"
         (click)="nextStep()">
-        Paketleri Karşılaştır →
+        Teklifleri Getir →
       </button>
 
       <button

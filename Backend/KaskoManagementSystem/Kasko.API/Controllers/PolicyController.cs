@@ -40,7 +40,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(
             [FromBody] PolicyCreateDto dto)
         {
@@ -54,7 +54,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] PolicyUpdateDto dto)

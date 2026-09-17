@@ -2,13 +2,57 @@ using System.Linq.Expressions;
 using Kasko.Entities.Abstract;
 using Microsoft.EntityFrameworkCore;
 using Kasko.Entities.Concrete;
+using Kasko.DataAccess.Auditing;
 
 namespace Kasko.DataAccess;
 
 public class KaskoContext : DbContext
 {
+    private readonly ICurrentUserProvider? _currentUserProvider;
+
     public KaskoContext(DbContextOptions options) : base(options)
     {
+    }
+
+    public KaskoContext(DbContextOptions options, ICurrentUserProvider currentUserProvider) : base(options)
+    {
+        _currentUserProvider = currentUserProvider;
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ApplyAuditInfo();
+
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ApplyAuditInfo();
+
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void ApplyAuditInfo()
+    {
+        var user = _currentUserProvider?.GetCurrentUser();
+
+        if (string.IsNullOrWhiteSpace(user))
+        {
+            return;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Added && string.IsNullOrWhiteSpace(entry.Entity.CreatedBy))
+            {
+                entry.Entity.CreatedBy = user;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedBy = user;
+            }
+        }
     }
 
     public DbSet<User> Users { get; set; }
@@ -159,6 +203,12 @@ public class KaskoContext : DbContext
             entity.Property(x => x.QuoteNumber)
                 .HasMaxLength(30)
                 .IsRequired();
+
+            entity.Property(x => x.PackageName)
+                .HasMaxLength(100);
+
+            entity.Property(x => x.ReviewReason)
+                .HasMaxLength(300);
 
             entity.Property(x => x.PremiumAmount)
                 .HasPrecision(18, 2)

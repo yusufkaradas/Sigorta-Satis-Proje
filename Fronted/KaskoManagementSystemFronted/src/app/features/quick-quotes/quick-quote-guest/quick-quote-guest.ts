@@ -401,7 +401,32 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   }
 
   continueToPurchase(): void {
-    this.router.navigate(['/register']);
+    if (!this.plateNumber.trim()) {
+      this.errorMessage.set('Poliçe düzenlenebilmesi için aracınızın plakasını girin.');
+      this.currentStep.set(1);
+      return;
+    }
+
+    try {
+      sessionStorage.setItem('guestQuoteDraft', JSON.stringify({
+        category: this.category,
+        brandCode: this.brandCode,
+        typeCode: this.typeCode,
+        brandName: this.selectedBrandName,
+        typeName: this.selectedTypeName,
+        modelYear: this.modelYear,
+        plateNumber: this.plateNumber.trim(),
+        usage: this.usage,
+        claimsCount: this.claimsCount,
+        packageId: this.selectedPackageId(),
+        coverageOptionIds: this.coverageOptionIds
+      }));
+    } catch {
+      this.router.navigate(['/register']);
+      return;
+    }
+
+    this.router.navigate([this.isLoggedIn ? '/quick-quote/start' : '/register']);
   }
 
   private stopTimer(): void {

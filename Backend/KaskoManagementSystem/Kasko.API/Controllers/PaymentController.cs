@@ -19,7 +19,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(
         [FromBody] PaymentCreateDto dto)
         {

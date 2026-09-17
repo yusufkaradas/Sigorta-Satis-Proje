@@ -45,6 +45,7 @@
           <div><dt>Model</dt><dd [title]="quote.model || ''">{{ quote.model || '—' }}</dd></div>
           <div><dt>Model Yılı</dt><dd>{{ quote.modelYear || '—' }}</dd></div>
           <div><dt>Plaka</dt><dd>{{ quote.plateNumber || '—' }}</dd></div>
+          <div class="kf-span-all"><dt>Paket</dt><dd>{{ quote.packageName || '—' }}</dd></div>
           <div class="kf-span-all"><dt>Araç Değeri</dt><dd>{{ quote.marketValue != null ? (quote.marketValue | number:'1.0-2') + ' ₺' : '—' }}</dd></div>
           <div class="kf-span-all"><dt>Müşteri</dt><dd>{{ quote.customerName || '—' }}</dd></div>
           <div><dt>Telefon</dt><dd>{{ quote.customerPhone || '—' }}</dd></div>

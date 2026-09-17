@@ -25,6 +25,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<Kasko.DataAccess.Auditing.ICurrentUserProvider, Kasko.API.Auditing.HttpCurrentUserProvider>();
+
 builder.Services.AddDbContext<KaskoContext>(options =>
 {
     options.UseSqlServer(
@@ -76,6 +78,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBrandSettingService, BrandSettingService>();
 builder.Services.AddScoped<IPolicyCancellationService, PolicyCancellationService>();
 builder.Services.AddScoped<ITariffService, TariffService>();
+builder.Services.AddHostedService<Kasko.API.BackgroundJobs.ExpirationWorker>();
 builder.Services.AddSingleton<IQuickQuoteVerificationService, QuickQuoteVerificationService>();
 
 

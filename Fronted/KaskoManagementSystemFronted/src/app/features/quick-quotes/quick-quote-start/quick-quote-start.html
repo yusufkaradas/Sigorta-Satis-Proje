@@ -98,8 +98,8 @@
 
         <div class="qq-step-head">
           <span class="qq-eyebrow">Adım 1</span>
-          <h1>Kayıtlı Müşteri Girişi</h1>
-          <p>T.C. Kimlik No ve telefonunuzla kayıtlı araçlarınızı getirelim.</p>
+          <h1>{{ otpSent ? 'Telefonunuzu Doğrulayın' : 'Hemen Teklif Al' }}</h1>
+          <p>{{ otpSent ? '+90 ' + phoneNumber + ' numarasına gönderilen 6 haneli kodu girin.' : 'T.C. Kimlik No ve cep telefonunuzu girin, doğrulama kodu gönderelim.' }}</p>
         </div>
 
         <div class="qq-body qq-body-center">
@@ -119,6 +119,7 @@
                 autocomplete="off"
                 maxlength="11"
                 [value]="identityNumber"
+                [disabled]="otpSent"
                 (input)="onIdentityInput($event)"
                 (keydown)="onNumericKeydown($event)"
                 placeholder="11 haneli T.C. Kimlik No" />
@@ -142,10 +143,37 @@
                   autocomplete="tel-national"
                   maxlength="10"
                   [value]="phoneNumber"
+                  [disabled]="otpSent"
                   (input)="onPhoneInput($event)"
                   (keydown)="onNumericKeydown($event)"
                   placeholder="5XX XXX XX XX" />
 
+              </div>
+
+            </div>
+
+            <div class="qq-field" *ngIf="otpSent && !isVerified">
+
+              <label for="otpCode">
+                Doğrulama Kodu
+              </label>
+
+              <input
+                id="otpCode"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                [value]="otpCode"
+                (input)="onOtpInput($event)"
+                (keydown.enter)="onContinue()"
+                placeholder="6 haneli kod" />
+
+              <small class="qq-otp-demo">Demo: SMS yerine kodunuz burada gösteriliyor → <b>{{ demoCode }}</b></small>
+
+              <div class="qq-otp-actions">
+                <button type="button" class="qq-link" [disabled]="isLoading" (click)="resetOtp()">Bilgileri değiştir</button>
+                <button type="button" class="qq-link" [disabled]="isLoading" (click)="resetOtp(); onContinue()">Kodu tekrar gönder</button>
               </div>
 
             </div>
@@ -161,9 +189,9 @@
         <div class="qq-actions">
 
           <a
-            [routerLink]="notFound ? '/quick-quote/new' : '/'"
+            routerLink="/"
             class="qq-btn qq-btn-ghost">
-            {{ notFound ? 'Kayıt Olmadan Teklif Al' : 'Vazgeç' }}
+            Vazgeç
           </a>
 
           <button
@@ -171,7 +199,7 @@
             class="qq-btn qq-btn-primary"
             [disabled]="!canContinue() || isLoading"
             (click)="onContinue()">
-            {{ isLoading ? 'Kontrol ediliyor...' : 'Devam Et' }}
+            {{ isLoading ? 'Kontrol ediliyor...' : (otpSent && !isVerified ? 'Kodu Doğrula' : (isVerified || isLoggedIn ? 'Devam Et' : 'Doğrulama Kodu Gönder')) }}
           </button>
 
         </div>
@@ -383,52 +411,11 @@
 
           </section>
 
-          <section class="qq-risk-group">
-
-            <div class="qq-risk-title">
-              <strong>Muafiyet</strong>
-              <small>Hasarda sizin karşılayacağınız tutar</small>
-            </div>
-
-            <div class="qq-options qq-cols-3">
-
-              <button
-                type="button"
-                class="qq-option"
-                [class.selected]="deductible === 0"
-                (click)="deductible = 0">
-                <strong>Muafiyet Yok</strong>
-                <small>0 ₺</small>
-              </button>
-
-              <button
-                type="button"
-                class="qq-option"
-                [class.selected]="deductible === 5000"
-                (click)="deductible = 5000">
-                <strong>5.000 ₺</strong>
-                <small>Standart</small>
-              </button>
-
-              <button
-                type="button"
-                class="qq-option"
-                [class.selected]="deductible === 10000"
-                (click)="deductible = 10000">
-                <strong>10.000 ₺</strong>
-                <small>Yüksek muafiyet</small>
-              </button>
-
-            </div>
-
-          </section>
-
-          <div class="qq-info-box">
+                    <div class="qq-info-box">
             <strong>Seçimleriniz primi nasıl etkiler?</strong>
             <ul>
               <li><b>Kullanım şekli:</b> Ticari araçlar yolda daha çok kaldığı için özel kullanıma göre daha yüksek fiyatlanır.</li>
               <li><b>Hasar geçmişi:</b> Hasarsız sürücüler indirim kazanır; her hasar primi artırır.</li>
-              <li><b>Muafiyet:</b> Hasarda ödemeyi kabul ettiğiniz tutar arttıkça yıllık priminiz düşer.</li>
             </ul>
           </div>
 
@@ -466,7 +453,7 @@
             class="qq-btn qq-btn-primary"
             [disabled]="isLoading"
             (click)="loadPackages()">
-            {{ isLoading ? 'Yükleniyor...' : 'Paketleri Gör →' }}
+            Teklifleri Getir →
           </button>
 
         </div>
@@ -480,227 +467,26 @@
         class="qq-step"
         *ngIf="currentStep === 4">
 
-        <div class="qq-step-head">
-          <span class="qq-eyebrow">Adım 4</span>
-          <h1>Kasko Paketinizi Seçin</h1>
-          <p>Size uygun kapsamı sunan paketi seçin.</p>
-        </div>
-
-        <div class="qq-body">
-
-          <div class="qq-package-grid">
-
-            <button
-              type="button"
-              class="qq-package"
-              *ngFor="let package of packages"
-              [class.selected]="selectedPackage?.id === package.id"
-              (click)="selectPackage(package)">
-
-              <div class="qq-package-head">
-                <small>{{ package.code }}</small>
-                <strong>{{ package.name }}</strong>
-                <p>{{ package.description }}</p>
-              </div>
-
-              <div class="qq-package-price">
-                <strong *ngIf="packagePrices[package.id] !== undefined && packagePrices[package.id] !== null">{{ packagePrices[package.id] | number:'1.0-0' }} ₺<small>/ yıl</small></strong>
-                <span *ngIf="packagePrices[package.id] === undefined">Fiyat hesaplanıyor...</span>
-                <span *ngIf="packagePrices[package.id] === null">Fiyat alınamadı</span>
-              </div>
-
-              <span class="qq-package-count">
-                {{ package.coverages.length }} teminat
-              </span>
-
-              <ul class="qq-package-coverages">
-
-                <li *ngFor="let coverage of package.coverages">
-                  ✓ {{ coverage.coverageName }}
-                </li>
-
-              </ul>
-
-            </button>
-
-          </div>
-
-        </div>
-
-        <div class="qq-actions">
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-ghost"
-            (click)="goToStep(3)">
-            ← Geri
-          </button>
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-primary"
-            [disabled]="!selectedPackage || isLoading"
-            (click)="continueWithPackage()">
-            {{ isLoading ? 'Hazırlanıyor...' : 'Teminatları Gör →' }}
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- STEP 5 -->
-
-      <div
-        class="qq-step"
-        *ngIf="currentStep === 5">
-
-        <div class="qq-step-head qq-step-head-row">
-
-          <div>
-            <span class="qq-eyebrow">Adım 5</span>
-            <h1>Teminatlarınız</h1>
-            <p>Paketinizdeki teminatlar sabittir. İsterseniz ek teminat ekleyebilirsiniz.</p>
-          </div>
-
-          <div
-            class="qq-chip-summary"
-            *ngIf="selectedPackage">
-            <strong>{{ selectedPackage.name }}</strong>
-            <span>{{ selectedPackage.coverages.length }} teminat dahil{{ selectedExtraCount ? ' · ' + selectedExtraCount + ' ek teminat' : '' }}</span>
-          </div>
-
-        </div>
-
-        <div class="qq-body">
-
-          <span class="qq-coverage-group">Pakete dahil teminatlar</span>
-
-          <div class="qq-coverage-grid">
-
-            <div
-              class="qq-coverage selected locked"
-              *ngFor="let coverage of selectedPackage?.coverages">
-
-              <span class="qq-check">✓</span>
-
-              <span class="qq-coverage-name">
-                <strong>{{ coverage.coverageName }}</strong>
-                <small>Pakete dahil</small>
-              </span>
-
-            </div>
-
-          </div>
-
-          <ng-container *ngIf="extraCoverages.length > 0">
-
-            <span class="qq-coverage-group">Ek teminat ekleyin</span>
-
-            <div class="qq-coverage-grid">
-
-              <button
-                type="button"
-                class="qq-coverage"
-                *ngFor="let coverage of extraCoverages"
-                [class.selected]="isCoverageSelected(coverage.coverageId)"
-                (click)="toggleCoverage(coverage.coverageId)">
-
-                <span class="qq-check">
-                  {{ isCoverageSelected(coverage.coverageId) ? '✓' : '+' }}
-                </span>
-
-                <span class="qq-coverage-name">
-                  <strong>{{ coverage.coverageName }}</strong>
-                  <small>{{ isCoverageSelected(coverage.coverageId) ? 'Eklendi' : 'Eklemek için tıklayın' }}</small>
-                </span>
-
-              </button>
-
-            </div>
-
-          </ng-container>
-
-          <p *ngIf="extraCoverages.length === 0" class="qq-note">
-            Seçtiğiniz paket tüm teminatları içeriyor, eklenecek başka teminat yok.
-          </p>
-
-          <ng-container *ngIf="optionCoverageIds.length > 0">
-
-            <span class="qq-coverage-group">Limit ve hizmet seçenekleri</span>
-
-            <div class="qq-option-rows">
-
-              <div class="qq-option-row" *ngFor="let coverageId of optionCoverageIds">
-
-                <strong class="qq-option-row-name">{{ coverageNameFor(coverageId) }}</strong>
-
-                <div class="qq-option-chips">
-                  <button
-                    type="button"
-                    class="qq-option-chip"
-                    *ngFor="let option of optionsFor(coverageId)"
-                    [class.selected]="selectedOptionId(coverageId) === option.id"
-                    (click)="selectOption(coverageId, option.id)">
-                    <span>{{ option.name }}</span>
-                    <small>{{ option.extraPrice > 0 ? '+' + (option.extraPrice | number:'1.0-0') + ' ₺' : 'Ek ücret yok' }}</small>
-                  </button>
-                </div>
-
-              </div>
-
-            </div>
-
-          </ng-container>
-
-        </div>
-
-        <div class="qq-actions">
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-ghost"
-            (click)="goToStep(4)">
-            ← Pakete Dön
-          </button>
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-primary"
-            [disabled]="selectedCoverageIds.length === 0 || isLoading"
-            (click)="continueFromCoverage()">
-            {{ isLoading ? 'Hesaplanıyor...' : 'Fiyat Hesapla →' }}
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- STEP 6 -->
-
-      <div
-        class="qq-step"
-        *ngIf="currentStep === 6">
-
-        <ng-container *ngIf="isLoading && !pricingResult">
+        <ng-container *ngIf="isLoading">
 
           <div class="qq-body qq-body-center">
 
             <div class="qq-loading">
 
-              <div
-                class="qq-progress-ring"
-                [style.--qq-progress]="calculationProgress">
+              <div class="qq-progress-ring" [style.--qq-progress]="calculationProgress">
                 <span>%{{ calculationProgress }}</span>
               </div>
 
-              <h1>Teklifiniz Hazırlanıyor</h1>
+              <h1>Teklifleriniz Hazırlanıyor</h1>
 
-              <p>
-                {{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} ·
-                {{ selectedVehicle?.plateNumber }} için sigorta şirketi fiyat kuralları uygulanıyor.
-              </p>
+              <p>Aracınız için tüm paketlerin fiyatı hesaplanıyor.</p>
+
+              <div class="qq-loading-vehicle" *ngIf="selectedVehicle as vehicle">
+                <div><small>Araç</small><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong></div>
+                <div><small>Model Yılı</small><strong>{{ vehicle.modelYear }}</strong></div>
+                <div><small>Plaka</small><strong>{{ vehicle.plateNumber || 'Plakasız' }}</strong></div>
+                <div><small>TSB Kasko Değeri</small><strong>{{ vehicle.marketValue | number:'1.0-0' }} ₺</strong></div>
+              </div>
 
               <ul>
                 <li
@@ -718,78 +504,67 @@
 
         </ng-container>
 
-
-        <ng-container *ngIf="pricingResult && !isLoading">
+        <ng-container *ngIf="!isLoading">
 
           <div class="qq-step-head">
-            <span class="qq-eyebrow">Teklifiniz</span>
-            <h1>Kasko Teklifiniz Hazır</h1>
-            <p>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }} için {{ selectedPackage?.name }}</p>
+            <span class="qq-eyebrow">Teklifleriniz</span>
+            <h1>Size Uygun Kasko Teklifleri</h1>
+            <p>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }} · Kasko değeri {{ selectedVehicle?.marketValue | number:'1.0-0' }} ₺</p>
           </div>
 
-          <div class="qq-body qo-layout">
+          <div class="qq-body">
 
-            <div class="qo-left">
+            <div class="qg-offers">
 
-              <div class="qo-card">
-  
-                <div class="qo-price">
-                  <span class="qo-price-label">Yıllık kasko priminiz</span>
-                  <strong>{{ pricingResult.totalPremium | number:'1.2-2' }} ₺</strong>
-                  <span class="qo-price-sub">Aylık yaklaşık {{ pricingResult.totalPremium / 12 | number:'1.0-0' }} ₺ · 1 yıl geçerli</span>
-                </div>
-  
-                <ul class="qo-facts">
-                  <li>
-                    <span>Sigortalanan araç</span>
-                    <strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong>
-                  </li>
-                  <li>
-                    <span>Aracınızın kasko değeri</span>
-                    <strong>{{ pricingResult.marketValue | number:'1.0-0' }} ₺</strong>
-                  </li>
-                  <li>
-                    <span>Paket</span>
-                    <strong>{{ selectedPackage?.name }}</strong>
+              <button
+                type="button"
+                class="qg-offer"
+                *ngFor="let packageItem of packages; let i = index"
+                [class.selected]="selectedPackage?.id === packageItem.id"
+                [disabled]="packagePrices[packageItem.id] == null"
+                (click)="selectOffer(packageItem)">
+
+                <span class="qg-offer-name">{{ packageItem.name }}{{ i === 1 ? ' · Önerilen' : '' }}</span>
+
+                <span class="qg-offer-price" *ngIf="packagePrices[packageItem.id] != null">
+                  {{ packagePrices[packageItem.id] | number:'1.0-0' }} ₺<small>/ yıl</small>
+                </span>
+                <span class="qg-offer-price" *ngIf="packagePrices[packageItem.id] == null"><small>Fiyat alınamadı</small></span>
+
+                <span class="qg-offer-note">{{ packageItem.coverages.length }} / {{ offerCoverageRows.length }} teminat dahil</span>
+
+                <ul class="qg-offer-list">
+                  <li
+                    *ngFor="let row of offerCoverageRows"
+                    [class.missing]="!packageIncludes(packageItem, row.coverageId)">
+                    {{ row.coverageName }}
                   </li>
                 </ul>
 
-              </div>
+                <span class="qg-offer-pick">{{ selectedPackage?.id === packageItem.id ? 'Seçildi' : 'Seç' }}</span>
 
-              <ul class="qo-benefits">
-                <li>Hasarda aracınızın kasko değeri kadar güvence</li>
-                <li>{{ pricingResult.coverages.length }} teminat bu fiyata dahil</li>
-                <li>Anlaşmalı servislerde onarım</li>
-              </ul>
-
-              <button type="button" class="qo-detail-toggle" (click)="showPriceDetail = !showPriceDetail">
-                {{ showPriceDetail ? 'Fiyat detayını gizle' : 'Fiyat nasıl hesaplandı?' }}
               </button>
 
-              <ul class="qo-breakdown" *ngIf="showPriceDetail">
-                <li><span>Temel prim</span><strong>{{ pricingResult.basePremium | number:'1.2-2' }} ₺</strong></li>
-                <li><span>Yaş, kullanım ve hasar geçmişine göre</span><strong>{{ pricingResult.riskAdjustedPremium | number:'1.2-2' }} ₺</strong></li>
-                <li><span>Ek teminatlar</span><strong>{{ pricingResult.coveragePremium | number:'1.2-2' }} ₺</strong></li>
-                <li class="qo-breakdown-total"><span>Toplam</span><strong>{{ pricingResult.totalPremium | number:'1.2-2' }} ₺</strong></li>
-              </ul>
-
             </div>
 
-            <div class="qo-right">
-
-              <div class="qo-right-head">
-                <span class="qo-title">Neler güvence altında?</span>
-                <span class="qo-count">{{ pricingResult.coverages.length }} teminat</span>
-              </div>
-
-              <ul class="qo-coverages">
-                <li *ngFor="let coverage of pricingResult.coverages">
-                  <span>{{ coverage.coverageName }}</span>
-                  <small>{{ coverage.optionName ? coverage.optionName : (coverage.limit ? ('Limit ' + (coverage.limit | number:'1.0-0') + ' ₺') : 'Araç değeri kadar') }}</small>
-                </li>
-              </ul>
-
+            <div class="qg-limits" *ngIf="offerOptionRows.length > 0">
+              <span class="qg-limits-title">Limit seçenekleri</span>
+              <label class="qg-limit" *ngFor="let row of offerOptionRows">
+                <small>{{ row.coverageName }}</small>
+                <select [disabled]="isRepricing" (change)="changeOfferOption(row.coverageId, $any($event.target).value)">
+                  <option
+                    *ngFor="let option of row.options"
+                    [value]="option.id"
+                    [selected]="option.id === offerOptionValue(row.coverageId)">
+                    {{ option.name }}{{ option.extraPrice > 0 ? ' (+' + (option.extraPrice | number:'1.0-0') + ' ₺)' : '' }}
+                  </option>
+                </select>
+              </label>
             </div>
+
+            <p class="qq-note">
+              {{ isRepricing ? 'Fiyatlar seçtiğiniz limitlere göre güncelleniyor...' : 'Fiyatlara vergiler dahildir. Limit seçimleri tüm paketlere uygulanır.' }}
+            </p>
 
           </div>
 
@@ -798,15 +573,16 @@
             <button
               type="button"
               class="qq-btn qq-btn-ghost"
-              (click)="goToStep(5)">
-              ← Teminatları Değiştir
+              (click)="goToStep(3)">
+              ← Bilgileri Değiştir
             </button>
 
             <button
               type="button"
               class="qq-btn qq-btn-primary"
-              (click)="purchaseQuote()">
-              Satın Al →
+              [disabled]="!selectedPackage || isRepricing"
+              (click)="continueWithOffer()">
+              {{ selectedPackage ? selectedPackage.name + ' ile Devam Et · ' + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺ →' : 'Bir Teklif Seçin' }}
             </button>
 
           </div>
@@ -883,7 +659,7 @@
             type="button"
             class="qq-btn qq-btn-ghost"
             [disabled]="isLoading"
-            (click)="goToStep(6)">
+            (click)="goToStep(4)">
             ← Teklife Dön
           </button>
 

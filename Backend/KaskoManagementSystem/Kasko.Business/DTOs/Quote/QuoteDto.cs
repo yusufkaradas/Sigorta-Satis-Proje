@@ -36,6 +36,12 @@ namespace Kasko.Business.DTOs.Quote
 
         public DateTime ValidUntil { get; set; }
 
+        public Guid? PackageId { get; set; }
+
+        public string? PackageName { get; set; }
+
+        public string? ReviewReason { get; set; }
+
         public DateTime CreatedDate { get; set; }
 
         public bool IsActive { get; set; }

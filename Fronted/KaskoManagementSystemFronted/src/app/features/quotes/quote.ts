@@ -50,6 +50,8 @@ export interface Quote {
 
   id: string;
 
+  packageName?: string | null;
+
   customerId: string;
 
   customerName?: string;

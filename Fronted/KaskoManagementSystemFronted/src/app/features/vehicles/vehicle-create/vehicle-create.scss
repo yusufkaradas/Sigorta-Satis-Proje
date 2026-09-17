@@ -2,3 +2,36 @@
   display: block;
   height: 100%;
 }
+
+.vc-value {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #535353;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  span,
+  small {
+    display: block;
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  small {
+    margin-top: 2px;
+    color: #d1d5db;
+    font-size: 11px;
+  }
+
+  strong {
+    font-size: 22px;
+    white-space: nowrap;
+  }
+}

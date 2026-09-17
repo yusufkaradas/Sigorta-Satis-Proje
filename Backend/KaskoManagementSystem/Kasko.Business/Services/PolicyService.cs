@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Policy;
+using Kasko.Business.DTOs.Policy;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Services.Abstract;
 using Kasko.DataAccess.Repositories;
@@ -121,6 +121,22 @@ namespace Kasko.Business.Services.Concrete
             {
                 throw new BadRequestException(
                     "Bu teklif için zaten bir poliçe oluşturulmuştur.");
+            }
+
+            var coveragePeriod = dto.EndDate - dto.StartDate;
+
+            var currentPolicy = (await _policyRepository.FindAsync(
+                    x => x.VehicleId == dto.VehicleId &&
+                         !x.IsDeleted &&
+                         x.Status == PolicyStatus.Active &&
+                         x.EndDate > dto.StartDate))
+                .OrderByDescending(x => x.EndDate)
+                .FirstOrDefault();
+
+            if (currentPolicy != null)
+            {
+                dto.StartDate = currentPolicy.EndDate;
+                dto.EndDate = currentPolicy.EndDate + coveragePeriod;
             }
 
             

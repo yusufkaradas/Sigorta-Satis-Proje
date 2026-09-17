@@ -1,4 +1,5 @@
-﻿using Kasko.Business.DTOs.PreviousPolicy;
+using Kasko.Business.Interfaces;
+using Kasko.Business.DTOs.PreviousPolicy;
 using Kasko.Business.Services;
 using Kasko.Entities.Concrete;
 using Microsoft.AspNetCore.Authorization;
@@ -13,14 +14,30 @@ public class PreviousPolicyController : ControllerBase
 {
     private readonly IPreviousPolicyService _service;
 
+    private readonly ICustomerService _customerService;
+
     public PreviousPolicyController(
-        IPreviousPolicyService service)
+        IPreviousPolicyService service,
+        ICustomerService customerService)
     {
         _service = service;
+        _customerService = customerService;
+    }
+
+    private async Task<bool> CanAccessCustomerAsync(Guid customerId)
+    {
+        if (!User.IsInRole("Customer"))
+        {
+            return true;
+        }
+
+        var current = await _customerService.GetCurrentAsync();
+
+        return current != null && current.Id == customerId;
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Customer")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(
         [FromBody] CreatePreviousPolicyDto dto,
         CancellationToken cancellationToken)
@@ -53,7 +70,8 @@ public class PreviousPolicyController : ControllerBase
                 id,
                 cancellationToken);
 
-        if (result == null)
+        if (result == null ||
+            !await CanAccessCustomerAsync(result.CustomerId))
         {
             return NotFound();
         }
@@ -66,6 +84,11 @@ public class PreviousPolicyController : ControllerBase
         Guid customerId,
         CancellationToken cancellationToken)
     {
+        if (!await CanAccessCustomerAsync(customerId))
+        {
+            return NotFound();
+        }
+
         var result =
             await _service.GetByCustomerIdAsync(
                 customerId,

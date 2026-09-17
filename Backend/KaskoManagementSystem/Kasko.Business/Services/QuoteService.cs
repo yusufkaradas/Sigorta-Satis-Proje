@@ -114,6 +114,12 @@ namespace Kasko.Business.Services
 
                         ValidUntil = x.ValidUntil,
 
+                        PackageId = x.PackageId,
+
+                        PackageName = x.PackageName,
+
+                        ReviewReason = x.ReviewReason,
+
                         CreatedDate = x.CreatedDate
                     };
                 })
@@ -216,6 +222,15 @@ namespace Kasko.Business.Services
 
                 Status =
         quote.Status,
+
+                PackageId =
+        quote.PackageId,
+
+                PackageName =
+        quote.PackageName,
+
+                ReviewReason =
+        quote.ReviewReason,
 
                 ValidUntil =
         quote.ValidUntil,
@@ -359,41 +374,7 @@ namespace Kasko.Business.Services
                     "Seçilen araç bu müşteriye ait değildir.");
             }
 
-            var renewalWindowStart =
-                DateTime.UtcNow.AddDays(60);
-
-            var activePolicy =
-                (await _unitOfWork.Policies
-                    .FindAsync(x =>
-                        x.VehicleId == vehicle.Id &&
-                        !x.IsDeleted &&
-                        x.Status == PolicyStatus.Active))
-                    .OrderByDescending(x => x.EndDate)
-                    .FirstOrDefault();
-
-            if (activePolicy != null &&
-                activePolicy.EndDate > renewalWindowStart)
-            {
-                throw new BadRequestException(
-                    $"Bu aracın {activePolicy.EndDate:dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala yenileme olarak alınabilir.");
-            }
-
-            var openQuotes =
-                (await _unitOfWork.Quotes
-                    .FindAsync(x =>
-                        x.VehicleId == vehicle.Id &&
-                        !x.IsDeleted &&
-                        (x.Status == QuoteStatus.Draft ||
-                         x.Status == QuoteStatus.Offered)))
-                    .ToList();
-
-            foreach (var openQuote in openQuotes)
-            {
-                openQuote.Status = QuoteStatus.Cancelled;
-                openQuote.UpdatedDate = DateTime.UtcNow;
-
-                await _unitOfWork.Quotes.UpdateAsync(openQuote);
-            }
+            await EnsureNoActivePolicyAsync(vehicle.Id);
 
             PreviousPolicy? previousPolicy = null;
 
@@ -532,6 +513,10 @@ namespace Kasko.Business.Services
                     "Seçilen araç bu müşteriye ait değildir.");
             }
 
+            await EnsureNoActivePolicyAsync(vehicle.Id);
+
+            await CancelOpenQuotesAsync(vehicle.Id);
+
             var quoteNumber =
                 $"KLF-{DateTime.UtcNow.Year}-{Guid.NewGuid():N}"
                 .Substring(0, 21)
@@ -607,6 +592,14 @@ namespace Kasko.Business.Services
             decimal premiumAmount =
                 pricing.TotalPremium;
 
+            var reviewReasons =
+                await EvaluateAutoApprovalAsync(
+                    premiumAmount,
+                    vehicle.MarketValue,
+                    previousPolicy?.ClaimsCount ?? dto.ClaimsCount,
+                    DateTime.UtcNow.Year - vehicle.ModelYear,
+                    dto.Usage);
+
             var quote = new Quote
             {
                 Id = Guid.NewGuid(),
@@ -618,9 +611,21 @@ namespace Kasko.Business.Services
 
                 PremiumAmount = premiumAmount,
 
-                Status = QuoteStatus.Draft,
+                Status = reviewReasons.Count == 0
+                    ? QuoteStatus.Offered
+                    : QuoteStatus.Draft,
+
+                ReviewReason = reviewReasons.Count == 0
+                    ? null
+                    : string.Join(" · ", reviewReasons),
 
                 ValidUntil = dto.ValidUntil,
+
+                PackageId = dto.PackageId,
+
+                PackageName = dto.PackageId.HasValue
+                    ? (await _unitOfWork.InsurancePackages.GetByIdAsync(dto.PackageId.Value))?.Name
+                    : null,
                 IsDeleted = false,
                 CreatedDate = DateTime.UtcNow
             };
@@ -697,6 +702,9 @@ namespace Kasko.Business.Services
                 PremiumAmount = quote.PremiumAmount,
                 Status = quote.Status,
                 ValidUntil = quote.ValidUntil,
+                PackageId = quote.PackageId,
+                PackageName = quote.PackageName,
+                ReviewReason = quote.ReviewReason,
                 CreatedDate = quote.CreatedDate
             };
         }
@@ -908,6 +916,102 @@ namespace Kasko.Business.Services
 
             return age < 0 ? 0 : age;
         }
+        private async Task<List<string>> EvaluateAutoApprovalAsync(
+            decimal premium,
+            decimal marketValue,
+            int claimsCount,
+            int vehicleAge,
+            string usage)
+        {
+            var reasons = new List<string>();
+
+            var maxPremium = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_PREMIUM", 100000m);
+            var maxMarketValue = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_MARKET_VALUE", 5000000m);
+            var maxClaims = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_CLAIMS", 1m);
+            var maxVehicleAge = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_VEHICLE_AGE", 15m);
+
+            if (premium > maxPremium)
+            {
+                reasons.Add($"Prim {maxPremium:N0} ₺ sınırını aşıyor");
+            }
+
+            if (marketValue > maxMarketValue)
+            {
+                reasons.Add($"Araç değeri {maxMarketValue:N0} ₺ sınırını aşıyor");
+            }
+
+            if (claimsCount > maxClaims)
+            {
+                reasons.Add($"Hasar sayısı {maxClaims:N0} üzerinde");
+            }
+
+            if (vehicleAge > maxVehicleAge)
+            {
+                reasons.Add($"Araç yaşı {maxVehicleAge:N0} yıldan büyük");
+            }
+
+            if (!string.Equals(usage?.Trim(), "PRIVATE", StringComparison.OrdinalIgnoreCase))
+            {
+                reasons.Add("Ticari kullanım");
+            }
+
+            return reasons;
+        }
+
+        private async Task<decimal> GetRuleOrDefaultAsync(string code, decimal defaultValue)
+        {
+            if (_unitOfWork.PricingRules == null)
+            {
+                return defaultValue;
+            }
+
+            var rule = await _unitOfWork.PricingRules.GetApplicableRuleAsync(code, DateTime.UtcNow);
+
+            return rule?.Value ?? defaultValue;
+        }
+
+        private async Task EnsureNoActivePolicyAsync(Guid vehicleId)
+        {
+            var renewalWindowStart =
+                DateTime.UtcNow.AddDays(60);
+
+            var activePolicy =
+                (await _unitOfWork.Policies
+                    .FindAsync(x =>
+                        x.VehicleId == vehicleId &&
+                        !x.IsDeleted &&
+                        x.Status == PolicyStatus.Active))
+                    .OrderByDescending(x => x.EndDate)
+                    .FirstOrDefault();
+
+            if (activePolicy != null &&
+                activePolicy.EndDate > renewalWindowStart)
+            {
+                throw new BadRequestException(
+                    $"Bu aracın {activePolicy.EndDate:dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala yenileme olarak alınabilir.");
+            }
+        }
+
+        private async Task CancelOpenQuotesAsync(Guid vehicleId)
+        {
+            var openQuotes =
+                (await _unitOfWork.Quotes
+                    .FindAsync(x =>
+                        x.VehicleId == vehicleId &&
+                        !x.IsDeleted &&
+                        (x.Status == QuoteStatus.Draft ||
+                         x.Status == QuoteStatus.Offered)))
+                    .ToList();
+
+            foreach (var openQuote in openQuotes)
+            {
+                openQuote.Status = QuoteStatus.Cancelled;
+                openQuote.UpdatedDate = DateTime.UtcNow;
+
+                await _unitOfWork.Quotes.UpdateAsync(openQuote);
+            }
+        }
+
         private async Task<IReadOnlyCollection<Guid>> ResolveCoverageIdsAsync(
     Guid? packageId,
     IReadOnlyCollection<Guid> coverageIds)

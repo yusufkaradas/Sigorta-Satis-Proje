@@ -308,26 +308,18 @@
 
         </div>
 
-        <div class="kf-guess" *ngIf="catalogInfo">
-          <span>TSB kataloğundan gelen bilgiler</span>
+        <div class="vc-value">
           <div>
-            <span class="kf-guess-chip">{{ catalogInfo.brandName }}</span>
-            <span class="kf-guess-chip">{{ catalogInfo.typeName }}</span>
-            <span class="kf-guess-chip" *ngIf="catalogCategory">Sınıf: {{ catalogCategory }}</span>
-            <span class="kf-guess-chip">{{ catalogInfo.modelYear }}</span>
+            <span>Aracınızın kasko değeri (TSB)</span>
+            <small>{{ catalogInfo ? (catalogCategory ? catalogCategory + ' · ' : '') + (showBodyDetails ? 'Kasa, yakıt ve vites bilgisini yukarıdan seçin.' : 'Bu sınıfta kasa, yakıt ve vites sorulmaz.') : 'Marka, model ve yıl seçince otomatik hesaplanır.' }}</small>
           </div>
-          <small>{{ showBodyDetails ? 'Yakıt, vites ve kasa bilgisi TSB kataloğunda yer almıyor; aşağıdan siz seçin.' : 'Bu sınıfta kasa, yakıt ve vites bilgisi sorulmaz.' }}</small>
-        </div>
-
-        <div class="kf-highlight">
-          <span>Aracınızın kasko değeri</span>
           <strong>
             {{
               isLoadingTsbValue
                 ? 'Değer getiriliyor...'
                 : tsbValue !== null
                   ? (tsbValue | number:'1.0-0') + ' ₺'
-                  : 'Marka, model ve yıl seçin'
+                  : '—'
             }}
           </strong>
         </div>

@@ -1893,3 +1893,52 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.qq-otp-demo {
+  display: block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: k.$info-soft;
+  color: k.$info-text;
+  font-size: 12px;
+}
+
+.qq-otp-actions {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.qq-page .qq-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: k.$surface;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.qq-notfound {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: k.$surface;
+  color: k.$text;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+
+  span {
+    color: k.$text-secondary;
+  }
+}
+
+.qq-notfound-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

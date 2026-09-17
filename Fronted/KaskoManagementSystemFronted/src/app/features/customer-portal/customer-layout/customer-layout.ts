@@ -56,8 +56,7 @@ export class CustomerLayout implements OnInit {
     { path: '/customer/vehicles', label: 'Araçlarım', exact: false },
     { path: '/customer/quotes', label: 'Tekliflerim', exact: false },
     { path: '/customer/policies', label: 'Poliçelerim', exact: false },
-    { path: '/customer/payments', label: 'Ödemelerim', exact: false },
-    { path: '/customer/settings', label: 'Ayarlar', exact: false }
+    { path: '/customer/payments', label: 'Ödemelerim', exact: false }
   ];
 
   readonly user =

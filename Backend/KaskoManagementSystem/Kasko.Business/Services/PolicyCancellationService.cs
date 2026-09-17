@@ -20,16 +20,20 @@ public class PolicyCancellationService : IPolicyCancellationService
 
     private readonly IHttpContextAccessor _httpContextAccessor;
 
+    private readonly INotificationService _notificationService;
+
     public PolicyCancellationService(
         IGenericRepository<PolicyCancellationRequest> repository,
         IUnitOfWork unitOfWork,
         IPolicyService policyService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        INotificationService notificationService)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _policyService = policyService;
         _httpContextAccessor = httpContextAccessor;
+        _notificationService = notificationService;
     }
 
     public async Task<IEnumerable<PolicyCancellationDto>> GetAllAsync()
@@ -165,7 +169,15 @@ public class PolicyCancellationService : IPolicyCancellationService
 
         await _repository.UpdateAsync(request);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _notificationService.CreateAsync(new Kasko.Business.DTOs.Notification.NotificationCreateDto
+        {
+            CustomerId = request.CustomerId,
+            Type = "CANCELLATION_APPROVED",
+            Title = "İptal talebiniz onaylandı",
+            Message = $"{policy.PolicyNumber} numaralı poliçeniz iptal edildi. İade tutarı: {refund:N2} ₺." +
+                      (string.IsNullOrWhiteSpace(note) ? string.Empty : $" Not: {note.Trim()}"),
+            RelatedEntityId = request.PolicyId
+        });
     }
 
     public async Task RejectAsync(Guid id, string? note)
@@ -185,7 +197,14 @@ public class PolicyCancellationService : IPolicyCancellationService
 
         await _repository.UpdateAsync(request);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _notificationService.CreateAsync(new Kasko.Business.DTOs.Notification.NotificationCreateDto
+        {
+            CustomerId = request.CustomerId,
+            Type = "CANCELLATION_REJECTED",
+            Title = "İptal talebiniz reddedildi",
+            Message = $"Poliçeniz aktif kalmaya devam ediyor. Gerekçe: {note.Trim()}",
+            RelatedEntityId = request.PolicyId
+        });
     }
 
     public static (decimal Refund, int RemainingDays) CalculateRefund(
