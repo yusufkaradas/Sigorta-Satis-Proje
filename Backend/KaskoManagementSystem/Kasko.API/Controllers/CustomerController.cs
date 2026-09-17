@@ -24,6 +24,18 @@ public class CustomerController : ControllerBase
 
         return Ok(customers);
     }
+    [HttpGet("me")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> GetCurrent()
+    {
+        var customer = await _customerService.GetCurrentAsync();
+
+        if (customer == null)
+            return NotFound();
+
+        return Ok(customer);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -46,7 +58,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPut]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Update(
         UpdateCustomerDto dto)
     {

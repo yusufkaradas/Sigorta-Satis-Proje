@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.Pricing;
+namespace Kasko.Business.Pricing;
 
 public class PricingRequest
 {
@@ -20,6 +20,9 @@ public class PricingRequest
 
     public IReadOnlyCollection<Guid> CoverageIds { get; set; }
         = Array.Empty<Guid>();
+
+    public IReadOnlyDictionary<Guid, Guid> CoverageOptionIds { get; set; }
+        = new Dictionary<Guid, Guid>();
 
     public DateTime EffectiveDate { get; set; }
        = DateTime.UtcNow;

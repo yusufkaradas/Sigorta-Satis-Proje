@@ -74,6 +74,8 @@ builder.Services.AddScoped<InsurerQuoteComparisonService>();
 builder.Services.AddScoped<IPolicyPdfService, PolicyPdfService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBrandSettingService, BrandSettingService>();
+builder.Services.AddScoped<IPolicyCancellationService, PolicyCancellationService>();
+builder.Services.AddScoped<ITariffService, TariffService>();
 builder.Services.AddSingleton<IQuickQuoteVerificationService, QuickQuoteVerificationService>();
 
 

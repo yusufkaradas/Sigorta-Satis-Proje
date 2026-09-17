@@ -77,6 +77,10 @@ export class CustomerService {
     'https://localhost:7086/api/Customer';
 
 
+  getCurrentCustomer(): Observable<Customer> {
+    return this.http.get<Customer>(`${this.apiUrl}/me`);
+  }
+
   getCustomers(): Observable<Customer[]> {
 
     return this.http.get<Customer[]>(

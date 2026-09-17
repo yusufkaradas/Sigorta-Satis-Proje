@@ -54,7 +54,8 @@ import {
 
 import {
   InsurancePackage,
-  InsurancePackageService
+  InsurancePackageService,
+  CoverageOption
 } from '../insurance-package.service';
 
 
@@ -196,6 +197,50 @@ export class QuoteCreate implements OnInit {
   riskAdjustedPremium: number | null = null;
 
   packageCoverageTotal = 0;
+
+  coverageOptionIds: Record<string, string> = {};
+
+  pricedCoverages: { coverageId: string; coverageName: string; calculatedPrice: number; limit: number | null; optionName?: string | null }[] = [];
+
+  get allCoverageRows(): { coverageId: string; coverageName: string }[] {
+    const seen = new Map<string, string>();
+    [...this.packages]
+      .sort((a, b) => b.coverages.length - a.coverages.length)
+      .forEach(item => item.coverages.forEach(coverage => {
+        if (!seen.has(coverage.coverageId)) {
+          seen.set(coverage.coverageId, coverage.coverageName);
+        }
+      }));
+    return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  }
+
+  packageHasCoverage(item: InsurancePackage, coverageId: string): boolean {
+    return item.coverages.some(coverage => coverage.coverageId === coverageId && coverage.isDefault);
+  }
+
+  get optionRows(): { coverageId: string; coverageName: string; options: CoverageOption[] }[] {
+    const seen = new Map<string, { coverageId: string; coverageName: string; options: CoverageOption[] }>();
+    this.packages.forEach(item => item.coverages.forEach(coverage => {
+      if ((coverage.options?.length ?? 0) > 0 && !seen.has(coverage.coverageId)) {
+        seen.set(coverage.coverageId, { coverageId: coverage.coverageId, coverageName: coverage.coverageName, options: coverage.options ?? [] });
+      }
+    }));
+    return [...seen.values()];
+  }
+
+  selectedOptionId(row: { coverageId: string; options: CoverageOption[] }): string {
+    return this.coverageOptionIds[row.coverageId]
+      ?? row.options.find(option => option.isDefault)?.id
+      ?? row.options[0]?.id
+      ?? '';
+  }
+
+  changeOption(coverageId: string, optionId: string): void {
+    this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+    const keepPackageId = this.packageId;
+    this.calculatePackageComparisons();
+    this.packageId = keepPackageId;
+  }
 
 
   // ==================================================
@@ -840,6 +885,9 @@ export class QuoteCreate implements OnInit {
       coverageIds:
         coverageIds,
 
+      coverageOptionIds:
+        this.coverageOptionIds,
+
       validUntil:
         this.validUntil
     };
@@ -1203,8 +1251,6 @@ export class QuoteCreate implements OnInit {
      * Kullanıcı isterse geri dönüp
      * başka paketi seçebilir.
      */
-    this.currentStep = 4;
-
     this.cdr.detectChanges();
   }
 
@@ -1369,6 +1415,10 @@ export class QuoteCreate implements OnInit {
             response?.totalPremium ??
             null;
 
+          this.pricedCoverages =
+            response?.coverages ??
+            [];
+
           this.packageCoverageTotal =
             this.getCoverageTotal(
               selectedPackage
@@ -1518,6 +1568,10 @@ export class QuoteCreate implements OnInit {
 
       this.currentStep = 4;
 
+      this.pricedCoverages = [];
+
+      this.calculateQuote();
+
       return;
     }
 
@@ -1636,6 +1690,9 @@ export class QuoteCreate implements OnInit {
 
       coverageIds:
         this.selectedCoverageIds,
+
+      coverageOptionIds:
+        this.coverageOptionIds,
 
       validUntil:
         this.validUntil

@@ -2,7 +2,7 @@ import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { QuoteService } from './quote.service';
@@ -110,6 +110,8 @@ export interface QuoteCreateDto {
 
   coverageIds: string[];
 
+  coverageOptionIds?: Record<string, string>;
+
   validUntil: string;
 
 }
@@ -136,9 +138,7 @@ import {
     RecordNumberPipe,
     CommonModule,
 
-    FormsModule,
-
-    RouterLink
+    FormsModule
 
   ],
 

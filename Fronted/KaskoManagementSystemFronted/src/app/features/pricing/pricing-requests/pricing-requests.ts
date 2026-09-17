@@ -4,6 +4,7 @@ import {
 
 import {
   Component,
+  Input,
   OnInit,
   computed,
   inject,
@@ -50,6 +51,8 @@ import {
   styleUrl: './pricing-requests.scss'
 })
 export class PricingRequests implements OnInit {
+
+  @Input() embedded = false;
 
   private readonly pricingService =
     inject(PricingService);

@@ -189,7 +189,7 @@
           </label>
         </div>
 
-        <h2 class="kf-section-title">Muafiyet</h2>
+        <h2 class="kf-section-title">Muafiyet <small>Hasarda sizin ödeyeceğiniz kısım</small></h2>
 
         <div class="kf-choice-grid">
           <label class="kf-choice" [class.selected]="deductible === 0">
@@ -207,6 +207,11 @@
             <strong>10.000 ₺</strong>
             <small>Yüksek muafiyet</small>
           </label>
+        </div>
+
+        <div class="kf-alert kf-alert-info kf-alert-inline qc-info">
+          <strong>Seçimler primi nasıl etkiler?</strong>
+          <span>Ticari kullanım primi artırır. Önceki poliçedeki hasarsızlık indirim sağlar, her hasar primi yükseltir. Muafiyet tutarı arttıkça yıllık prim düşer.</span>
         </div>
 
       </section>
@@ -249,16 +254,13 @@
             <div *ngIf="option.totalPremium === null" class="kf-package-price">Hesaplanamadı</div>
           </div>
 
-          <dl class="kf-details kf-details-1">
-            <div><dt>Teminat Toplamı</dt><dd>{{ option.coverageTotal | number:'1.0-2' }} ₺</dd></div>
-            <div *ngIf="option.discount !== null"><dt>İndirim</dt><dd>{{ option.discount | number:'1.2-2' }} ₺</dd></div>
-          </dl>
+          <span class="kf-muted">{{ option.package.description }}</span>
 
-          <div class="kf-chips">
-            <ng-container *ngFor="let coverage of option.package.coverages">
-              <span *ngIf="coverage.isDefault" class="kf-chip">✓ {{ coverage.coverageName }}</span>
-            </ng-container>
-          </div>
+          <ul class="qc-coverages">
+            <li *ngFor="let row of allCoverageRows" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
+              {{ packageHasCoverage(option.package, row.coverageId) ? '✓' : '✕' }} {{ row.coverageName }}
+            </li>
+          </ul>
 
           <button
             type="button"
@@ -269,6 +271,18 @@
           </button>
 
         </article>
+
+        <div *ngIf="optionRows.length > 0" class="qc-limits kf-span-all">
+          <strong>Limit seçenekleri</strong>
+          <label *ngFor="let row of optionRows" class="qc-limit">
+            <small>{{ row.coverageName }}</small>
+            <select [value]="selectedOptionId(row)" (change)="changeOption(row.coverageId, $any($event.target).value)">
+              <option *ngFor="let item of row.options" [value]="item.id" [selected]="item.id === selectedOptionId(row)">
+                {{ item.name }}{{ item.extraPrice > 0 ? ' (+' + (item.extraPrice | number:'1.0-0') + ' ₺)' : '' }}
+              </option>
+            </select>
+          </label>
+        </div>
 
       </ng-container>
 
@@ -302,23 +316,24 @@
       <section class="kf-section" *ngIf="selectedPackage">
 
         <h2 class="kf-section-title">
-          Teminatlar ve Fiyatlandırma
-          <small>Teminat toplamı {{ packageCoverageTotal | number:'1.0-2' }} ₺</small>
+          Teminatlar
+          <small>{{ pricedCoverages.length }} teminat</small>
         </h2>
 
-        <ul class="kf-list kf-list-2">
-          <ng-container *ngFor="let coverage of selectedPackage.coverages">
-            <li *ngIf="coverage.isDefault" class="kf-list-item">
-              <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
-              <span>{{ coverage.calculatedPrice | number:'1.0-2' }} ₺</span>
-            </li>
-          </ng-container>
+        <div *ngIf="isCalculating" class="kf-muted">Teminatlar hesaplanıyor...</div>
+
+        <ul *ngIf="!isCalculating" class="kf-list kf-list-2">
+          <li *ngFor="let coverage of pricedCoverages" class="kf-list-item qc-summary-item">
+            <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
+            <span>{{ coverage.optionName || (coverage.limit ? ((coverage.limit | number:'1.0-0') + ' ₺') : 'Araç değeri kadar') }}</span>
+            <small>{{ coverage.calculatedPrice > 0 ? '+' + (coverage.calculatedPrice | number:'1.0-0') + ' ₺' : 'Pakete dahil' }}</small>
+          </li>
         </ul>
 
         <dl class="kf-details kf-details-3">
-          <div *ngIf="marketValue !== null"><dt>Araç Değeri</dt><dd>{{ marketValue | number:'1.0-2' }} ₺</dd></div>
-          <div *ngIf="riskAdjustedPremium !== null"><dt>Risk Düzeltilmiş</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
-          <div *ngIf="coveragePremium !== null"><dt>Teminat Primi</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
+          <div *ngIf="marketValue !== null"><dt>Araç Kasko Değeri</dt><dd>{{ marketValue | number:'1.0-0' }} ₺</dd></div>
+          <div *ngIf="riskAdjustedPremium !== null"><dt>Ana Prim</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
+          <div *ngIf="coveragePremium !== null"><dt>Ek Teminat ve Limitler</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
         </dl>
 
       </section>

@@ -2,3 +2,79 @@
   display: block;
   height: 100%;
 }
+
+.qc-info {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 500;
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+.qc-coverages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 8px;
+  font-size: 12px;
+
+  li {
+    color: #16a34a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  li.missing {
+    color: #9ca3af;
+    text-decoration: line-through;
+  }
+}
+
+.qc-limits {
+  padding: 10px 14px;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: auto repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+
+  > strong {
+    align-self: center;
+    font-size: 13px;
+  }
+}
+
+.qc-limit {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  small {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  select {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+}
+
+.qc-summary-item small {
+  color: #6b7280;
+  font-size: 11px;
+}

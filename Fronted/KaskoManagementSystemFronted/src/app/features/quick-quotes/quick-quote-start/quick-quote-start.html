@@ -215,7 +215,7 @@
 
               </div>
 
-              <dl class="qq-specs">
+              <dl class="qq-specs qq-specs-3">
 
                 <div>
                   <dt>Model Yılı</dt>
@@ -225,6 +225,26 @@
                 <div>
                   <dt>Kasa</dt>
                   <dd>{{ getVehicleTypeText(vehicle.vehicleType) }}</dd>
+                </div>
+
+                <div>
+                  <dt>Yakıt</dt>
+                  <dd>{{ fuelTypeLabel(vehicle.fuelType) }}</dd>
+                </div>
+
+                <div>
+                  <dt>Vites</dt>
+                  <dd>{{ transmissionTypeLabel(vehicle.transmissionType) }}</dd>
+                </div>
+
+                <div>
+                  <dt>Motor</dt>
+                  <dd>{{ vehicle.engineVolume ? vehicle.engineVolume + ' cc' : '—' }}{{ vehicle.enginePower ? ' · ' + vehicle.enginePower + ' HP' : '' }}</dd>
+                </div>
+
+                <div>
+                  <dt>Renk</dt>
+                  <dd>{{ vehicle.color || '—' }}</dd>
                 </div>
 
               </dl>
@@ -276,14 +296,12 @@
             <p>Teklifinizin doğru hesaplanabilmesi için birkaç bilgi seçin.</p>
           </div>
 
-          <div class="qq-chip-summary">
-            <strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong>
-            <span>{{ selectedVehicle?.plateNumber }} · {{ selectedVehicle?.modelYear }}</span>
-          </div>
 
         </div>
 
-        <div class="qq-body qq-risk">
+        <div class="qq-body qq-risk-layout">
+
+        <div class="qq-risk">
 
           <section class="qq-risk-group">
 
@@ -405,6 +423,33 @@
 
           </section>
 
+          <div class="qq-info-box">
+            <strong>Seçimleriniz primi nasıl etkiler?</strong>
+            <ul>
+              <li><b>Kullanım şekli:</b> Ticari araçlar yolda daha çok kaldığı için özel kullanıma göre daha yüksek fiyatlanır.</li>
+              <li><b>Hasar geçmişi:</b> Hasarsız sürücüler indirim kazanır; her hasar primi artırır.</li>
+              <li><b>Muafiyet:</b> Hasarda ödemeyi kabul ettiğiniz tutar arttıkça yıllık priminiz düşer.</li>
+            </ul>
+          </div>
+
+        </div>
+
+          <aside class="qq-vehicle-box" *ngIf="selectedVehicle as vehicle">
+            <span class="qq-vehicle-box-label">Teklif Alınan Araç</span>
+            <strong>{{ vehicle.brand }}</strong>
+            <p>{{ vehicle.model }}</p>
+            <dl>
+              <div><dt>Plaka</dt><dd>{{ vehicle.plateNumber || 'Plakasız' }}</dd></div>
+              <div><dt>Model Yılı</dt><dd>{{ vehicle.modelYear }}</dd></div>
+              <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
+              <div><dt>Yakıt / Vites</dt><dd>{{ fuelTypeLabel(vehicle.fuelType) }} · {{ transmissionTypeLabel(vehicle.transmissionType) }}</dd></div>
+            </dl>
+            <div class="qq-vehicle-box-value">
+              <span>TSB Kasko Değeri</span>
+              <strong>{{ vehicle.marketValue | number:'1.0-0' }} ₺</strong>
+            </div>
+          </aside>
+
         </div>
 
         <div class="qq-actions">
@@ -458,20 +503,20 @@
                 <p>{{ package.description }}</p>
               </div>
 
+              <div class="qq-package-price">
+                <strong *ngIf="packagePrices[package.id] !== undefined && packagePrices[package.id] !== null">{{ packagePrices[package.id] | number:'1.0-0' }} ₺<small>/ yıl</small></strong>
+                <span *ngIf="packagePrices[package.id] === undefined">Fiyat hesaplanıyor...</span>
+                <span *ngIf="packagePrices[package.id] === null">Fiyat alınamadı</span>
+              </div>
+
               <span class="qq-package-count">
                 {{ package.coverages.length }} teminat
               </span>
 
               <ul class="qq-package-coverages">
 
-                <li *ngFor="let coverage of package.coverages.slice(0, 5)">
+                <li *ngFor="let coverage of package.coverages">
                   ✓ {{ coverage.coverageName }}
-                </li>
-
-                <li
-                  class="qq-more"
-                  *ngIf="package.coverages.length > 5">
-                  +{{ package.coverages.length - 5 }} teminat daha
                 </li>
 
               </ul>
@@ -514,46 +559,99 @@
 
           <div>
             <span class="qq-eyebrow">Adım 5</span>
-            <h1>Teminatlarınızı Belirleyin</h1>
-            <p>Paketinizdeki teminatları inceleyin, dilediğinizi çıkarın.</p>
+            <h1>Teminatlarınız</h1>
+            <p>Paketinizdeki teminatlar sabittir. İsterseniz ek teminat ekleyebilirsiniz.</p>
           </div>
 
           <div
             class="qq-chip-summary"
             *ngIf="selectedPackage">
             <strong>{{ selectedPackage.name }}</strong>
-            <span>{{ selectedCoverageIds.length }} / {{ selectedPackage.coverages.length }} teminat seçili</span>
+            <span>{{ selectedPackage.coverages.length }} teminat dahil{{ selectedExtraCount ? ' · ' + selectedExtraCount + ' ek teminat' : '' }}</span>
           </div>
 
         </div>
 
         <div class="qq-body">
 
+          <span class="qq-coverage-group">Pakete dahil teminatlar</span>
+
           <div class="qq-coverage-grid">
 
-            <button
-              type="button"
-              class="qq-coverage"
-              *ngFor="let coverage of selectedPackage?.coverages"
-              [class.selected]="isCoverageSelected(coverage.coverageId)"
-              (click)="toggleCoverage(coverage.coverageId)">
+            <div
+              class="qq-coverage selected locked"
+              *ngFor="let coverage of selectedPackage?.coverages">
 
-              <span class="qq-check">
-                {{ isCoverageSelected(coverage.coverageId) ? '✓' : '' }}
-              </span>
+              <span class="qq-check">✓</span>
 
               <span class="qq-coverage-name">
                 <strong>{{ coverage.coverageName }}</strong>
-                <small *ngIf="coverage.isDefault">Paket teminatı</small>
+                <small>Pakete dahil</small>
               </span>
 
-              <span class="qq-coverage-price">
-                {{ coverage.calculatedPrice | number:'1.2-2' }} ₺
-              </span>
-
-            </button>
+            </div>
 
           </div>
+
+          <ng-container *ngIf="extraCoverages.length > 0">
+
+            <span class="qq-coverage-group">Ek teminat ekleyin</span>
+
+            <div class="qq-coverage-grid">
+
+              <button
+                type="button"
+                class="qq-coverage"
+                *ngFor="let coverage of extraCoverages"
+                [class.selected]="isCoverageSelected(coverage.coverageId)"
+                (click)="toggleCoverage(coverage.coverageId)">
+
+                <span class="qq-check">
+                  {{ isCoverageSelected(coverage.coverageId) ? '✓' : '+' }}
+                </span>
+
+                <span class="qq-coverage-name">
+                  <strong>{{ coverage.coverageName }}</strong>
+                  <small>{{ isCoverageSelected(coverage.coverageId) ? 'Eklendi' : 'Eklemek için tıklayın' }}</small>
+                </span>
+
+              </button>
+
+            </div>
+
+          </ng-container>
+
+          <p *ngIf="extraCoverages.length === 0" class="qq-note">
+            Seçtiğiniz paket tüm teminatları içeriyor, eklenecek başka teminat yok.
+          </p>
+
+          <ng-container *ngIf="optionCoverageIds.length > 0">
+
+            <span class="qq-coverage-group">Limit ve hizmet seçenekleri</span>
+
+            <div class="qq-option-rows">
+
+              <div class="qq-option-row" *ngFor="let coverageId of optionCoverageIds">
+
+                <strong class="qq-option-row-name">{{ coverageNameFor(coverageId) }}</strong>
+
+                <div class="qq-option-chips">
+                  <button
+                    type="button"
+                    class="qq-option-chip"
+                    *ngFor="let option of optionsFor(coverageId)"
+                    [class.selected]="selectedOptionId(coverageId) === option.id"
+                    (click)="selectOption(coverageId, option.id)">
+                    <span>{{ option.name }}</span>
+                    <small>{{ option.extraPrice > 0 ? '+' + (option.extraPrice | number:'1.0-0') + ' ₺' : 'Ek ücret yok' }}</small>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+
+          </ng-container>
 
         </div>
 
@@ -633,26 +731,30 @@
 
             <div class="qo-left">
 
-              <div class="qo-price">
-                <span class="qo-price-label">Yıllık kasko priminiz</span>
-                <strong>{{ pricingResult.totalPremium | number:'1.2-2' }} ₺</strong>
-                <span class="qo-price-sub">Aylık yaklaşık {{ pricingResult.totalPremium / 12 | number:'1.0-0' }} ₺ · 1 yıl geçerli</span>
-              </div>
+              <div class="qo-card">
+  
+                <div class="qo-price">
+                  <span class="qo-price-label">Yıllık kasko priminiz</span>
+                  <strong>{{ pricingResult.totalPremium | number:'1.2-2' }} ₺</strong>
+                  <span class="qo-price-sub">Aylık yaklaşık {{ pricingResult.totalPremium / 12 | number:'1.0-0' }} ₺ · 1 yıl geçerli</span>
+                </div>
+  
+                <ul class="qo-facts">
+                  <li>
+                    <span>Sigortalanan araç</span>
+                    <strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong>
+                  </li>
+                  <li>
+                    <span>Aracınızın kasko değeri</span>
+                    <strong>{{ pricingResult.marketValue | number:'1.0-0' }} ₺</strong>
+                  </li>
+                  <li>
+                    <span>Paket</span>
+                    <strong>{{ selectedPackage?.name }}</strong>
+                  </li>
+                </ul>
 
-              <ul class="qo-facts">
-                <li>
-                  <span>Sigortalanan araç</span>
-                  <strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong>
-                </li>
-                <li>
-                  <span>Aracınızın kasko değeri</span>
-                  <strong>{{ pricingResult.marketValue | number:'1.0-0' }} ₺</strong>
-                </li>
-                <li>
-                  <span>Paket</span>
-                  <strong>{{ selectedPackage?.name }}</strong>
-                </li>
-              </ul>
+              </div>
 
               <ul class="qo-benefits">
                 <li>Hasarda aracınızın kasko değeri kadar güvence</li>
@@ -675,10 +777,16 @@
 
             <div class="qo-right">
 
-              <span class="qo-title">Neler güvence altında?</span>
+              <div class="qo-right-head">
+                <span class="qo-title">Neler güvence altında?</span>
+                <span class="qo-count">{{ pricingResult.coverages.length }} teminat</span>
+              </div>
 
               <ul class="qo-coverages">
-                <li *ngFor="let coverage of pricingResult.coverages">{{ coverage.coverageName }}</li>
+                <li *ngFor="let coverage of pricingResult.coverages">
+                  <span>{{ coverage.coverageName }}</span>
+                  <small>{{ coverage.optionName ? coverage.optionName : (coverage.limit ? ('Limit ' + (coverage.limit | number:'1.0-0') + ' ₺') : 'Araç değeri kadar') }}</small>
+                </li>
               </ul>
 
             </div>
@@ -724,25 +832,34 @@
 
           <div class="qo-left">
 
-            <div class="qo-price">
-              <span class="qo-price-label">Ödenecek yıllık prim</span>
-              <strong>{{ createdQuote.premiumAmount | number:'1.2-2' }} ₺</strong>
-              <span class="qo-price-sub">Tek çekim · Kredi / banka kartı</span>
-            </div>
+            <div class="qo-card">
+  
+              <div class="qo-price">
+                <span class="qo-price-label">Ödenecek yıllık prim</span>
+                <strong>{{ createdQuote.premiumAmount | number:'1.2-2' }} ₺</strong>
+                <span class="qo-price-sub">Tek çekim · Kredi / banka kartı</span>
+              </div>
+  
+              <ul class="qo-facts">
+                <li><span>Sigortalı</span><strong>{{ customerName }}</strong></li>
+                <li><span>Araç</span><strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong></li>
+                <li><span>Plaka</span><strong>{{ selectedVehicle?.plateNumber }}</strong></li>
+                <li><span>Paket</span><strong>{{ selectedPackage?.name }}</strong></li>
+                <li><span>Poliçe süresi</span><strong>1 yıl, bugünden itibaren</strong></li>
+              </ul>
 
-            <ul class="qo-facts">
-              <li><span>Sigortalı</span><strong>{{ customerName }}</strong></li>
-              <li><span>Araç</span><strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong></li>
-              <li><span>Plaka</span><strong>{{ selectedVehicle?.plateNumber }}</strong></li>
-              <li><span>Paket</span><strong>{{ selectedPackage?.name }}</strong></li>
-              <li><span>Poliçe süresi</span><strong>1 yıl, bugünden itibaren</strong></li>
-            </ul>
+            </div>
 
           </div>
 
           <div class="qo-right">
 
-            <span class="qo-title">Onaylar</span>
+            <div class="qo-right-head">
+              <span class="qo-title">Onaylar</span>
+              <span class="qo-count">{{ (acceptedTerms ? 1 : 0) + (acceptedKvkk ? 1 : 0) }} / 2</span>
+            </div>
+
+            <p class="qo-right-intro">Satın alma işlemini tamamlamak için aşağıdaki metinleri onaylamanız gerekir.</p>
 
             <label class="qo-consent">
               <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />
@@ -789,45 +906,56 @@
         class="qq-step"
         *ngIf="currentStep === 10 && createdPolicy">
 
-        <div class="qq-body qq-body-center">
+        <div class="qq-step-head qq-step-head-row">
 
-          <div class="qq-status-card">
+          <div>
+            <span class="qq-eyebrow">✓ Ödeme başarılı</span>
+            <h1>Aracınız Artık Güvence Altında</h1>
+            <p>Poliçeniz düzenlendi. Belgenizi indirip saklayın; hasar anında poliçe numaranız istenecek.</p>
+          </div>
 
-            <span class="qq-status-icon">✓</span>
+          <div class="qq-chip-summary">
+            <strong>{{ createdPolicy.policyNumber | recordNo:'full' }}</strong>
+            <span>Aktif · {{ createdPolicy.premiumAmount | number:'1.2-2' }} ₺ ödendi</span>
+          </div>
 
-            <span class="qq-eyebrow">Ödeme Başarılı</span>
+        </div>
 
-            <h1>Poliçeniz Aktif</h1>
+        <div class="qq-body qo-layout">
 
-            <p>Ödemeniz alındı ve poliçeniz düzenlendi. Belgenizi hemen indirebilirsiniz.</p>
+          <div class="qo-left">
 
-            <dl class="qq-summary">
+            <ul class="qo-facts">
+              <li><span>Sigortalı</span><strong>{{ customerName }}</strong></li>
+              <li><span>Araç</span><strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong></li>
+              <li><span>Plaka</span><strong>{{ selectedVehicle?.plateNumber }}</strong></li>
+              <li><span>Paket</span><strong>{{ selectedPackage?.name }}</strong></li>
+              <li><span>Koruma başlangıcı</span><strong>{{ createdPolicy.startDate | backendDate:'date' }}</strong></li>
+              <li><span>Koruma bitişi</span><strong>{{ createdPolicy.endDate | backendDate:'date' }}</strong></li>
+              <li><span>Araç kasko değeri</span><strong>{{ pricingResult?.marketValue | number:'1.0-0' }} ₺</strong></li>
+              <li><span>Ödenen prim</span><strong>{{ createdPolicy.premiumAmount | number:'1.2-2' }} ₺</strong></li>
+            </ul>
 
-              <div>
-                <dt>Poliçe No</dt>
-                <dd>{{ createdPolicy.policyNumber }}</dd>
-              </div>
+            <div class="qo-help">
+              <strong>Hasar anında ne yapmalısınız?</strong>
+              <ol>
+                <li>Güvenli bir yere geçin, gerekirse 112'yi arayın.</li>
+                <li>Kaza tespit tutanağı düzenleyin veya polis çağırın.</li>
+                <li>Poliçe numaranızla hasar ihbarında bulunun.</li>
+              </ol>
+            </div>
 
-              <div>
-                <dt>Poliçe Durumu</dt>
-                <dd>
-                  <span class="qq-badge qq-badge-success">{{ policyStatusLabel(createdPolicy.status) }}</span>
-                </dd>
-              </div>
+          </div>
 
-              <div>
-                <dt>Ödeme Durumu</dt>
-                <dd>
-                  <span class="qq-badge qq-badge-success">Başarılı</span>
-                </dd>
-              </div>
+          <div class="qo-right">
 
-              <div class="qq-summary-total">
-                <dt>Ödenen Tutar</dt>
-                <dd>{{ createdPolicy.premiumAmount | number:'1.2-2' }} ₺</dd>
-              </div>
+            <span class="qo-title">Poliçenizdeki teminatlar</span>
 
-            </dl>
+            <ul class="qo-coverages">
+              <li *ngFor="let coverage of pricingResult?.coverages">{{ coverage.coverageName }}</li>
+            </ul>
+
+            <p class="qo-demo-note">Poliçeniz yenileme tarihinden 30 gün önce size hatırlatılır.</p>
 
           </div>
 
@@ -836,9 +964,9 @@
         <div class="qq-actions">
 
           <a
-            routerLink="/customer"
+            routerLink="/customer/policies"
             class="qq-btn qq-btn-ghost">
-            Hesabıma Git
+            Poliçelerime Git
           </a>
 
           <button
@@ -846,7 +974,7 @@
             class="qq-btn qq-btn-primary"
             [disabled]="isLoading"
             (click)="createPolicyPdf()">
-            {{ isLoading ? 'PDF oluşturuluyor...' : 'Poliçe PDF İndir' }}
+            {{ isLoading ? 'PDF hazırlanıyor...' : 'Poliçe Belgesini İndir' }}
           </button>
 
         </div>

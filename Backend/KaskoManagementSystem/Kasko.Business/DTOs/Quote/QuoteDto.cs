@@ -1,4 +1,4 @@
-﻿using Kasko.Entities.Enums;
+using Kasko.Entities.Enums;
 
 namespace Kasko.Business.DTOs.Quote
 {
@@ -56,6 +56,8 @@ namespace Kasko.Business.DTOs.Quote
         public decimal CalculatedPrice { get; set; }
 
         public decimal? Limit { get; set; }
+
+        public string? OptionName { get; set; }
     }
 
 

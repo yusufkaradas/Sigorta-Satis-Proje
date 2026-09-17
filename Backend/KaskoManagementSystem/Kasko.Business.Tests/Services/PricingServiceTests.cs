@@ -1,4 +1,4 @@
-﻿using Kasko.Business.Pricing;
+using Kasko.Business.Pricing;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
@@ -25,8 +25,17 @@ public class PricingServiceTests
             .Setup(x => x.PricingRules)
             .Returns(_pricingRuleRepositoryMock.Object);
 
+        var coverageOptionRepositoryMock =
+            new Mock<IGenericRepository<CoverageOption>>();
+
+        coverageOptionRepositoryMock
+            .Setup(x => x.FindAsync(
+                It.IsAny<System.Linq.Expressions.Expression<Func<CoverageOption, bool>>>()))
+            .ReturnsAsync(new List<CoverageOption>());
+
         _service = new PricingService(
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            coverageOptionRepositoryMock.Object);
     }
     [Fact]
     public async Task CalculateAsync_ShouldUseEffectiveDate()
@@ -880,6 +889,11 @@ public class PricingServiceTests
         string ageFactorCode,
         decimal ageFactor)
     {
+        _unitOfWorkMock
+            .Setup(x => x.PackageCoverages.FindAsync(
+                It.IsAny<System.Linq.Expressions.Expression<Func<PackageCoverage, bool>>>()))
+            .ReturnsAsync(new List<PackageCoverage>());
+
         _pricingRuleRepositoryMock
             .Setup(x => x.GetApplicableRuleAsync(
                         "BASE_KASKO_RATE",

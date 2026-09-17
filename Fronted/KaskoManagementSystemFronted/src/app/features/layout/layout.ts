@@ -1,8 +1,30 @@
 import { BrandService } from '../../core/services/brand.service';
 import {
   Component,
-  inject
+  OnInit,
+  computed,
+  inject,
+  signal
 } from '@angular/core';
+
+import {
+  HttpClient
+} from '@angular/common/http';
+
+import {
+  catchError,
+  forkJoin,
+  of
+} from 'rxjs';
+
+interface StaffAlert {
+  title: string;
+  detail: string;
+  count: number;
+  link: string;
+  tab?: string;
+  tone: 'danger' | 'warning' | 'info';
+}
 
 import {
   ActivatedRoute,
@@ -29,7 +51,8 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/quotes', label: 'Teklifler', exact: false },
   { path: '/policies', label: 'Poliçeler', exact: false },
   { path: '/payments', label: 'Ödemeler', exact: false },
-  { path: '/pricing-requests', label: 'Fiyat Talepleri', exact: false },
+  { path: '/requests', label: 'Talepler', exact: false },
+  { path: '/tariff', label: 'Paket & Teminat', exact: false },
   { path: '/users', label: 'Kullanıcılar', exact: false },
   { path: '/roles', label: 'Roller', exact: false }
 ];
@@ -41,8 +64,8 @@ const MANAGER_MENU: MenuItem[] = [
   { path: '/manager/quotes', label: 'Teklifler', exact: false },
   { path: '/manager/policies', label: 'Poliçeler', exact: false },
   { path: '/manager/payments', label: 'Ödemeler', exact: false },
-  { path: '/manager/pricing-rules', label: 'Fiyat Kuralları', exact: false },
-  { path: '/manager/pricing-requests', label: 'Fiyat Talepleri', exact: false }
+  { path: '/manager/requests', label: 'Talepler', exact: false },
+  { path: '/manager/tariff', label: 'Paket & Teminat', exact: false }
 ];
 
 @Component({
@@ -56,7 +79,7 @@ const MANAGER_MENU: MenuItem[] = [
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
-export class Layout {
+export class Layout implements OnInit {
 
   private readonly brandService = inject(BrandService);
 
@@ -82,6 +105,87 @@ export class Layout {
 
   readonly user =
     this.authService.getCurrentUser();
+
+  private readonly http =
+    inject(HttpClient);
+
+  alerts = signal<StaffAlert[]>([]);
+
+  alertCount = computed(() =>
+    this.alerts().reduce((total, item) => total + item.count, 0)
+  );
+
+  ngOnInit(): void {
+    this.loadAlerts();
+  }
+
+  loadAlerts(): void {
+
+    const api = 'https://localhost:7086/api';
+    const base = this.isManager ? '/manager' : '';
+    const safe = <T>(url: string) => this.http.get<T[]>(url, { headers: { 'X-Silent-Error': '1' } }).pipe(catchError(() => of([] as T[])));
+
+    forkJoin({
+      pricing: safe<{ status: string }>(`${api}/PricingRuleChangeRequest`),
+      cancellations: safe<{ status: number }>(`${api}/PolicyCancellation`),
+      payments: safe<{ status: number }>(`${api}/Payment`),
+      renewals: safe<{ id: string }>(`${api}/Policy/upcoming-renewals?daysAhead=30`),
+      quotes: safe<{ status: number; validUntil: string }>(`${api}/Quote`)
+    }).subscribe(data => {
+
+      const pendingPricing = data.pricing.filter(item => item.status === 'Pending').length;
+      const pendingCancellations = data.cancellations.filter(item => item.status === 1).length;
+      const failedPayments = data.payments.filter(item => item.status === 4).length;
+      const soon = Date.now() + 3 * 86400000;
+      const expiringQuotes = data.quotes.filter(item =>
+        (item.status === 1 || item.status === 2) &&
+        new Date(item.validUntil).getTime() <= soon &&
+        new Date(item.validUntil).getTime() >= Date.now()
+      ).length;
+
+      const alerts: StaffAlert[] = [
+        {
+          title: this.isManager ? 'Fiyat talebiniz onay bekliyor' : 'Onayınızı bekleyen fiyat talebi',
+          detail: this.isManager ? 'Admin kararı bekleniyor' : 'Kural değişikliklerini inceleyin',
+          count: pendingPricing,
+          link: `${base}/requests`,
+          tab: 'pricing-requests',
+          tone: 'warning'
+        },
+        {
+          title: 'İptal talebi',
+          detail: 'Müşteri poliçesini iptal etmek istiyor',
+          count: pendingCancellations,
+          link: `${base}/requests`,
+          tab: 'cancellations',
+          tone: 'danger'
+        },
+        {
+          title: 'Başarısız ödeme',
+          detail: 'Müşteriyle iletişime geçin',
+          count: failedPayments,
+          link: `${base}/payments`,
+          tone: 'danger'
+        },
+        {
+          title: 'Yenilemesi yaklaşan poliçe',
+          detail: '30 gün içinde bitiyor',
+          count: data.renewals.length,
+          link: `${base}/policies`,
+          tone: 'info'
+        },
+        {
+          title: 'Süresi dolmak üzere teklif',
+          detail: '3 gün içinde geçersiz olacak',
+          count: expiringQuotes,
+          link: `${base}/quotes`,
+          tone: 'warning'
+        }
+      ];
+
+      this.alerts.set(alerts.filter(item => item.count > 0));
+    });
+  }
 
   isNotificationOpen = false;
 
@@ -115,6 +219,10 @@ export class Layout {
       !this.isNotificationOpen;
 
     this.isUserMenuOpen = false;
+
+    if (this.isNotificationOpen) {
+      this.loadAlerts();
+    }
   }
 
   toggleUserMenu(): void {

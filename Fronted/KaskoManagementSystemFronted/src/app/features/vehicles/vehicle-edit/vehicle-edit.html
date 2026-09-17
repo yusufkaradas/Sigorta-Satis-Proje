@@ -12,7 +12,7 @@
 
       <div>
         <h1>{{ form.plateNumber || 'Araç' }} Düzenle</h1>
-        <p>Araç bilgilerini güncelleyin. TSB değeri marka, model ve yıla göre yenilenir.</p>
+        <p>{{ isCustomerMode ? 'Aracınızın bilgilerini güncelleyin. Kasko değeri seçtiğiniz marka, model ve yıla göre yeniden hesaplanır.' : 'Araç bilgilerini güncelleyin. TSB değeri marka, model ve yıla göre yenilenir.' }}</p>
       </div>
 
       <button
@@ -48,6 +48,7 @@
 
       <section class="kf-section">
 
+        <ng-container *ngIf="!isCustomerMode">
         <h2 class="kf-section-title">
           Müşteri
           <span class="kf-badge active">Bağlı</span>
@@ -59,8 +60,9 @@
             <dd>{{ customerName || 'Müşteri bulunamadı' }}</dd>
           </div>
         </dl>
+        </ng-container>
 
-        <div class="kf-field">
+        <div *ngIf="!isCustomerMode" class="kf-field">
           <label for="isActive">Durum *</label>
           <select
             id="isActive"

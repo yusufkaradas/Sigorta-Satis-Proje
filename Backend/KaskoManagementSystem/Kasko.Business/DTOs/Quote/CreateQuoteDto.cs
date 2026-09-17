@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.DTOs.Quote
+namespace Kasko.Business.DTOs.Quote
 {
     public class CreateQuoteDto
     {
@@ -10,6 +10,9 @@
 
         public IReadOnlyCollection<Guid> CoverageIds { get; set; }
             = Array.Empty<Guid>();
+
+        public Dictionary<Guid, Guid> CoverageOptionIds { get; set; }
+            = new();
 
         public string Usage { get; set; } = "PRIVATE";
 

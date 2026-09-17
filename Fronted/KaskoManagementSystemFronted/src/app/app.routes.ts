@@ -46,6 +46,7 @@ import {
   Settings
 } from './features/settings/settings';
 
+
 import {
   VehicleCreate
 } from './features/vehicles/vehicle-create/vehicle-create';
@@ -174,13 +175,10 @@ import {
   ForgotPassword
 } from './features/auth/forgot-password/forgot-password';
 
-import {
-  PricingRules
-} from './features/pricing/pricing-rules/pricing-rules';
 
-import {
-  PricingRequests
-} from './features/pricing/pricing-requests/pricing-requests';
+import { CustomerProfile } from './features/customer-portal/customer-profile/customer-profile';
+import { TariffPage } from './features/tariff/tariff';
+import { RequestsHub } from './features/requests/requests-hub';
 
 
 export const routes: Routes = [
@@ -250,6 +248,17 @@ export const routes: Routes = [
       }
     },
     {
+      path: 'vehicles/:id/edit',
+      component: VehicleEdit,
+      data: {
+        mode: 'customer'
+      }
+    },
+    {
+      path: 'settings',
+      component: CustomerProfile
+    },
+    {
       path: 'quotes',
       component: CustomerQuotes
     },
@@ -312,8 +321,11 @@ export const routes: Routes = [
       { path: 'policies/:id', component: PolicyDetail, data: { mode: 'manager' } },
       { path: 'payments', component: Payments, data: { mode: 'manager' } },
       { path: 'payments/:id', component: PaymentDetail, data: { mode: 'manager' } },
-      { path: 'pricing-rules', component: PricingRules, data: { mode: 'manager' } },
-      { path: 'pricing-requests', component: PricingRequests, data: { mode: 'manager' } }
+      { path: 'requests', component: RequestsHub, data: { mode: 'manager' } },
+      { path: 'tariff', component: TariffPage, data: { mode: 'manager' } },
+      { path: 'pricing-rules', redirectTo: 'requests?tab=pricing-rules' },
+      { path: 'pricing-requests', redirectTo: 'requests?tab=pricing-requests' },
+      { path: 'cancellations', redirectTo: 'requests?tab=cancellations' }
     ]
   },
 
@@ -336,10 +348,11 @@ export const routes: Routes = [
           roles: ['Admin']
         }
       },
-      {
-        path: 'pricing-requests',
-        component: PricingRequests
-      },
+      { path: 'requests', component: RequestsHub },
+      { path: 'tariff', component: TariffPage },
+      { path: 'pricing-rules', redirectTo: 'requests?tab=pricing-rules' },
+      { path: 'pricing-requests', redirectTo: 'requests?tab=pricing-requests' },
+      { path: 'cancellations', redirectTo: 'requests?tab=cancellations' },
 
       {
         path: 'dashboard',

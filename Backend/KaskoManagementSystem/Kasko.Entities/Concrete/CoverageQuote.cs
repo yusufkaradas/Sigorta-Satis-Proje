@@ -1,4 +1,4 @@
-﻿using Kasko.Entities.Abstract;
+using Kasko.Entities.Abstract;
 using Kasko.Entities.Concrete;
 
 public class QuoteCoverage : BaseEntity
@@ -10,6 +10,10 @@ public class QuoteCoverage : BaseEntity
     public decimal CalculatedPrice { get; set; }
 
     public decimal? Limit { get; set; }
+
+    public Guid? CoverageOptionId { get; set; }
+
+    public string? OptionName { get; set; }
 
     public Quote Quote { get; set; } = null!;
 

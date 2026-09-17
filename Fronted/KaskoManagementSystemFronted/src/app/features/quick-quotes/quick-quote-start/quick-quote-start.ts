@@ -1,3 +1,5 @@
+import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
+import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import {
   ChangeDetectorRef,
   Component,
@@ -22,7 +24,8 @@ import {
   QuickQuoteOfferRequest,
   QuickQuotePaymentRequest,
   QuickQuotePolicyPdfRequest,
-  QuickQuotePricingRequest
+  QuickQuotePricingRequest,
+  QuickQuoteCoverageOption
 } from './quick-quote-start-service';
 
 import {
@@ -46,6 +49,8 @@ import {
   standalone: true,
 
   imports: [
+    RecordNumberPipe,
+    BackendDatePipe,
     CommonModule,
     RouterLink
   ],
@@ -200,6 +205,94 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
   selectedPackage: QuickQuotePackage | null = null;
 
+  packagePrices: Record<string, number | null> = {};
+
+  coverageOptionIds: Record<string, string> = {};
+
+  optionsFor(coverageId: string): QuickQuoteCoverageOption[] {
+    return this.packages
+      .flatMap(item => item.coverages)
+      .find(item => item.coverageId === coverageId && (item.options?.length ?? 0) > 0)
+      ?.options ?? [];
+  }
+
+  coverageNameFor(coverageId: string): string {
+    return this.packages
+      .flatMap(item => item.coverages)
+      .find(item => item.coverageId === coverageId)
+      ?.coverageName ?? '';
+  }
+
+  get optionCoverageIds(): string[] {
+    const ids = [
+      ...(this.selectedPackage?.coverages ?? []).map(item => item.coverageId),
+      ...this.selectedCoverageIds
+    ];
+    return [...new Set(ids)].filter(id => this.optionsFor(id).length > 0);
+  }
+
+  selectedOptionId(coverageId: string): string {
+    const options = this.optionsFor(coverageId);
+    return this.coverageOptionIds[coverageId]
+      ?? options.find(item => item.isDefault)?.id
+      ?? options[0]?.id
+      ?? '';
+  }
+
+  selectOption(coverageId: string, optionId: string): void {
+    this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+  }
+
+  private get activeCoverageOptionIds(): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (const coverageId of this.optionCoverageIds) {
+      const optionId = this.selectedOptionId(coverageId);
+      if (optionId) {
+        result[coverageId] = optionId;
+      }
+    }
+    return result;
+  }
+
+  get vehicleAge(): number {
+    const year = this.selectedVehicle?.modelYear ?? new Date().getFullYear();
+    return Math.max(0, new Date().getFullYear() - year);
+  }
+
+  private loadPackagePrices(): void {
+    const vehicle = this.selectedVehicle;
+
+    if (!vehicle) {
+      return;
+    }
+
+    this.packagePrices = {};
+
+    for (const packageItem of this.packages) {
+      this.quickQuoteService
+        .calculatePricing({
+          identityNumber: this.identityNumber,
+          phoneNumber: this.normalizedPhoneNumber,
+          vehicleId: vehicle.id,
+          usage: this.usage,
+          claimsCount: this.claimsCount,
+          packageId: packageItem.id,
+          deductible: this.deductible,
+          coverageIds: packageItem.coverages.filter(item => item.isDefault).map(item => item.coverageId)
+        })
+        .subscribe({
+          next: result => {
+            this.packagePrices = { ...this.packagePrices, [packageItem.id]: result.totalPremium };
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.packagePrices = { ...this.packagePrices, [packageItem.id]: null };
+            this.cdr.detectChanges();
+          }
+        });
+    }
+  }
+
   selectedCoverageIds: string[] = [];
 
   createdQuoteId: string | null = null;
@@ -341,7 +434,10 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
         this.deductible,
 
       coverageIds:
-        this.selectedCoverageIds
+        this.selectedCoverageIds,
+
+      coverageOptionIds:
+        this.activeCoverageOptionIds
     };
 
     this.quickQuoteService
@@ -875,6 +971,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
           this.currentStep =
             4;
 
+          this.loadPackagePrices();
+
           this.cdr.detectChanges();
         },
 
@@ -899,6 +997,9 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
     this.selectedPackage =
       packageItem;
+
+    this.coverageOptionIds =
+      {};
 
     this.selectedCoverageIds =
       [];
@@ -928,9 +1029,35 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       5;
   }
 
+  isPackageCoverage(coverageId: string): boolean {
+    return !!this.selectedPackage?.coverages.some(item => item.coverageId === coverageId);
+  }
+
+  get extraCoverages() {
+    const included = new Set((this.selectedPackage?.coverages ?? []).map(item => item.coverageId));
+    const seen = new Set<string>();
+    return this.packages
+      .flatMap(item => item.coverages)
+      .filter(item => {
+        if (included.has(item.coverageId) || seen.has(item.coverageId)) {
+          return false;
+        }
+        seen.add(item.coverageId);
+        return true;
+      });
+  }
+
+  get selectedExtraCount(): number {
+    return this.selectedCoverageIds.filter(id => !this.isPackageCoverage(id)).length;
+  }
+
   toggleCoverage(
     coverageId: string
   ): void {
+
+    if (this.isPackageCoverage(coverageId)) {
+      return;
+    }
 
     if (
       this.selectedCoverageIds
@@ -1034,7 +1161,10 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
         this.deductible,
 
       coverageIds:
-        this.selectedCoverageIds
+        this.selectedCoverageIds,
+
+      coverageOptionIds:
+        this.activeCoverageOptionIds
     };
 
     this.quickQuoteService
@@ -1149,262 +1279,6 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
     this.currentStep =
       step;
-  }
-
-  offerQuote(): void {
-
-    if (
-      !this.createdQuoteId ||
-      this.isLoading
-    ) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    this.errorMessage = '';
-
-    const request:
-      QuickQuoteOfferRequest = {
-
-      quoteId:
-        this.createdQuoteId,
-
-      identityNumber:
-        this.identityNumber,
-
-      phoneNumber:
-        this.normalizedPhoneNumber
-    };
-
-    this.quickQuoteService
-      .offerQuote(request)
-      .subscribe({
-
-        next: () => {
-
-          this.isLoading = false;
-
-          if (this.createdQuote) {
-
-            this.createdQuote.status =
-              QuoteStatus.Offered;
-          }
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-
-          this.isLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Teklif sunulurken bir hata oluştu.';
-
-          this.cdr.detectChanges();
-        }
-
-      });
-  }
-
-  acceptQuote(): void {
-
-    if (
-      !this.createdQuoteId ||
-      this.isLoading
-    ) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    this.errorMessage = '';
-
-    const request:
-      QuickQuoteOfferRequest = {
-
-      quoteId:
-        this.createdQuoteId,
-
-      identityNumber:
-        this.identityNumber,
-
-      phoneNumber:
-        this.normalizedPhoneNumber
-    };
-
-    this.quickQuoteService
-      .acceptQuote(request)
-      .subscribe({
-
-        next: () => {
-
-          this.isLoading = false;
-
-          if (this.createdQuote) {
-
-            this.createdQuote.status =
-              QuoteStatus.Accepted;
-          }
-
-          this.createPolicy();
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-
-          this.isLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Teklif kabul edilirken bir hata oluştu.';
-
-          this.cdr.detectChanges();
-        }
-
-      });
-  }
-
-  createPolicy(): void {
-
-    if (
-      !this.createdQuoteId ||
-      !this.selectedVehicle?.id ||
-      this.isLoading
-    ) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    this.errorMessage = '';
-
-    const request = {
-
-      identityNumber:
-        this.identityNumber,
-
-      phoneNumber:
-        this.normalizedPhoneNumber,
-
-      quoteId:
-        this.createdQuoteId,
-
-      vehicleId:
-        this.selectedVehicle.id
-    };
-
-    this.quickQuoteService
-      .createPolicy(request)
-      .subscribe({
-
-        next: (policy) => {
-
-          this.isLoading = false;
-
-          this.createdPolicy =
-            policy;
-
-          this.currentStep =
-            8;
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-
-          this.isLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Poliçe oluşturulurken bir hata oluştu.';
-
-          this.cdr.detectChanges();
-        }
-
-      });
-  }
-
-  goToPayment(): void {
-
-    if (!this.createdPolicy) {
-      return;
-    }
-
-    this.currentStep =
-      9;
-
-    this.cdr.detectChanges();
-  }
-
-  payPolicy(): void {
-
-    if (
-      !this.createdPolicy?.id ||
-      this.isLoading
-    ) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    this.errorMessage = '';
-
-    const request:
-      QuickQuotePaymentRequest = {
-
-      identityNumber:
-        this.identityNumber,
-
-      phoneNumber:
-        this.normalizedPhoneNumber,
-
-      policyId:
-        this.createdPolicy.id,
-
-      simulateFailure:
-        false
-    };
-
-    this.quickQuoteService
-      .createPayment(request)
-      .subscribe({
-
-        next: (payment) => {
-
-          this.createdPayment =
-            payment;
-
-          this.isLoading =
-            false;
-
-          if (this.createdPolicy) {
-
-            this.createdPolicy.status =
-              PolicyStatus.Active;
-          }
-
-          this.currentStep =
-            10;
-
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-
-          this.isLoading =
-            false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Ödeme sırasında bir hata oluştu.';
-
-          this.cdr.detectChanges();
-        }
-
-      });
   }
 
   createPolicyPdf(): void {

@@ -70,6 +70,7 @@ export interface DashboardData {
   policies: PolicyItem[];
   payments: PaymentItem[];
   pricingRequests: PricingRequestItem[];
+  upcomingRenewals: PolicyItem[];
 }
 
 @Injectable({
@@ -106,6 +107,14 @@ export class DashboardService {
       pricingRequests: this.http
         .get<PricingRequestItem[]>(
           `${this.apiUrl}/PricingRuleChangeRequest`
+        )
+        .pipe(
+          catchError(() => of([]))
+        ),
+
+      upcomingRenewals: this.http
+        .get<PolicyItem[]>(
+          `${this.apiUrl}/Policy/upcoming-renewals?daysAhead=30`
         )
         .pipe(
           catchError(() => of([]))

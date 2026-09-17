@@ -11,11 +11,21 @@ import {
   Observable
 } from 'rxjs';
 
+export interface CoverageOption {
+  id: string;
+  name: string;
+  limit: number | null;
+  extraPrice: number;
+  isDefault: boolean;
+}
+
 export interface PackageCoverage {
   coverageId: string;
   coverageName: string;
   calculatedPrice: number;
   isDefault: boolean;
+  description?: string | null;
+  options?: CoverageOption[];
 }
 
 export interface InsurancePackage {

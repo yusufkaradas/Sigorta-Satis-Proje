@@ -58,27 +58,28 @@
             aria-label="Bildirimler"
             (click)="toggleNotification()">
             🔔
+            @if (alertCount() > 0) {
+              <span class="kl-bell-count">{{ alertCount() > 9 ? '9+' : alertCount() }}</span>
+            }
           </button>
 
           @if (isNotificationOpen) {
-            <div class="kl-dropdown">
+            <div class="kl-dropdown kl-notify">
               <strong>Bildirimler</strong>
-              @if (isManager) {
-                <p>Onay bekleyen fiyat taleplerinizi Fiyat Talepleri ekranından takip edebilirsiniz.</p>
-                <a
-                  routerLink="/manager/pricing-requests"
-                  class="kl-dropdown-link"
-                  (click)="isNotificationOpen = false">
-                  Taleplere Git
-                </a>
+
+              @if (alerts().length === 0) {
+                <p>Bekleyen işiniz yok. Her şey yolunda.</p>
               } @else {
-                <p>Onay bekleyen fiyat taleplerini inceleyin.</p>
-                <a
-                  routerLink="/pricing-requests"
-                  class="kl-dropdown-link"
-                  (click)="isNotificationOpen = false">
-                  Fiyat Taleplerine Git
-                </a>
+                <ul class="kl-notify-list">
+                  @for (item of alerts(); track item.title) {
+                    <li class="kl-alert-item" [class.unread]="item.tone !== 'info'">
+                      <a [routerLink]="item.link" [queryParams]="item.tab ? { tab: item.tab } : null" (click)="isNotificationOpen = false">
+                        <b>{{ item.count }} {{ item.title }}</b>
+                        <span>{{ item.detail }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
               }
             </div>
           }
@@ -86,10 +87,10 @@
         </div>
 
         <a
-          [routerLink]="isManager ? '/manager/pricing-rules' : '/settings'"
+          [routerLink]="isManager ? '/manager/tariff' : '/settings'"
           class="kl-icon-button"
-          [attr.aria-label]="isManager ? 'Fiyat Kuralları' : 'Ayarlar'"
-          [title]="isManager ? 'Fiyat Kuralları' : 'Ayarlar'">
+          [attr.aria-label]="isManager ? 'Paket & Teminat' : 'Ayarlar'"
+          [title]="isManager ? 'Paket & Teminat' : 'Ayarlar'">
           ⚙
         </a>
 

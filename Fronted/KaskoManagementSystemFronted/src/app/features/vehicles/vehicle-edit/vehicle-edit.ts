@@ -18,9 +18,17 @@ import {
 } from '@angular/router';
 
 import {
+  of
+} from 'rxjs';
+
+import {
   Customer,
   CustomerService
 } from '../../customers/customers.service';
+
+import {
+  injectPortalContext
+} from '../../../core/services/portal-context';
 
 import {
   UpdateVehicleRequest,
@@ -75,6 +83,12 @@ export class VehicleEdit {
 
   private readonly cdr =
     inject(ChangeDetectorRef);
+
+  readonly portal =
+    injectPortalContext();
+
+  readonly isCustomerMode =
+    this.portal.isCustomer;
 
 
   vehicleId = '';
@@ -279,8 +293,7 @@ private loadTsbValue(): void {
     this.errorMessage = '';
 
 
-    this.customerService
-      .getCustomers()
+    (this.isCustomerMode ? of([] as Customer[]) : this.customerService.getCustomers())
       .subscribe({
 
         next: (customers: Customer[]) => {
@@ -464,7 +477,7 @@ this.vehicleService.updateVehicle(this.form)
           setTimeout(() => {
 
             this.router.navigate([
-              '/vehicles',
+              this.portal.basePath + '/vehicles',
               this.vehicleId
             ]);
 
@@ -507,7 +520,7 @@ this.vehicleService.updateVehicle(this.form)
   cancel(): void {
 
     this.router.navigate([
-      '/vehicles',
+      this.portal.basePath + '/vehicles',
       this.vehicleId
     ]);
 

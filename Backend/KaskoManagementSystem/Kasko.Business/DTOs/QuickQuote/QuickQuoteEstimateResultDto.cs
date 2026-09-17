@@ -39,4 +39,12 @@ public class QuickQuoteCoverageEstimateDto
     public string CoverageName { get; set; } = string.Empty;
 
     public decimal Price { get; set; }
+
+    public decimal? Limit { get; set; }
+
+    public string? OptionName { get; set; }
+
+    public Guid? CoverageOptionId { get; set; }
+
+    public List<Kasko.Business.DTOs.Package.CoverageOptionDto> Options { get; set; } = new();
 }

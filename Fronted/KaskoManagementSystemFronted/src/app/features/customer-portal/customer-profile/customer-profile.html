@@ -1,0 +1,94 @@
+<div class="kf-page">
+
+  <div class="kf-title">
+    AYARLAR
+  </div>
+
+  <form class="kf-panel" (ngSubmit)="save()">
+
+    <div class="kf-panel-head">
+      <div>
+        <h1>{{ customer ? customer.firstName + ' ' + customer.lastName : 'Bilgilerim' }}</h1>
+        <p>İletişim ve adres bilgilerinizi güncel tutun. Poliçe belgeleriniz bu bilgilerle hazırlanır.</p>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
+
+    <div *ngIf="isLoading" class="kf-state">Bilgileriniz yükleniyor...</div>
+
+    <div *ngIf="!isLoading && customer" class="kf-body kf-body-half">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Kimlik Bilgileri</h2>
+
+        <div class="kf-grid">
+
+          <div class="kf-field">
+            <label for="fullName">Ad Soyad</label>
+            <input id="fullName" type="text" [value]="customer.firstName + ' ' + customer.lastName" disabled />
+          </div>
+
+          <div class="kf-field">
+            <label for="identity">T.C. Kimlik No</label>
+            <input id="identity" type="text" [value]="maskedIdentity" disabled />
+          </div>
+
+          <div class="kf-field">
+            <label for="birth">Doğum Tarihi</label>
+            <input id="birth" type="text" [value]="customer.dateOfBirth ? (customer.dateOfBirth | date:'dd.MM.yyyy') : '—'" disabled />
+          </div>
+
+          <div class="kf-field">
+            <label for="mail">E-posta</label>
+            <input id="mail" type="text" [value]="customer.email" disabled />
+          </div>
+
+          <p class="kf-span-all kf-muted">Kimlik ve e-posta bilgilerinizi değiştirmek için müşteri hizmetleriyle iletişime geçin.</p>
+
+        </div>
+
+      </section>
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">İletişim ve Adres</h2>
+
+        <div class="kf-grid">
+
+          <div class="kf-field">
+            <label for="phoneNumber">Telefon *</label>
+            <input id="phoneNumber" type="tel" name="phoneNumber" placeholder="05XX XXX XX XX" [(ngModel)]="phoneNumber" />
+          </div>
+
+          <div class="kf-field">
+            <label for="city">İl *</label>
+            <input id="city" type="text" name="city" [(ngModel)]="city" />
+          </div>
+
+          <div class="kf-field">
+            <label for="district">İlçe *</label>
+            <input id="district" type="text" name="district" [(ngModel)]="district" />
+          </div>
+
+          <div class="kf-field kf-span-all">
+            <label for="address">Adres</label>
+            <textarea id="address" rows="2" name="address" [(ngModel)]="address"></textarea>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <div class="kf-actions">
+      <button type="submit" class="kf-btn" [disabled]="isSaving || isLoading || !customer">
+        {{ isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+      </button>
+    </div>
+
+  </form>
+
+</div>

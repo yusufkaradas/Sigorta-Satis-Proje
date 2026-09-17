@@ -1,4 +1,4 @@
-﻿using Kasko.Entities.Abstract;
+using Kasko.Entities.Abstract;
 using Kasko.Entities.Enums;
 
 namespace Kasko.Entities.Concrete;
@@ -20,6 +20,9 @@ public class Coverage : BaseEntity
     public bool IsRequired { get; set; }
 
     public bool IsActive { get; set; } = true;
+
+    public ICollection<CoverageOption> Options { get; set; }
+    = new List<CoverageOption>();
 
     public ICollection<QuoteCoverage> QuoteCoverages { get; set; }
     = new List<QuoteCoverage>();

@@ -150,6 +150,16 @@
       </a>
 
       <div
+        *ngIf="vehicle && isCustomerMode"
+        class="kf-head-actions">
+        <a
+          [routerLink]="[basePath + '/vehicles', vehicle.id, 'edit']"
+          class="kf-btn">
+          Bilgileri Düzenle
+        </a>
+      </div>
+
+      <div
         *ngIf="vehicle && !portal.isReadOnly"
         class="kf-head-actions">
 

@@ -1418,3 +1418,478 @@
   color: k.$text-secondary;
   font-size: 12px;
 }
+
+.qq-package-grid {
+  align-items: start;
+}
+
+.qq-body:has(.qq-package-grid) {
+  overflow-y: auto;
+}
+
+.qo-help {
+  padding: 12px 14px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$info-soft;
+  color: k.$info-text;
+  font-size: 12px;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.qq-package-grid {
+  align-items: stretch;
+}
+
+.qq-package {
+  height: 100%;
+}
+
+.qq-coverage-group {
+  display: block;
+  margin: 4px 0 8px;
+  color: k.$surface;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qq-coverage-grid + .qq-coverage-group {
+  margin-top: 16px;
+}
+
+.qq-page .qq-coverage.locked {
+  cursor: default;
+  box-shadow: none;
+  border-color: k.$success;
+}
+
+.qq-coverage.locked .qq-check {
+  border-color: k.$success;
+  background: k.$success;
+  color: k.$surface;
+}
+
+.qq-risk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+.qq-info-box {
+  padding: 12px 14px;
+  border: 1px dashed k.$border;
+  border-radius: 12px;
+  color: #e5e7eb;
+  font-size: 12px;
+
+  > strong {
+    display: block;
+    margin-bottom: 6px;
+    color: k.$surface;
+    font-size: 13px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  b {
+    color: k.$surface;
+  }
+
+  > small {
+    display: block;
+    margin-top: 8px;
+    color: k.$border;
+  }
+}
+
+.qq-vehicle-box {
+  padding: 16px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+
+  > strong {
+    display: block;
+    font-size: 16px;
+    text-transform: uppercase;
+  }
+
+  > p {
+    margin: 2px 0 10px;
+    color: k.$text-secondary;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+
+  dt {
+    color: k.$text-secondary;
+    font-size: 11px;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+.qq-vehicle-box-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: k.$primary;
+  color: k.$surface;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.qq-vehicle-box-value {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid k.$border;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  span {
+    color: k.$text-secondary;
+    font-size: 12px;
+  }
+
+  strong {
+    font-size: 16px;
+  }
+}
+
+.qq-loading-vehicle {
+  margin: 12px auto 4px;
+  padding: 12px 16px;
+  width: 100%;
+  max-width: 560px;
+  border: 2px solid k.$black;
+  border-radius: 12px;
+  background: k.$surface;
+  color: k.$text;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.3fr;
+  gap: 12px;
+  text-align: left;
+
+  small,
+  strong {
+    display: block;
+  }
+
+  small {
+    color: k.$text-secondary;
+    font-size: 11px;
+  }
+
+  strong {
+    font-size: 13px;
+  }
+}
+
+.qq-specs-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qq-package-price {
+  strong {
+    font-size: 22px;
+    color: k.$black;
+  }
+
+  small {
+    margin-left: 4px;
+    color: k.$text-secondary;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  span {
+    color: k.$text-secondary;
+    font-size: 12px;
+  }
+}
+
+.qg-offer-list li.missing {
+  color: k.$text-disabled;
+  text-decoration: line-through;
+}
+
+.qg-offer-list li.missing::before {
+  content: '✕ ';
+  color: k.$text-disabled;
+}
+
+@media (max-width: 900px) {
+  .qq-risk-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .qq-loading-vehicle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.qq-page .qo-layout {
+  align-items: start;
+}
+
+.qq-page .qo-card {
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  overflow: hidden;
+
+  .qo-price {
+    border: 0;
+    border-radius: 0;
+    background: k.$primary;
+    color: k.$surface;
+
+    strong {
+      color: k.$surface;
+    }
+
+    .qo-price-label,
+    .qo-price-sub {
+      color: #e5e7eb;
+    }
+  }
+
+  .qo-facts {
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+.qq-page .qo-facts,
+.qq-page .qo-breakdown {
+  padding: 2px 18px;
+
+  li {
+    padding: 10px 0;
+    gap: 16px;
+  }
+
+  span {
+    color: k.$text-secondary;
+    font-size: 13px;
+  }
+
+  strong {
+    font-size: 13px;
+    text-align: right;
+  }
+}
+
+.qq-page .qo-right {
+  padding: 16px 18px;
+  gap: 10px;
+}
+
+.qo-right-head {
+  padding-bottom: 10px;
+  border-bottom: 1px solid k.$border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qo-count {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: k.$background;
+  color: k.$text-secondary;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.qo-right-intro {
+  margin: 0;
+  color: k.$text-secondary;
+  font-size: 12px;
+}
+
+.qq-page .qo-coverages {
+  gap: 0 20px;
+
+  li {
+    padding: 8px 0;
+    border-bottom: 1px solid k.$background;
+    display: flex;
+    flex-direction: column;
+
+    &::before {
+      content: none;
+    }
+
+    span::before {
+      content: '✓ ';
+      color: k.$success;
+      font-weight: 800;
+    }
+
+    span {
+      font-weight: 600;
+    }
+
+    small {
+      padding-left: 16px;
+      color: k.$text-secondary;
+      font-size: 11px;
+    }
+  }
+}
+
+.qq-page .qo-demo-note {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: k.$background;
+}
+
+.qq-option-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qq-option-row {
+  padding: 10px 12px;
+  border: 2px solid k.$black;
+  border-radius: 12px;
+  background: k.$surface;
+  color: k.$text;
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.qq-option-row-name {
+  font-size: 13px;
+}
+
+.qq-option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.qq-page .qq-option-chip {
+  padding: 6px 10px;
+  border: 1px solid k.$border;
+  border-radius: 8px;
+  background: k.$surface;
+  color: k.$text;
+  text-align: left;
+  cursor: pointer;
+
+  span,
+  small {
+    display: block;
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  small {
+    color: k.$text-secondary;
+    font-size: 10px;
+  }
+
+  &.selected {
+    border-color: k.$info;
+    background: k.$info-soft;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  }
+}
+
+.qq-body:has(.qq-option-rows) {
+  overflow-y: auto;
+}
+
+.qg-limits {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 2px solid k.$black;
+  border-radius: 14px;
+  background: k.$surface;
+  color: k.$text;
+  display: grid;
+  grid-template-columns: auto repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.qg-limits-title {
+  align-self: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.qg-limit {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  small {
+    color: k.$text-secondary;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  select {
+    width: 100%;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid k.$border;
+    border-radius: 8px;
+    background: k.$surface;
+    color: k.$text;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .qg-limits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

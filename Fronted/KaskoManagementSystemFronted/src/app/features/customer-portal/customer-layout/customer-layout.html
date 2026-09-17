@@ -52,23 +52,43 @@
             aria-label="Bildirimler"
             (click)="toggleNotification()">
             🔔
+            <span *ngIf="unreadCount() > 0" class="kl-bell-count">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
           </button>
 
           <div
             *ngIf="isNotificationOpen"
-            class="kl-dropdown">
+            class="kl-dropdown kl-notify">
             <strong>Bildirimler</strong>
-            <p>Yeni bildiriminiz bulunmuyor.</p>
+
+            <p *ngIf="latestNotifications().length === 0">Yeni bildiriminiz bulunmuyor.</p>
+
+            <ul *ngIf="latestNotifications().length > 0" class="kl-notify-list">
+              <li *ngFor="let item of latestNotifications()" class="kl-alert-item" [class.unread]="!item.isRead">
+                <a [routerLink]="notificationLink(item)" (click)="isNotificationOpen = false">
+                  <b>{{ item.title }}</b>
+                  <span>{{ item.message }}</span>
+                  <small>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</small>
+                </a>
+              </li>
+            </ul>
+
+            <a
+              *ngIf="notifications().length > 0"
+              routerLink="/notifications"
+              class="kl-dropdown-link"
+              (click)="isNotificationOpen = false">
+              Tüm bildirimler ({{ notifications().length }})
+            </a>
           </div>
 
         </div>
 
         <a
-          routerLink="/customer/quotes/new"
+          routerLink="/customer/settings"
           class="kl-icon-button"
-          title="Yeni Teklif Al"
-          aria-label="Yeni Teklif Al">
-          +
+          title="Ayarlar"
+          aria-label="Ayarlar">
+          ⚙
         </a>
 
         <div class="kl-dropdown-wrap">

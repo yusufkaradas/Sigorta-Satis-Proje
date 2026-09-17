@@ -109,6 +109,7 @@ namespace Kasko.API.Controllers
         }
 
         [HttpGet("upcoming-renewals")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> GetUpcomingRenewals(
     [FromQuery] int daysAhead = 30)
         {
@@ -118,7 +119,7 @@ namespace Kasko.API.Controllers
             return Ok(policies);
         }
         [HttpPost("{id:guid}/cancel")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Cancel(Guid id)
         {
             var userIdClaim = User.FindFirst(
@@ -135,7 +136,7 @@ namespace Kasko.API.Controllers
             return NoContent();
         }
         [HttpPost("renew")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin,Manager,Customer")]
         public async Task<IActionResult> Renew(
     [FromBody] PolicyRenewalDto dto)
         {
@@ -143,14 +144,6 @@ namespace Kasko.API.Controllers
                 await _policyService.RenewAsync(dto);
 
             return Ok(quote);
-        }
-        [HttpPost("{id:guid}/expire")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Expire(Guid id)
-        {
-            await _policyService.ExpireAsync(id);
-
-            return NoContent();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Package;
+using Kasko.Business.DTOs.Package;
 using Kasko.Business.Services;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -34,8 +34,17 @@ public class InsurancePackageServiceTests
             .Setup(x => x.Coverages)
             .Returns(_coverageRepositoryMock.Object);
 
+        var coverageOptionRepositoryMock =
+            new Mock<IGenericRepository<CoverageOption>>();
+
+        coverageOptionRepositoryMock
+            .Setup(x => x.FindAsync(
+                It.IsAny<System.Linq.Expressions.Expression<Func<CoverageOption, bool>>>()))
+            .ReturnsAsync(new List<CoverageOption>());
+
         _service = new InsurancePackageService(
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            coverageOptionRepositoryMock.Object);
     }
 
     [Fact]

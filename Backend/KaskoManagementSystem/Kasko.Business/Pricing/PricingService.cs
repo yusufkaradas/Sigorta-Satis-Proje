@@ -1,4 +1,5 @@
-﻿using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 
 namespace Kasko.Business.Pricing;
@@ -7,10 +8,14 @@ public class PricingService : IPricingService
 {
     private readonly IUnitOfWork _unitOfWork;
 
+    private readonly IGenericRepository<CoverageOption> _coverageOptions;
+
     public PricingService(
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IGenericRepository<CoverageOption> coverageOptions)
     {
         _unitOfWork = unitOfWork;
+        _coverageOptions = coverageOptions;
     }
 
     public async Task<PricingCalculation> CalculateAsync(
@@ -30,28 +35,21 @@ public class PricingService : IPricingService
         var vehicleAge =
             currentYear - request.ModelYear;
 
-        if (request.PackageId.HasValue &&
-            request.CoverageIds.Count > 0)
-        {
-            var packageCoverageIds =
-                (await _unitOfWork.PackageCoverages.FindAsync(
-                    x =>
-                        x.InsurancePackageId == request.PackageId.Value &&
-                        !x.IsDeleted))
-                .Select(x => x.CoverageId)
-                .ToHashSet();
+        var packageCoverageIds =
+            request.PackageId.HasValue
+                ? (await _unitOfWork.PackageCoverages.FindAsync(
+                        x =>
+                            x.InsurancePackageId == request.PackageId.Value &&
+                            !x.IsDeleted))
+                    .Select(x => x.CoverageId)
+                    .ToHashSet()
+                : new HashSet<Guid>();
 
-            var invalidCoverageIds =
-                request.CoverageIds
-                    .Where(x => !packageCoverageIds.Contains(x))
-                    .ToList();
-
-            if (invalidCoverageIds.Count > 0)
-            {
-                throw new InvalidOperationException(
-                    "Seçilen teminatlardan biri seçilen pakete ait değil.");
-            }
-        }
+        var pricedCoverageIds =
+            request.CoverageIds
+                .Concat(packageCoverageIds)
+                .Distinct()
+                .ToArray();
 
         if (vehicleAge < 0)
         {
@@ -112,7 +110,9 @@ public class PricingService : IPricingService
         var coverageResults =
             await CalculateCoveragesAsync(
                 request.MarketValue,
-                request.CoverageIds);
+                pricedCoverageIds,
+                packageCoverageIds,
+                request.CoverageOptionIds);
 
         var coveragePremium =
             coverageResults.Sum(
@@ -170,7 +170,9 @@ public class PricingService : IPricingService
     private async Task<IReadOnlyList<PricingCoverageResult>>
         CalculateCoveragesAsync(
             decimal marketValue,
-            IReadOnlyCollection<Guid> coverageIds)
+            IReadOnlyCollection<Guid> coverageIds,
+            IReadOnlySet<Guid> includedCoverageIds,
+            IReadOnlyDictionary<Guid, Guid> selectedOptionIds)
     {
         if (coverageIds.Count == 0)
         {
@@ -182,15 +184,13 @@ public class PricingService : IPricingService
                 .Distinct()
                 .ToArray();
 
-        var coverages =
-            await _unitOfWork
+        var coverageList =
+            (await _unitOfWork
                 .Coverages
                 .FindAsync(x =>
                     distinctCoverageIds.Contains(x.Id) &&
-                    x.IsActive);
-
-        var coverageList =
-            coverages.ToList();
+                    x.IsActive))
+                .ToList();
 
         if (coverageList.Count != distinctCoverageIds.Length)
         {
@@ -198,63 +198,103 @@ public class PricingService : IPricingService
                 "Seçilen teminatlardan biri veya daha fazlası bulunamadı ya da aktif değil.");
         }
 
+        var options =
+            (await _coverageOptions
+                .FindAsync(x =>
+                    distinctCoverageIds.Contains(x.CoverageId) &&
+                    !x.IsDeleted))
+                .ToList();
+
         var results =
             new List<PricingCoverageResult>();
 
         foreach (var coverage in coverageList)
         {
-            decimal calculatedPrice;
+            var coverageOptions =
+                options
+                    .Where(x => x.CoverageId == coverage.Id)
+                    .OrderBy(x => x.SortOrder)
+                    .ToList();
 
-            switch (coverage.PricingType)
-            {
-                case CoveragePricingType.Fixed:
+            var selectedOption =
+                ResolveOption(
+                    coverage,
+                    coverageOptions,
+                    selectedOptionIds);
 
-                    calculatedPrice =
-                        coverage.BasePrice;
-
-                    break;
-
-                case CoveragePricingType.PercentageOfVehicleValue:
-
-                    if (!coverage.Rate.HasValue)
-                    {
-                        throw new InvalidOperationException(
-                            $"'{coverage.Name}' teminatı için fiyatlandırma oranı tanımlanmamış.");
-                    }
-
-                    calculatedPrice =
-                        marketValue *
-                        coverage.Rate.Value /
-                        100m;
-
-                    break;
-
-                default:
-
-                    throw new InvalidOperationException(
-                        $"Desteklenmeyen teminat fiyatlandırma tipi: {coverage.PricingType}");
-            }
+            var basePrice =
+                includedCoverageIds.Contains(coverage.Id)
+                    ? 0m
+                    : CalculateCoverageBasePrice(
+                        coverage,
+                        marketValue);
 
             results.Add(
                 new PricingCoverageResult
                 {
                     CoverageId =
                         coverage.Id,
-
                     CoverageName =
                         coverage.Name,
-
                     CalculatedPrice =
                         decimal.Round(
-                            calculatedPrice,
+                            basePrice + (selectedOption?.ExtraPrice ?? 0m),
                             2),
-
                     Limit =
-                        coverage.DefaultLimit
+                        selectedOption?.Limit ?? coverage.DefaultLimit,
+                    CoverageOptionId =
+                        selectedOption?.Id,
+                    OptionName =
+                        selectedOption?.Name
                 });
         }
 
         return results;
+    }
+
+    private static CoverageOption? ResolveOption(
+        Coverage coverage,
+        IReadOnlyList<CoverageOption> coverageOptions,
+        IReadOnlyDictionary<Guid, Guid> selectedOptionIds)
+    {
+        if (coverageOptions.Count == 0)
+        {
+            return null;
+        }
+
+        if (selectedOptionIds.TryGetValue(coverage.Id, out var optionId))
+        {
+            return coverageOptions.FirstOrDefault(x => x.Id == optionId)
+                ?? throw new InvalidOperationException(
+                    $"'{coverage.Name}' teminatı için seçilen limit geçerli değil.");
+        }
+
+        return coverageOptions.FirstOrDefault(x => x.IsDefault)
+            ?? coverageOptions[0];
+    }
+
+    private static decimal CalculateCoverageBasePrice(
+        Coverage coverage,
+        decimal marketValue)
+    {
+        switch (coverage.PricingType)
+        {
+            case CoveragePricingType.Fixed:
+                return coverage.BasePrice;
+
+            case CoveragePricingType.PercentageOfVehicleValue:
+                if (!coverage.Rate.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        $"'{coverage.Name}' teminatı için fiyatlandırma oranı tanımlanmamış.");
+                }
+
+                return marketValue * coverage.Rate.Value / 100m;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Desteklenmeyen teminat fiyatlandırma tipi: {coverage.PricingType}");
+        }
     }
 
     private async Task<decimal> GetRuleValueAsync(

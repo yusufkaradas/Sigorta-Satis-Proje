@@ -80,6 +80,31 @@ export class PricingService {
     );
   }
 
+  createRule(rule: {
+    code: string;
+    name: string;
+    description: string | null;
+    value: number;
+    isActive: boolean;
+    effectiveFrom: string;
+  }): Observable<PricingRule> {
+    return this.http.post<PricingRule>(this.rulesUrl, rule);
+  }
+
+  updateRule(rule: {
+    id: string;
+    name: string;
+    description: string | null;
+    value: number;
+    isActive: boolean;
+  }): Observable<void> {
+    return this.http.put<void>(this.rulesUrl, rule);
+  }
+
+  deleteRule(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.rulesUrl}/${id}`);
+  }
+
   getRequests(): Observable<PricingRuleChangeRequest[]> {
     return this.http.get<PricingRuleChangeRequest[]>(
       this.requestsUrl

@@ -17,4 +17,6 @@ public class QuickQuoteEstimateRequestDto
     public decimal Deductible { get; set; }
 
     public Guid? PackageId { get; set; }
+
+    public Dictionary<Guid, Guid> CoverageOptionIds { get; set; } = new();
 }

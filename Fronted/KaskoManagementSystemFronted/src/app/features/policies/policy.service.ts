@@ -42,6 +42,19 @@ export class PolicyService {
     );
   }
 
+  renew(request: {
+    policyId: string;
+    startDate: string;
+    endDate: string;
+    usage: string;
+    claimsCount: number;
+    packageId: string | null;
+    deductible: number;
+    coverageIds: string[];
+  }): Observable<{ id: string }> {
+    return this.http.post<{ id: string }>(`${this.apiUrl}/renew`, request);
+  }
+
   downloadPdf(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
@@ -59,10 +72,4 @@ export class PolicyService {
     );
   }
 
-  expire(id: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.apiUrl}/${id}/expire`,
-      {}
-    );
-  }
 }

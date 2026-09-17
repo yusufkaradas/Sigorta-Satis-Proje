@@ -13,7 +13,7 @@
       <div>
         <h1>Araç Ekle</h1>
         <p *ngIf="!isCustomerMode">Müşteriyi seçin, TSB kataloğundan aracı belirleyin ve bilgileri tamamlayın.</p>
-        <p *ngIf="isCustomerMode">Aracınızı TSB kataloğundan seçin, kalan bilgileri siz tamamlayın.</p>
+        <p *ngIf="isCustomerMode">Aracınızı birkaç adımda ekleyin. Kasko değeri otomatik hesaplanır, kaydettikten sonra hemen teklif alabilirsiniz.</p>
       </div>
 
       <button
@@ -37,7 +37,7 @@
       {{ successMessage }}
     </div>
 
-    <div class="kf-body kf-body-split">
+    <div class="kf-body" [class.kf-body-split]="!isCustomerMode">
 
       <section class="kf-section" *ngIf="!isCustomerMode">
 
@@ -133,34 +133,24 @@
 
         <div class="kf-grid kf-grid-3">
 
-          <div class="kf-field">
-            <label for="plateNumber">Plaka *</label>
+          <div class="kf-field kf-span-3">
+            <label for="plateNumber">Plakanız *</label>
             <input
               id="plateNumber"
               type="text"
               name="plateNumber"
               [(ngModel)]="form.plateNumber"
               (input)="onPlateInput()"
-              placeholder="34ABC123"
+              placeholder="Örn. 34 ABC 123"
               maxlength="10"
               autocomplete="off"
               required />
           </div>
 
-          <div class="kf-field kf-span-2">
-            <label for="vin">Şasi No (VIN) *</label>
-            <input
-              id="vin"
-              type="text"
-              name="vin"
-              [(ngModel)]="form.vin"
-              placeholder="17 karakter"
-              maxlength="17"
-              required />
-          </div>
+
 
           <div class="kf-field kf-span-2">
-            <label for="category">Araç Sınıfı *</label>
+            <label for="category">Aracınızın türü *</label>
             <select
               id="category"
               name="category"
@@ -169,7 +159,7 @@
               [disabled]="isLoadingCategories || isSubmitting"
               required>
               <option value="" disabled>
-                {{ isLoadingCategories ? 'Sınıflar yükleniyor...' : 'Araç sınıfı seçin' }}
+                {{ isLoadingCategories ? 'Sınıflar yükleniyor...' : 'Otomobil, motosiklet, kamyonet...' }}
               </option>
               <option *ngFor="let category of categories" [ngValue]="category">
                 {{ categoryLabel(category) }}
@@ -330,7 +320,7 @@
         </div>
 
         <div class="kf-highlight">
-          <span>TSB Kasko Değeri</span>
+          <span>Aracınızın kasko değeri</span>
           <strong>
             {{
               isLoadingTsbValue

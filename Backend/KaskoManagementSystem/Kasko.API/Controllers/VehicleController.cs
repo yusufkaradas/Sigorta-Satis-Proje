@@ -62,7 +62,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] UpdateVehicleDto dto)

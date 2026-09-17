@@ -13,7 +13,9 @@ import {
 } from '../../vehicles/vehicle-value.service';
 
 import {
+  GuestCoverageOption,
   GuestEstimatePackage,
+  GuestEstimateRequest,
   GuestEstimateResult,
   QuickQuoteGuestService
 } from './quick-quote-guest.service';
@@ -81,6 +83,8 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   modelYear: number | null = null;
 
   plateNumber = '';
+
+  lookupValue = signal<number | null>(null);
 
   birthYear: number | null = null;
 
@@ -239,7 +243,76 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
       this.errorMessage.set('Lütfen aracınızın sınıf, marka, model ve yıl bilgisini seçin.');
       return;
     }
+    this.lookupValue.set(null);
+    this.catalogService.lookup(this.brandCode, this.typeCode, this.modelYear as number).subscribe({
+      next: data => this.lookupValue.set(data?.value ?? null),
+      error: () => this.lookupValue.set(null)
+    });
     this.currentStep.set(2);
+  }
+
+  get vehicleAge(): number {
+    return Math.max(0, new Date().getFullYear() - (this.modelYear ?? new Date().getFullYear()));
+  }
+
+  allCoverages(estimate: GuestEstimateResult): { coverageId: string; coverageName: string }[] {
+    const seen = new Map<string, string>();
+    [...estimate.packages]
+      .sort((a, b) => b.coverages.length - a.coverages.length)
+      .forEach(item => item.coverages.forEach(coverage => {
+        if (!seen.has(coverage.coverageId)) {
+          seen.set(coverage.coverageId, coverage.coverageName);
+        }
+      }));
+    return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  }
+
+  coverageOptionIds: Record<string, string> = {};
+
+  isRepricing = signal(false);
+
+  optionCoverages(estimate: GuestEstimateResult): { coverageId: string; coverageName: string; options: GuestCoverageOption[]; selectedId: string }[] {
+    const seen = new Map<string, { coverageId: string; coverageName: string; options: GuestCoverageOption[]; selectedId: string }>();
+    estimate.packages.forEach(item => item.coverages.forEach(coverage => {
+      if ((coverage.options?.length ?? 0) > 0 && !seen.has(coverage.coverageId)) {
+        seen.set(coverage.coverageId, {
+          coverageId: coverage.coverageId,
+          coverageName: coverage.coverageName,
+          options: coverage.options ?? [],
+          selectedId: coverage.coverageOptionId ?? coverage.options?.find(option => option.isDefault)?.id ?? ''
+        });
+      }
+    }));
+    return [...seen.values()];
+  }
+
+  changeOption(coverageId: string, optionId: string): void {
+    this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+    this.isRepricing.set(true);
+    this.guestService.estimate(this.buildEstimateRequest()).subscribe({
+      next: data => {
+        this.result.set(data);
+        this.isRepricing.set(false);
+      },
+      error: () => this.isRepricing.set(false)
+    });
+  }
+
+  private buildEstimateRequest(): GuestEstimateRequest {
+    return {
+      brandCode: this.brandCode,
+      typeCode: this.typeCode,
+      modelYear: this.modelYear!,
+      birthYear: this.birthYear!,
+      usage: this.usage,
+      claimsCount: this.claimsCount,
+      deductible: this.deductible,
+      coverageOptionIds: this.coverageOptionIds
+    };
+  }
+
+  hasCoverage(item: GuestEstimatePackage, coverageId: string): boolean {
+    return item.coverages.some(coverage => coverage.coverageId === coverageId);
   }
 
   backToVehicle(): void {
@@ -286,15 +359,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     }, 100);
 
     this.guestService
-      .estimate({
-        brandCode: this.brandCode,
-        typeCode: this.typeCode,
-        modelYear: this.modelYear!,
-        birthYear: this.birthYear!,
-        usage: this.usage,
-        claimsCount: this.claimsCount,
-        deductible: this.deductible
-      })
+      .estimate(this.buildEstimateRequest())
       .subscribe({
         next: data => {
           response = data;

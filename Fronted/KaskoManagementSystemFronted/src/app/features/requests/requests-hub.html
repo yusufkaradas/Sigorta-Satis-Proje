@@ -1,0 +1,24 @@
+<div class="hub">
+
+  <nav class="hub-tabs" aria-label="Talepler">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        class="hub-tab"
+        [class.active]="active() === tab.key"
+        [attr.aria-current]="active() === tab.key ? 'page' : null"
+        (click)="select(tab.key)">
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="hub-body">
+    @switch (active()) {
+      @case ('pricing-requests') { <app-pricing-requests [embedded]="true" /> }
+      @case ('pricing-rules') { <app-pricing-rules [embedded]="true" /> }
+      @default { <app-cancellations [embedded]="true" /> }
+    }
+  </div>
+
+</div>

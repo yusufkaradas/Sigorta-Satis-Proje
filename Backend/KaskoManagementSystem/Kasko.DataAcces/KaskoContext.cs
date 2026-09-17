@@ -28,6 +28,10 @@ public class KaskoContext : DbContext
     public DbSet<Coverage> Coverages { get; set; }
     
     public DbSet<QuoteCoverage> QuoteCoverages { get; set; }
+
+    public DbSet<CoverageOption> CoverageOptions { get; set; }
+
+    public DbSet<TariffChangeRequest> TariffChangeRequests { get; set; }
     public DbSet<VehicleValueCatalog> VehicleValueCatalogs { get; set; }
 
     public DbSet<InsurancePackage> InsurancePackages { get; set; }
@@ -44,6 +48,8 @@ public class KaskoContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
 
     public DbSet<BrandSetting> BrandSettings { get; set; }
+
+    public DbSet<PolicyCancellationRequest> PolicyCancellationRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,7 +130,7 @@ public class KaskoContext : DbContext
             
             entity.HasIndex(x => x.VIN)
                 .IsUnique()
-                .HasFilter("[IsDeleted] = 0");
+                .HasFilter("[IsDeleted] = 0 AND [VIN] <> ''");
 
             entity.Property(x => x.Brand)
                 .HasMaxLength(50)
@@ -280,11 +286,73 @@ public class KaskoContext : DbContext
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
         });
+        modelBuilder.Entity<TariffChangeRequest>(entity =>
+        {
+            entity.ToTable("TariffChangeRequests");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.TargetType)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(x => x.TargetName)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.Field)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.Property(x => x.OldValue)
+                .HasPrecision(18, 4);
+
+            entity.Property(x => x.NewValue)
+                .HasPrecision(18, 4);
+
+            entity.Property(x => x.Reason)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(x => x.RequestedByName)
+                .HasMaxLength(150);
+
+            entity.Property(x => x.DecisionNote)
+                .HasMaxLength(500);
+
+            entity.Property(x => x.Status)
+                .HasConversion<int>();
+        });
+        modelBuilder.Entity<CoverageOption>(entity =>
+        {
+            entity.ToTable("CoverageOptions");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.Limit)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.ExtraPrice)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.HasOne(x => x.Coverage)
+                .WithMany(x => x.Options)
+                .HasForeignKey(x => x.CoverageId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         modelBuilder.Entity<QuoteCoverage>(entity =>
         {
             entity.ToTable("QuoteCoverages");
 
             entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.OptionName)
+                .HasMaxLength(100);
 
             entity.Property(x => x.CalculatedPrice)
                 .HasPrecision(18, 2)

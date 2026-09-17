@@ -4,6 +4,7 @@ import {
 
 import {
   Component,
+  Input,
   OnInit,
   computed,
   inject,
@@ -45,6 +46,8 @@ import {
   styleUrl: './pricing-rules.scss'
 })
 export class PricingRules implements OnInit {
+
+  @Input() embedded = false;
 
   private readonly pricingService =
     inject(PricingService);
@@ -173,6 +176,120 @@ export class PricingRules implements OnInit {
     this.effectiveFrom = this.tomorrow();
     this.formError.set('');
     this.successMessage.set('');
+  }
+
+  editorMode = signal<'create' | 'edit' | null>(null);
+
+  editingRuleId = '';
+
+  ruleCode = '';
+
+  ruleName = '';
+
+  ruleDescription = '';
+
+  ruleValue: number | null = null;
+
+  ruleActive = true;
+
+  ruleEffectiveFrom = '';
+
+  openCreateRule(): void {
+    this.editorMode.set('create');
+    this.editingRuleId = '';
+    this.ruleCode = '';
+    this.ruleName = '';
+    this.ruleDescription = '';
+    this.ruleValue = null;
+    this.ruleActive = true;
+    this.ruleEffectiveFrom = new Date().toISOString().slice(0, 10);
+    this.formError.set('');
+  }
+
+  openEditRule(rule: PricingRule): void {
+    this.editorMode.set('edit');
+    this.editingRuleId = rule.id;
+    this.ruleCode = rule.code;
+    this.ruleName = rule.name;
+    this.ruleDescription = rule.description ?? '';
+    this.ruleValue = rule.value;
+    this.ruleActive = rule.isActive;
+    this.formError.set('');
+  }
+
+  closeRuleEditor(): void {
+    this.editorMode.set(null);
+  }
+
+  saveRule(): void {
+
+    this.formError.set('');
+
+    const code = this.ruleCode.trim().toUpperCase();
+
+    if (this.editorMode() === 'create' && !/^[A-Z0-9_]{3,40}$/.test(code)) {
+      this.formError.set('Kod en az 3 karakter olmalı; sadece büyük harf, rakam ve alt çizgi içerebilir. Örnek: REGION_VERY_HIGH');
+      return;
+    }
+
+    if (!this.ruleName.trim()) {
+      this.formError.set('Kuralın adını yazın. Örnek: Çok Yüksek Bölge Riski');
+      return;
+    }
+
+    if (this.ruleValue === null || this.ruleValue <= 0) {
+      this.formError.set('Değer 0’dan büyük olmalı. Katsayılar için 1,10 gibi; oranlar için 0,015 gibi yazın.');
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    const done = (message: string) => {
+      this.isSaving.set(false);
+      this.editorMode.set(null);
+      this.successMessage.set(message);
+      this.load();
+    };
+
+    const fail = (error: any) => {
+      this.isSaving.set(false);
+      this.formError.set(error?.error?.message ?? error?.error?.detail ?? 'Kural kaydedilemedi.');
+    };
+
+    if (this.editorMode() === 'create') {
+      this.pricingService.createRule({
+        code,
+        name: this.ruleName.trim(),
+        description: this.ruleDescription.trim() || null,
+        value: this.ruleValue,
+        isActive: this.ruleActive,
+        effectiveFrom: new Date(this.ruleEffectiveFrom).toISOString()
+      }).subscribe({ next: () => done(`${code} kuralı eklendi.`), error: fail });
+      return;
+    }
+
+    this.pricingService.updateRule({
+      id: this.editingRuleId,
+      name: this.ruleName.trim(),
+      description: this.ruleDescription.trim() || null,
+      value: this.ruleValue,
+      isActive: this.ruleActive
+    }).subscribe({ next: () => done(`${this.ruleCode} kuralı güncellendi.`), error: fail });
+  }
+
+  deleteRule(rule: PricingRule): void {
+
+    if (!window.confirm(`${rule.code} kuralı silinsin mi? Bu kurala bağlı yeni teklif hesapları varsayılan değeri kullanır.`)) {
+      return;
+    }
+
+    this.pricingService.deleteRule(rule.id).subscribe({
+      next: () => {
+        this.successMessage.set(`${rule.code} kuralı silindi.`);
+        this.load();
+      },
+      error: error => this.errorMessage.set(error?.error?.message ?? error?.error?.detail ?? 'Kural silinemedi.')
+    });
   }
 
   closeRequestForm(): void {

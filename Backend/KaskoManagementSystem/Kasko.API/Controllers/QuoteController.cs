@@ -119,7 +119,8 @@ namespace Kasko.API.Controllers
             Guid id,
             [FromBody] QuotePurchaseRequestDto dto,
             [FromServices] IPolicyService policyService,
-            [FromServices] IPaymentService paymentService)
+            [FromServices] IPaymentService paymentService,
+            [FromServices] Kasko.DataAccess.Repositories.Abstract.IUnitOfWork unitOfWork)
         {
             if (!dto.AcceptedTerms)
             {
@@ -136,8 +137,15 @@ namespace Kasko.API.Controllers
                 return NotFound();
             }
 
-            if (quote.Status != QuoteStatus.Offered &&
-                quote.Status != QuoteStatus.Draft)
+            if (quote.Status == QuoteStatus.Draft)
+            {
+                return BadRequest(new
+                {
+                    message = "Teklifiniz yetkili onayında. Onaylandığında satın alabilirsiniz."
+                });
+            }
+
+            if (quote.Status != QuoteStatus.Offered)
             {
                 return BadRequest(new
                 {
@@ -145,37 +153,40 @@ namespace Kasko.API.Controllers
                 });
             }
 
-            if (quote.Status == QuoteStatus.Draft)
+
+            Kasko.Business.DTOs.Policy.PolicyDto? policy = null;
+
+            Kasko.Business.DTOs.Payment.PaymentDto? payment = null;
+
+            await unitOfWork.ExecuteInTransactionAsync(async () =>
             {
-                await _quoteService.ChangeStatusAsync(id, QuoteStatus.Offered);
-            }
+                await _quoteService.ChangeStatusAsync(id, QuoteStatus.Accepted);
 
-            await _quoteService.ChangeStatusAsync(id, QuoteStatus.Accepted);
+                policy =
+                    await policyService.CreateAsync(
+                        new Kasko.Business.DTOs.Policy.PolicyCreateDto
+                        {
+                            CustomerId = quote.CustomerId,
+                            VehicleId = quote.VehicleId,
+                            QuoteId = id,
+                            StartDate = DateTime.UtcNow,
+                            EndDate = DateTime.UtcNow.AddYears(1)
+                        });
 
-            var policy =
-                await policyService.CreateAsync(
-                    new Kasko.Business.DTOs.Policy.PolicyCreateDto
-                    {
-                        CustomerId = quote.CustomerId,
-                        VehicleId = quote.VehicleId,
-                        QuoteId = id,
-                        StartDate = DateTime.UtcNow,
-                        EndDate = DateTime.UtcNow.AddYears(1)
-                    });
-
-            var payment =
-                await paymentService.CreateAsync(
-                    new Kasko.Business.DTOs.Payment.PaymentCreateDto
-                    {
-                        PolicyId = policy.Id,
-                        SimulateFailure = false
-                    });
+                payment =
+                    await paymentService.CreateAsync(
+                        new Kasko.Business.DTOs.Payment.PaymentCreateDto
+                        {
+                            PolicyId = policy.Id,
+                            SimulateFailure = false
+                        });
+            });
 
             return Ok(new
             {
-                policyId = policy.Id,
+                policyId = policy!.Id,
                 policyNumber = policy.PolicyNumber,
-                paymentId = payment.Id
+                paymentId = payment!.Id
             });
         }
 

@@ -128,7 +128,7 @@ export class CustomerQuotes implements OnInit {
   deletingId = signal<string | null>(null);
 
   canDelete(quote: Quote): boolean {
-    return quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered;
+    return quote.status === QuoteStatus.Offered;
   }
 
   deleteQuote(quote: Quote): void {
@@ -150,7 +150,7 @@ export class CustomerQuotes implements OnInit {
   }
 
   isPending(quote: Quote): boolean {
-    return quote.status === QuoteStatus.Draft || quote.status === QuoteStatus.Offered;
+    return quote.status === QuoteStatus.Offered;
   }
 
   private readonly router =
@@ -181,9 +181,9 @@ export class CustomerQuotes implements OnInit {
 
     switch (status) {
       case QuoteStatus.Draft:
-        return 'Taslak';
+        return 'Onay Bekliyor';
       case QuoteStatus.Offered:
-        return 'Teklif Verildi';
+        return 'Satın Alınabilir';
       case QuoteStatus.Accepted:
         return 'Kabul Edildi';
       case QuoteStatus.Rejected:

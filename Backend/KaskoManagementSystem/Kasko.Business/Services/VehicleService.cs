@@ -179,6 +179,11 @@ namespace Kasko.Business.Services
                 dto.CustomerId = currentUser.CustomerId.Value;
             }
 
+            if (dto.CustomerId == Guid.Empty)
+            {
+                throw new BadRequestException("Lütfen aracın sahibi olan müşteriyi seçin.");
+            }
+
             var customer = await _unitOfWork.Customers
                 .GetByIdAsync(dto.CustomerId);
 
@@ -201,13 +206,16 @@ namespace Kasko.Business.Services
                     "Bu plaka başka bir araç tarafından kullanılmaktadır.");
             }
 
-            var vinExists = await _unitOfWork.Vehicles
-                .VinExistsAsync(dto.VIN);
+            dto.VIN = (dto.VIN ?? string.Empty).Trim().ToUpperInvariant();
+
+            var vinExists = dto.VIN.Length > 0 &&
+                await _unitOfWork.Vehicles
+                    .VinExistsAsync(dto.VIN);
 
             if (vinExists)
             {
                 throw new BadRequestException(
-                    "Bu VIN numarası başka bir araç tarafından kullanılmaktadır.");
+                    "Bu şasi numarası başka bir araçta kayıtlı.");
             }
             var tsbRecord =
         await _unitOfWork.VehicleValueCatalogs
@@ -304,6 +312,27 @@ namespace Kasko.Business.Services
                     "Araç bulunamadı.");
             }
 
+            if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+            {
+                var currentUserIdValue =
+                    _httpContextAccessor.HttpContext.User
+                        .FindFirst(ClaimTypes.NameIdentifier)?
+                        .Value;
+
+                var currentUser = Guid.TryParse(currentUserIdValue, out var currentUserId)
+                    ? await _unitOfWork.Users.GetByIdAsync(currentUserId)
+                    : null;
+
+                if (currentUser?.CustomerId == null ||
+                    currentUser.CustomerId.Value != vehicle.CustomerId)
+                {
+                    throw new NotFoundException(
+                        "Araç bulunamadı.");
+                }
+
+                dto.CustomerId = vehicle.CustomerId;
+            }
+
             var customer = await _unitOfWork.Customers
                 .GetByIdAsync(dto.CustomerId);
 
@@ -324,15 +353,18 @@ namespace Kasko.Business.Services
                     "Bu plaka başka bir araç tarafından kullanılmaktadır.");
             }
 
-            var vinExists = await _unitOfWork.Vehicles
-                .VinExistsAsync(
-                    dto.VIN,
-                    id);
+            dto.VIN = (dto.VIN ?? string.Empty).Trim().ToUpperInvariant();
+
+            var vinExists = dto.VIN.Length > 0 &&
+                await _unitOfWork.Vehicles
+                    .VinExistsAsync(
+                        dto.VIN,
+                        id);
 
             if (vinExists)
             {
                 throw new BadRequestException(
-                    "Bu VIN numarası başka bir araç tarafından kullanılmaktadır.");
+                    "Bu şasi numarası başka bir araçta kayıtlı.");
             }
             
             var tsbRecord =

@@ -1,8 +1,10 @@
 <section class="rules-content">
 
-  <div class="rules-section-title">
-    FİYAT KURALLARI
-  </div>
+  @if (!embedded) {
+    <div class="rules-section-title">
+      FİYAT KURALLARI
+    </div>
+  }
 
 
   <div class="rule-stats-grid">
@@ -43,11 +45,16 @@
           (input)="onSearch($any($event.target).value)" />
       </div>
 
-      <a
-        class="new-rule-button"
-        [routerLink]="portal.basePath + '/pricing-requests'">
-        Taleplere Git
-      </a>
+      <div class="kf-head-actions">
+        <a
+          class="kf-btn-outline"
+          [routerLink]="portal.basePath + '/pricing-requests'">
+          Taleplere Git
+        </a>
+        @if (!portal.isManager) {
+          <button type="button" class="new-rule-button" (click)="openCreateRule()">+ Yeni Kural</button>
+        }
+      </div>
 
     </div>
 
@@ -118,7 +125,8 @@
                       </button>
                     }
                   } @else {
-                    <span class="rule-muted">—</span>
+                    <button type="button" class="offer-button" (click)="openEditRule(rule)">Düzenle</button>
+                    <button type="button" class="action-button delete" (click)="deleteRule(rule)">Sil</button>
                   }
                 </td>
               </tr>
@@ -204,6 +212,73 @@
           <button type="button" class="clear-button" (click)="closeRequestForm()">Vazgeç</button>
           <button type="submit" class="new-rule-button" [disabled]="isSaving()">
             {{ isSaving() ? 'Gönderiliyor...' : 'Onaya Gönder' }}
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+  @if (editorMode()) {
+
+    <div class="rule-dialog-backdrop" (click)="closeRuleEditor()">
+
+      <form class="rule-dialog" (click)="$event.stopPropagation()" (ngSubmit)="saveRule()">
+
+        <h2>{{ editorMode() === 'create' ? 'Yeni Fiyat Kuralı' : 'Kuralı Düzenle' }}</h2>
+
+        <p class="rule-dialog-sub">
+          {{ editorMode() === 'create'
+            ? 'Yeni bir katsayı veya oran tanımlayın. Kod, fiyat hesabında kuralı bulmak için kullanılır.'
+            : ruleCode + ' kuralının bilgilerini güncelleyin.' }}
+        </p>
+
+        <div class="rule-dialog-grid">
+
+          <label>
+            <span>Kod</span>
+            <input type="text" name="ruleCode" [(ngModel)]="ruleCode" [disabled]="editorMode() === 'edit'" placeholder="REGION_VERY_HIGH" />
+          </label>
+
+          <label>
+            <span>Değer</span>
+            <input type="number" step="any" name="ruleValue" [(ngModel)]="ruleValue" placeholder="1.25" />
+          </label>
+
+          <label class="rule-dialog-full">
+            <span>Kural Adı</span>
+            <input type="text" name="ruleName" [(ngModel)]="ruleName" placeholder="Çok Yüksek Bölge Riski" />
+          </label>
+
+          <label class="rule-dialog-full">
+            <span>Açıklama</span>
+            <textarea rows="2" name="ruleDescription" [(ngModel)]="ruleDescription" placeholder="Kuralın ne zaman uygulandığını kısaca yazın"></textarea>
+          </label>
+
+          @if (editorMode() === 'create') {
+            <label>
+              <span>Geçerlilik Başlangıcı</span>
+              <input type="date" name="ruleEffectiveFrom" [(ngModel)]="ruleEffectiveFrom" />
+            </label>
+          }
+
+          <label class="kf-consent">
+            <input type="checkbox" name="ruleActive" [(ngModel)]="ruleActive" />
+            Kural aktif
+          </label>
+
+        </div>
+
+        @if (formError()) {
+          <div class="rule-dialog-error">{{ formError() }}</div>
+        }
+
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="closeRuleEditor()">Vazgeç</button>
+          <button type="submit" class="new-rule-button" [disabled]="isSaving()">
+            {{ isSaving() ? 'Kaydediliyor...' : 'Kaydet' }}
           </button>
         </div>
 

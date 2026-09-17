@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Quote;
+using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Pricing;
 using Kasko.DataAccess.Repositories.Abstract;
@@ -241,7 +241,10 @@ namespace Kasko.Business.Services
                     x.CalculatedPrice,
 
                 Limit =
-                    x.Limit
+                    x.Limit,
+
+                OptionName =
+                    x.OptionName
             })
             .ToList(),
 
@@ -356,6 +359,42 @@ namespace Kasko.Business.Services
                     "Seçilen araç bu müşteriye ait değildir.");
             }
 
+            var renewalWindowStart =
+                DateTime.UtcNow.AddDays(60);
+
+            var activePolicy =
+                (await _unitOfWork.Policies
+                    .FindAsync(x =>
+                        x.VehicleId == vehicle.Id &&
+                        !x.IsDeleted &&
+                        x.Status == PolicyStatus.Active))
+                    .OrderByDescending(x => x.EndDate)
+                    .FirstOrDefault();
+
+            if (activePolicy != null &&
+                activePolicy.EndDate > renewalWindowStart)
+            {
+                throw new BadRequestException(
+                    $"Bu aracın {activePolicy.EndDate:dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala yenileme olarak alınabilir.");
+            }
+
+            var openQuotes =
+                (await _unitOfWork.Quotes
+                    .FindAsync(x =>
+                        x.VehicleId == vehicle.Id &&
+                        !x.IsDeleted &&
+                        (x.Status == QuoteStatus.Draft ||
+                         x.Status == QuoteStatus.Offered)))
+                    .ToList();
+
+            foreach (var openQuote in openQuotes)
+            {
+                openQuote.Status = QuoteStatus.Cancelled;
+                openQuote.UpdatedDate = DateTime.UtcNow;
+
+                await _unitOfWork.Quotes.UpdateAsync(openQuote);
+            }
+
             PreviousPolicy? previousPolicy = null;
 
             if (dto.PreviousPolicyId.HasValue)
@@ -416,6 +455,8 @@ namespace Kasko.Business.Services
                         dto.Deductible,
 
                     CoverageIds = await ResolveCoverageIdsAsync(dto.PackageId, dto.CoverageIds),
+
+                    CoverageOptionIds = dto.CoverageOptionIds,
 
                     EffectiveDate = dto.EffectiveDate
                 };
@@ -552,6 +593,9 @@ namespace Kasko.Business.Services
              dto.PackageId,
              dto.CoverageIds),
 
+         CoverageOptionIds =
+             dto.CoverageOptionIds,
+
          EffectiveDate =
              dto.EffectiveDate
      };
@@ -590,6 +634,8 @@ namespace Kasko.Business.Services
                     CoverageId = coverage.CoverageId,
                     CalculatedPrice = coverage.CalculatedPrice,
                     Limit = coverage.Limit,
+                    CoverageOptionId = coverage.CoverageOptionId,
+                    OptionName = coverage.OptionName,
                     IsDeleted = false,
                     CreatedDate = DateTime.UtcNow
                 };

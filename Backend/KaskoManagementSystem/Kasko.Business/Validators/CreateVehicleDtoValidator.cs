@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Kasko.Business.DTOs.Vehicle;
 using Kasko.Business.Services;
 
@@ -8,10 +8,6 @@ namespace Kasko.Business.Validators
     {
         public CreateVehicleDtoValidator()
         {
-            RuleFor(x => x.CustomerId)
-                .NotEmpty()
-                .WithMessage("Müşteri bilgisi zorunludur.");
-
             RuleFor(x => x.PlateNumber)
                .NotEmpty()
                .WithMessage("Plaka boş olamaz.")
@@ -20,12 +16,11 @@ namespace Kasko.Business.Validators
         "Geçerli bir Türkiye tescil plakası giriniz.");
 
             RuleFor(x => x.VIN)
-                .NotEmpty()
-                .WithMessage("VIN boş olamaz.")
                 .Length(17)
-                .WithMessage("VIN 17 karakter olmalıdır.")
+                .WithMessage("Şasi numarası 17 karakter olmalıdır.")
                 .Matches("^[A-HJ-NPR-Z0-9]+$")
-                .WithMessage("VIN sadece geçerli karakterlerden oluşmalıdır.");
+                .WithMessage("Şasi numarası sadece harf ve rakamlardan oluşmalıdır.")
+                .When(x => !string.IsNullOrWhiteSpace(x.VIN));
 
             RuleFor(x => x.Brand)
                 .NotEmpty()
@@ -59,12 +54,15 @@ namespace Kasko.Business.Validators
                 .When(x => x.EnginePower.HasValue)
                 .WithMessage("Motor gücü 0'dan büyük olmalıdır.");
 
-            RuleFor(x => x.VehicleType).IsInEnum()
-                .WithMessage("Geçerli bir araç tipi seçiniz.");
-            RuleFor(x => x.FuelType).IsInEnum()
+            RuleFor(x => x.VehicleType)
+                .Must(x => (int)x == 0 || Enum.IsDefined(x))
+                .WithMessage("Geçerli bir kasa tipi seçiniz.");
+            RuleFor(x => x.FuelType)
+                .Must(x => (int)x == 0 || Enum.IsDefined(x))
                 .WithMessage("Geçerli bir yakıt tipi seçiniz.");
-            RuleFor(x => x.TransmissionType).IsInEnum()
-                .WithMessage("Geçerli bir şanzıman tipi seçiniz.");
+            RuleFor(x => x.TransmissionType)
+                .Must(x => (int)x == 0 || Enum.IsDefined(x))
+                .WithMessage("Geçerli bir vites tipi seçiniz.");
 
             RuleFor(x => x.Color)
                 .NotEmpty()

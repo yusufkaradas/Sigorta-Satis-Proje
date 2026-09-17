@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Quote;
+using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Pricing;
 using Kasko.Business.Services;
@@ -59,6 +59,17 @@ public class QuoteServiceTests
         _unitOfWorkMock
     .Setup(x => x.QuotePricingSnapshots)
     .Returns(_quotePricingSnapshotRepositoryMock.Object);
+
+        var policyRepositoryMock = new Mock<IPolicyRepository>();
+        policyRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Policy, bool>>>()))
+            .ReturnsAsync(new List<Policy>());
+        _unitOfWorkMock
+            .Setup(x => x.Policies)
+            .Returns(policyRepositoryMock.Object);
+        _quoteRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Quote, bool>>>()))
+            .ReturnsAsync(new List<Quote>());
 
         _service = new QuoteService(
         _unitOfWorkMock.Object,
@@ -1895,7 +1906,24 @@ public class QuoteServiceTests
             PremiumAmount = 25000m,
             Status = QuoteStatus.Offered,
             ValidUntil = validUntil,
-            IsDeleted = false
+            IsDeleted = false,
+            Customer = new Customer
+            {
+                Id = customerId,
+                FirstName = "Test",
+                LastName = "Musteri",
+                Email = "test@example.com",
+                PhoneNumber = "5320000000"
+            },
+            Vehicle = new Vehicle
+            {
+                Id = vehicleId,
+                Brand = "Toyota",
+                Model = "Corolla",
+                PlateNumber = "34 TST 028",
+                ModelYear = 2024,
+                MarketValue = 1_000_000m
+            }
         };
 
         _quoteRepositoryMock

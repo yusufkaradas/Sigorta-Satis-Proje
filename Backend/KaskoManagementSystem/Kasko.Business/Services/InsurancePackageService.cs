@@ -1,6 +1,7 @@
-﻿using Kasko.Business.DTOs.Package;
+using Kasko.Business.DTOs.Package;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Business.Interfaces;
+using Kasko.Entities.Concrete;
 
 namespace Kasko.Business.Services;
 
@@ -8,9 +9,14 @@ public class InsurancePackageService : IInsurancePackageService
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public InsurancePackageService(IUnitOfWork unitOfWork)
+    private readonly IGenericRepository<CoverageOption> _coverageOptions;
+
+    public InsurancePackageService(
+        IUnitOfWork unitOfWork,
+        IGenericRepository<CoverageOption> coverageOptions)
     {
         _unitOfWork = unitOfWork;
+        _coverageOptions = coverageOptions;
     }
 
     public async Task<IEnumerable<InsurancePackageDto>> GetAllAsync()
@@ -47,7 +53,20 @@ public class InsurancePackageService : IInsurancePackageService
                         CoverageId = coverage.Id,
                         CoverageName = coverage.Name,
                         CalculatedPrice = coverage.BasePrice,
-                        IsDefault = packageCoverage.IsDefault
+                        IsDefault = packageCoverage.IsDefault,
+                        Description = coverage.Description,
+                        Options = (await _coverageOptions.FindAsync(
+                                x => x.CoverageId == coverage.Id && !x.IsDeleted))
+                            .OrderBy(x => x.SortOrder)
+                            .Select(x => new CoverageOptionDto
+                            {
+                                Id = x.Id,
+                                Name = x.Name,
+                                Limit = x.Limit,
+                                ExtraPrice = x.ExtraPrice,
+                                IsDefault = x.IsDefault
+                            })
+                            .ToList()
                     });
             }
 

@@ -149,14 +149,12 @@
                 <p>Priminizi etkileyen üç bilgi kaldı.</p>
               </div>
 
-              <div class="qq-chip-summary">
-                <strong>{{ selectedBrandName }} {{ selectedTypeName }}</strong>
-                <span>{{ plateNumber || 'Plakasız' }} · {{ modelYear }}</span>
-              </div>
 
             </div>
 
-            <div class="qq-body qq-risk">
+            <div class="qq-body qq-risk-layout">
+
+            <div class="qq-risk">
 
               <section class="qq-risk-group">
 
@@ -232,6 +230,34 @@
 
               </section>
 
+              <div class="qq-info-box">
+                <strong>Bu bilgiler neden soruluyor?</strong>
+                <ul>
+                  <li><b>Sürücü yaşı:</b> 18-24 yaş arası sürücülerde kaza riski yüksek olduğu için prim artar, 25 yaş ve üzerinde standart tarife uygulanır.</li>
+                  <li><b>Kullanım şekli:</b> Ticari araçlar yolda daha fazla kaldığı için özel kullanıma göre daha yüksek fiyatlanır.</li>
+                  <li><b>Hasar geçmişi:</b> Hasarsız sürücüler indirim kazanır; her hasar bir sonraki yılın primini artırır.</li>
+                </ul>
+                <small>Bilgileriniz yalnızca fiyat hesaplamak için kullanılır, kayıt oluşturulmaz.</small>
+              </div>
+
+            </div>
+
+              <aside class="qq-vehicle-box">
+                <span class="qq-vehicle-box-label">Teklif Alınan Araç</span>
+                <strong>{{ selectedBrandName }}</strong>
+                <p>{{ selectedTypeName }}</p>
+                <dl>
+                  <div><dt>Araç Sınıfı</dt><dd>{{ categoryLabels[category] || category || '—' }}</dd></div>
+                  <div><dt>Model Yılı</dt><dd>{{ modelYear }}</dd></div>
+                  <div><dt>Plaka</dt><dd>{{ plateNumber || 'Plakasız' }}</dd></div>
+                  <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
+                </dl>
+                <div class="qq-vehicle-box-value">
+                  <span>TSB Kasko Değeri</span>
+                  <strong>{{ lookupValue() !== null ? (lookupValue() | number:'1.0-0') + ' ₺' : 'Hesaplanıyor...' }}</strong>
+                </div>
+              </aside>
+
             </div>
 
             <div class="qq-actions">
@@ -260,7 +286,26 @@
 
                   <h1>Teklifiniz Hazırlanıyor</h1>
 
-                  <p>{{ selectedBrandName }} {{ selectedTypeName }} · {{ modelYear }} için fiyat kuralları uygulanıyor.</p>
+                  <p>Aracınız için güncel fiyat kuralları uygulanıyor.</p>
+
+                  <div class="qq-loading-vehicle">
+                    <div>
+                      <small>Araç</small>
+                      <strong>{{ selectedBrandName }} {{ selectedTypeName }}</strong>
+                    </div>
+                    <div>
+                      <small>Model Yılı</small>
+                      <strong>{{ modelYear }}</strong>
+                    </div>
+                    <div>
+                      <small>Plaka</small>
+                      <strong>{{ plateNumber || 'Plakasız' }}</strong>
+                    </div>
+                    <div>
+                      <small>TSB Kasko Değeri</small>
+                      <strong>{{ lookupValue() !== null ? (lookupValue() | number:'1.0-0') + ' ₺' : '—' }}</strong>
+                    </div>
+                  </div>
 
                   <ul>
                     @for (stage of calculationStages; track stage; let i = $index) {
@@ -290,23 +335,17 @@
                   @for (item of estimate.packages; track item.packageId) {
                     <button type="button" class="qg-offer" [class.selected]="selectedPackageId() === item.packageId" (click)="selectPackage(item)">
 
-                      <span class="qg-offer-name">{{ item.name }}</span>
+                      <span class="qg-offer-name">{{ item.packageName }}</span>
 
                       <span class="qg-offer-price">{{ item.totalPremium | number:'1.0-0' }} ₺<small>/ yıl</small></span>
 
-                      <span class="qg-offer-note">{{ item.coverages.length }} teminat</span>
+                      <span class="qg-offer-note">{{ item.coverages.length }} / {{ allCoverages(estimate).length }} teminat dahil</span>
 
                       <ul class="qg-offer-list">
-                        @for (coverage of (openCoverages() === item.packageId ? item.coverages : item.coverages.slice(0, 3)); track coverage.coverageId) {
-                          <li>{{ coverage.coverageName }}</li>
+                        @for (coverage of allCoverages(estimate); track coverage.coverageId) {
+                          <li [class.missing]="!hasCoverage(item, coverage.coverageId)">{{ coverage.coverageName }}</li>
                         }
                       </ul>
-
-                      @if (item.coverages.length > 3) {
-                        <span class="qg-offer-toggle" (click)="toggleCoverages($event, item)">
-                          {{ openCoverages() === item.packageId ? 'Teminatları gizle' : '+ ' + (item.coverages.length - 3) + ' teminat daha' }}
-                        </span>
-                      }
 
                       <span class="qg-offer-pick">{{ selectedPackageId() === item.packageId ? 'Seçildi' : 'Seç' }}</span>
 
@@ -315,11 +354,27 @@
 
                 </div>
 
+                @if (optionCoverages(estimate).length > 0) {
+                  <div class="qg-limits">
+                    <span class="qg-limits-title">Limit seçenekleri</span>
+                    @for (row of optionCoverages(estimate); track row.coverageId) {
+                      <label class="qg-limit">
+                        <small>{{ row.coverageName }}</small>
+                        <select [value]="row.selectedId" [disabled]="isRepricing()" (change)="changeOption(row.coverageId, $any($event.target).value)">
+                          @for (option of row.options; track option.id) {
+                            <option [value]="option.id" [selected]="option.id === row.selectedId">{{ option.name }}{{ option.extraPrice > 0 ? ' (+' + (option.extraPrice | number:'1.0-0') + ' ₺)' : '' }}</option>
+                          }
+                        </select>
+                      </label>
+                    }
+                  </div>
+                }
+
                 @if (selectedPackage; as chosen) {
                   <div class="qg-total">
                     <div>
                       <small>Seçilen paket</small>
-                      <strong>{{ chosen.name }}</strong>
+                      <strong>{{ chosen.packageName }}</strong>
                     </div>
                     <div class="qg-total-price">
                       <small>Yıllık prim</small>
@@ -328,7 +383,7 @@
                   </div>
                 }
 
-                <p class="qq-note">Bu fiyat girdiğiniz bilgilere göre hesaplanan tahmini primdir.</p>
+                <p class="qq-note">{{ isRepricing() ? 'Fiyatlar seçtiğiniz limitlere göre güncelleniyor...' : 'Bu fiyat girdiğiniz bilgilere göre hesaplanan tahmini primdir. Limit seçimleri tüm paketlere uygulanır.' }}</p>
 
               </div>
 

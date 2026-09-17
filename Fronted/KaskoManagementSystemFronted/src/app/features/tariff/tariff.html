@@ -1,0 +1,240 @@
+<section class="rules-content">
+
+  <div class="rules-section-title">
+    PAKET & TEMİNAT
+  </div>
+
+  <div class="rule-stats-grid">
+    <div class="rule-stat-card">
+      <span>Paket</span>
+      <strong>{{ tariff()?.packages?.length ?? 0 }}</strong>
+    </div>
+    <div class="rule-stat-card">
+      <span>Teminat</span>
+      <strong>{{ tariff()?.coverages?.length ?? 0 }}</strong>
+    </div>
+    <div class="rule-stat-card">
+      <span>Limit Seçeneği</span>
+      <strong>{{ optionCount() }}</strong>
+    </div>
+    <div class="rule-stat-card">
+      <span>Onay Bekleyen Talep</span>
+      <strong>{{ pendingCount() }}</strong>
+    </div>
+  </div>
+
+  <section class="rules-card">
+
+    <div class="rules-toolbar">
+      <div class="tariff-tabs">
+        <button type="button" [class.active]="tab() === 'tariff'" (click)="tab.set('tariff')">Tarife</button>
+        <button type="button" [class.active]="tab() === 'requests'" (click)="tab.set('requests')">
+          Değişiklik Talepleri
+          @if (pendingCount() > 0) {
+            <b>{{ pendingCount() }}</b>
+          }
+        </button>
+      </div>
+      <span class="rule-muted">
+        {{ portal.isManager ? 'Değişiklikler yöneticinin onayından sonra yeni tekliflere uygulanır.' : 'Yaptığınız değişiklikler hemen yeni tekliflere uygulanır.' }}
+      </span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="state-message"><strong>Tarife yükleniyor...</strong></div>
+    } @else if (tab() === 'tariff' && tariff(); as data) {
+
+      <div class="tariff-grid">
+
+        <div class="tariff-col">
+          <h3>Paketler <small>Ana prim × katsayı</small></h3>
+          @for (item of data.packages; track item.id) {
+            <div class="tariff-row">
+              <div class="tariff-row-main">
+                <strong>{{ item.name }}</strong>
+                <small [title]="item.coverageNames.join(', ')">{{ item.coverageNames.length }} teminat · {{ item.description }}</small>
+              </div>
+              <span class="tariff-value">× {{ item.factor | number:'1.2-2' }}</span>
+              @if (pendingFor(item.id, 'Factor')) {
+                <span class="request-status status-pending">Bekliyor</span>
+              } @else {
+                <button type="button" class="offer-button" (click)="editPackage(item.id, item.name, item.factor)">{{ portal.isManager ? 'Talep' : 'Düzenle' }}</button>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="tariff-col">
+          <h3>Teminatlar <small>Paket dışı ücret</small></h3>
+          <div class="tariff-scroll">
+            @for (item of data.coverages; track item.id) {
+              <div class="tariff-row">
+                <div class="tariff-row-main">
+                  <strong>{{ item.name }}</strong>
+                  <small [title]="item.description ?? ''">{{ item.description }}</small>
+                </div>
+                <span class="tariff-value">{{ coveragePriceText(item.pricingType, item.basePrice, item.rate) }}</span>
+                @if (item.pricingType === 1 && item.basePrice === 0) {
+                  <span class="tariff-lock">Sabit</span>
+                } @else if (pendingFor(item.id, item.pricingType === 2 ? 'Rate' : 'BasePrice')) {
+                  <span class="request-status status-pending">Bekliyor</span>
+                } @else {
+                  <button type="button" class="offer-button" (click)="editCoverage(item.id, item.name, item.pricingType, item.basePrice, item.rate)">{{ portal.isManager ? 'Talep' : 'Düzenle' }}</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="tariff-col">
+          <h3>Limit Seçenekleri <small>Prime eklenen tutar</small></h3>
+          <div class="tariff-scroll">
+            @for (row of optionRows(); track row.option.id) {
+              <div class="tariff-row">
+                <div class="tariff-row-main">
+                  <strong>{{ row.option.name }}</strong>
+                  <small>{{ row.coverage.name }}{{ row.option.isDefault ? ' · varsayılan' : '' }}</small>
+                </div>
+                <span class="tariff-value">{{ row.option.extraPrice > 0 ? '+' + (row.option.extraPrice | number:'1.0-0') + ' ₺' : 'Ücretsiz' }}</span>
+                @if (pendingFor(row.option.id, 'ExtraPrice')) {
+                  <span class="request-status status-pending">Bekliyor</span>
+                } @else {
+                  <button type="button" class="offer-button" (click)="editOption(row.option.id, row.coverage.name, row.option.name, row.option.extraPrice)">{{ portal.isManager ? 'Talep' : 'Düzenle' }}</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+    } @else {
+
+      <div class="rule-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Kalem</th>
+              <th>Değişiklik</th>
+              <th>Talep Eden</th>
+              <th>Tarih</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of pagedRequests(); track item.id) {
+              <tr class="clickable-row" (click)="openRequest(item)">
+                <td>
+                  <div class="date-cell">
+                    <strong>{{ item.targetName }}</strong>
+                    <span class="time-value">{{ fieldText(item.field) }}</span>
+                  </div>
+                </td>
+                <td><strong>{{ valueText(item.field, item.oldValue) }} → {{ valueText(item.field, item.newValue) }}</strong></td>
+                <td>{{ item.requestedByName || '—' }}</td>
+                <td>{{ item.requestedDate | backendDate:'datetime' }}</td>
+                <td><span class="request-status" [ngClass]="statusClass(item.status)">{{ statusText(item.status) }}</span></td>
+                <td class="actions-cell">
+                  <button type="button" class="action-button" (click)="$event.stopPropagation(); openRequest(item)">Detay</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-row">Henüz tarife değişiklik talebi yok.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button type="button" [disabled]="page() === 1" (click)="changePage(-1)">‹</button>
+        <span class="pagination-info">{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" [disabled]="page() === totalPages()" (click)="changePage(1)">›</button>
+      </div>
+
+    }
+
+  </section>
+
+  @if (editTarget(); as target) {
+    <div class="rule-dialog-backdrop" (click)="closeEdit()">
+      <form class="rule-dialog" (click)="$event.stopPropagation()" (ngSubmit)="submitEdit()">
+        <h2>{{ portal.isManager ? 'Değişiklik Talebi' : 'Tarifeyi Düzenle' }}</h2>
+        <p class="rule-dialog-sub"><strong>{{ target.title }}</strong> · {{ fieldText(target.field) }}</p>
+        <p class="rule-explain">{{ target.subtitle }}</p>
+        <div class="rule-dialog-grid">
+          <label>
+            <span>Mevcut Değer</span>
+            <input type="text" [value]="valueText(target.field, target.currentValue)" disabled />
+          </label>
+          <label>
+            <span>Yeni Değer</span>
+            <input type="number" step="any" name="newValue" [(ngModel)]="newValue" required />
+          </label>
+          <label class="rule-dialog-full">
+            <span>Gerekçe</span>
+            <textarea rows="3" name="reason" [(ngModel)]="reason" placeholder="Örn. Piyasa fiyatları %10 arttı"></textarea>
+          </label>
+        </div>
+        @if (formError()) {
+          <div class="rule-dialog-error">{{ formError() }}</div>
+        }
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="closeEdit()">Vazgeç</button>
+          <button type="submit" class="policy-button" [disabled]="isSaving()">
+            {{ isSaving() ? 'Kaydediliyor...' : portal.isManager ? 'Onaya Gönder' : 'Kaydet ve Uygula' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  @if (selectedRequest(); as item) {
+    <div class="rule-dialog-backdrop" (click)="closeRequest()">
+      <div class="rule-dialog" (click)="$event.stopPropagation()">
+        <h2>{{ item.targetName }}</h2>
+        <p class="rule-dialog-sub">
+          {{ fieldText(item.field) }} · <span class="request-status" [ngClass]="statusClass(item.status)">{{ statusText(item.status) }}</span>
+        </p>
+        <div class="rule-compare">
+          <div>
+            <span>Mevcut</span>
+            <strong>{{ valueText(item.field, item.oldValue) }}</strong>
+          </div>
+          <b>→</b>
+          <div>
+            <span>Önerilen</span>
+            <strong>{{ valueText(item.field, item.newValue) }}</strong>
+          </div>
+        </div>
+        <dl class="rule-facts">
+          <div><dt>Gerekçe</dt><dd>{{ item.reason }}</dd></div>
+          <div><dt>Talep Eden</dt><dd>{{ item.requestedByName || '—' }} · {{ item.requestedDate | backendDate:'datetime' }}</dd></div>
+          @if (item.decidedDate) {
+            <div><dt>Karar Tarihi</dt><dd>{{ item.decidedDate | backendDate:'datetime' }}</dd></div>
+          }
+          @if (item.decisionNote) {
+            <div><dt>Karar Notu</dt><dd>{{ item.decisionNote }}</dd></div>
+          }
+        </dl>
+        @if (!portal.isManager && item.status === Status.Pending) {
+          <label class="rule-dialog-note">
+            <span>Not <small>(reddederken zorunlu)</small></span>
+            <textarea rows="2" [value]="decisionNote" (input)="decisionNote = $any($event.target).value"></textarea>
+          </label>
+        }
+        @if (formError()) {
+          <div class="rule-dialog-error">{{ formError() }}</div>
+        }
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="closeRequest()">Kapat</button>
+          @if (!portal.isManager && item.status === Status.Pending) {
+            <button type="button" class="action-button delete" [disabled]="isSaving()" (click)="decide(item, 'reject')">Reddet</button>
+            <button type="button" class="policy-button" [disabled]="isSaving()" (click)="decide(item, 'approve')">Onayla ve Uygula</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</section>

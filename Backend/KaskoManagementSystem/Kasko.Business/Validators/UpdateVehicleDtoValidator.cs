@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Kasko.Business.DTOs.Vehicle;
 
 namespace Kasko.Business.Validators
@@ -18,10 +18,9 @@ namespace Kasko.Business.Validators
                 .WithMessage("Plaka en fazla 20 karakter olabilir.");
 
             RuleFor(x => x.VIN)
-                .NotEmpty()
-                .WithMessage("VIN boş olamaz.")
                 .Length(17)
-                .WithMessage("VIN 17 karakter olmalıdır.");
+                .WithMessage("Şasi numarası 17 karakter olmalıdır.")
+                .When(x => !string.IsNullOrWhiteSpace(x.VIN));
 
             RuleFor(x => x.Brand)
                 .NotEmpty()

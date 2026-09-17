@@ -57,6 +57,15 @@ public class CustomerService : ICustomerService
         });
     }
 
+    public async Task<CustomerDto?> GetCurrentAsync()
+    {
+        var customerId = await GetCurrentCustomerIdAsync();
+
+        return customerId == null
+            ? null
+            : await GetByIdAsync(customerId.Value);
+    }
+
     public async Task<CustomerDto?> GetByIdAsync(Guid id)
     {
         if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true &&
@@ -138,6 +147,22 @@ public class CustomerService : ICustomerService
                 "Müşteri bulunamadı.");
         }
 
+        if (_httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true)
+        {
+            if (await GetCurrentCustomerIdAsync() != customer.Id)
+            {
+                throw new NotFoundException(
+                    "Müşteri bulunamadı.");
+            }
+
+            dto.FirstName = customer.FirstName;
+            dto.LastName = customer.LastName;
+            dto.IdentityNumber = customer.IdentityNumber;
+            dto.DateOfBirth = customer.DateOfBirth;
+            dto.Email = customer.Email;
+            dto.IsActive = customer.IsActive;
+        }
+
         var identityExists = await _unitOfWork.Customers
             .AnyAsync(x =>
                 x.IdentityNumber == dto.IdentityNumber &&
@@ -171,7 +196,6 @@ public class CustomerService : ICustomerService
         customer.District = dto.District;
         customer.IsActive = dto.IsActive;
         customer.UpdatedDate = DateTime.UtcNow;
-        customer.CreatedDate = DateTime.UtcNow;
 
         await _unitOfWork.Customers.UpdateAsync(customer);
 

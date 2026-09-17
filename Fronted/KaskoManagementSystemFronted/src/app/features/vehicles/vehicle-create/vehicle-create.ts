@@ -497,8 +497,15 @@ onPlateInput(): void {
     this.isSubmitting = true;
 
 
+    const request = {
+      ...this.form,
+      customerId: this.isCustomerMode
+        ? '00000000-0000-0000-0000-000000000000'
+        : this.form.customerId
+    };
+
     this.vehicleService
-      .createVehicle(this.form)
+      .createVehicle(request)
       .subscribe({
 
         next: (response) => {
@@ -815,10 +822,17 @@ onYearChange(): void {
 
     if (error?.status === 400) {
 
+      const validationErrors =
+        error?.error?.errors
+          ? Object.values(error.error.errors).flat().join(' ')
+          : '';
+
       return (
         error?.error?.detail
         ??
-        'Girilen araç bilgileri geçersiz.'
+        error?.error?.message
+        ??
+        (validationErrors || 'Girilen araç bilgileri geçersiz.')
       );
 
     }
@@ -836,7 +850,7 @@ onYearChange(): void {
     if (error?.status === 403) {
 
       return (
-        'Araç oluşturmak için Admin yetkisi gerekiyor.'
+        'Bu işlem için yetkiniz bulunmuyor.'
       );
 
     }

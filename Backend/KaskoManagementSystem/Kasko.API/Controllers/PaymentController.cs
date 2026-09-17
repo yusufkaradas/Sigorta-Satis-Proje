@@ -51,22 +51,5 @@ namespace Kasko.API.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var userIdClaim = User.FindFirst(
-                System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            Guid? deletedBy = Guid.TryParse(
-                userIdClaim?.Value,
-                out var userId)
-                ? userId
-                : null;
-
-            await _paymentService.DeleteAsync(id, deletedBy);
-
-            return NoContent();
-        }
     }
 }

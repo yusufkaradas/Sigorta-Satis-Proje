@@ -36,11 +36,21 @@ export interface QuickQuoteCustomerLookupResponse {
 
   email: string;
 }
+export interface QuickQuoteCoverageOption {
+  id: string;
+  name: string;
+  limit: number | null;
+  extraPrice: number;
+  isDefault: boolean;
+}
+
 export interface QuickQuotePackageCoverage {
   coverageId: string;
   coverageName: string;
   calculatedPrice: number;
   isDefault: boolean;
+  description?: string | null;
+  options?: QuickQuoteCoverageOption[];
 }
 
 export interface QuickQuotePackage {
@@ -62,6 +72,7 @@ export interface QuickQuotePricingRequest {
   packageId: string | null;
   deductible: number;
   coverageIds: string[];
+  coverageOptionIds?: Record<string, string>;
 }
 export interface QuickQuoteOfferRequest {
 
@@ -77,6 +88,7 @@ export interface QuickQuotePricingCoverage {
   coverageName: string;
   calculatedPrice: number;
   limit: number | null;
+  optionName?: string | null;
 }
 
 export interface QuickQuotePricingResponse {
@@ -206,64 +218,12 @@ createQuote(
   );
 
 }
-compareQuotes(
-  request: QuickQuotePricingRequest
-): Observable<QuickQuoteProviderResult[]> {
-
-  return this.http.post<
-    QuickQuoteProviderResult[]
-  >(
-    `${this.apiUrl}/compare`,
-    request
-  );
-
-}
-acceptQuote(
-  request: QuickQuoteOfferRequest
-): Observable<void> {
-
-  return this.http.post<void>(
-    `${this.apiUrl}/accept`,
-    request
-  );
-
-}
-offerQuote(
-  request: QuickQuoteOfferRequest
-): Observable<void> {
-
-  return this.http.post<void>(
-    `${this.apiUrl}/offer`,
-    request
-  );
-
-}
-createPolicy(
-  request: QuickQuotePolicyCreateRequest
-): Observable<any> {
-
-  return this.http.post<any>(
-    `${this.apiUrl}/policy/create`,
-    request
-  );
-
-}
 purchase(
   request: { quoteId: string; identityNumber: string; phoneNumber: string; acceptedTerms: boolean; simulateFailure: boolean }
 ): Observable<{ policy: any; payment: any }> {
 
   return this.http.post<{ policy: any; payment: any }>(
     `${this.apiUrl}/purchase`,
-    request
-  );
-
-}
-createPayment(
-  request: QuickQuotePaymentRequest
-): Observable<any> {
-
-  return this.http.post<any>(
-    `${this.apiUrl}/payment/create`,
     request
   );
 

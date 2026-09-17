@@ -126,7 +126,7 @@
         </a>
 
         <button
-          *ngIf="quote.status === QuoteStatus.Draft"
+          *ngIf="!isCustomerMode && quote.status === QuoteStatus.Draft"
           type="button"
           class="kf-btn"
           [disabled]="isLoading"
@@ -134,13 +134,17 @@
           Müşteriye Sun
         </button>
 
-        <span *ngIf="quote.status === QuoteStatus.Offered" class="kf-note">
+        <span *ngIf="!isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-note">
           Teklif müşteriye sunuldu, müşterinin satın alması bekleniyor.
         </span>
 
       </div>
 
-      <div *ngIf="quote && isCustomerMode && (quote.status === QuoteStatus.Offered || quote.status === QuoteStatus.Draft)" class="kf-purchase">
+      <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Draft" class="kf-purchase">
+        <span class="kf-note">Teklifiniz yetkili onayında. Onaylandığında buradan satın alabilirsiniz.</span>
+      </div>
+
+      <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-purchase">
 
         <label class="kf-consent">
           <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />

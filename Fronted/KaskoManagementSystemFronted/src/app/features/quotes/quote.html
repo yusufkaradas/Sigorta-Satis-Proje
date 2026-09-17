@@ -293,22 +293,6 @@
               </button>
 
 
-              <button
-                *ngIf="
-                  quote.status === QuoteStatus.Accepted &&
-                  !portal.isManager
-                "
-                type="button"
-                class="policy-button"
-                [routerLink]="['/policies/new']"
-                [queryParams]="{
-                  customerId: quote.customerId,
-                  vehicleId: quote.vehicleId,
-                  quoteId: quote.id
-                }"
-              >
-                Poliçe Oluştur
-              </button>
 
             </td>
 

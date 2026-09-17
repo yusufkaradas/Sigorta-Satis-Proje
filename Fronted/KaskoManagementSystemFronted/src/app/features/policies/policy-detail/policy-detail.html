@@ -23,6 +23,14 @@
       </div>
       <div class="kf-head-actions">
         <button
+          *ngIf="canRenew"
+          type="button"
+          class="kf-btn"
+          [disabled]="isRenewing"
+          (click)="renewPolicy()">
+          {{ isRenewing ? 'Hazırlanıyor...' : 'Poliçeyi Yenile' }}
+        </button>
+        <button
           *ngIf="policy && (policy.status === PolicyStatus.Active || policy.status === PolicyStatus.Expired)"
           type="button"
           class="kf-btn"
@@ -30,7 +38,45 @@
           (click)="downloadPdf()">
           {{ isDownloading ? 'Hazırlanıyor...' : 'Poliçe PDF İndir' }}
         </button>
+        <button
+          *ngIf="isCustomerMode && policy?.status === PolicyStatus.Active && cancellation?.status !== CancellationStatus.Pending && !isCancelFormOpen"
+          type="button"
+          class="kf-btn-outline"
+          (click)="isCancelFormOpen = true">
+          İptal Talebi
+        </button>
         <button type="button" class="kf-btn-outline" (click)="goBack()">← Poliçelere Dön</button>
+      </div>
+    </div>
+
+    <div *ngIf="canRenew" class="kf-alert kf-alert-info">
+      Poliçenizin bitmesine {{ renewalDaysLeft }} gün kaldı. "Poliçeyi Yenile" ile aynı teminatlarla yeni dönem teklifinizi hemen alabilirsiniz.
+    </div>
+
+    <div *ngIf="isCustomerMode && cancellation?.status === CancellationStatus.Pending" class="kf-alert kf-alert-info">
+      İptal talebiniz alındı ve inceleniyor. Onaylanırsa tahmini iade tutarınız {{ cancellation?.refundAmount | number:'1.2-2' }} ₺ olacak.
+    </div>
+
+    <div *ngIf="isCustomerMode && cancellation?.status === CancellationStatus.Rejected" class="kf-alert kf-alert-error">
+      İptal talebiniz reddedildi: {{ cancellation?.decisionNote }}. Poliçeniz aktif olarak devam ediyor.
+    </div>
+
+    <div *ngIf="isCustomerMode && cancellation?.status === CancellationStatus.Approved" class="kf-alert kf-alert-success">
+      İptal talebiniz onaylandı. {{ cancellation?.refundAmount | number:'1.2-2' }} ₺ iade kartınıza yapılacaktır.
+    </div>
+
+    <div *ngIf="isCancelFormOpen && policy" class="kf-cancel-box">
+      <strong>Poliçe İptal Talebi</strong>
+      <p>
+        Poliçenizin kullanılmayan {{ refundEstimate?.remainingDays }} günü için tahmini iade tutarı
+        <b>{{ refundEstimate?.refund | number:'1.2-2' }} ₺</b>. Talebiniz onaylanana kadar poliçeniz aktif kalır.
+      </p>
+      <textarea rows="2" placeholder="İptal nedeninizi kısaca yazın (örn. aracımı sattım)" [value]="cancelReason" (input)="cancelReason = $any($event.target).value"></textarea>
+      <div class="kf-head-actions">
+        <button type="button" class="kf-btn-outline" (click)="isCancelFormOpen = false">Vazgeç</button>
+        <button type="button" class="kf-btn-danger" [disabled]="isSubmittingCancel" (click)="submitCancellation()">
+          {{ isSubmittingCancel ? 'Gönderiliyor...' : 'İptal Talebini Gönder' }}
+        </button>
       </div>
     </div>
 

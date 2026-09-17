@@ -1,0 +1,44 @@
+@use '../../shared/styles/kasko-theme' as k;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.hub {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-tabs {
+  flex: 0 0 auto;
+  align-self: center;
+  display: inline-flex;
+  gap: k.u(8);
+  padding-top: k.u(16);
+}
+
+.hub-tab {
+  @include k.section-title;
+  min-width: k.u(170);
+  font-size: k.u(15);
+  cursor: pointer;
+  background: k.$surface;
+  color: k.$primary;
+
+  &.active {
+    background: k.$primary;
+    color: k.$surface;
+  }
+}
+
+.hub-body {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  > * {
+    display: block;
+    height: 100%;
+  }
+}

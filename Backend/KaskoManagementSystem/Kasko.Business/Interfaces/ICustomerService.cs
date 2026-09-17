@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Customer;
+using Kasko.Business.DTOs.Customer;
 using Kasko.Business.DTOs.QuickQuote;
 
 namespace Kasko.Business.Interfaces;
@@ -8,6 +8,8 @@ public interface ICustomerService
     Task<IEnumerable<CustomerListDto>> GetAllAsync();
 
     Task<CustomerDto?> GetByIdAsync(Guid id);
+
+    Task<CustomerDto?> GetCurrentAsync();
 
     Task CreateAsync(CreateCustomerDto dto);
 

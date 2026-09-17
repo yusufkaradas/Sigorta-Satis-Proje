@@ -11,18 +11,31 @@ export interface GuestEstimateRequest {
   claimsCount: number;
   deductible: number;
   packageId?: string | null;
+  coverageOptionIds?: Record<string, string>;
+}
+
+export interface GuestCoverageOption {
+  id: string;
+  name: string;
+  limit: number | null;
+  extraPrice: number;
+  isDefault: boolean;
 }
 
 export interface GuestEstimateCoverage {
   coverageId: string;
   coverageName: string;
   price: number;
+  limit?: number | null;
+  optionName?: string | null;
+  coverageOptionId?: string | null;
+  options?: GuestCoverageOption[];
 }
 
 export interface GuestEstimatePackage {
   packageId: string;
-  code: string;
-  name: string;
+  packageCode: string;
+  packageName: string;
   description?: string | null;
   totalPremium: number;
   coveragePremium: number;

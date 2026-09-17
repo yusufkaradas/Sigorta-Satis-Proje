@@ -1,3 +1,4 @@
+import { CancellationService, CancellationStatus, PolicyCancellation, estimateRefund } from '../../cancellations/cancellation.service';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
@@ -115,6 +116,10 @@ export class PolicyDetail {
   this.policy = data;
 
   this.loadPayment(data.id);
+
+  if (this.isCustomerMode) {
+    this.loadCancellation(data.id);
+  }
 
   if (data.quoteId) {
 
@@ -409,6 +414,121 @@ private loadPayment(
 
     });
 }
+  private readonly cancellationService = inject(CancellationService);
+
+  readonly CancellationStatus = CancellationStatus;
+
+  cancellation: PolicyCancellation | null = null;
+
+  isCancelFormOpen = false;
+
+  cancelReason = '';
+
+  isSubmittingCancel = false;
+
+  get refundEstimate(): { refund: number; remainingDays: number } | null {
+    if (!this.policy) {
+      return null;
+    }
+    return estimateRefund(this.policy.premiumAmount, this.policy.startDate, this.policy.endDate);
+  }
+
+  loadCancellation(policyId: string): void {
+    this.cancellationService.getAll().subscribe({
+      next: items => {
+        this.cancellation = (items ?? []).find(item => item.policyId === policyId) ?? null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cancellation = null;
+      }
+    });
+  }
+
+  submitCancellation(): void {
+    if (!this.policy || this.isSubmittingCancel) {
+      return;
+    }
+
+    if (this.cancelReason.trim().length < 5) {
+      this.errorMessage = 'Lütfen iptal nedeninizi kısaca yazın.';
+      return;
+    }
+
+    this.isSubmittingCancel = true;
+    this.errorMessage = '';
+
+    this.cancellationService.create(this.policy.id, this.cancelReason.trim()).subscribe({
+      next: result => {
+        this.cancellation = result;
+        this.isCancelFormOpen = false;
+        this.isSubmittingCancel = false;
+        this.cancelReason = '';
+        this.cdr.detectChanges();
+      },
+      error: error => {
+        this.isSubmittingCancel = false;
+        this.errorMessage = error?.error?.message ?? error?.error?.detail ?? 'İptal talebi oluşturulamadı.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  isRenewing = false;
+
+  get renewalDaysLeft(): number | null {
+    if (!this.policy) {
+      return null;
+    }
+    const end = new Date(this.policy.endDate);
+    const today = new Date();
+    end.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return Math.round((end.getTime() - today.getTime()) / 86400000);
+  }
+
+  get canRenew(): boolean {
+    const days = this.renewalDaysLeft;
+    return !!this.policy &&
+      this.policy.status === PolicyStatus.Active &&
+      days !== null &&
+      days <= 60;
+  }
+
+  renewPolicy(): void {
+    if (!this.policy || this.isRenewing) {
+      return;
+    }
+
+    const start = new Date(this.policy.endDate);
+    const end = new Date(start);
+    end.setFullYear(end.getFullYear() + 1);
+
+    this.isRenewing = true;
+    this.errorMessage = '';
+
+    this.policyService.renew({
+      policyId: this.policy.id,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      usage: 'PRIVATE',
+      claimsCount: 0,
+      packageId: null,
+      deductible: 0,
+      coverageIds: (this.quote?.coverages ?? []).map(item => item.coverageId)
+    }).subscribe({
+      next: quote => {
+        this.isRenewing = false;
+        this.router.navigate([this.basePath + '/quotes', quote.id]);
+      },
+      error: error => {
+        this.isRenewing = false;
+        this.errorMessage = error?.error?.message ?? error?.error?.detail ?? 'Yenileme teklifi oluşturulamadı.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   isDownloading = false;
 
   downloadPdf(): void {

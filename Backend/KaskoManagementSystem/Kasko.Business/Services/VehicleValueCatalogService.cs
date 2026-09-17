@@ -85,19 +85,36 @@ public class VehicleValueCatalogService
     public async Task<IReadOnlyList<string>> GetCategoriesAsync(
         CancellationToken cancellationToken = default)
     {
+        var cached = _categoryCache;
+
+        if (cached != null && cached.Expires > DateTime.UtcNow)
+        {
+            return cached.Categories;
+        }
+
         var stored =
             await _unitOfWork
                 .VehicleValueCatalogs
                 .GetActiveCategoriesAsync();
 
-        return VehicleCategoryClassifier.Categories
+        var categories = VehicleCategoryClassifier.Categories
             .Where(stored.Contains)
             .ToList();
+
+        _categoryCache = new CategoryCache(categories, DateTime.UtcNow.AddMinutes(30));
+
+        return categories;
     }
+
+    private sealed record CategoryCache(IReadOnlyList<string> Categories, DateTime Expires);
+
+    private static CategoryCache? _categoryCache;
 
     public async Task<int> ReclassifyAsync(
         CancellationToken cancellationToken = default)
     {
+        _categoryCache = null;
+
         return await _unitOfWork
             .VehicleValueCatalogs
             .ReclassifyAsync(VehicleCategoryClassifier.Classify);

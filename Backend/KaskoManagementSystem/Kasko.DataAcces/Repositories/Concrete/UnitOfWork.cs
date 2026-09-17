@@ -1,4 +1,4 @@
-﻿using Kasko.DataAccess.Repositories.Abstract;
+using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 
 namespace Kasko.DataAccess.Repositories.Concrete
@@ -75,6 +75,13 @@ namespace Kasko.DataAccess.Repositories.Concrete
         }
         public async Task ExecuteInTransactionAsync(Func<Task> action)
         {
+            if (_context.Database.CurrentTransaction != null)
+            {
+                await action();
+
+                return;
+            }
+
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
 

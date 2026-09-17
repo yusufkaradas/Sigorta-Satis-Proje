@@ -6,6 +6,7 @@ using Kasko.Business.Integrations.Insurer;
 using Kasko.Business.Interfaces;
 using Kasko.Business.Services;
 using Kasko.Business.Services.Abstract;
+using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +99,8 @@ public class QuickQuoteController : ControllerBase
 
     [HttpPost("purchase")]
     public async Task<IActionResult> Purchase(
-        [FromBody] QuickQuotePurchaseRequestDto dto)
+        [FromBody] QuickQuotePurchaseRequestDto dto,
+        [FromServices] IUnitOfWork unitOfWork)
     {
         if (string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber) ||
@@ -148,37 +150,44 @@ public class QuickQuoteController : ControllerBase
             });
         }
 
-        if (quote.Status == QuoteStatus.Draft)
+        PolicyDto? policy = null;
+
+        PaymentDto? payment = null;
+
+        await unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Offered);
-        }
+            if (quote.Status == QuoteStatus.Draft)
+            {
+                await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Offered);
+            }
 
-        if (quote.Status != QuoteStatus.Accepted)
-        {
-            await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Accepted);
-        }
+            if (quote.Status != QuoteStatus.Accepted)
+            {
+                await _quoteService.ChangeStatusAsync(dto.QuoteId, QuoteStatus.Accepted);
+            }
 
-        var policy =
-            await _policyService.CreateAsync(
-                new PolicyCreateDto
-                {
-                    CustomerId = customer.CustomerId.Value,
-                    VehicleId = quote.VehicleId,
-                    QuoteId = dto.QuoteId,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddYears(1)
-                });
+            policy =
+                await _policyService.CreateAsync(
+                    new PolicyCreateDto
+                    {
+                        CustomerId = customer.CustomerId.Value,
+                        VehicleId = quote.VehicleId,
+                        QuoteId = dto.QuoteId,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddYears(1)
+                    });
 
-        var payment =
-            await _paymentService.CreateAsync(
-                new PaymentCreateDto
-                {
-                    PolicyId = policy.Id,
-                    SimulateFailure = dto.SimulateFailure
-                });
+            payment =
+                await _paymentService.CreateAsync(
+                    new PaymentCreateDto
+                    {
+                        PolicyId = policy.Id,
+                        SimulateFailure = dto.SimulateFailure
+                    });
+        });
 
         var activePolicy =
-            await _policyService.GetByIdAsync(policy.Id);
+            await _policyService.GetByIdAsync(policy!.Id);
 
         return Ok(new
         {
@@ -370,6 +379,9 @@ public class QuickQuoteController : ControllerBase
                 CoverageIds =
                     dto.CoverageIds,
 
+                CoverageOptionIds =
+                    dto.CoverageOptionIds,
+
                 Usage =
                     dto.Usage,
 
@@ -403,117 +415,6 @@ public class QuickQuoteController : ControllerBase
                 .GetAllAsync();
 
         return Ok(packages);
-    }
-    [HttpPost("compare")]
-    public async Task<IActionResult> Compare(
-    [FromBody]
-    QuickQuotePricingRequestDto dto)
-    {
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message =
-                    "T.C. Kimlik No / Vergi No ve telefon numarası zorunludur."
-            });
-        }
-
-
-        if (dto.VehicleId == Guid.Empty)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Araç seçimi zorunludur."
-            });
-        }
-
-
-        var customer =
-            await _customerService
-                .GetForQuickQuoteAsync(
-                    dto.IdentityNumber,
-                    dto.PhoneNumber);
-
-
-        if (
-            !customer.Found ||
-            !customer.CustomerId.HasValue)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Müşteri doğrulanamadı."
-            });
-        }
-
-
-        var vehicle =
-            await _vehicleService
-                .GetByIdAsync(
-                    dto.VehicleId);
-
-
-        if (vehicle == null)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Araç bulunamadı."
-            });
-        }
-
-
-        if (
-            vehicle.CustomerId !=
-            customer.CustomerId.Value)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Seçilen araç bu müşteriye ait değil."
-            });
-        }
-
-
-        var pricingRequest =
-            new Kasko.Business.Pricing.PricingRequest
-            {
-                MarketValue =
-                    vehicle.MarketValue,
-
-                ModelYear =
-                    vehicle.ModelYear,
-
-                Usage =
-                    dto.Usage,
-
-                ClaimsCount =
-                    dto.ClaimsCount,
-
-                PackageId =
-                    dto.PackageId,
-
-                Deductible =
-                    dto.Deductible,
-
-                CoverageIds =
-                    dto.CoverageIds,
-
-                EffectiveDate =
-                    DateTime.UtcNow
-            };
-
-
-        var results =
-            await _comparisonService
-                .CompareAsync(
-                    pricingRequest);
-
-
-        return Ok(results);
     }
     [HttpPost("create")]
     public async Task<IActionResult> Create(
@@ -575,6 +476,9 @@ public class QuickQuoteController : ControllerBase
                 CoverageIds =
                     dto.CoverageIds,
 
+                CoverageOptionIds =
+                    dto.CoverageOptionIds,
+
                 Usage =
                     dto.Usage,
 
@@ -605,263 +509,6 @@ public class QuickQuoteController : ControllerBase
                 .GetByIdAsync(quote.Id);
 
         return Ok(offeredQuote ?? quote);
-    }
-    [HttpPost("offer")]
-    public async Task<IActionResult> Offer(
-    [FromBody] QuickQuoteOfferRequestDto dto)
-    {
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message =
-                    "T.C. Kimlik No / Vergi No ve telefon numarası zorunludur."
-            });
-        }
-
-        if (dto.QuoteId == Guid.Empty)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Teklif bilgisi zorunludur."
-            });
-        }
-
-        var customer =
-            await _customerService
-                .GetForQuickQuoteAsync(
-                    dto.IdentityNumber,
-                    dto.PhoneNumber);
-
-        if (
-            !customer.Found ||
-            !customer.CustomerId.HasValue)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Müşteri doğrulanamadı."
-            });
-        }
-
-        var quote =
-            await _quoteService
-                .GetByIdAsync(dto.QuoteId);
-
-        if (quote == null)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Teklif bulunamadı."
-            });
-        }
-
-        if (
-            quote.CustomerId !=
-            customer.CustomerId.Value)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Teklif bulunamadı."
-            });
-        }
-
-        await _quoteService
-            .ChangeStatusAsync(
-                dto.QuoteId,
-                QuoteStatus.Offered);
-
-        return NoContent();
-    }
-    [HttpPost("accept")]
-    public async Task<IActionResult> Accept(
-    [FromBody] QuickQuoteOfferRequestDto dto)
-    {
-        EnsureCaller(
-            ResolveVerificationToken(),
-            dto.IdentityNumber,
-            dto.PhoneNumber);
-
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message =
-                    "T.C. Kimlik No / Vergi No ve telefon numarası zorunludur."
-            });
-        }
-
-        if (dto.QuoteId == Guid.Empty)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Teklif bilgisi zorunludur."
-            });
-        }
-
-        var customer =
-            await _customerService
-                .GetForQuickQuoteAsync(
-                    dto.IdentityNumber,
-                    dto.PhoneNumber);
-
-        if (
-            !customer.Found ||
-            !customer.CustomerId.HasValue)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Müşteri doğrulanamadı."
-            });
-        }
-
-        var quote =
-            await _quoteService
-                .GetByIdAsync(dto.QuoteId);
-
-        if (quote == null ||
-            quote.CustomerId != customer.CustomerId.Value)
-        {
-            return NotFound(new
-            {
-                message =
-                    "Teklif bulunamadı."
-            });
-        }
-
-        await _quoteService
-            .ChangeStatusAsync(
-                dto.QuoteId,
-                QuoteStatus.Accepted);
-
-        return NoContent();
-    }
-    [HttpPost("policy/create")]
-    public async Task<IActionResult> CreatePolicy(
-    [FromBody] QuickQuotePolicyCreateRequestDto dto)
-    {
-        EnsureCaller(
-            ResolveVerificationToken(),
-            dto.IdentityNumber,
-            dto.PhoneNumber);
-
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message =
-                    "T.C. Kimlik No / Vergi No ve telefon numarası zorunludur."
-            });
-        }
-
-        if (dto.QuoteId == Guid.Empty)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Teklif bilgisi zorunludur."
-            });
-        }
-
-        var customer =
-            await _customerService.GetForQuickQuoteAsync(
-                dto.IdentityNumber,
-                dto.PhoneNumber);
-
-        if (!customer.Found || !customer.CustomerId.HasValue)
-        {
-            return NotFound(new
-            {
-                message = "Müşteri doğrulanamadı."
-            });
-        }
-
-        var policy =
-            await _policyService.CreateAsync(
-                new PolicyCreateDto
-                {
-                    CustomerId = customer.CustomerId.Value,
-                    VehicleId = dto.VehicleId,
-                    QuoteId = dto.QuoteId,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddYears(1)
-                });
-
-        return Ok(policy);
-    }
-    [HttpPost("payment/create")]
-    public async Task<IActionResult> CreatePayment(
-    [FromBody] QuickQuotePaymentRequestDto dto)
-    {
-        EnsureCaller(
-            ResolveVerificationToken(),
-            dto.IdentityNumber,
-            dto.PhoneNumber);
-
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message = "Müşteri bilgileri zorunludur."
-            });
-        }
-
-        if (dto.PolicyId == Guid.Empty)
-        {
-            return BadRequest(new
-            {
-                message = "Poliçe bilgisi zorunludur."
-            });
-        }
-
-        var customer =
-            await _customerService.GetForQuickQuoteAsync(
-                dto.IdentityNumber,
-                dto.PhoneNumber);
-
-        if (!customer.Found || !customer.CustomerId.HasValue)
-        {
-            return NotFound(new
-            {
-                message = "Müşteri doğrulanamadı."
-            });
-        }
-
-        var policy =
-            await _policyService.GetByIdAsync(dto.PolicyId);
-
-        if (
-            policy == null ||
-            policy.CustomerId != customer.CustomerId.Value)
-        {
-            return NotFound(new
-            {
-                message = "Poliçe bulunamadı."
-            });
-        }
-
-        var payment =
-            await _paymentService.CreateAsync(
-                new PaymentCreateDto
-                {
-                    PolicyId = dto.PolicyId,
-                    SimulateFailure = dto.SimulateFailure
-                });
-
-        return Ok(payment);
     }
     [HttpPost("policy/pdf")]
     public async Task<IActionResult> GeneratePolicyPdf(

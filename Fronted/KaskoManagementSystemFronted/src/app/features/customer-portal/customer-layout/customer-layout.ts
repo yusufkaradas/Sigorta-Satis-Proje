@@ -5,8 +5,16 @@ import {
 
 import {
   Component,
-  inject
+  OnInit,
+  computed,
+  inject,
+  signal
 } from '@angular/core';
+
+import {
+  Notification,
+  NotificationsService
+} from '../../notifications/notifications/notifications.service';
 
 import {
   Router,
@@ -31,7 +39,7 @@ import {
   templateUrl: './customer-layout.html',
   styleUrl: './customer-layout.scss'
 })
-export class CustomerLayout {
+export class CustomerLayout implements OnInit {
 
   private readonly brandService = inject(BrandService);
 
@@ -48,11 +56,57 @@ export class CustomerLayout {
     { path: '/customer/vehicles', label: 'Araçlarım', exact: false },
     { path: '/customer/quotes', label: 'Tekliflerim', exact: false },
     { path: '/customer/policies', label: 'Poliçelerim', exact: false },
-    { path: '/customer/payments', label: 'Ödemelerim', exact: false }
+    { path: '/customer/payments', label: 'Ödemelerim', exact: false },
+    { path: '/customer/settings', label: 'Ayarlar', exact: false }
   ];
 
   readonly user =
     this.authService.getCurrentUser();
+
+  private readonly notificationsService =
+    inject(NotificationsService);
+
+  notifications = signal<Notification[]>([]);
+
+  unreadCount = computed(() =>
+    this.notifications().filter(item => !item.isRead).length
+  );
+
+  latestNotifications = computed(() =>
+    [...this.notifications()]
+      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+      .slice(0, 5)
+  );
+
+  ngOnInit(): void {
+    this.loadNotifications();
+  }
+
+  notificationLink(item: Notification): string[] {
+    const type = (item.type ?? '').toUpperCase();
+    const id = item.relatedEntityId;
+
+    if (id && (type.startsWith('PAYMENT') || type.startsWith('POLICY') || type.startsWith('CANCEL'))) {
+      return ['/customer/policies', id];
+    }
+
+    if (id && type.startsWith('QUOTE')) {
+      return ['/customer/quotes', id];
+    }
+
+    if (id && type.startsWith('VEHICLE')) {
+      return ['/customer/vehicles', id];
+    }
+
+    return type.startsWith('PAYMENT') ? ['/customer/payments'] : ['/customer/policies'];
+  }
+
+  loadNotifications(): void {
+    this.notificationsService.getNotifications().subscribe({
+      next: data => this.notifications.set(data ?? []),
+      error: () => this.notifications.set([])
+    });
+  }
 
   isNotificationOpen = false;
 
@@ -85,6 +139,10 @@ export class CustomerLayout {
       !this.isNotificationOpen;
 
     this.isUserMenuOpen = false;
+
+    if (this.isNotificationOpen) {
+      this.loadNotifications();
+    }
   }
 
   toggleUserMenu(): void {

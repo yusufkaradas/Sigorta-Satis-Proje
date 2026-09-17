@@ -86,6 +86,7 @@ public class QuickQuoteEstimateService : IQuickQuoteEstimateService
                             .Where(x => x.IsDefault)
                             .Select(x => x.CoverageId)
                             .ToArray(),
+                        CoverageOptionIds = request.CoverageOptionIds,
                         EffectiveDate = DateTime.UtcNow
                     },
                     cancellationToken);
@@ -104,7 +105,13 @@ public class QuickQuoteEstimateService : IQuickQuoteEstimateService
                     {
                         CoverageId = x.CoverageId,
                         CoverageName = x.CoverageName,
-                        Price = x.CalculatedPrice
+                        Price = x.CalculatedPrice,
+                        Limit = x.Limit,
+                        OptionName = x.OptionName,
+                        CoverageOptionId = x.CoverageOptionId,
+                        Options = package.Coverages
+                            .FirstOrDefault(c => c.CoverageId == x.CoverageId)?
+                            .Options ?? new()
                     })
                     .ToList()
             });

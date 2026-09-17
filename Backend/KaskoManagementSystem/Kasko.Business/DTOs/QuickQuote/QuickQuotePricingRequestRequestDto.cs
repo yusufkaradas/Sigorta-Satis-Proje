@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.DTOs.QuickQuote;
+namespace Kasko.Business.DTOs.QuickQuote;
 
 public class QuickQuotePricingRequestDto
 {
@@ -18,4 +18,7 @@ public class QuickQuotePricingRequestDto
 
     public IReadOnlyCollection<Guid> CoverageIds { get; set; }
         = Array.Empty<Guid>();
+
+        public Dictionary<Guid, Guid> CoverageOptionIds { get; set; }
+            = new();
 }

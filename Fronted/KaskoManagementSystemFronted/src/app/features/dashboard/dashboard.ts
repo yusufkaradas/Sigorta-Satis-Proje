@@ -207,15 +207,14 @@ export class Dashboard implements OnInit {
       }))
   );
 
-  upcomingRenewals = computed<DeadlineRow[]>(() =>
-    (this.data()?.policies ?? [])
-      .filter(policy => policy.status === 2)
+  upcomingRenewals = computed<DeadlineRow[]>(() => {
+    const details = new Map((this.data()?.policies ?? []).map(policy => [policy.id, policy]));
+
+    return (this.data()?.upcomingRenewals ?? [])
       .map(policy => ({
-        policy,
+        policy: { ...policy, ...(details.get(policy.id) ?? {}) },
         daysLeft: this.daysUntil(policy.endDate)
       }))
-      .filter(item => item.daysLeft >= 0 && item.daysLeft <= 30)
-      .sort((a, b) => a.daysLeft - b.daysLeft)
       .slice(0, 5)
       .map(({ policy, daysLeft }) => ({
         id: policy.id,
@@ -223,8 +222,8 @@ export class Dashboard implements OnInit {
         subtitle: policy.customerName || `${policy.brand ?? ''} ${policy.model ?? ''}`.trim() || '—',
         daysLeft,
         link: [this.portal.basePath + '/policies', policy.id]
-      }))
-  );
+      }));
+  });
 
   approvals = computed<ApprovalRow[]>(() => {
 
