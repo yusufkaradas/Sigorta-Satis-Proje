@@ -16,6 +16,11 @@ export function formatPricingValue(
   value: number
 ): string {
 
+  if ((code ?? '').startsWith('AUTO_APPROVE_')) {
+    const unit = (code ?? '').endsWith('PREMIUM') || (code ?? '').endsWith('MARKET_VALUE') ? ' ₺' : (code ?? '').endsWith('AGE') ? ' yıl' : ' hasar';
+    return `≤ ${value.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}${unit}`;
+  }
+
   if ((code ?? '').includes('RATE')) {
     return `%${(value * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`;
   }

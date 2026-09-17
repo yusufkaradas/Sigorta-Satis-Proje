@@ -1,3 +1,4 @@
+import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import {
   ChangeDetectorRef,
   Component,
@@ -39,6 +40,7 @@ import {
   standalone: true,
 
   imports: [
+    InputRuleDirective,
     CommonModule,
     FormsModule
   ],

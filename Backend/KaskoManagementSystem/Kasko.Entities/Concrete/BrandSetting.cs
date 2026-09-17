@@ -12,5 +12,7 @@ public class BrandSetting : BaseEntity
 
     public string? LoginImage { get; set; }
 
+    public string? FaviconImage { get; set; }
+
     public DateTime? UpdatedDate { get; set; }
 }

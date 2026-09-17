@@ -11,7 +11,7 @@ public interface ICustomerService
 
     Task<CustomerDto?> GetCurrentAsync();
 
-    Task CreateAsync(CreateCustomerDto dto);
+    Task<Guid> CreateAsync(CreateCustomerDto dto);
 
     Task UpdateAsync(UpdateCustomerDto dto);
 

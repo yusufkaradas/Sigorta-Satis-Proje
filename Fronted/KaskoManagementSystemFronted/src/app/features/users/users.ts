@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../core/services/confirm-dialog';
 import {
   ChangeDetectorRef,
   Component,
@@ -268,10 +269,10 @@ ngOnInit(): void {
   }
 
 
-  deleteUser(id: string): void {
+  async deleteUser(id: string): Promise<void> {
 
     const confirmed =
-      window.confirm(
+      await confirmDialog(
         'Bu kullanıcıyı silmek istediğinize emin misiniz?'
       );
 

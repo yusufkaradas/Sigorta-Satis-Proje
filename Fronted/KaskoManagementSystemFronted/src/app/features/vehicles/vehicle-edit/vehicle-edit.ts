@@ -426,7 +426,40 @@ this.customerName = customer
   }
 
 
+  plateTouched = false;
+
+  onPlateInput(event?: Event): void {
+    const input = event?.target as HTMLInputElement | undefined;
+    const raw = (input?.value ?? this.form.plateNumber ?? '')
+      .toLocaleUpperCase('tr-TR')
+      .replace(/[ÇĞİÖŞÜ]/g, '')
+      .replace(/[^0-9A-Z]/g, '');
+    const match = raw.match(/^(\d{0,2})([A-Z]{0,3})(\d{0,5})/);
+    const city = match?.[1] ?? '';
+    const letters = city.length === 2 ? match?.[2] ?? '' : '';
+    const maxDigits = letters.length === 1 ? 5 : letters.length === 2 ? 4 : 3;
+    const numbers = letters.length ? (match?.[3] ?? '').slice(0, maxDigits) : '';
+    this.form.plateNumber = [city, letters, numbers].filter(part => part).join(' ');
+    if (input) {
+      input.value = this.form.plateNumber;
+    }
+  }
+
+  get isPlateValid(): boolean {
+    return /^(0[1-9]|[1-7][0-9]|8[01])([A-Z][0-9]{4,5}|[A-Z]{2}[0-9]{3,4}|[A-Z]{3}[0-9]{2,3})$/.test((this.form.plateNumber ?? '').replace(/\s/g, ''));
+  }
+
+  get showPlateError(): boolean {
+    return this.plateTouched && !!this.form.plateNumber && !this.isPlateValid;
+  }
+
   updateVehicle(): void {
+    if (!this.isPlateValid) {
+      this.plateTouched = true;
+      this.errorMessage = 'Geçerli bir plaka girin. Örn. 34 ABC 123';
+      return;
+    }
+
 
     this.errorMessage = '';
 

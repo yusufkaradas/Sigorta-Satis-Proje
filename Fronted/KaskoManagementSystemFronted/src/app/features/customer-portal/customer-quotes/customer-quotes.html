@@ -89,7 +89,7 @@
               <td>
                 <div class="cp-cell">
                   <strong [title]="quote.vehicleDescription">{{ quote.vehicleDescription || '—' }}</strong>
-                  <small>{{ quote.plateNumber }}</small>
+                  <small><app-plate [value]="quote.plateNumber" size="sm" /></small>
                 </div>
               </td>
               <td class="cp-num cp-strong">{{ quote.premiumAmount | number:'1.2-2' }} ₺</td>

@@ -21,7 +21,7 @@ $danger-soft: #fee2e2;
 $info-text: #1d4ed8;
 $info-soft: #dbeafe;
 
-$font: Inter, 'Segoe UI', Arial, Helvetica, sans-serif;
+$font: 'IBM Plex Sans', Inter, 'Segoe UI', Arial, Helvetica, sans-serif;
 $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
 @function u($value) {
@@ -170,7 +170,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
   flex: 0 0 auto;
   align-self: center;
   min-width: u(200);
-  height: u(34);
+  height: u(35);
   padding: 0 u(28);
   display: inline-flex;
   align-items: center;
@@ -396,21 +396,22 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
   .kl-sidebar {
     min-height: 0;
-    padding: u(10) u(38) u(18);
+    padding: u(10) u(50) u(10);
     border-right: 2px solid $black;
     background: $text-secondary;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
     overflow-y: auto;
   }
 
   .kl-logo {
     width: u(150);
     height: u(150);
-    margin: 0 auto u(34);
+    margin: 0 auto u(45);
     flex: 0 0 auto;
     border: 2px solid $surface;
-    border-radius: u(18);
+    border-radius: u(16);
     background: $text-disabled;
     color: $text;
     display: grid;
@@ -422,20 +423,20 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
   .kl-menu {
     display: flex;
     flex-direction: column;
-    gap: u(25);
+    gap: u(10);
   }
 
   .kl-menu-item {
     height: u(50);
     padding: 0 u(10);
     border: 2px solid $surface;
-    border-radius: u(12);
+    border-radius: u(10);
     background: $text-disabled;
     color: $text;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: u(22);
+    font-size: u(20);
     text-decoration: none;
     white-space: nowrap;
     transition: background 0.15s ease, color 0.15s ease;
@@ -455,11 +456,11 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     margin-top: auto;
     flex: 0 0 auto;
     border: 2px solid $surface;
-    border-radius: u(12);
+    border-radius: u(10);
     background: $danger;
     color: $surface;
     font-family: $font;
-    font-size: u(22);
+    font-size: u(20);
     cursor: pointer;
   }
 
@@ -528,13 +529,14 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
   .kl-user-button {
     @include pill($info, $surface, $surface, 2px);
+    min-width: u(145);
     max-width: u(260);
     height: u(50);
-    padding: 0 u(14);
+    padding: 0 u(16);
     border-radius: u(25);
     overflow: hidden;
     font-family: $font;
-    font-size: u(20);
+    font-size: u(15);
     font-weight: 400;
     text-overflow: ellipsis;
     text-transform: uppercase;
@@ -922,7 +924,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .brand-section {
       min-height: 0;
-      border: 4px solid $black;
+      border-right: 2px solid $black;
       border-radius: 0;
       background: $text-secondary;
       overflow: hidden;
@@ -930,11 +932,12 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .brand-content {
       height: 100%;
-      padding: u(48) u(12) u(96);
+      padding: u(50) u(25);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: u(75);
     }
 
     .logo-box {
@@ -958,21 +961,27 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       box-shadow: 0 u(4) u(10) rgba(0, 0, 0, 0.35);
     }
 
-    .brand-company {
-      width: u(275);
-      font-size: u(22);
+    .brand-company,
+    .brand-system {
+      width: u(200);
+      flex: 0 0 auto;
+      padding: 0 u(10);
+      overflow: hidden;
+      font-size: u(18);
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .brand-system {
-      width: u(225);
-      font-size: u(17);
+      font-size: u(15);
     }
 
     .brand-image-placeholder {
       width: u(250);
-      height: u(250);
+      height: u(300);
+      flex: 0 0 auto;
       border: 2px solid $surface;
-      border-radius: u(22);
+      border-radius: u(16);
       background: $text-disabled;
       color: $surface;
       display: grid;
@@ -987,14 +996,13 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       min-width: 0;
       min-height: 0;
       display: grid;
-      grid-template-rows: u(78) minmax(0, 1fr) auto;
+      grid-template-rows: u(75) minmax(0, 1fr) auto;
     }
 
     .#{$p}-header {
       position: relative;
       z-index: 2;
-      border: 4px solid $black;
-      border-left: 0;
+      border-bottom: 2px solid $black;
       border-radius: 0;
       background: $text-secondary;
       box-shadow: 0 u(14) u(22) rgba(0, 0, 0, 0.22);
@@ -1008,13 +1016,15 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
       height: u(50);
       display: grid;
       place-items: center;
-      font-size: u(24);
+      box-shadow: 0 u(4) u(10) rgba(0, 0, 0, 0.3);
+      font-size: u(22);
       font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
     }
 
     .#{$p}-main {
       min-height: 0;
-      padding: u(57) u(24) u(20);
+      padding: u(60) u(24) u(20);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1030,7 +1040,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .#{$p}-title span {
       width: u(250);
-      height: u(34);
+      height: u(35);
       border: 3px solid $black;
       border-radius: 999px;
       background: $text-secondary;
@@ -1106,10 +1116,10 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     .form-group textarea,
     .phone-input {
       width: 100%;
-      min-height: u(45);
+      min-height: u(44);
       border: 2px solid $surface;
-      border-radius: u(10);
-      background: $border-button;
+      border-radius: u(8);
+      background: #737373;
       color: $surface;
       font-family: $font;
       font-size: u(15);

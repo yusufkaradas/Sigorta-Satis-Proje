@@ -27,6 +27,8 @@ export interface Customer {
 
   isActive: boolean;
 
+  hasAccount?: boolean;
+
   createdDate?: string;
 }
 
@@ -118,15 +120,10 @@ getCustomerById(
   }
 
 
-  createCustomer(
-    request: CreateCustomerRequest
-  ): Observable<Customer> {
-
-    return this.http.post<Customer>(
-      this.apiUrl,
-      request
-    );
-
+  createAccount(id: string): Observable<{ email: string; temporaryPassword: string }> {
+    return this.http.post<{ email: string; temporaryPassword: string }>(`${this.apiUrl}/${id}/account`, {});
   }
+
+
 
 }

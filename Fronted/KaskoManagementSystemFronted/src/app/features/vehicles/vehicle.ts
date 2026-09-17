@@ -1,3 +1,5 @@
+import { PlateBadge } from '../../core/components/plate-badge';
+import { Input } from '@angular/core';
 import {
   ChangeDetectorRef,
   Component,
@@ -29,7 +31,7 @@ import {
 @Component({
   selector: 'app-vehicle',
 
-  imports: [
+  imports: [PlateBadge, 
     CommonModule,
     FormsModule,
     RouterLink
@@ -40,6 +42,8 @@ import {
   styleUrl: './vehicle.scss'
 })
 export class Vehicle {
+
+  @Input() embedded = false;
 
   private readonly vehicleService =
     inject(VehiclesService);

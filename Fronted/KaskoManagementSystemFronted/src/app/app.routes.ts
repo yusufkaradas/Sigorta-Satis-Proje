@@ -1,3 +1,4 @@
+import { VehiclesHub } from './features/vehicles/vehicles-hub/vehicles-hub';
 import { Routes } from '@angular/router';
 
 import { Login } from './features/auth/login/login';
@@ -30,9 +31,6 @@ import {
   CustomerDetail
 } from './features/customers/customer-detail/customer-detail';
 
-import {
-  CustomerCreate
-} from './features/customers/customer-create/customer-create';
 
 import {
   CustomerEdit
@@ -259,6 +257,10 @@ export const routes: Routes = [
       component: CustomerProfile
     },
     {
+      path: 'notifications',
+      component: Notifications
+    },
+    {
       path: 'quotes',
       component: CustomerQuotes
     },
@@ -348,6 +350,7 @@ export const routes: Routes = [
           roles: ['Admin']
         }
       },
+      { path: 'vehicles/catalog', redirectTo: 'vehicles?tab=catalog' },
       { path: 'requests', component: RequestsHub },
       { path: 'tariff', component: TariffPage },
       { path: 'pricing-rules', redirectTo: 'requests?tab=pricing-rules' },
@@ -365,11 +368,6 @@ export const routes: Routes = [
       },
 
       {
-        path: 'customers/new',
-        component: CustomerCreate
-      },
-
-      {
         path: 'customers/:id/edit',
         component: CustomerEdit
       },
@@ -382,7 +380,7 @@ export const routes: Routes = [
 
       {
         path: 'vehicles',
-        component: Vehicle
+        component: VehiclesHub
       },
 
       {
@@ -456,16 +454,6 @@ export const routes: Routes = [
       {
         path: 'payments/:id',
         component: PaymentDetail
-      },
-
-
-      {
-        path: 'notifications',
-        component: Notifications,
-        canActivate: [authGuard, roleGuard],
-        data: {
-          roles: ['Customer']
-        }
       },
 
 

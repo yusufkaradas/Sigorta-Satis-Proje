@@ -1,3 +1,8 @@
 @use '../../../shared/styles/kasko-theme' as k;
 
 @include k.panel-layout;
+
+.kl-menu {
+  margin-top: k.u(120);
+  gap: k.u(25);
+}

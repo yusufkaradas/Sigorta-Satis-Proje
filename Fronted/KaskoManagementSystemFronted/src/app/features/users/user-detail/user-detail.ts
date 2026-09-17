@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   ChangeDetectorRef,
   Component,
@@ -112,7 +113,7 @@ export class UserDetail {
   }
 
 
-  deleteUser(): void {
+  async deleteUser(): Promise<void> {
 
     if (!this.user) {
       return;
@@ -120,7 +121,7 @@ export class UserDetail {
 
 
     const confirmed =
-      window.confirm(
+      await confirmDialog(
         `${this.user.firstName} ${this.user.lastName} adlı kullanıcıyı silmek istediğinize emin misiniz?`
       );
 

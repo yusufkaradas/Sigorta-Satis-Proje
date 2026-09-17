@@ -70,8 +70,10 @@
 
       <a
         *ngIf="!portal.isManager"
-        routerLink="/customers/new"
-        class="new-customer-button">
+        routerLink="/users/new"
+        [queryParams]="{ role: 'Customer' }"
+        class="new-customer-button"
+        title="Müşteri, müşteri rolündeki kullanıcı hesabıyla birlikte oluşturulur">
         + Yeni Müşteri
       </a>
 

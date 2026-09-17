@@ -26,6 +26,7 @@ public class VehicleValueImportService
 
     public async Task<VehicleValueImportResult> ImportAsync(
         string filePath,
+        DateTime? effectiveDate = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(filePath))
@@ -46,9 +47,8 @@ public class VehicleValueImportService
 
         using var workbook = new XLWorkbook(filePath);
         
-        var effectiveDate =
-    
-            new DateTime(2026, 8, 1);
+        var period =
+            (effectiveDate ?? new DateTime(2026, 8, 1)).Date;
 
         var importedAt =
             DateTime.UtcNow;
@@ -180,7 +180,7 @@ public class VehicleValueImportService
         
                         modelYear,
         
-                        effectiveDate);
+                        period);
 
                 if (existingKeys.Contains(key))
                 {
@@ -208,7 +208,7 @@ public class VehicleValueImportService
                         Source = "TSB",
 
                         EffectiveDate =
-                            effectiveDate,
+                            period,
 
                         ImportedAt =
                             importedAt,
@@ -231,10 +231,17 @@ public class VehicleValueImportService
                 existingKeys.Add(key);
 
                 result.ImportedCount++;
+
+                if (result.ImportedCount % 5000 == 0)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                }
             }
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        VehicleValueCatalogService.ClearCategoryCache();
 
         return result;
     }

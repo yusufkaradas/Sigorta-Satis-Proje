@@ -3,11 +3,11 @@
 @include k.panel-layout;
 
 .kl-menu-dense {
-  gap: k.u(16);
+  gap: k.u(10);
 }
 
 .kl-menu-dense .kl-menu-item {
-  height: k.u(46);
+  height: k.u(50);
   font-size: k.u(20);
 }
 

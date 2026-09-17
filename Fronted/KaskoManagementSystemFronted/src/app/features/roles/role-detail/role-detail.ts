@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectorRef,
@@ -110,14 +111,14 @@ export class RoleDetail {
   }
 
 
-  deleteRole(): void {
+  async deleteRole(): Promise<void> {
 
     if (!this.role) {
       return;
     }
 
     const confirmed =
-      window.confirm(
+      await confirmDialog(
         `"${this.role.name}" rolünü silmek istediğinize emin misiniz?`
       );
 

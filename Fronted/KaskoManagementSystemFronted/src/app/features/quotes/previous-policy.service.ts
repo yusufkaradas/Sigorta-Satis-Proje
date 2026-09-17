@@ -24,6 +24,17 @@ export class PreviousPolicyService {
   private readonly apiUrl =
     'https://localhost:7086/api/PreviousPolicy';
 
+  create(request: {
+    customerId: string;
+    previousInsurer: string;
+    policyNumber: string;
+    startDate: string;
+    endDate: string;
+    claimsCount: number;
+  }): Observable<PreviousPolicy> {
+    return this.http.post<PreviousPolicy>(this.apiUrl, request);
+  }
+
   getByCustomerId(
     customerId: string
   ): Observable<PreviousPolicy[]> {

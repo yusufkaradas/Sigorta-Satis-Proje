@@ -114,7 +114,7 @@ export class Login {
                 'quickQuotePurchase'
               );
 
-            if (role === 'Customer' && !!sessionStorage.getItem('guestQuoteDraft')) {
+            if (role === 'Customer' && !!sessionStorage.getItem('quickQuoteDraft')) {
               this.router.navigate(['/quick-quote/start']);
               return;
             }

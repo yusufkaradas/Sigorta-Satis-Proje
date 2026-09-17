@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using Kasko.Business.DTOs.Customer;
 using Kasko.Business.Exceptions;
@@ -26,6 +26,16 @@ namespace Kasko.Business.Tests.Services
             _unitOfWorkMock
                 .Setup(x => x.Customers)
                 .Returns(_customerRepositoryMock.Object);
+
+            var userRepositoryMock = new Mock<IUserRepository>();
+
+            userRepositoryMock
+                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User>());
+
+            _unitOfWorkMock
+                .Setup(x => x.Users)
+                .Returns(userRepositoryMock.Object);
 
             _customerService = new CustomerService(
                 _unitOfWorkMock.Object,

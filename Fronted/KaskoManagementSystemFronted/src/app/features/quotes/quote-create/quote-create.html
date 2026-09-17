@@ -109,7 +109,7 @@
             (click)="selectVehicle(vehicle.id)">
             <small>{{ vehicle.brand }}</small>
             <strong [title]="vehicle.model">{{ vehicle.model }}</strong>
-            <small>{{ vehicle.plateNumber }} · {{ vehicle.modelYear }}</small>
+            <small><app-plate [value]="vehicle.plateNumber" size="sm" /> · {{ vehicle.modelYear }}</small>
             <span *ngIf="vehicle.marketValue != null" class="kf-choice-value">
               {{ vehicle.marketValue | number:'1.0-0' }} ₺
             </span>
@@ -242,13 +242,14 @@
             <div *ngIf="option.totalPremium !== null" class="kf-package-price">
               {{ option.totalPremium | number:'1.2-2' }} ₺
             </div>
+            <span *ngIf="option.totalPremium !== null" class="kf-muted">Aylık yaklaşık {{ option.totalPremium / 12 | number:'1.0-0' }} ₺ · {{ option.package.coverages.length }} teminat</span>
             <div *ngIf="option.totalPremium === null" class="kf-package-price">Hesaplanamadı</div>
           </div>
 
           <span class="kf-muted">{{ option.package.description }}</span>
 
           <ul class="qc-coverages">
-            <li *ngFor="let row of allCoverageRows" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
+            <li *ngFor="let row of sortedCoverageRows(option.package)" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
               {{ packageHasCoverage(option.package, row.coverageId) ? '✓' : '✕' }} {{ row.coverageName }}
             </li>
           </ul>
@@ -297,8 +298,8 @@
           <div *ngIf="!isCustomerMode" class="kf-span-all"><dt>Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
           <div class="kf-span-all"><dt>Araç</dt><dd>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }}</dd></div>
           <div><dt>Kullanım</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }}</dd></div>
-          <div><dt>Hasar Adedi</dt><dd>{{ claimsCount }}</dd></div>
-          <div><dt>Geçerlilik</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }}</dd></div>
+          <div><dt>Önceki Hasar</dt><dd>{{ claimsCount === 0 ? 'Hasarsız' : claimsCount + ' hasar' }}</dd></div>
+          <div><dt>Teklif Geçerlilik</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }}</dd></div>
         </dl>
 
       </section>
@@ -316,14 +317,14 @@
           <li *ngFor="let coverage of pricedCoverages" class="kf-list-item qc-summary-item">
             <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
             <span>{{ coverage.optionName || (coverage.limit ? ((coverage.limit | number:'1.0-0') + ' ₺') : 'Araç değeri kadar') }}</span>
-            <small>{{ coverage.calculatedPrice > 0 ? '+' + (coverage.calculatedPrice | number:'1.0-0') + ' ₺' : 'Pakete dahil' }}</small>
+            <small *ngIf="coverage.calculatedPrice > 0">+{{ coverage.calculatedPrice | number:'1.0-0' }} ₺</small>
           </li>
         </ul>
 
         <dl class="kf-details kf-details-3">
           <div *ngIf="marketValue !== null"><dt>Araç Kasko Değeri</dt><dd>{{ marketValue | number:'1.0-0' }} ₺</dd></div>
-          <div *ngIf="riskAdjustedPremium !== null"><dt>Ana Prim</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
-          <div *ngIf="coveragePremium !== null"><dt>Ek Teminat ve Limitler</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
+          <div *ngIf="riskAdjustedPremium !== null"><dt>Paket Primi</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
+          <div *ngIf="coveragePremium !== null"><dt>Limit Farkı</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
         </dl>
 
       </section>

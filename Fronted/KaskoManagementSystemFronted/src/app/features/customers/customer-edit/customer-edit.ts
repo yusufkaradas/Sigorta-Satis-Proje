@@ -1,3 +1,4 @@
+import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import {
   ChangeDetectorRef,
   Component,
@@ -28,6 +29,7 @@ import {
   selector: 'app-customer-edit',
 
   imports: [
+    InputRuleDirective,
     CommonModule,
     FormsModule,
     RouterLink
@@ -37,6 +39,19 @@ import {
   styleUrl: './customer-edit.scss'
 })
 export class CustomerEdit {
+
+  readonly maxBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return date.toISOString().slice(0, 10);
+  })();
+
+  readonly minBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 100);
+    return date.toISOString().slice(0, 10);
+  })();
+
 
   private readonly route =
     inject(ActivatedRoute);

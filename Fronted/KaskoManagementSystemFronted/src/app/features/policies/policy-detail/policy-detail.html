@@ -71,7 +71,7 @@
         Poliçenizin kullanılmayan {{ refundEstimate?.remainingDays }} günü için tahmini iade tutarı
         <b>{{ refundEstimate?.refund | number:'1.2-2' }} ₺</b>. Talebiniz onaylanana kadar poliçeniz aktif kalır.
       </p>
-      <textarea rows="2" placeholder="İptal nedeninizi kısaca yazın (örn. aracımı sattım)" [value]="cancelReason" (input)="cancelReason = $any($event.target).value"></textarea>
+      <textarea maxlength="500" rows="2" placeholder="İptal nedeninizi kısaca yazın (örn. aracımı sattım)" [value]="cancelReason" (input)="cancelReason = $any($event.target).value"></textarea>
       <div class="kf-head-actions">
         <button type="button" class="kf-btn-outline" (click)="isCancelFormOpen = false">Vazgeç</button>
         <button type="button" class="kf-btn-danger" [disabled]="isSubmittingCancel" (click)="submitCancellation()">
@@ -99,7 +99,7 @@
           <div><dt>Marka</dt><dd>{{ quote?.brand || policy.brand || '—' }}</dd></div>
           <div><dt>Model</dt><dd [title]="quote?.model || policy.model || ''">{{ quote?.model || policy.model || '—' }}</dd></div>
           <div><dt>Model Yılı</dt><dd>{{ quote?.modelYear || '—' }}</dd></div>
-          <div><dt>Plaka</dt><dd>{{ quote?.plateNumber || '—' }}</dd></div>
+          <div><dt>Plaka</dt><dd><app-plate [value]="quote?.plateNumber" /></dd></div>
         </dl>
 
       </section>
@@ -121,7 +121,7 @@
             *ngFor="let coverage of (quote?.coverages ?? []).slice(0, 10)"
             class="kf-list-item">
             <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
-            <span>{{ coverage.limit != null ? (coverage.limit | number:'1.0-0') + ' ₺' : (coverage.calculatedPrice | number:'1.2-2') + ' ₺' }}</span>
+            <span>{{ $any(coverage).optionName || (coverage.limit ? (coverage.limit | number:'1.0-0') + ' ₺' : 'Araç değeri kadar') }}</span>
           </li>
         </ul>
 

@@ -1,3 +1,5 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { CancellationService, CancellationStatus, PolicyCancellation, estimateRefund } from '../../cancellations/cancellation.service';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
@@ -25,7 +27,7 @@ import {
 @Component({
   selector: 'app-policy-detail',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     BackendDatePipe,
     RecordNumberPipe,
     CommonModule,
@@ -235,13 +237,13 @@ export class PolicyDetail {
         return '';
     }
   }
-cancelPolicy(): void {
+async cancelPolicy(): Promise<void> {
 
   if (!this.policy) {
     return;
   }
 
-  const confirmed = window.confirm(
+  const confirmed = await confirmDialog(
     'Bu poliçeyi iptal etmek istediğinize emin misiniz?'
   );
 
@@ -287,13 +289,13 @@ cancelPolicy(): void {
 
     });
 }
-deletePolicy(): void {
+async deletePolicy(): Promise<void> {
 
   if (!this.policy) {
     return;
   }
 
-  const confirmed = window.confirm(
+  const confirmed = await confirmDialog(
     'Bu poliçeyi silmek istediğinize emin misiniz?'
   );
 

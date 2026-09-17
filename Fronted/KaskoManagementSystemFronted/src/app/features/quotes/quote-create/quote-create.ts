@@ -1,3 +1,4 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
 import {
   CommonModule
 } from '@angular/common';
@@ -89,7 +90,7 @@ interface PackageQuoteOption {
 @Component({
   selector: 'app-quote-create',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     RouterLink,
     CommonModule,
     FormsModule
@@ -213,6 +214,11 @@ export class QuoteCreate implements OnInit, OnDestroy {
         }
       }));
     return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  }
+
+  sortedCoverageRows(item: InsurancePackage) {
+    return [...this.allCoverageRows].sort((a, b) =>
+      Number(this.packageHasCoverage(item, b.coverageId)) - Number(this.packageHasCoverage(item, a.coverageId)));
   }
 
   packageHasCoverage(item: InsurancePackage, coverageId: string): boolean {

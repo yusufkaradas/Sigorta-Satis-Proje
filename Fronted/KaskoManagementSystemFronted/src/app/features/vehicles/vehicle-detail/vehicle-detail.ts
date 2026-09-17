@@ -1,3 +1,5 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import {
   ChangeDetectorRef,
@@ -31,7 +33,7 @@ import {
 @Component({
   selector: 'app-vehicle-detail',
 
-  imports: [
+  imports: [PlateBadge, 
     CommonModule,
     BackendDatePipe,
     RouterLink
@@ -313,7 +315,7 @@ export class VehicleDetail {
       : 'Pasif';
 
   }
-deleteVehicle(): void {
+async deleteVehicle(): Promise<void> {
 
   if (!this.vehicle) {
     return;
@@ -321,7 +323,7 @@ deleteVehicle(): void {
 
 
   const confirmed =
-    window.confirm(
+    await confirmDialog(
       'Bu aracı silmek istediğinize emin misiniz?'
     );
 

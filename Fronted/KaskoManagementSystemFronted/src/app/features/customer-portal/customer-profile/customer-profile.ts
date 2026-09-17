@@ -1,3 +1,4 @@
+import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +9,8 @@ import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-customer-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    InputRuleDirective,CommonModule, FormsModule],
   templateUrl: './customer-profile.html',
   styles: [':host { display: block; height: 100%; }']
 })

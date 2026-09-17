@@ -1,3 +1,4 @@
+import { PlateBadge } from '../../core/components/plate-badge';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
@@ -51,6 +52,8 @@ export interface Quote {
   id: string;
 
   packageName?: string | null;
+
+  reviewReason?: string | null;
 
   customerId: string;
 
@@ -136,7 +139,7 @@ import {
 
   standalone: true,
 
-  imports: [
+  imports: [PlateBadge, 
     RecordNumberPipe,
     CommonModule,
 

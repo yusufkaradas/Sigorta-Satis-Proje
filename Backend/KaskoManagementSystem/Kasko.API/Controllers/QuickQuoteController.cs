@@ -581,43 +581,4 @@ public class QuickQuoteController : ControllerBase
             "application/pdf",
             $"{policy.PolicyNumber}.pdf");
     }
-    [HttpPost("customer/create")]
-    public async Task<IActionResult> CreateCustomer(
-    [FromBody]
-    QuickQuoteCustomerCreateRequestDto dto)
-    {
-        EnsureCaller(
-            ResolveVerificationToken(),
-            dto.IdentityNumber,
-            dto.PhoneNumber);
-
-        if (
-            string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
-            dto.IdentityNumber.Length != 11)
-        {
-            return BadRequest(new
-            {
-                message =
-                    "T.C. Kimlik No 11 haneli olmalıdır."
-            });
-        }
-
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
-            return BadRequest(new
-            {
-                message =
-                    "Telefon numarası zorunludur."
-            });
-        }
-
-        var customerId =
-            await _customerService
-                .CreateForQuickQuoteAsync(dto);
-
-        return Ok(new
-        {
-            customerId
-        });
-    }
 }

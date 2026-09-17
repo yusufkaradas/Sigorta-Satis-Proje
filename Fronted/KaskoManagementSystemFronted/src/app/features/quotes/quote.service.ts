@@ -84,10 +84,11 @@ offer(id: string): Observable<void> {
   return this.http.post<void>(`${this.apiUrl}/${id}/offer`, {});
 }
 
-purchase(id: string): Observable<{ policyId: string; policyNumber: string; paymentId: string }> {
+purchase(id: string, simulateFailure = false): Observable<{ policyId: string; policyNumber: string; paymentId: string }> {
   return this.http.post<{ policyId: string; policyNumber: string; paymentId: string }>(
     `${this.apiUrl}/${id}/purchase`,
-    { acceptedTerms: true }
+    { acceptedTerms: true, simulateFailure },
+    { headers: { 'X-Silent-Error': '1' } }
   );
 }
 

@@ -1,3 +1,5 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
@@ -27,7 +29,7 @@ import {
 @Component({
   selector: 'app-quote-detail',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     BackendDatePipe,
     RecordNumberPipe,
     CommonModule,
@@ -250,12 +252,12 @@ acceptedTerms = false;
 
 acceptedKvkk = false;
 
-offerQuote(): void {
+async offerQuote(): Promise<void> {
   if (!this.quote) {
     return;
   }
 
-  if (!window.confirm('Teklif müşteriye sunulsun mu? Müşteri portalında satın alabilir hale gelecek.')) {
+  if (!await confirmDialog('Teklif müşteriye sunulsun mu? Müşteri portalında satın alabilir hale gelecek.')) {
     return;
   }
 
@@ -273,35 +275,165 @@ offerQuote(): void {
   });
 }
 
-purchaseQuote(): void {
+isPaymentOpen = false;
+
+cardHolder = '';
+
+cardNumber = '';
+
+cardExpiry = '';
+
+cardCvv = '';
+
+paymentError = '';
+
+readonly testCards = [
+  { number: '4242 4242 4242 4242', label: 'Başarılı ödeme' },
+  { number: '4000 0000 0000 0002', label: 'Reddedilen ödeme' }
+];
+
+openPayment(): void {
   if (!this.quote || !this.acceptedTerms || !this.acceptedKvkk) {
     return;
   }
 
-  this.isLoading = true;
-  this.errorMessage = '';
+  this.paymentError = '';
+  this.isPaymentOpen = true;
+}
 
-  this.quoteService.purchase(this.quote.id).subscribe({
+closePayment(): void {
+  if (!this.isLoading) {
+    this.isPaymentOpen = false;
+  }
+}
+
+useTestCard(number: string): void {
+  this.cardNumber = number;
+  this.cardHolder = this.cardHolder || (this.quote?.customerName ?? '').toLocaleUpperCase('tr-TR');
+  const next = new Date();
+  this.cardExpiry = `12/${String(next.getFullYear() + 2).slice(2)}`;
+  this.cardCvv = '123';
+  this.paymentError = '';
+}
+
+onCardHolderInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  this.cardHolder = input.value.toLocaleUpperCase('tr-TR').replace(/[^A-ZÇĞİÖŞÜ ]/g, '').replace(/\s{2,}/g, ' ').slice(0, 40);
+  input.value = this.cardHolder;
+}
+
+onCardNumberInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const digits = input.value.replace(/\D/g, '').slice(0, 16);
+  this.cardNumber = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+  input.value = this.cardNumber;
+}
+
+onCardExpiryInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const digits = input.value.replace(/\D/g, '').slice(0, 4);
+  this.cardExpiry = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+  input.value = this.cardExpiry;
+}
+
+onCardCvvInput(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  this.cardCvv = input.value.replace(/\D/g, '').slice(0, 3);
+  input.value = this.cardCvv;
+}
+
+get cardDigits(): string {
+  return this.cardNumber.replace(/\s/g, '');
+}
+
+get isCardNumberValid(): boolean {
+  const digits = this.cardDigits;
+  if (digits.length !== 16) {
+    return false;
+  }
+  let sum = 0;
+  for (let i = 0; i < digits.length; i++) {
+    let value = Number(digits[digits.length - 1 - i]);
+    if (i % 2 === 1) {
+      value *= 2;
+      if (value > 9) {
+        value -= 9;
+      }
+    }
+    sum += value;
+  }
+  return sum % 10 === 0;
+}
+
+get isExpiryValid(): boolean {
+  const match = this.cardExpiry.match(/^(\d{2})\/(\d{2})$/);
+  if (!match) {
+    return false;
+  }
+  const month = Number(match[1]);
+  const year = 2000 + Number(match[2]);
+  if (month < 1 || month > 12) {
+    return false;
+  }
+  const now = new Date();
+  const lastDay = new Date(year, month, 0, 23, 59, 59);
+  return lastDay >= now && year <= now.getFullYear() + 15;
+}
+
+get cardBrand(): string {
+  const digits = this.cardDigits;
+  if (digits.startsWith('4')) {
+    return 'VISA';
+  }
+  if (/^(5[1-5]|2[2-7])/.test(digits)) {
+    return 'Mastercard';
+  }
+  if (digits.startsWith('9792')) {
+    return 'Troy';
+  }
+  return '';
+}
+
+get isPaymentFormValid(): boolean {
+  return this.cardHolder.trim().split(' ').filter(part => part).length >= 2 &&
+    this.isCardNumberValid &&
+    this.isExpiryValid &&
+    this.cardCvv.length === 3;
+}
+
+purchaseQuote(): void {
+  if (!this.quote || !this.acceptedTerms || !this.acceptedKvkk || !this.isPaymentFormValid) {
+    this.paymentError = 'Kart bilgilerini eksiksiz ve doğru girin.';
+    return;
+  }
+
+  this.isLoading = true;
+  this.paymentError = '';
+
+  const simulateFailure = this.cardDigits === '4000000000000002';
+
+  this.quoteService.purchase(this.quote.id, simulateFailure).subscribe({
     next: result => {
       this.isLoading = false;
+      this.isPaymentOpen = false;
       this.router.navigate([this.basePath + '/policies', result.policyId]);
     },
     error: error => {
       this.isLoading = false;
-      this.errorMessage = error?.error?.message ?? 'Satın alma tamamlanamadı.';
+      this.paymentError = error?.error?.message ?? error?.error?.detail ?? 'Ödeme alınamadı. Lütfen tekrar deneyin.';
       this.cdr.detectChanges();
     }
   });
 }
 
-changeStatus(status: QuoteStatus): void {
+async changeStatus(status: QuoteStatus): Promise<void> {
   if (!this.quote) {
     return;
   }
 
   const statusText = this.getStatusText(status);
 
-  const confirmed = window.confirm(
+  const confirmed = await confirmDialog(
     `Teklif durumunu "${statusText}" olarak değiştirmek istediğinize emin misiniz?`
   );
 
@@ -365,14 +497,14 @@ changeStatus(status: QuoteStatus): void {
     });
 }
 
-  deleteQuote(): void {
+  async deleteQuote(): Promise<void> {
 
     if (!this.quote) {
       return;
     }
 
     const confirmed =
-      window.confirm(
+      await confirmDialog(
         'Bu teklifi silmek istediğinize emin misiniz?'
       );
 

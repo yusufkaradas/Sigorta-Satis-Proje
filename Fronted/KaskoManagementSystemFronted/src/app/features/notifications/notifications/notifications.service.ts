@@ -41,4 +41,48 @@ export class NotificationsService {
       Notification[]
     >(this.apiUrl);
   }
+
+  markAsRead(id: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/read`, {}, { headers: { 'X-Silent-Error': '1' } });
+  }
+
+  markAllAsRead(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/read-all`, {});
+  }
+}
+
+export function notificationLink(item: Notification): string[] {
+  const type = (item.type ?? '').toUpperCase();
+  const id = item.relatedEntityId;
+
+  if (id && (type.startsWith('PAYMENT') || type.startsWith('POLICY') || type.startsWith('CANCEL'))) {
+    return ['/customer/policies', id];
+  }
+
+  if (id && type.startsWith('QUOTE')) {
+    return ['/customer/quotes', id];
+  }
+
+  if (id && type.startsWith('VEHICLE')) {
+    return ['/customer/vehicles', id];
+  }
+
+  return type.startsWith('PAYMENT') ? ['/customer/payments'] : ['/customer/policies'];
+}
+
+export function notificationTypeLabel(type: string): string {
+  const value = (type ?? '').toUpperCase();
+  if (value.startsWith('PAYMENT')) {
+    return 'Ödeme';
+  }
+  if (value.startsWith('QUOTE')) {
+    return 'Teklif';
+  }
+  if (value.startsWith('CANCEL')) {
+    return 'İptal';
+  }
+  if (value.startsWith('POLICY')) {
+    return 'Poliçe';
+  }
+  return 'Bilgi';
 }

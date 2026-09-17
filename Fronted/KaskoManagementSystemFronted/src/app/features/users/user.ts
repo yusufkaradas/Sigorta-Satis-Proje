@@ -24,6 +24,19 @@ export interface User {
 
 export interface UserCreateDto {
 
+  customerId?: string | null;
+
+  identityNumber?: string | null;
+
+  dateOfBirth?: string | null;
+
+  city?: string | null;
+
+  district?: string | null;
+
+  address?: string | null;
+
+
   firstName: string;
 
   lastName: string;

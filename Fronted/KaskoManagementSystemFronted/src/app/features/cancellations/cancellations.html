@@ -181,7 +181,7 @@
         @if (item.status === Status.Pending) {
           <label class="rule-dialog-note">
             <span>Müşteriye not <small>(reddederken zorunlu)</small></span>
-            <textarea rows="2" [value]="decisionNote" (input)="decisionNote = $any($event.target).value" placeholder="Örn. İadeniz 3 iş günü içinde kartınıza yapılacaktır."></textarea>
+            <textarea maxlength="500" rows="2" [value]="decisionNote" (input)="decisionNote = $any($event.target).value" placeholder="Örn. İadeniz 3 iş günü içinde kartınıza yapılacaktır."></textarea>
           </label>
         }
 

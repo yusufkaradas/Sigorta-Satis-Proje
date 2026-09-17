@@ -79,7 +79,7 @@
 
             <tr *ngFor="let vehicle of pagedVehicles()" (click)="openDetail(vehicle.id)" title="Detayları görmek için tıklayın">
 
-              <td class="cp-strong">{{ vehicle.plateNumber || '—' }}</td>
+              <td><app-plate [value]="vehicle.plateNumber" size="sm" /></td>
               <td>
                 <div class="cp-cell">
                   <strong [title]="vehicle.brand + ' ' + vehicle.model">{{ vehicle.brand }} {{ vehicle.model }}</strong>

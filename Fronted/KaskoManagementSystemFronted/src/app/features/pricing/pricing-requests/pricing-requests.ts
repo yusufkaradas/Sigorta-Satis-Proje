@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   CommonModule
 } from '@angular/common';
@@ -236,11 +237,11 @@ export class PricingRequests implements OnInit {
     }
   }
 
-  approve(request: PricingRuleChangeRequest): void {
+  async approve(request: PricingRuleChangeRequest): Promise<void> {
 
     this.closeDetail();
 
-    if (!confirm(`${this.ruleLabel(request.pricingRuleId)} için talep onaylansın mı?`)) {
+    if (!await confirmDialog(`${this.ruleLabel(request.pricingRuleId)} için talep onaylansın mı?`)) {
       return;
     }
 
@@ -252,11 +253,11 @@ export class PricingRequests implements OnInit {
     );
   }
 
-  reject(request: PricingRuleChangeRequest): void {
+  async reject(request: PricingRuleChangeRequest): Promise<void> {
 
     this.closeDetail();
 
-    if (!confirm(`${this.ruleLabel(request.pricingRuleId)} için talep reddedilsin mi?`)) {
+    if (!await confirmDialog(`${this.ruleLabel(request.pricingRuleId)} için talep reddedilsin mi?`)) {
       return;
     }
 

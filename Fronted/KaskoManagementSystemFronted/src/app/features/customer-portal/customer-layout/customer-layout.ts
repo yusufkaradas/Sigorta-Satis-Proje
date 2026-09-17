@@ -13,7 +13,8 @@ import {
 
 import {
   Notification,
-  NotificationsService
+  NotificationsService,
+  notificationLink
 } from '../../notifications/notifications/notifications.service';
 
 import {
@@ -81,23 +82,15 @@ export class CustomerLayout implements OnInit {
     this.loadNotifications();
   }
 
-  notificationLink(item: Notification): string[] {
-    const type = (item.type ?? '').toUpperCase();
-    const id = item.relatedEntityId;
+  readonly notificationLink = notificationLink;
 
-    if (id && (type.startsWith('PAYMENT') || type.startsWith('POLICY') || type.startsWith('CANCEL'))) {
-      return ['/customer/policies', id];
+  openNotification(item: Notification): void {
+    this.isNotificationOpen = false;
+
+    if (!item.isRead) {
+      this.notifications.update(list => list.map(row => row.id === item.id ? { ...row, isRead: true } : row));
+      this.notificationsService.markAsRead(item.id).subscribe();
     }
-
-    if (id && type.startsWith('QUOTE')) {
-      return ['/customer/quotes', id];
-    }
-
-    if (id && type.startsWith('VEHICLE')) {
-      return ['/customer/vehicles', id];
-    }
-
-    return type.startsWith('PAYMENT') ? ['/customer/payments'] : ['/customer/policies'];
   }
 
   loadNotifications(): void {

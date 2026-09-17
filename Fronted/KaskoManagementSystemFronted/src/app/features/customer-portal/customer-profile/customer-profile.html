@@ -59,22 +59,22 @@
 
           <div class="kf-field">
             <label for="phoneNumber">Telefon *</label>
-            <input id="phoneNumber" type="tel" name="phoneNumber" placeholder="05XX XXX XX XX" [(ngModel)]="phoneNumber" />
+            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" placeholder="05XX XXX XX XX" [(ngModel)]="phoneNumber" />
           </div>
 
           <div class="kf-field">
             <label for="city">İl *</label>
-            <input id="city" type="text" name="city" [(ngModel)]="city" />
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="city" type="text" name="city" [(ngModel)]="city" />
           </div>
 
           <div class="kf-field">
             <label for="district">İlçe *</label>
-            <input id="district" type="text" name="district" [(ngModel)]="district" />
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="district" type="text" name="district" [(ngModel)]="district" />
           </div>
 
           <div class="kf-field kf-span-all">
             <label for="address">Adres</label>
-            <textarea id="address" rows="2" name="address" [(ngModel)]="address"></textarea>
+            <textarea appInputRule="address" [ruleMaxLength]="100" maxlength="100" id="address" rows="2" name="address" [(ngModel)]="address"></textarea>
           </div>
 
         </div>

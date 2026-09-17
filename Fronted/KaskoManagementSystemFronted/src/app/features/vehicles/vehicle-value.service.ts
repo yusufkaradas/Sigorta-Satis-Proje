@@ -12,6 +12,23 @@ export interface VehicleValueType {
   name: string;
 }
 
+export interface CatalogSummary {
+  recordCount: number;
+  brandCount: number;
+  latestEffectiveDate: string | null;
+  lastImportedAt: string | null;
+  categories: string[];
+}
+
+export interface CatalogImportResult {
+  excelRowCount: number;
+  yearValueCount: number;
+  importedCount: number;
+  skippedZeroValueCount: number;
+  duplicateCount: number;
+  invalidRowCount: number;
+}
+
 export interface VehicleValueLookup {
   brandCode: string;
   typeCode: string;
@@ -83,6 +100,21 @@ export class VehicleValueService {
       `${this.apiUrl}/years`,
       { params }
     );
+  }
+
+  getSummary(): Observable<CatalogSummary> {
+    return this.http.get<CatalogSummary>(`${this.apiUrl}/summary`);
+  }
+
+  importExcel(file: File, effectiveDate: string): Observable<CatalogImportResult> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('effectiveDate', effectiveDate);
+    return this.http.post<CatalogImportResult>(`${this.apiUrl}/import`, form);
+  }
+
+  reclassify(): Observable<{ updated: number }> {
+    return this.http.post<{ updated: number }>(`${this.apiUrl}/reclassify`, {});
   }
 
   lookup(

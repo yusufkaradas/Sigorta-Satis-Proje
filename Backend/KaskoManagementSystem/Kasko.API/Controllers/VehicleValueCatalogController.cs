@@ -100,6 +100,13 @@ public class VehicleValueCatalogController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("summary")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Summary()
+    {
+        return Ok(await _catalogService.GetSummaryAsync());
+    }
+
     [HttpPost("reclassify")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Reclassify(
@@ -113,8 +120,10 @@ public class VehicleValueCatalogController : ControllerBase
     [HttpPost("import")]
     [Authorize(Roles = "Admin")]
     [Consumes("multipart/form-data")]
+    [RequestSizeLimit(30_000_000)]
     public async Task<IActionResult> Import(
         IFormFile file,
+        [FromForm] DateTime? effectiveDate,
         CancellationToken cancellationToken)
     {
         if (file == null || file.Length == 0)
@@ -151,6 +160,7 @@ public class VehicleValueCatalogController : ControllerBase
             var result =
                 await _importService.ImportAsync(
                     tempFilePath,
+                    effectiveDate,
                     cancellationToken);
 
             return Ok(result);

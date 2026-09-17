@@ -428,27 +428,33 @@ private loadBrands(): void {
     });
 
 }
-onPlateInput(): void {
+plateTouched = false;
 
-  const normalized =
-    (this.form.plateNumber ?? '')
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, '');
-
-  if (normalized.length <= 2) {
-    this.form.plateNumber = normalized;
-    return;
+  onPlateInput(event?: Event): void {
+    const input = event?.target as HTMLInputElement | undefined;
+    const raw = (input?.value ?? this.form.plateNumber ?? '')
+      .toLocaleUpperCase('tr-TR')
+      .replace(/[ÇĞİÖŞÜ]/g, '')
+      .replace(/[^0-9A-Z]/g, '');
+    const match = raw.match(/^(\d{0,2})([A-Z]{0,3})(\d{0,5})/);
+    const city = match?.[1] ?? '';
+    const letters = city.length === 2 ? match?.[2] ?? '' : '';
+    const maxDigits = letters.length === 1 ? 5 : letters.length === 2 ? 4 : 3;
+    const numbers = letters.length ? (match?.[3] ?? '').slice(0, maxDigits) : '';
+    this.form.plateNumber = [city, letters, numbers].filter(part => part).join(' ');
+    if (input) {
+      input.value = this.form.plateNumber;
+    }
   }
 
-  const cityCode =
-    normalized.substring(0, 2);
+  get isPlateValid(): boolean {
+    return /^(0[1-9]|[1-7][0-9]|8[01])([A-Z][0-9]{4,5}|[A-Z]{2}[0-9]{3,4}|[A-Z]{3}[0-9]{2,3})$/.test((this.form.plateNumber ?? '').replace(/\s/g, ''));
+  }
 
-  const remaining =
-    normalized.substring(2);
+  get showPlateError(): boolean {
+    return this.plateTouched && !!this.form.plateNumber && !this.isPlateValid;
+  }
 
-  this.form.plateNumber =
-    `${cityCode} ${remaining}`;
-}
   createVehicle(): void {
 
     this.errorMessage = '';
@@ -463,6 +469,12 @@ onPlateInput(): void {
 
       return;
 
+    }
+
+    if (!this.isPlateValid) {
+      this.plateTouched = true;
+      this.errorMessage = 'Geçerli bir plaka girin. Örn. 34 ABC 123';
+      return;
     }
 
     if (!this.selectedCategory) {
@@ -528,8 +540,7 @@ onPlateInput(): void {
             if (this.isCustomerMode) {
 
               this.router.navigate(
-                ['/customer/quotes/new'],
-                { queryParams: { vehicleId: response?.id } }
+                ['/customer/vehicles', response?.id]
               );
 
             } else {

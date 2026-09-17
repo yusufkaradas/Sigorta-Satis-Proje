@@ -39,6 +39,8 @@ a {
 
 .dashboard-content {
   @include k.page;
+  padding: k.u(20) k.u(30) k.u(40);
+  gap: k.u(25);
 }
 
 .dashboard-section-title {
@@ -60,6 +62,7 @@ a {
 
 .summary-card {
   @include k.stat-card;
+  height: k.u(150);
   transition: background 0.15s ease;
 }
 
@@ -71,8 +74,10 @@ a {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-  gap: k.u(14);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.05fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: column;
+  gap: k.u(25) k.u(12);
 }
 
 .dashboard-card {
@@ -364,7 +369,8 @@ a.db-row:hover {
   gap: 8%;
 
   span {
-    width: 40%;
+    position: relative;
+    width: 55%;
     min-height: 2px;
     border-radius: k.u(4) k.u(4) 0 0;
     transition: height 0.3s ease;
@@ -398,4 +404,21 @@ a.db-row:hover {
 
 .db-time {
   color: k.$text-secondary;
+}
+
+.db-chart-bars em {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin-bottom: k.u(4);
+  transform: translateX(-50%);
+  color: k.$text;
+  font-size: k.u(11);
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.db-chart {
+  padding-top: k.u(24);
 }

@@ -51,7 +51,7 @@
             class="kl-icon-button"
             aria-label="Bildirimler"
             (click)="toggleNotification()">
-            🔔
+            <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
             <span *ngIf="unreadCount() > 0" class="kl-bell-count">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
           </button>
 
@@ -64,7 +64,7 @@
 
             <ul *ngIf="latestNotifications().length > 0" class="kl-notify-list">
               <li *ngFor="let item of latestNotifications()" class="kl-alert-item" [class.unread]="!item.isRead">
-                <a [routerLink]="notificationLink(item)" (click)="isNotificationOpen = false">
+                <a [routerLink]="notificationLink(item)" (click)="openNotification(item)">
                   <b>{{ item.title }}</b>
                   <span>{{ item.message }}</span>
                   <small>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</small>
@@ -74,7 +74,7 @@
 
             <a
               *ngIf="notifications().length > 0"
-              routerLink="/notifications"
+              routerLink="/customer/notifications"
               class="kl-dropdown-link"
               (click)="isNotificationOpen = false">
               Tüm bildirimler ({{ notifications().length }})
@@ -88,7 +88,7 @@
           class="kl-icon-button"
           title="Ayarlar"
           aria-label="Ayarlar">
-          ⚙
+          <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </a>
 
         <div class="kl-dropdown-wrap">

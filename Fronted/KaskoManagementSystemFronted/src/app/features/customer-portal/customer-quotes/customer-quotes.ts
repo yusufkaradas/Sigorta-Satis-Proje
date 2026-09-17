@@ -1,3 +1,5 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
   CommonModule
@@ -28,7 +30,7 @@ import {
 @Component({
   selector: 'app-customer-quotes',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     CommonModule,
     RecordNumberPipe,
     RouterLink
@@ -131,8 +133,8 @@ export class CustomerQuotes implements OnInit {
     return quote.status === QuoteStatus.Offered;
   }
 
-  deleteQuote(quote: Quote): void {
-    if (!confirm('Bu teklifi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+  async deleteQuote(quote: Quote): Promise<void> {
+    if (!await confirmDialog('Bu teklifi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
       return;
     }
     this.deletingId.set(quote.id);

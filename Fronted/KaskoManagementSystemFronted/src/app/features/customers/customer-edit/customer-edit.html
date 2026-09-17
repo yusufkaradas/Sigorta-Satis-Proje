@@ -32,22 +32,22 @@
 
           <div class="kf-field">
             <label for="firstName">Ad *</label>
-            <input id="firstName" type="text" name="firstName" [(ngModel)]="form.firstName" />
+            <input appInputRule="name" [ruleMaxLength]="25" maxlength="25" id="firstName" type="text" name="firstName" [(ngModel)]="form.firstName" />
           </div>
 
           <div class="kf-field">
             <label for="lastName">Soyad *</label>
-            <input id="lastName" type="text" name="lastName" [(ngModel)]="form.lastName" />
+            <input appInputRule="name" [ruleMaxLength]="25" maxlength="25" id="lastName" type="text" name="lastName" [(ngModel)]="form.lastName" />
           </div>
 
           <div class="kf-field">
             <label for="identityNumber">T.C. Kimlik No *</label>
-            <input id="identityNumber" type="text" inputmode="numeric" maxlength="11" name="identityNumber" [(ngModel)]="form.identityNumber" />
+            <input appInputRule="digits" [ruleMaxLength]="11" id="identityNumber" type="text" inputmode="numeric" maxlength="11" name="identityNumber" [(ngModel)]="form.identityNumber" />
           </div>
 
           <div class="kf-field">
             <label for="dateOfBirth">Doğum Tarihi *</label>
-            <input id="dateOfBirth" type="date" name="dateOfBirth" [(ngModel)]="form.dateOfBirth" />
+            <input [min]="minBirthDate" [max]="maxBirthDate" id="dateOfBirth" type="date" name="dateOfBirth" [(ngModel)]="form.dateOfBirth" />
           </div>
 
           <div class="kf-field kf-span-all">
@@ -69,27 +69,27 @@
 
           <div class="kf-field">
             <label for="email">E-posta *</label>
-            <input id="email" type="email" name="email" [(ngModel)]="form.email" />
+            <input appInputRule="email" [ruleMaxLength]="150" maxlength="150" id="email" type="email" name="email" [(ngModel)]="form.email" />
           </div>
 
           <div class="kf-field">
             <label for="phoneNumber">Telefon *</label>
-            <input id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="form.phoneNumber" />
+            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="form.phoneNumber" />
           </div>
 
           <div class="kf-field">
             <label for="city">Şehir *</label>
-            <input id="city" type="text" name="city" [(ngModel)]="form.city" />
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="city" type="text" name="city" [(ngModel)]="form.city" />
           </div>
 
           <div class="kf-field">
             <label for="district">İlçe *</label>
-            <input id="district" type="text" name="district" [(ngModel)]="form.district" />
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="district" type="text" name="district" [(ngModel)]="form.district" />
           </div>
 
           <div class="kf-field kf-span-all">
             <label for="address">Adres</label>
-            <textarea id="address" rows="2" name="address" [(ngModel)]="form.address"></textarea>
+            <textarea appInputRule="address" [ruleMaxLength]="100" maxlength="100" id="address" rows="2" name="address" [(ngModel)]="form.address"></textarea>
           </div>
 
         </div>

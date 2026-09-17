@@ -11,6 +11,8 @@ public interface IVehicleValueCatalogRepository
 
     Task<IReadOnlyList<string>> GetActiveCategoriesAsync();
 
+    Task<(int Count, int BrandCount, DateTime? LatestEffectiveDate, DateTime? LastImportedAt)> GetSummaryAsync();
+
     Task<int> ReclassifyAsync(Func<string, string, string> classify);
 
     Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(

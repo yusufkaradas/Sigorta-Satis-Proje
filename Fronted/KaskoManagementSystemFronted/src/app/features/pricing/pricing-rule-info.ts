@@ -47,6 +47,19 @@ const GROUPS: { prefix: string; group: string; build: (code: string) => Omit<Pri
     })
   },
   {
+    prefix: 'AUTO_APPROVE_',
+    group: 'Otomatik Onay',
+    build: code => ({
+      title: ({
+        AUTO_APPROVE_MAX_PREMIUM: 'Otomatik onay: en yüksek prim',
+        AUTO_APPROVE_MAX_MARKET_VALUE: 'Otomatik onay: en yüksek araç değeri',
+        AUTO_APPROVE_MAX_CLAIMS: 'Otomatik onay: en fazla hasar',
+        AUTO_APPROVE_MAX_VEHICLE_AGE: 'Otomatik onay: en yüksek araç yaşı'
+      } as Record<string, string>)[code] ?? 'Otomatik onay sınırı',
+      explanation: 'Bu sınırın içinde kalan ve özel kullanımdaki teklifler müşteriye hemen satın alınabilir olarak sunulur. Sınırı aşan teklifler gerekçesiyle yönetici onayına düşer.'
+    })
+  },
+  {
     prefix: 'REGION_',
     group: 'Bölge Riski',
     build: code => ({
@@ -90,12 +103,17 @@ export function describePricingRule(code?: string, name?: string, description?: 
       isRate: value.includes('RATE')
     };
   }
-  return { group: match.group, isRate: value.includes('RATE'), ...match.build(value) };
+  return { group: match.group, isRate: value.includes('RATE') && !value.startsWith('AUTO_'), ...match.build(value) };
 }
 
 export function describePricingImpact(code: string | undefined, oldValue: number, newValue: number): string {
   if (!oldValue) {
     return '';
+  }
+  if ((code ?? '').startsWith('AUTO_APPROVE_')) {
+    return newValue > oldValue
+      ? 'Daha fazla teklif otomatik onaylanır, yönetici onayına düşen teklif azalır'
+      : 'Daha az teklif otomatik onaylanır, yönetici onayına düşen teklif artar';
   }
   const change = ((newValue - oldValue) / oldValue) * 100;
   if (Math.abs(change) < 0.05) {

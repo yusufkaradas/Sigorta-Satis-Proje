@@ -1,0 +1,100 @@
+<div class="kf-page">
+
+  @if (!embedded) {
+    <div class="kf-title">
+      ARAÇLAR
+    </div>
+  }
+
+  <section class="kf-panel">
+
+    <div class="kf-panel-head">
+      <div>
+        <h1>TSB Kasko Değer Listesi</h1>
+        <p>Türkiye Sigorta Birliği'nin her ay yayınladığı kasko değer listesini yükleyin. Teklif fiyatları bu listedeki araç değerlerine göre hesaplanır.</p>
+      </div>
+      @if (!embedded) {
+        <div class="kf-head-actions">
+          <a routerLink="/vehicles" class="kf-btn-outline">← Araçlar</a>
+        </div>
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <div class="kf-alert kf-alert-error">{{ errorMessage() }}</div>
+    }
+
+    <div class="kf-body kf-body-split">
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Mevcut Katalog</h2>
+
+        <dl class="kf-details">
+          <div><dt>Araç değeri kaydı</dt><dd>{{ summary() ? (summary()!.recordCount | number) : '—' }}</dd></div>
+          <div><dt>Marka</dt><dd>{{ summary() ? (summary()!.brandCount | number) : '—' }}</dd></div>
+          <div><dt>Güncel liste dönemi</dt><dd>{{ latestPeriodText }}</dd></div>
+          <div><dt>Son yükleme</dt><dd>{{ summary()?.lastImportedAt ? (summary()!.lastImportedAt | backendDate:'datetime') : '—' }}</dd></div>
+          <div class="kf-span-all"><dt>Araç sınıfları</dt><dd>{{ summary()?.categories?.join(', ') || '—' }}</dd></div>
+        </dl>
+
+        <div class="ci-reclassify">
+          <div>
+            <strong>Araç sınıflarını yenile</strong>
+            <span>Marka ve model adına göre Otomobil, Kamyon, Motosiklet gibi sınıflar yeniden belirlenir.</span>
+          </div>
+          <button type="button" class="kf-btn-outline" [disabled]="isReclassifying()" (click)="reclassify()">
+            {{ isReclassifying() ? 'Güncelleniyor...' : 'Sınıfları Yenile' }}
+          </button>
+        </div>
+
+      </section>
+
+      <section class="kf-section">
+
+        <h2 class="kf-section-title">Yeni Liste Yükle</h2>
+
+        <div class="kf-grid">
+
+          <div class="kf-field">
+            <label for="period">Liste dönemi *</label>
+            <input id="period" type="month" [value]="period()" (change)="onPeriodChange($event)" />
+          </div>
+
+          <div class="kf-field">
+            <label for="catalogFile">Excel dosyası (.xlsx) *</label>
+            <input id="catalogFile" type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="isImporting()" />
+          </div>
+
+        </div>
+
+        @if (selectedFile(); as file) {
+          <p class="kf-muted">Seçilen dosya: {{ file.name }} · {{ fileSizeText }}</p>
+        }
+
+        <ul class="ci-rules">
+          <li>Dosyada <b>Smarka</b> adlı sayfa olmalı; ilk sütunlar marka kodu, tip kodu, marka ve tip adıdır.</li>
+          <li>Aynı dönemde daha önce yüklenmiş değerler atlanır, çift kayıt oluşmaz.</li>
+          <li>Büyük listelerin yüklenmesi birkaç dakika sürebilir; sayfadan ayrılmayın.</li>
+        </ul>
+
+        <div class="kf-actions ci-actions">
+          <button type="button" class="kf-btn" [disabled]="!selectedFile() || isImporting()" (click)="import()">
+            {{ isImporting() ? 'Liste yükleniyor...' : 'Listeyi Yükle' }}
+          </button>
+        </div>
+
+        @if (result(); as r) {
+          <div class="kf-alert kf-alert-success ci-result">
+            <strong>Yükleme tamamlandı</strong>
+            <span>{{ r.importedCount | number }} yeni değer eklendi · {{ r.duplicateCount | number }} zaten vardı · {{ r.skippedZeroValueCount | number }} boş değer · {{ r.invalidRowCount | number }} hatalı satır ({{ r.excelRowCount | number }} satır okundu)</span>
+          </div>
+        }
+
+      </section>
+
+    </div>
+
+  </section>
+
+</div>

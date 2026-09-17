@@ -60,6 +60,10 @@
             yönetmek için bilgilerinizi tamamlayın.
           </p>
 
+          @if (prefilledFromQuote) {
+            <p>T.C. Kimlik No ve telefonunuz hızlı tekliften otomatik dolduruldu.</p>
+          }
+
         </div>
 
 
@@ -75,7 +79,7 @@
                 Ad
               </label>
 
-              <input
+              <input appInputRule="name" [ruleMaxLength]="25" maxlength="25"
                 id="firstName"
                 name="firstName"
                 type="text"
@@ -93,7 +97,7 @@
                 Soyad
               </label>
 
-              <input
+              <input appInputRule="name" [ruleMaxLength]="25" maxlength="25"
                 id="lastName"
                 name="lastName"
                 type="text"
@@ -133,7 +137,7 @@
                 Doğum Tarihi
               </label>
 
-              <input
+              <input [min]="minBirthDate" [max]="maxBirthDate"
                 id="dateOfBirth"
                 name="dateOfBirth"
                 type="date"
@@ -149,7 +153,7 @@
                 E-posta Adresi
               </label>
 
-              <input
+              <input appInputRule="email" [ruleMaxLength]="150" maxlength="150"
                 id="email"
                 name="email"
                 type="email"
@@ -197,7 +201,7 @@
                 İl
               </label>
 
-              <input
+              <input appInputRule="place" [ruleMaxLength]="50" maxlength="50"
                 id="city"
                 name="city"
                 type="text"
@@ -215,7 +219,7 @@
                 İlçe
               </label>
 
-              <input
+              <input appInputRule="place" [ruleMaxLength]="50" maxlength="50"
                 id="district"
                 name="district"
                 type="text"
@@ -233,12 +237,12 @@
                 Adres
               </label>
 
-              <textarea
+              <textarea appInputRule="address" [ruleMaxLength]="100" maxlength="100"
                 id="address"
                 name="address"
                 rows="1"
                 autocomplete="street-address"
-                placeholder="Açık adresiniz"
+                placeholder="Mahalle, cadde, no (en az 10 karakter)"
                 [(ngModel)]="address"
               ></textarea>
 
@@ -253,7 +257,7 @@
 
               <div class="password-input-wrapper">
 
-                <input
+                <input maxlength="20"
                   id="password"
                   name="password"
                   [type]="
@@ -262,7 +266,7 @@
                       : 'password'
                   "
                   autocomplete="new-password"
-                  placeholder="En az 8 karakter"
+                  placeholder="8-20 karakter, büyük/küçük harf ve rakam"
                   [(ngModel)]="password"
                 />
 
@@ -290,7 +294,7 @@
 
               <div class="password-input-wrapper">
 
-                <input
+                <input maxlength="20"
                   id="passwordConfirm"
                   name="passwordConfirm"
                   [type]="

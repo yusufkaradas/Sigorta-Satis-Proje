@@ -1,3 +1,4 @@
+import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import { BrandService } from '../../../core/services/brand.service';
 import {
   ChangeDetectorRef,
@@ -25,6 +26,7 @@ import {
 @Component({
   selector: 'app-register',
   imports: [
+    InputRuleDirective,
     FormsModule,
     RouterLink
   ],
@@ -32,6 +34,37 @@ import {
   styleUrl: './register.scss'
 })
 export class Register {
+
+  prefilledFromQuote = false;
+
+  private readonly prefill = (() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem('quickQuoteIdentity') ?? 'null');
+      if (stored?.identityNumber) {
+        queueMicrotask(() => {
+          this.identityNumber = String(stored.identityNumber).replace(/\D/g, '').slice(0, 11);
+          this.phoneNumber = String(stored.phoneNumber ?? '').replace(/\D/g, '').slice(-10);
+          this.prefilledFromQuote = true;
+          this.cdr.markForCheck();
+        });
+      }
+    } catch {
+    }
+    return true;
+  })();
+
+  readonly maxBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return date.toISOString().slice(0, 10);
+  })();
+
+  readonly minBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 100);
+    return date.toISOString().slice(0, 10);
+  })();
+
 
   private readonly brandService = inject(BrandService);
 
@@ -137,10 +170,10 @@ export class Register {
       this.phoneNumber.length === 10 &&
       this.dateOfBirth.length > 0 &&
       this.email.trim().length > 0 &&
-      this.address.trim().length > 0 &&
+      this.address.trim().length >= 10 &&
       this.city.trim().length > 0 &&
       this.district.trim().length > 0 &&
-      this.password.length >= 8 &&
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,20}$/.test(this.password) &&
       this.password === this.passwordConfirm
     );
   }
@@ -221,7 +254,12 @@ export class Register {
 
           this.isLoading = false;
 
+          const validation = error?.error?.errors
+            ? Object.values(error.error.errors as Record<string, string[]>).flat()[0]
+            : null;
+
           this.errorMessage =
+            validation ??
             error?.error?.detail ??
             error?.error?.message ??
             error?.error?.title ??

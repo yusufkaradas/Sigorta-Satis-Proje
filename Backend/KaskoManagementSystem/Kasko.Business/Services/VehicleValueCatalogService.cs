@@ -110,6 +110,25 @@ public class VehicleValueCatalogService
 
     private static CategoryCache? _categoryCache;
 
+    public async Task<object> GetSummaryAsync()
+    {
+        var summary = await _unitOfWork.VehicleValueCatalogs.GetSummaryAsync();
+
+        return new
+        {
+            recordCount = summary.Count,
+            brandCount = summary.BrandCount,
+            latestEffectiveDate = summary.LatestEffectiveDate,
+            lastImportedAt = summary.LastImportedAt,
+            categories = await GetCategoriesAsync()
+        };
+    }
+
+    public static void ClearCategoryCache()
+    {
+        _categoryCache = null;
+    }
+
     public async Task<int> ReclassifyAsync(
         CancellationToken cancellationToken = default)
     {

@@ -43,6 +43,10 @@ public class CustomerService : ICustomerService
     {
         var customers = await _unitOfWork.Customers.GetAllAsync();
 
+        var accountCustomerIds = (await _unitOfWork.Users.FindAsync(x => x.CustomerId != null && !x.IsDeleted))
+            .Select(x => x.CustomerId!.Value)
+            .ToHashSet();
+
         return customers.Select(customer => new CustomerListDto
         {
             Id = customer.Id,
@@ -53,7 +57,8 @@ public class CustomerService : ICustomerService
             PhoneNumber = customer.PhoneNumber,
             City = customer.City,
             District = customer.District ?? string.Empty,
-            IsActive = customer.IsActive
+            IsActive = customer.IsActive,
+            HasAccount = accountCustomerIds.Contains(customer.Id)
         });
     }
 
@@ -79,6 +84,9 @@ public class CustomerService : ICustomerService
         if (customer == null)
             return null;
 
+        var hasAccount = _unitOfWork.Users != null &&
+            await _unitOfWork.Users.AnyAsync(x => x.CustomerId == customer.Id && !x.IsDeleted);
+
         return new CustomerDto
         {
             Id = customer.Id,
@@ -91,11 +99,12 @@ public class CustomerService : ICustomerService
             Address = customer.Address,
             City = customer.City,
             District = customer.District ?? string.Empty,
+            HasAccount = hasAccount,
             IsActive = customer.IsActive
         };
     }
 
-    public async Task CreateAsync(CreateCustomerDto dto)
+    public async Task<Guid> CreateAsync(CreateCustomerDto dto)
     {
         var identityExists = await _unitOfWork.Customers
             .AnyAsync(x => x.IdentityNumber == dto.IdentityNumber);
@@ -134,6 +143,8 @@ public class CustomerService : ICustomerService
         await _unitOfWork.Customers.AddAsync(customer);
 
         await _unitOfWork.SaveChangesAsync();
+
+        return customer.Id;
     }
 
     public async Task UpdateAsync(UpdateCustomerDto dto)

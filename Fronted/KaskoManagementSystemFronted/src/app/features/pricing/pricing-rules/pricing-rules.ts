@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   CommonModule
 } from '@angular/common';
@@ -277,9 +278,9 @@ export class PricingRules implements OnInit {
     }).subscribe({ next: () => done(`${this.ruleCode} kuralı güncellendi.`), error: fail });
   }
 
-  deleteRule(rule: PricingRule): void {
+  async deleteRule(rule: PricingRule): Promise<void> {
 
-    if (!window.confirm(`${rule.code} kuralı silinsin mi? Bu kurala bağlı yeni teklif hesapları varsayılan değeri kullanır.`)) {
+    if (!await confirmDialog(`${rule.code} kuralı silinsin mi? Bu kurala bağlı yeni teklif hesapları varsayılan değeri kullanır.`)) {
       return;
     }
 

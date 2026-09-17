@@ -1388,11 +1388,123 @@ public class QuoteServiceTests
             result.ValidUntil);
 
         Assert.Equal(
-            QuoteStatus.Draft,
+            QuoteStatus.Offered,
             result.Status);
+
+        Assert.Null(result.ReviewReason);
 
         Assert.Equal(
                22000m,
+               result.PremiumAmount);
+
+        Assert.False(
+            string.IsNullOrWhiteSpace(result.QuoteNumber));
+
+        Assert.StartsWith(
+            "KLF-",
+            result.QuoteNumber);
+
+        _quoteRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<Quote>()),
+            Times.Once);
+
+        _unitOfWorkMock.Verify(
+            x => x.SaveChangesAsync(),
+            Times.Once);
+    }
+    [Fact]
+    public async Task CreateAsync_ShouldSendQuoteToReview_WhenPremiumExceedsAutoApprovalLimit()
+    {
+        
+        var customerId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        var validUntil = DateTime.UtcNow.AddDays(10);
+
+        var dto = new CreateQuoteDto
+        {
+            CustomerId = customerId,
+            VehicleId = vehicleId,
+            ValidUntil = validUntil
+        };
+
+        var customer = new Customer
+        {
+            Id = customerId,
+            IsDeleted = false
+        };
+
+        var vehicle = new Vehicle
+        {
+            Id = vehicleId,
+            CustomerId = customerId,
+            IsDeleted = false,
+            IsActive = true,
+            MarketValue = 1_000_000m,
+            ModelYear = DateTime.UtcNow.Year - 4
+        };
+
+        _customerRepositoryMock
+     .Setup(x => x.GetByIdAsync(customerId))
+     .ReturnsAsync(customer);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetByIdAsync(vehicleId))
+            .ReturnsAsync(vehicle);
+
+        _pricingServiceMock
+     .Setup(x => x.CalculateAsync(
+         It.IsAny<PricingRequest>(),
+         It.IsAny<CancellationToken>()))
+             .ReturnsAsync(
+                new PricingCalculation
+                {
+                    MarketValue = 1_000_000m,
+                    BaseRate = 0.02m,
+                    AgeFactor = 1.10m,
+                    BasePremium = 20_000m,
+                    RiskAdjustedPremium = 22_000m,
+                    Coverages = Array.Empty<PricingCoverageResult>(),
+                    CoveragePremium = 0m,
+                    TotalPremium = 150_000m
+                });
+        _quoteRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Quote>()))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        
+        var result = await _service.CreateAsync(dto);
+
+        
+        Assert.NotNull(result);
+
+        Assert.NotEqual(
+            Guid.Empty,
+            result.Id);
+
+        Assert.Equal(
+            customerId,
+            result.CustomerId);
+
+        Assert.Equal(
+            vehicleId,
+            result.VehicleId);
+
+        Assert.Equal(
+            validUntil,
+            result.ValidUntil);
+
+        Assert.Equal(
+            QuoteStatus.Draft,
+            result.Status);
+
+        Assert.Contains("Prim", result.ReviewReason);
+
+        Assert.Equal(
+               150000m,
                result.PremiumAmount);
 
         Assert.False(

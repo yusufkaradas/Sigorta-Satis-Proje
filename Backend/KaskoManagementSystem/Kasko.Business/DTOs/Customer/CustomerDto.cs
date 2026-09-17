@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.DTOs.Customer
+namespace Kasko.Business.DTOs.Customer
 {
     public class CustomerDto
     {
@@ -21,6 +21,8 @@
         public string District { get; set; } = string.Empty;
 
         public bool IsActive { get; set; }
+
+        public bool HasAccount { get; set; }
         public DateTime CreatedDate { get; set; }
 
 

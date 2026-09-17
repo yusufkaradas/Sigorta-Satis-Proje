@@ -158,6 +158,14 @@ namespace Kasko.API.Controllers
                 });
             }
 
+            if (dto.SimulateFailure)
+            {
+                return BadRequest(new
+                {
+                    message = "Ödeme bankanız tarafından onaylanmadı. Kart bilgilerinizi kontrol edip tekrar deneyin veya başka bir kart kullanın."
+                });
+            }
+
             if (quote.Status != QuoteStatus.Offered)
             {
                 return BadRequest(new

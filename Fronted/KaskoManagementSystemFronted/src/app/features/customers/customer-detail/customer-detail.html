@@ -38,6 +38,13 @@
           <div><dt>Durum</dt><dd>{{ getStatusText() }}</dd></div>
           <div><dt>Doğum Tarihi</dt><dd>{{ customer.dateOfBirth | backendDate:'date' }}</dd></div>
           <div><dt>Kayıt Tarihi</dt><dd>{{ customer.createdDate | backendDate:'datetime' }}</dd></div>
+          <div class="kf-span-all">
+            <dt>Portal Hesabı</dt>
+            <dd>
+              {{ customer.hasAccount ? 'Var · ' + customer.email + ' ile giriş yapabilir' : 'Yok · müşteri portala giriş yapamaz' }}
+              <button *ngIf="!customer.hasAccount && !portal.isReadOnly" type="button" class="kf-btn-outline kf-btn-sm" [disabled]="isCreatingAccount" (click)="createAccount()">Hesap Oluştur</button>
+            </dd>
+          </div>
         </dl>
       </section>
 
@@ -52,6 +59,21 @@
         </dl>
       </section>
 
+      <section class="kf-section kf-span-all">
+        <h2 class="kf-section-title">
+          Önceki Poliçeler
+          <small>Hasarsızlık indirimi için teklifte seçilir</small>
+          <button *ngIf="!portal.isReadOnly" type="button" class="kf-btn-outline kf-btn-sm" (click)="openPreviousForm()">+ Önceki Poliçe Ekle</button>
+        </h2>
+        <div *ngIf="previousPolicies.length === 0" class="kf-muted">Kayıtlı önceki poliçe yok.</div>
+        <ul *ngIf="previousPolicies.length > 0" class="kf-list kf-list-2">
+          <li *ngFor="let item of previousPolicies.slice(0, 4)" class="kf-list-item">
+            <strong>{{ item.previousInsurer }} · {{ item.policyNumber }}</strong>
+            <span>{{ item.startDate | backendDate:'date' }} – {{ item.endDate | backendDate:'date' }} · {{ item.claimsCount === 0 ? 'Hasarsız' : item.claimsCount + ' hasar' }}</span>
+          </li>
+        </ul>
+      </section>
+
     </div>
 
     <div class="kf-actions kf-actions-between">
@@ -64,4 +86,43 @@
 
   </section>
 
+</div>
+
+<div class="rule-dialog-backdrop" *ngIf="isPreviousFormOpen" (click)="isPreviousFormOpen = false">
+  <div class="rule-dialog" (click)="$event.stopPropagation()">
+    <h2>Önceki Poliçe Ekle</h2>
+    <p class="rule-dialog-sub">{{ customer?.firstName }} {{ customer?.lastName }} · başka şirketten gelen kasko poliçesi</p>
+    <div class="rule-dialog-grid">
+      <label class="rule-dialog-full">
+        <span>Önceki sigorta şirketi</span>
+        <input type="text" name="previousInsurer" appInputRule="place" [ruleMaxLength]="100" maxlength="100" [(ngModel)]="previousForm.previousInsurer" placeholder="Örn. Anadolu Sigorta" />
+      </label>
+      <label>
+        <span>Poliçe numarası</span>
+        <input type="text" name="policyNumber" maxlength="50" [(ngModel)]="previousForm.policyNumber" placeholder="Örn. 123456789" />
+      </label>
+      <label>
+        <span>Hasar sayısı</span>
+        <select name="claimsCount" [(ngModel)]="previousForm.claimsCount">
+          <option [ngValue]="0">Hasarsız</option>
+          <option [ngValue]="1">1 hasar</option>
+          <option [ngValue]="2">2 hasar</option>
+          <option [ngValue]="3">3 ve üzeri</option>
+        </select>
+      </label>
+      <label>
+        <span>Başlangıç</span>
+        <input type="date" name="startDate" [max]="today" [ngModel]="previousForm.startDate" (ngModelChange)="onPreviousStartChange($event)" />
+      </label>
+      <label>
+        <span>Bitiş</span>
+        <input type="date" name="endDate" [min]="previousForm.startDate" [(ngModel)]="previousForm.endDate" />
+      </label>
+    </div>
+    <div class="rule-dialog-error" *ngIf="previousError">{{ previousError }}</div>
+    <div class="rule-dialog-actions">
+      <button type="button" class="clear-button" (click)="isPreviousFormOpen = false">Vazgeç</button>
+      <button type="button" class="policy-button" [disabled]="isSavingPrevious" (click)="savePreviousPolicy()">{{ isSavingPrevious ? 'Kaydediliyor...' : 'Kaydet' }}</button>
+    </div>
+  </div>
 </div>

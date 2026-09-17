@@ -55,7 +55,7 @@
           </div>
           <div class="kf-brand-actions">
             <strong>Logo</strong>
-            <small>Menüde ve giriş ekranında görünür. PNG, JPG veya SVG, en fazla 2 MB.</small>
+            <small>Oran 1:1 (kare) · önerilen 600×600 px · PNG, JPG veya SVG · en fazla 2 MB. Kare olmayan görseller kırpılmadan ortalanır.</small>
             <div>
               <label class="kf-file-button">
                 Dosya Seç
@@ -78,7 +78,7 @@
           </div>
           <div class="kf-brand-actions">
             <strong>Giriş Ekranı Görseli</strong>
-            <small>Giriş, kayıt ve şifre ekranlarının sol panelinde görünür.</small>
+            <small>Oran 5:6 (dikey) · önerilen 750×900 px · PNG veya JPG · en fazla 2 MB. Farklı oranlı görseller ortadan kırpılarak bu ölçüye getirilir.</small>
             <div>
               <label class="kf-file-button">
                 Dosya Seç
@@ -86,6 +86,29 @@
               </label>
               @if (loginImage()) {
                 <button type="button" class="kf-btn-outline" (click)="clearImage('login')">Kaldır</button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="kf-brand-row">
+          <div class="kf-brand-preview kf-brand-preview-icon">
+            @if (faviconImage()) {
+              <img [src]="faviconImage()" alt="Sekme simgesi" />
+            } @else {
+              <span>Yok</span>
+            }
+          </div>
+          <div class="kf-brand-actions">
+            <strong>Tarayıcı Sekme Simgesi</strong>
+            <small>Tarayıcı sekmesinde site adının yanında görünür. Oran 1:1 (kare) · önerilen 64×64 px (en az 32×32) · PNG veya SVG · en fazla 2 MB.</small>
+            <div>
+              <label class="kf-file-button">
+                Dosya Seç
+                <input type="file" accept="image/*" (change)="onFileSelected($event, 'favicon')" hidden />
+              </label>
+              @if (faviconImage()) {
+                <button type="button" class="kf-btn-outline" (click)="clearImage('favicon')">Kaldır</button>
               }
             </div>
           </div>

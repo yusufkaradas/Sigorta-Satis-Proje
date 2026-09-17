@@ -57,6 +57,7 @@ public class BrandSettingService : IBrandSettingService
         ValidateImage(dto.LogoImage, "Logo");
 
         ValidateImage(dto.LoginImage, "Giriş görseli");
+        ValidateImage(dto.FaviconImage, "Sekme simgesi");
 
         var setting = await GetCurrentAsync();
 
@@ -79,6 +80,7 @@ public class BrandSettingService : IBrandSettingService
         setting.LogoImage = dto.LogoImage;
 
         setting.LoginImage = dto.LoginImage;
+        setting.FaviconImage = dto.FaviconImage;
 
         setting.UpdatedDate = DateTime.UtcNow;
 
@@ -123,6 +125,7 @@ public class BrandSettingService : IBrandSettingService
             SystemName = setting.SystemName,
             LogoImage = setting.LogoImage,
             LoginImage = setting.LoginImage,
+            FaviconImage = setting.FaviconImage,
             UpdatedDate = setting.UpdatedDate
         };
     }

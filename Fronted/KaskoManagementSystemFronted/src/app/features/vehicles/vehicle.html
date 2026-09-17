@@ -1,6 +1,6 @@
 <section class="vehicles-content">
 
-  <div class="vehicles-section-title">
+  <div *ngIf="!embedded" class="vehicles-section-title">
     ARAÇLAR
   </div>
 
@@ -64,6 +64,8 @@
         </div>
 
       </div>
+
+
 
 
       <a
@@ -152,7 +154,7 @@
 
             <tr *ngFor="let vehicle of pagedVehicles">
 
-              <td><strong>{{ vehicle.plateNumber || '—' }}</strong></td>
+              <td><app-plate [value]="vehicle.plateNumber" size="sm" /></td>
 
               <td>{{ vehicle.customerName || '—' }}</td>
 

@@ -14,6 +14,8 @@ public interface IVehicleValueCatalogService
     Task<IReadOnlyList<string>> GetCategoriesAsync(
         CancellationToken cancellationToken = default);
 
+    Task<object> GetSummaryAsync();
+
     Task<int> ReclassifyAsync(
         CancellationToken cancellationToken = default);
 

@@ -1,3 +1,4 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
 import { BackendDatePipe, BackendTimePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
@@ -61,7 +62,7 @@ interface StatusCount {
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     CommonModule,
     RecordNumberPipe,
     BackendDatePipe,

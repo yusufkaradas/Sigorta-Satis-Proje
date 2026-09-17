@@ -1,66 +1,83 @@
-import {
-  CommonModule
-} from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import {
-  Component,
-  OnInit,
-  inject
-} from '@angular/core';
-
-import {
+  Notification,
   NotificationsService,
-  Notification
+  notificationLink,
+  notificationTypeLabel
 } from './notifications.service';
+
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [
-    CommonModule
-  ],
+  imports: [CommonModule],
   templateUrl: './notifications.html',
   styleUrl: './notifications.scss'
 })
 export class Notifications implements OnInit {
 
-  private readonly notificationsService =
-    inject(NotificationsService);
+  private readonly notificationsService = inject(NotificationsService);
 
-  notifications: Notification[] = [];
+  private readonly router = inject(Router);
 
-  isLoading = false;
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  errorMessage = '';
+  readonly pageSize = 5;
+
+  readonly typeLabel = notificationTypeLabel;
+
+  notifications = signal<Notification[]>([]);
+
+  isLoading = signal(true);
+
+  errorMessage = signal('');
+
+  page = signal(1);
+
+  unreadCount = computed(() => this.notifications().filter(item => !item.isRead).length);
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.notifications().length / this.pageSize)));
+
+  paged = computed(() =>
+    this.notifications().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize)
+  );
 
   ngOnInit(): void {
-    this.loadNotifications();
+    this.notificationsService.getNotifications().subscribe({
+      next: data => {
+        this.notifications.set(data ?? []);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Bildirimler yüklenemedi.');
+      }
+    });
   }
 
-  loadNotifications(): void {
+  open(item: Notification): void {
+    if (!item.isRead) {
+      this.markLocal(item.id);
+      this.notificationsService.markAsRead(item.id).subscribe();
+    }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.router.navigate(notificationLink(item));
+  }
 
-    this.notificationsService
-      .getNotifications()
-      .subscribe({
-        next: (notifications: Notification[]) => {
-          this.notifications = notifications;
-          this.isLoading = false;
-        },
+  markAllAsRead(): void {
+    this.notificationsService.markAllAsRead().subscribe(() => {
+      this.notifications.update(list => list.map(item => ({ ...item, isRead: true })));
+      this.cdr.detectChanges();
+    });
+  }
 
-        error: (error: any) => {
-          console.error(
-            'NOTIFICATIONS LOAD ERROR:',
-            error
-          );
+  changePage(delta: number): void {
+    this.page.update(current => Math.min(this.totalPages(), Math.max(1, current + delta)));
+  }
 
-          this.isLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ??
-            'Bildirimler yüklenirken bir hata oluştu.';
-        }
-      });
+  private markLocal(id: string): void {
+    this.notifications.update(list => list.map(item => item.id === id ? { ...item, isRead: true } : item));
   }
 }

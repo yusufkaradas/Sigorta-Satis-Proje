@@ -10,5 +10,7 @@ public class BrandSettingDto
 
     public string? LoginImage { get; set; }
 
+    public string? FaviconImage { get; set; }
+
     public DateTime? UpdatedDate { get; set; }
 }

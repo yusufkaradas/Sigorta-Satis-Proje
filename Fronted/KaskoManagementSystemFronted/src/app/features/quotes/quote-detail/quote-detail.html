@@ -44,7 +44,7 @@
           <div><dt>Marka</dt><dd>{{ quote.brand || '—' }}</dd></div>
           <div><dt>Model</dt><dd [title]="quote.model || ''">{{ quote.model || '—' }}</dd></div>
           <div><dt>Model Yılı</dt><dd>{{ quote.modelYear || '—' }}</dd></div>
-          <div><dt>Plaka</dt><dd>{{ quote.plateNumber || '—' }}</dd></div>
+          <div><dt>Plaka</dt><dd><app-plate [value]="quote.plateNumber" /></dd></div>
           <div class="kf-span-all"><dt>Paket</dt><dd>{{ quote.packageName || '—' }}</dd></div>
           <div class="kf-span-all"><dt>Araç Değeri</dt><dd>{{ quote.marketValue != null ? (quote.marketValue | number:'1.0-2') + ' ₺' : '—' }}</dd></div>
           <div class="kf-span-all"><dt>Müşteri</dt><dd>{{ quote.customerName || '—' }}</dd></div>
@@ -126,6 +126,10 @@
           Düzenle
         </a>
 
+        <span *ngIf="!isCustomerMode && quote.status === QuoteStatus.Draft && quote.reviewReason" class="kf-note">
+          Onay gerekçesi: {{ quote.reviewReason }}
+        </span>
+
         <button
           *ngIf="!isCustomerMode && quote.status === QuoteStatus.Draft"
           type="button"
@@ -142,7 +146,7 @@
       </div>
 
       <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Draft" class="kf-purchase">
-        <span class="kf-note">Teklifiniz yetkili onayında. Onaylandığında buradan satın alabilirsiniz.</span>
+        <span class="kf-note">Teklifiniz yetkili onayında{{ quote.reviewReason ? ' (' + quote.reviewReason + ')' : '' }}. Onaylandığında size bildirim gelir ve buradan satın alabilirsiniz.</span>
       </div>
 
       <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-purchase">
@@ -161,8 +165,8 @@
           type="button"
           class="kf-btn"
           [disabled]="isLoading || !acceptedTerms || !acceptedKvkk"
-          (click)="purchaseQuote()">
-          {{ isLoading ? 'Ödeme alınıyor...' : 'Satın Al · ' + (quote.premiumAmount | number:'1.2-2') + ' ₺' }}
+          (click)="openPayment()">
+          {{ 'Ödemeye Geç · ' + (quote.premiumAmount | number:'1.2-2') + ' ₺' }}
         </button>
 
       </div>
@@ -170,5 +174,73 @@
     </div>
 
   </section>
+
+</div>
+
+<div class="rule-dialog-backdrop" *ngIf="isPaymentOpen && quote" (click)="closePayment()">
+
+  <div class="rule-dialog pay-dialog" (click)="$event.stopPropagation()" (keydown.enter)="purchaseQuote()">
+
+    <h2>Güvenli Ödeme</h2>
+
+    <p class="rule-dialog-sub">{{ quote.packageName || 'Kasko' }} · {{ quote.plateNumber }} · Tek çekim</p>
+
+    <div class="pay-amount">
+      <span>Ödenecek tutar</span>
+      <strong>{{ quote.premiumAmount | number:'1.2-2' }} ₺</strong>
+    </div>
+
+    <div class="pay-card" [class.pay-card-ready]="isCardNumberValid">
+      <span class="pay-card-brand">{{ cardBrand || 'KART' }}</span>
+      <span class="pay-card-number">{{ cardNumber || '•••• •••• •••• ••••' }}</span>
+      <div class="pay-card-bottom">
+        <span>{{ cardHolder || 'AD SOYAD' }}</span>
+        <span>{{ cardExpiry || 'AA/YY' }}</span>
+      </div>
+    </div>
+
+    <div class="rule-dialog-grid">
+
+      <label class="rule-dialog-full">
+        <span>Kart Üzerindeki İsim</span>
+        <input type="text" name="cardHolder" autocomplete="cc-name" maxlength="40" [value]="cardHolder" (input)="onCardHolderInput($event)" placeholder="AD SOYAD" />
+      </label>
+
+      <label class="rule-dialog-full">
+        <span>Kart Numarası</span>
+        <input type="text" name="cardNumber" inputmode="numeric" autocomplete="cc-number" maxlength="19" [value]="cardNumber" (input)="onCardNumberInput($event)" placeholder="0000 0000 0000 0000" [class.pay-invalid]="cardDigits.length === 16 && !isCardNumberValid" />
+        <small *ngIf="cardDigits.length === 16 && !isCardNumberValid" class="pay-hint">Kart numarası geçersiz.</small>
+      </label>
+
+      <label>
+        <span>Son Kullanma (AA/YY)</span>
+        <input type="text" name="cardExpiry" inputmode="numeric" autocomplete="cc-exp" maxlength="5" [value]="cardExpiry" (input)="onCardExpiryInput($event)" placeholder="AA/YY" [class.pay-invalid]="cardExpiry.length === 5 && !isExpiryValid" />
+        <small *ngIf="cardExpiry.length === 5 && !isExpiryValid" class="pay-hint">Tarih geçersiz veya geçmiş.</small>
+      </label>
+
+      <label>
+        <span>CVV</span>
+        <input type="password" name="cardCvv" inputmode="numeric" autocomplete="cc-csc" maxlength="3" [value]="cardCvv" (input)="onCardCvvInput($event)" placeholder="•••" />
+      </label>
+
+    </div>
+
+    <div class="pay-test">
+      <span>Demo test kartları:</span>
+      <button type="button" *ngFor="let card of testCards" (click)="useTestCard(card.number)">{{ card.label }}</button>
+    </div>
+
+    <div class="rule-dialog-error" *ngIf="paymentError">{{ paymentError }}</div>
+
+    <p class="pay-note">Bu bir demo ödemedir. Kart bilgileriniz sunucuya gönderilmez ve saklanmaz, karttan çekim yapılmaz.</p>
+
+    <div class="rule-dialog-actions">
+      <button type="button" class="clear-button" [disabled]="isLoading" (click)="closePayment()">Vazgeç</button>
+      <button type="button" class="policy-button" [disabled]="isLoading || !isPaymentFormValid" (click)="purchaseQuote()">
+        {{ isLoading ? 'Ödeme işleniyor...' : (quote.premiumAmount | number:'1.2-2') + ' ₺ Öde' }}
+      </button>
+    </div>
+
+  </div>
 
 </div>

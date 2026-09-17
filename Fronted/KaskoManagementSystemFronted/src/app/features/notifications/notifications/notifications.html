@@ -1,93 +1,53 @@
-<div class="notifications-page">
+<div class="cp-page">
 
-  <div class="notifications-header">
-    <div>
-      <span class="notifications-eyebrow">
-        BİLDİRİMLER
-      </span>
+  <div class="cp-section-title">BİLDİRİMLER</div>
 
-      <h1>
-        Bildirimlerim
-      </h1>
+  <section class="cp-panel notif-card">
 
-      <p>
-        Poliçe, ödeme ve teklif işlemlerinizle ilgili bildirimler.
-      </p>
+    <div class="cp-panel-head">
+      <div>
+        <h2>Bildirimlerim</h2>
+        <span>Teklif, ödeme, poliçe ve iptal gelişmeleri. Detay için bildirime tıklayın.</span>
+      </div>
+      <button type="button" class="cp-btn-ghost" [disabled]="unreadCount() === 0" (click)="markAllAsRead()">
+        Tümünü okundu işaretle{{ unreadCount() ? ' (' + unreadCount() + ')' : '' }}
+      </button>
     </div>
-  </div>
 
-  <div
-    *ngIf="isLoading"
-    class="notification-state"
-  >
-    Bildirimler yükleniyor...
-  </div>
+    @if (isLoading()) {
+      <div class="notif-state">Bildirimler yükleniyor...</div>
+    } @else if (errorMessage()) {
+      <div class="notif-state">{{ errorMessage() }}</div>
+    } @else if (notifications().length === 0) {
+      <div class="notif-state">Henüz bildiriminiz yok.</div>
+    } @else {
+      <ul class="notif-list">
+        @for (item of paged(); track item.id) {
+          <li>
+            <button type="button" class="notif-item" [class.unread]="!item.isRead" (click)="open(item)">
+              <span class="notif-dot"></span>
+              <span class="notif-body">
+                <span class="notif-top">
+                  <strong>{{ item.title }}</strong>
+                  <span class="notif-tag">{{ typeLabel(item.type) }}</span>
+                </span>
+                <span class="notif-message">{{ item.message }}</span>
+              </span>
+              <span class="notif-date">{{ item.createdDate | date:'dd.MM.yyyy' }}<small>{{ item.createdDate | date:'HH:mm' }}</small></span>
+            </button>
+          </li>
+        }
+      </ul>
 
-  <div
-    *ngIf="!isLoading && errorMessage"
-    class="notification-state error"
-  >
-    {{ errorMessage }}
-  </div>
-
-  <div
-    *ngIf="
-      !isLoading &&
-      !errorMessage &&
-      notifications.length === 0
-    "
-    class="notification-state"
-  >
-    Henüz bildiriminiz bulunmuyor.
-  </div>
-
-  <div
-    *ngIf="
-      !isLoading &&
-      !errorMessage &&
-      notifications.length > 0
-    "
-    class="notification-list"
-  >
-
-    <article
-      *ngFor="let notification of notifications"
-      class="notification-card"
-      [class.unread]="!notification.isRead"
-    >
-
-      <div class="notification-icon">
-        {{ notification.isRead ? '✓' : '!' }}
-      </div>
-
-      <div class="notification-content">
-
-        <div class="notification-top">
-
-          <h2>
-            {{ notification.title }}
-          </h2>
-
-          <span class="notification-date">
-            {{ notification.createdDate | date:'dd.MM.yyyy HH:mm' }}
-          </span>
-
+      <div class="notif-pager">
+        <span>{{ notifications().length }} bildirim · Sayfa {{ page() }} / {{ totalPages() }}</span>
+        <div>
+          <button type="button" class="cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
+          <button type="button" class="cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
         </div>
-
-        <p>
-          {{ notification.message }}
-        </p>
-
-        <span
-          class="notification-type"
-        >
-          {{ notification.type }}
-        </span>
-
       </div>
+    }
 
-    </article>
-
-  </div>
+  </section>
 
 </div>

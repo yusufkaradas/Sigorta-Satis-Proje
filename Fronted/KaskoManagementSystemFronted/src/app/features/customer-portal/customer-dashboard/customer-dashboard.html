@@ -1,7 +1,7 @@
 <div class="cp-page">
 
   <div class="cp-section-title">
-    ANA SAYFA
+    DASHBOARD
   </div>
 
 
@@ -64,10 +64,32 @@
 
       <div class="cd-panel-foot">
         <a
-          routerLink="/customer/quotes/new"
-          class="cp-btn">
-          + Yeni Teklif Al
+          routerLink="/customer/quotes"
+          class="cp-btn cd-btn-dark">
+          Tekliflerime Git
         </a>
+      </div>
+
+    </article>
+
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
+        <h2>Poliçe Durumları</h2>
+      </div>
+
+      <ul class="cd-summary-list">
+
+        <li *ngFor="let item of policyStatusCounts()">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.count }}</strong>
+        </li>
+
+      </ul>
+
+      <div class="cd-panel-foot">
+        <a routerLink="/customer/policies" class="cp-btn cd-btn-dark">Poliçelerime Git</a>
       </div>
 
     </article>
@@ -138,19 +160,39 @@
     <article class="cp-panel">
 
       <div class="cp-panel-head">
-        <h2>Poliçe Durumları</h2>
+        <h2>Araçlarım</h2>
+        <span>{{ vehicles().length }} kayıtlı araç</span>
       </div>
 
-      <ul class="cd-summary-list">
+      <div *ngIf="!isLoading() && vehicles().length === 0" class="cp-state">
+        Henüz kayıtlı aracınız bulunmuyor.
+      </div>
 
-        <li *ngFor="let item of policyStatusCounts()">
-          <span>{{ item.label }}</span>
-          <strong>{{ item.count }}</strong>
-        </li>
+      <div *ngIf="vehicles().length > 0" class="cp-table-wrap">
+        <table class="cp-table">
+          <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Marka / Model</th>
+              <th>Model Yılı</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vehicle of vehicles()" [routerLink]="['/customer/vehicles', vehicle.id]">
+              <td><app-plate [value]="vehicle.plateNumber" size="sm" /></td>
+              <td class="cp-muted">{{ vehicle.brand }} {{ vehicle.model }}</td>
+              <td class="cp-muted">{{ vehicle.modelYear }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      </ul>
+    </article>
 
-      <div class="cp-panel-head cd-sub-head">
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
         <h2>Ödeme Özeti</h2>
       </div>
 
@@ -164,14 +206,29 @@
       </ul>
 
       <div class="cd-panel-foot">
-        <a
-          routerLink="/customer/payments"
-          class="cp-btn cd-btn-dark">
-          Ödemelerime Git
-        </a>
+        <a routerLink="/customer/payments" class="cp-btn cd-btn-dark">Ödemelerime Git</a>
       </div>
 
     </article>
+
+
+    <article class="cp-panel">
+
+      <div class="cp-panel-head">
+        <h2>Hızlı İşlemler</h2>
+      </div>
+
+      <div class="cd-actions">
+        <a routerLink="/customer/quotes/new" class="cp-btn">+ Yeni Teklif Al</a>
+        <a routerLink="/customer/vehicles/new" class="cp-btn cd-btn-dark">+ Araç Ekle</a>
+        <a routerLink="/customer/quotes" class="cp-btn cd-btn-dark">Tekliflerim</a>
+      </div>
+
+    </article>
+
+
+
+
 
   </section>
 

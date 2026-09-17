@@ -7,6 +7,7 @@ export interface BrandSetting {
   systemName: string;
   logoImage?: string | null;
   loginImage?: string | null;
+  faviconImage?: string | null;
   updatedDate?: string | null;
 }
 
@@ -29,6 +30,7 @@ export class BrandService {
       next: data => {
         if (data) {
           this.brand.set(data);
+          this.applyFavicon(data.faviconImage);
         }
       },
       error: () => undefined
@@ -38,6 +40,17 @@ export class BrandService {
   update(value: Omit<BrandSetting, 'updatedDate'>): Observable<BrandSetting> {
     return this.http
       .put<BrandSetting>(this.apiUrl, value)
-      .pipe(tap(result => this.brand.set(result)));
+      .pipe(tap(result => {
+        this.brand.set(result);
+        this.applyFavicon(result.faviconImage);
+      }));
+  }
+
+  private applyFavicon(value?: string | null): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (link) {
+      link.type = value ? 'image/png' : 'image/x-icon';
+      link.href = value || 'Ust_Logo.png';
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   ChangeDetectorRef,
   Component,
@@ -159,7 +160,7 @@ formatCvv(value: string): void {
     .slice(0, 3);
 }
 
-  createPayment(): void {
+  async createPayment(): Promise<void> {
 this.cardErrorMessage = '';
 
 if (!this.isTermsAccepted) {
@@ -242,7 +243,7 @@ if (!/^\d{3}$/.test(this.cvv)){
       return;
     }
 
-    const confirmed = window.confirm(
+    const confirmed = await confirmDialog(
       'Bu poliçe için ödemeyi gerçekleştirmek istediğinize emin misiniz?'
     );
 

@@ -191,4 +191,21 @@ public class VehicleValueCatalogRepository
             .OrderByDescending(x => x.EffectiveDate)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<(int Count, int BrandCount, DateTime? LatestEffectiveDate, DateTime? LastImportedAt)> GetSummaryAsync()
+    {
+        var active = _context.VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.IsActive);
+
+        var count = await active.CountAsync();
+
+        var brandCount = await active.Select(x => x.BrandCode).Distinct().CountAsync();
+
+        var latestEffectiveDate = await active.MaxAsync(x => (DateTime?)x.EffectiveDate);
+
+        var lastImportedAt = await active.MaxAsync(x => (DateTime?)x.ImportedAt);
+
+        return (count, brandCount, latestEffectiveDate, lastImportedAt);
+    }
 }

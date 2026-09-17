@@ -11,8 +11,8 @@
 
     <div class="kf-panel-head">
       <div>
-        <h1>Kullanıcı Ekle</h1>
-        <p>Sisteme giriş yapacak yeni bir kullanıcı oluşturun ve rolünü belirleyin.</p>
+        <h1>{{ isCustomerRole ? 'Müşteri Hesabı Oluştur' : 'Kullanıcı Ekle' }}</h1>
+        <p>{{ isCustomerRole ? 'Müşteri kaydı ve portal giriş hesabı birlikte oluşturulur; iki kayıt birbirine bağlı kalır.' : 'Sisteme giriş yapacak personeli ekleyin ve rolünü belirleyin.' }}</p>
       </div>
       <a routerLink="/users" class="kf-btn-outline">← Kullanıcılara Dön</a>
     </div>
@@ -23,23 +23,41 @@
 
       <section class="kf-section">
 
-        <h2 class="kf-section-title">Kişisel Bilgiler</h2>
+        <h2 class="kf-section-title">Hesap ve Kişisel Bilgiler</h2>
 
         <div class="kf-grid">
 
           <div class="kf-field">
+            <label for="roleId">Rol *</label>
+            <select id="roleId" name="roleId" [(ngModel)]="model.roleId" [disabled]="isLoadingRoles()" required>
+              <option value="" disabled>{{ isLoadingRoles() ? 'Roller yükleniyor...' : 'Rol seçin' }}</option>
+              <option *ngFor="let role of roles()" [value]="role.id">{{ role.name === 'Customer' ? 'Müşteri' : role.name }}</option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="phoneNumber">Telefon {{ isCustomerRole ? '*' : '' }}</label>
+            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" [required]="isCustomerRole" placeholder="5XX XXX XX XX" />
+          </div>
+
+          <div class="kf-field">
             <label for="firstName">Ad *</label>
-            <input id="firstName" type="text" name="firstName" [(ngModel)]="model.firstName" required />
+            <input appInputRule="name" [ruleMaxLength]="25" maxlength="25" id="firstName" type="text" name="firstName" [(ngModel)]="model.firstName" required />
           </div>
 
           <div class="kf-field">
             <label for="lastName">Soyad *</label>
-            <input id="lastName" type="text" name="lastName" [(ngModel)]="model.lastName" required />
+            <input appInputRule="name" [ruleMaxLength]="25" maxlength="25" id="lastName" type="text" name="lastName" [(ngModel)]="model.lastName" required />
           </div>
 
-          <div class="kf-field kf-span-all">
-            <label for="phoneNumber">Telefon</label>
-            <input id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" placeholder="5XX XXX XX XX" />
+          <div class="kf-field">
+            <label for="email">E-posta *</label>
+            <input appInputRule="email" [ruleMaxLength]="150" maxlength="150" id="email" type="email" name="email" [(ngModel)]="model.email" required />
+          </div>
+
+          <div class="kf-field">
+            <label for="password">Şifre *</label>
+            <input maxlength="20" id="password" type="password" name="password" autocomplete="new-password" [(ngModel)]="model.password" required placeholder="Büyük/küçük harf, rakam, özel karakter" />
           </div>
 
         </div>
@@ -48,26 +66,40 @@
 
       <section class="kf-section">
 
-        <h2 class="kf-section-title">Hesap Bilgileri</h2>
+        <h2 class="kf-section-title">
+          Müşteri Bilgileri
+          <small>{{ isCustomerRole ? 'Müşteri rolü için zorunlu' : 'Sadece müşteri rolünde' }}</small>
+        </h2>
 
-        <div class="kf-grid">
+        <div *ngIf="!isCustomerRole" class="kf-muted">
+          Personel (Admin, Manager) için müşteri bilgisi gerekmez. Rol olarak "Müşteri" seçerseniz müşteri kaydı bu hesapla birlikte oluşturulur.
+        </div>
+
+        <div *ngIf="isCustomerRole" class="kf-grid">
+
+          <div class="kf-field">
+            <label for="identityNumber">T.C. Kimlik No *</label>
+            <input appInputRule="digits" [ruleMaxLength]="11" maxlength="11" inputmode="numeric" id="identityNumber" type="text" name="identityNumber" [(ngModel)]="model.identityNumber" required placeholder="11 haneli" />
+          </div>
+
+          <div class="kf-field">
+            <label for="dateOfBirth">Doğum Tarihi *</label>
+            <input id="dateOfBirth" type="date" name="dateOfBirth" [min]="minBirthDate" [max]="maxBirthDate" [(ngModel)]="model.dateOfBirth" required />
+          </div>
+
+          <div class="kf-field">
+            <label for="city">İl *</label>
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="city" type="text" name="city" [(ngModel)]="model.city" required />
+          </div>
+
+          <div class="kf-field">
+            <label for="district">İlçe *</label>
+            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="district" type="text" name="district" [(ngModel)]="model.district" required />
+          </div>
 
           <div class="kf-field kf-span-all">
-            <label for="email">E-posta *</label>
-            <input id="email" type="email" name="email" [(ngModel)]="model.email" required />
-          </div>
-
-          <div class="kf-field">
-            <label for="password">Şifre *</label>
-            <input id="password" type="password" name="password" autocomplete="new-password" [(ngModel)]="model.password" required />
-          </div>
-
-          <div class="kf-field">
-            <label for="roleId">Rol *</label>
-            <select id="roleId" name="roleId" [(ngModel)]="model.roleId" [disabled]="isLoadingRoles()" required>
-              <option value="" disabled>{{ isLoadingRoles() ? 'Roller yükleniyor...' : 'Rol seçin' }}</option>
-              <option *ngFor="let role of roles()" [value]="role.id">{{ role.name }}</option>
-            </select>
+            <label for="address">Adres *</label>
+            <textarea appInputRule="address" [ruleMaxLength]="100" maxlength="100" minlength="10" id="address" rows="2" name="address" [(ngModel)]="model.address" required placeholder="Mahalle, cadde, no (en az 10 karakter)"></textarea>
           </div>
 
         </div>
@@ -79,7 +111,7 @@
     <div class="kf-actions">
       <button type="button" class="kf-btn-outline" (click)="cancel()">İptal</button>
       <button type="submit" class="kf-btn" [disabled]="userForm.invalid || isLoading()">
-        {{ isLoading() ? 'Kaydediliyor...' : 'Kullanıcıyı Kaydet' }}
+        {{ isLoading() ? 'Kaydediliyor...' : (isCustomerRole ? 'Müşteri Hesabını Oluştur' : 'Kullanıcıyı Kaydet') }}
       </button>
     </div>
 

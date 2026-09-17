@@ -1,3 +1,4 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +24,7 @@ import {
 @Component({
   selector: 'app-quick-quote-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [PlateBadge, CommonModule, FormsModule, RouterLink],
   templateUrl: './quick-quote-guest.html'
 })
 export class QuickQuoteGuest implements OnInit, OnDestroy {
@@ -45,7 +46,8 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   readonly steps = [
     { number: 1, label: 'Araç Bilgileri' },
     { number: 2, label: 'Sürücü Bilgileri' },
-    { number: 3, label: 'Teklifleriniz' }
+    { number: 3, label: 'Teklifleriniz' },
+    { number: 4, label: 'Satın Alma' }
   ];
 
   readonly categoryLabels: Record<string, string> = {
@@ -103,11 +105,10 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   calculationProgress = signal(0);
 
   readonly calculationStages = [
-    'Araç bilgileri kontrol ediliyor',
-    'TSB kasko değeri alınıyor',
-    'Risk katsayıları hesaplanıyor',
-    'Paketler fiyatlandırılıyor',
-    'Teklifiniz hazırlanıyor'
+    'Aracınız tanınıyor',
+    'Güncel kasko değeri alınıyor',
+    'Size özel indirimler uygulanıyor',
+    'Paketler karşılaştırılıyor'
   ];
 
   private calculationTimer: ReturnType<typeof setInterval> | null = null;
@@ -216,10 +217,35 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     });
   }
 
+  plateTouched = false;
+
   onPlateInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.plateNumber = input.value.toUpperCase().slice(0, 12);
+    const raw = input.value
+      .toLocaleUpperCase('tr-TR')
+      .replace(/[ÇĞİÖŞÜ]/g, '')
+      .replace(/[^0-9A-Z]/g, '');
+    const match = raw.match(/^(\d{0,2})([A-Z]{0,3})(\d{0,5})/);
+    const city = match?.[1] ?? '';
+    const letters = city.length === 2 ? match?.[2] ?? '' : '';
+    const maxDigits = letters.length === 1 ? 5 : letters.length === 2 ? 4 : 3;
+    const numbers = letters.length ? (match?.[3] ?? '').slice(0, maxDigits) : '';
+    this.plateNumber = [city, letters, numbers].filter(part => part).join(' ');
+    input.value = this.plateNumber;
   }
+
+  onPlateBlur(): void {
+    this.plateTouched = true;
+  }
+
+  get isPlateValid(): boolean {
+    return /^(0[1-9]|[1-7][0-9]|8[01])([A-Z][0-9]{4,5}|[A-Z]{2}[0-9]{3,4}|[A-Z]{3}[0-9]{2,3})$/.test(this.plateNumber.replace(/\s/g, ''));
+  }
+
+  get showPlateError(): boolean {
+    return this.plateTouched && !!this.plateNumber && !this.isPlateValid;
+  }
+
 
   get selectedBrandName(): string {
     return this.brands().find(item => item.code === this.brandCode)?.name ?? '';
@@ -230,7 +256,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   }
 
   get canContinueVehicle(): boolean {
-    return !!this.category && !!this.brandCode && !!this.typeCode && !!this.modelYear;
+    return this.isPlateValid && !!this.category && !!this.brandCode && !!this.typeCode && !!this.modelYear && !!this.color;
   }
 
   get canCalculate(): boolean {
@@ -240,7 +266,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   goToDriver(): void {
     this.errorMessage.set('');
     if (!this.canContinueVehicle) {
-      this.errorMessage.set('Lütfen aracınızın sınıf, marka, model ve yıl bilgisini seçin.');
+      this.errorMessage.set('Lütfen plaka, araç sınıfı, marka, model, yıl ve renk bilgisini girin.');
       return;
     }
     this.lookupValue.set(null);
@@ -400,29 +426,28 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     this.errorMessage.set('');
   }
 
-  continueToPurchase(): void {
-    if (!this.plateNumber.trim()) {
-      this.errorMessage.set('Poliçe düzenlenebilmesi için aracınızın plakasını girin.');
-      this.currentStep.set(1);
-      return;
-    }
+  readonly vehicleColors = ['Beyaz', 'Siyah', 'Gri', 'Gümüş', 'Kırmızı', 'Mavi', 'Lacivert'];
 
+  color = '';
+
+  continueToPurchase(): void {
     try {
-      sessionStorage.setItem('guestQuoteDraft', JSON.stringify({
-        category: this.category,
+      sessionStorage.setItem('quickQuoteDraft', JSON.stringify({
+        source: 'guest',
         brandCode: this.brandCode,
         typeCode: this.typeCode,
         brandName: this.selectedBrandName,
         typeName: this.selectedTypeName,
         modelYear: this.modelYear,
         plateNumber: this.plateNumber.trim(),
+        color: this.color,
         usage: this.usage,
         claimsCount: this.claimsCount,
         packageId: this.selectedPackageId(),
         coverageOptionIds: this.coverageOptionIds
       }));
     } catch {
-      this.router.navigate(['/register']);
+      this.errorMessage.set('Teklifiniz kaydedilemedi. Lütfen tekrar deneyin.');
       return;
     }
 

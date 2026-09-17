@@ -925,10 +925,10 @@ namespace Kasko.Business.Services
         {
             var reasons = new List<string>();
 
-            var maxPremium = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_PREMIUM", 100000m);
-            var maxMarketValue = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_MARKET_VALUE", 5000000m);
+            var maxPremium = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_PREMIUM", 75000m);
+            var maxMarketValue = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_MARKET_VALUE", 3000000m);
             var maxClaims = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_CLAIMS", 1m);
-            var maxVehicleAge = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_VEHICLE_AGE", 15m);
+            var maxVehicleAge = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_VEHICLE_AGE", 12m);
 
             if (premium > maxPremium)
             {

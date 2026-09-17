@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Kasko.Business.DTOs.Notification;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
@@ -93,5 +93,62 @@ public class NotificationService : INotificationService
 
         return await GetByCustomerIdAsync(
             user.CustomerId.Value);
+    }
+
+    public async Task MarkAsReadAsync(Guid id)
+    {
+        var customerId = await GetCurrentCustomerIdAsync();
+
+        var notification = await _unitOfWork.Notifications.GetByIdAsync(id);
+
+        if (notification == null || notification.IsDeleted || notification.CustomerId != customerId)
+        {
+            throw new NotFoundException("Bildirim bulunamadı.");
+        }
+
+        if (notification.IsRead)
+        {
+            return;
+        }
+
+        notification.IsRead = true;
+        notification.ReadDate = DateTime.UtcNow;
+
+        await _unitOfWork.Notifications.UpdateAsync(notification);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task MarkAllAsReadAsync()
+    {
+        var customerId = await GetCurrentCustomerIdAsync();
+
+        var unread = await _unitOfWork.Notifications.FindAsync(
+            x => x.CustomerId == customerId && !x.IsRead && !x.IsDeleted);
+
+        foreach (var notification in unread)
+        {
+            notification.IsRead = true;
+            notification.ReadDate = DateTime.UtcNow;
+
+            await _unitOfWork.Notifications.UpdateAsync(notification);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    private async Task<Guid> GetCurrentCustomerIdAsync()
+    {
+        var userIdValue = _httpContextAccessor.HttpContext?.User
+            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        return user?.CustomerId ?? throw new UnauthorizedAccessException();
     }
 }

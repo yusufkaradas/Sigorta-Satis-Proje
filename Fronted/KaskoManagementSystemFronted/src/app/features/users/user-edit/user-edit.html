@@ -31,17 +31,17 @@
 
           <div class="kf-field">
             <label for="firstName">Ad *</label>
-            <input id="firstName" type="text" name="firstName" [(ngModel)]="model.firstName" required />
+            <input appInputRule="name" [ruleMaxLength]="50" maxlength="50" id="firstName" type="text" name="firstName" [(ngModel)]="model.firstName" required />
           </div>
 
           <div class="kf-field">
             <label for="lastName">Soyad *</label>
-            <input id="lastName" type="text" name="lastName" [(ngModel)]="model.lastName" required />
+            <input appInputRule="name" [ruleMaxLength]="50" maxlength="50" id="lastName" type="text" name="lastName" [(ngModel)]="model.lastName" required />
           </div>
 
           <div class="kf-field kf-span-all">
             <label for="phoneNumber">Telefon</label>
-            <input id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" />
+            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" />
           </div>
 
         </div>
@@ -56,7 +56,7 @@
 
           <div class="kf-field kf-span-all">
             <label for="email">E-posta *</label>
-            <input id="email" type="email" name="email" [(ngModel)]="model.email" required />
+            <input appInputRule="email" [ruleMaxLength]="150" maxlength="150" id="email" type="email" name="email" [(ngModel)]="model.email" required />
           </div>
 
           <div class="kf-field">

@@ -15,7 +15,11 @@ export class Settings implements OnInit {
 
   readonly maxImageBytes = 2 * 1024 * 1024;
 
-  private readonly maxImageSide = 1024;
+  readonly imageSizes = {
+    logo: { width: 600, height: 600 },
+    login: { width: 750, height: 900 },
+    favicon: { width: 64, height: 64 }
+  };
 
   companyName = '';
 
@@ -24,6 +28,8 @@ export class Settings implements OnInit {
   logoImage = signal<string | null>(null);
 
   loginImage = signal<string | null>(null);
+
+  faviconImage = signal<string | null>(null);
 
   isSaving = signal(false);
 
@@ -37,9 +43,10 @@ export class Settings implements OnInit {
     this.systemName = current.systemName;
     this.logoImage.set(current.logoImage ?? null);
     this.loginImage.set(current.loginImage ?? null);
+    this.faviconImage.set(current.faviconImage ?? null);
   }
 
-  onFileSelected(event: Event, target: 'logo' | 'login'): void {
+  onFileSelected(event: Event, target: 'logo' | 'login' | 'favicon'): void {
 
     this.errorMessage.set('');
     this.successMessage.set('');
@@ -70,17 +77,19 @@ export class Settings implements OnInit {
       const apply = (value: string) => {
         if (target === 'logo') {
           this.logoImage.set(value);
+        } else if (target === 'favicon') {
+          this.faviconImage.set(value);
         } else {
           this.loginImage.set(value);
         }
       };
 
-      if (file.type === 'image/svg+xml') {
+      if (file.type === 'image/svg+xml' && target !== 'login') {
         apply(original);
         return;
       }
 
-      this.shrinkImage(original, file.type === 'image/png' ? 'image/png' : 'image/jpeg')
+      this.fitImage(original, target, target !== 'login' || file.type === 'image/png' ? 'image/png' : 'image/jpeg')
         .then(apply)
         .catch(() => apply(original));
     };
@@ -89,30 +98,37 @@ export class Settings implements OnInit {
     input.value = '';
   }
 
-  private shrinkImage(source: string, type: string): Promise<string> {
+  private fitImage(source: string, target: 'logo' | 'login' | 'favicon', type: string): Promise<string> {
+    const size = this.imageSizes[target];
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => {
-        const scale = Math.min(1, this.maxImageSide / Math.max(image.width, image.height));
         const canvas = document.createElement('canvas');
-        canvas.width = Math.round(image.width * scale);
-        canvas.height = Math.round(image.height * scale);
+        canvas.width = size.width;
+        canvas.height = size.height;
         const context = canvas.getContext('2d');
         if (!context) {
           reject();
           return;
         }
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL(type, 0.85));
+        const scale = target !== 'login'
+          ? Math.min(size.width / image.width, size.height / image.height)
+          : Math.max(size.width / image.width, size.height / image.height);
+        const width = image.width * scale;
+        const height = image.height * scale;
+        context.drawImage(image, (size.width - width) / 2, (size.height - height) / 2, width, height);
+        resolve(canvas.toDataURL(type, 0.9));
       };
       image.onerror = () => reject();
       image.src = source;
     });
   }
 
-  clearImage(target: 'logo' | 'login'): void {
+  clearImage(target: 'logo' | 'login' | 'favicon'): void {
     if (target === 'logo') {
       this.logoImage.set(null);
+    } else if (target === 'favicon') {
+      this.faviconImage.set(null);
     } else {
       this.loginImage.set(null);
     }
@@ -135,7 +151,8 @@ export class Settings implements OnInit {
         companyName: this.companyName.trim(),
         systemName: this.systemName.trim(),
         logoImage: this.logoImage(),
-        loginImage: this.loginImage()
+        loginImage: this.loginImage(),
+        faviconImage: this.faviconImage()
       })
       .subscribe({
         next: () => {

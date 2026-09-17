@@ -1,3 +1,4 @@
+import { PlateBadge } from '../../../core/components/plate-badge';
 import {
   CommonModule
 } from '@angular/common';
@@ -32,7 +33,7 @@ import {
 @Component({
   selector: 'app-customer-vehicles',
   standalone: true,
-  imports: [
+  imports: [PlateBadge, 
     CommonModule,
     RouterLink
   ],

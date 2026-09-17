@@ -41,11 +41,11 @@
 
   <div class="dashboard-grid">
 
-    <!-- Sol: satış hunisi ve süresi yaklaşan teklifler -->
+    
 
     <section class="dashboard-card">
 
-      <h2>Satış Hunisi</h2>
+      <h2>Satış Hunisi <small>Tüm zamanlar</small></h2>
 
       <ul class="db-funnel">
         @for (step of funnel(); track step.label) {
@@ -58,7 +58,11 @@
         }
       </ul>
 
-      <h2 class="db-sub-head">
+    </section>
+
+    <section class="dashboard-card db-cell-expiring">
+
+      <h2>
         Süresi Yaklaşan Teklifler
         <small>3 gün içinde</small>
       </h2>
@@ -84,7 +88,7 @@
     </section>
 
 
-    <!-- Orta: son işlemler ve haftalık hareket -->
+    
 
     <section class="dashboard-card">
 
@@ -130,11 +134,14 @@
 
       </div>
 
-      <h2 class="db-sub-head">
-        Son 7 Gün
+    </section>
+
+    <section class="dashboard-card db-cell-week">
+
+      <h2>
+        Son 7 Gün Tahsilat
         <small class="db-legend">
-          <i class="db-dot quotes"></i> Teklif {{ weekTotals().quotes }}
-          <i class="db-dot policies"></i> Poliçe {{ weekTotals().policies }}
+          <i class="db-dot quotes"></i> {{ weekTotals().amount | number:'1.0-0' }} ₺ · {{ weekTotals().count }} ödeme
         </small>
       </h2>
 
@@ -142,8 +149,11 @@
         @for (day of lastSevenDays(); track day.label) {
           <div class="db-chart-day">
             <div class="db-chart-bars">
-              <span class="quotes" [style.height.%]="barHeight(day.quotes)" [title]="day.quotes + ' teklif'"></span>
-              <span class="policies" [style.height.%]="barHeight(day.policies)" [title]="day.policies + ' poliçe'"></span>
+              <span class="quotes" [style.height.%]="barHeight(day.amount)" [title]="(day.amount | number:'1.0-0') + ' ₺ · ' + day.count + ' ödeme'">
+                @if (day.amount > 0) {
+                  <em>{{ shortAmount(day.amount) }} ₺</em>
+                }
+              </span>
             </div>
             <small>{{ day.label }}</small>
           </div>
@@ -153,7 +163,7 @@
     </section>
 
 
-    <!-- Sağ: onay bekleyenler ve yaklaşan yenilemeler -->
+    
 
     <section class="dashboard-card">
 
@@ -162,7 +172,7 @@
       <ul class="db-list">
         @for (item of approvals(); track item.label) {
           <li>
-            <a [routerLink]="item.link">
+            <a [routerLink]="item.link" [queryParams]="item.query">
               <span>
                 <strong>{{ item.label }}</strong>
                 <small>{{ item.hint }}</small>
@@ -173,7 +183,11 @@
         }
       </ul>
 
-      <h2 class="db-sub-head">
+    </section>
+
+    <section class="dashboard-card db-cell-renewals">
+
+      <h2>
         Yaklaşan Yenilemeler
         <small>30 gün içinde</small>
       </h2>

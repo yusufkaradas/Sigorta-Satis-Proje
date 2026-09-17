@@ -5,7 +5,8 @@
     <a
       routerLink="/"
       class="qq-logo">
-      Logo
+      <img *ngIf="brand().logoImage; else noLogo" [src]="brand().logoImage" [alt]="brand().companyName" />
+      <ng-template #noLogo>Logo</ng-template>
     </a>
 
     <div class="qq-steps">
@@ -45,7 +46,7 @@
       <span></span>
 
       <div class="qq-company">
-        {{ companyName }}
+        {{ brand().companyName }}
       </div>
 
       <a
@@ -237,9 +238,7 @@
                   <strong>{{ vehicle.model }}</strong>
                 </div>
 
-                <span class="qq-plate">
-                  {{ vehicle.plateNumber }}
-                </span>
+                <app-plate [value]="vehicle.plateNumber" size="sm" />
 
               </div>
 
@@ -426,7 +425,7 @@
             <strong>{{ vehicle.brand }}</strong>
             <p>{{ vehicle.model }}</p>
             <dl>
-              <div><dt>Plaka</dt><dd>{{ vehicle.plateNumber || 'Plakasız' }}</dd></div>
+              <div><dt>Plaka</dt><dd><app-plate [value]="vehicle.plateNumber" /></dd></div>
               <div><dt>Model Yılı</dt><dd>{{ vehicle.modelYear }}</dd></div>
               <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
               <div><dt>Yakıt / Vites</dt><dd>{{ fuelTypeLabel(vehicle.fuelType) }} · {{ transmissionTypeLabel(vehicle.transmissionType) }}</dd></div>
@@ -471,34 +470,40 @@
 
           <div class="qq-body qq-body-center">
 
-            <div class="qq-loading">
+            <div class="qq-loading-card">
 
-              <div class="qq-progress-ring" [style.--qq-progress]="calculationProgress">
-                <span>%{{ calculationProgress }}</span>
-              </div>
+                  <div class="qq-loading-top">
+                    <div class="qq-progress-ring qq-progress-ring-sm" [style.--qq-progress]="calculationProgress">
+                      <span>%{{ calculationProgress | number:'1.0-0' }}</span>
+                    </div>
+                    <div>
+                      <h1>Size özel teklifler hazırlanıyor</h1>
+                      <p>Birkaç saniye içinde paketlerin fiyatlarını yan yana göstereceğiz.</p>
+                    </div>
+                  </div>
 
-              <h1>Teklifleriniz Hazırlanıyor</h1>
+                  <div class="qq-loading-car">
+                    <span class="qq-loading-plate"><b>TR</b>{{ selectedVehicle?.plateNumber || 'Plakasız' }}</span>
+                    <div class="qq-loading-car-name">
+                      <strong>{{ (selectedVehicle?.brand || '') + ' ' + (selectedVehicle?.model || '') }}</strong>
+                      <small>{{ selectedVehicle?.modelYear }} model</small>
+                    </div>
+                    <div class="qq-loading-car-value">
+                      <small>Kasko değeri</small>
+                      <strong>{{ (selectedVehicle?.marketValue | number:'1.0-0') + ' ₺' }}</strong>
+                    </div>
+                  </div>
 
-              <p>Aracınız için tüm paketlerin fiyatı hesaplanıyor.</p>
+                  <ul class="qq-loading-steps">
+                    <ng-container *ngFor="let stage of calculationStages; let i = index">
+                      <li [class.done]="i < calculationStageIndex" [class.active]="i === calculationStageIndex">
+                        <span class="qq-stage-icon">{{ i < calculationStageIndex ? '✓' : '' }}</span>
+                        {{ stage }}
+                      </li>
+                    </ng-container>
+                  </ul>
 
-              <div class="qq-loading-vehicle" *ngIf="selectedVehicle as vehicle">
-                <div><small>Araç</small><strong>{{ vehicle.brand }} {{ vehicle.model }}</strong></div>
-                <div><small>Model Yılı</small><strong>{{ vehicle.modelYear }}</strong></div>
-                <div><small>Plaka</small><strong>{{ vehicle.plateNumber || 'Plakasız' }}</strong></div>
-                <div><small>TSB Kasko Değeri</small><strong>{{ vehicle.marketValue | number:'1.0-0' }} ₺</strong></div>
-              </div>
-
-              <ul>
-                <li
-                  *ngFor="let stage of calculationStages; let i = index"
-                  [class.done]="i < calculationStageIndex"
-                  [class.active]="i === calculationStageIndex">
-                  <span class="qq-stage-icon">{{ i < calculationStageIndex ? '✓' : (i === calculationStageIndex ? '•' : '') }}</span>
-                  {{ stage }}{{ i === calculationStageIndex ? '...' : '' }}
-                </li>
-              </ul>
-
-            </div>
+                </div>
 
           </div>
 
@@ -521,17 +526,20 @@
                 class="qg-offer"
                 *ngFor="let packageItem of packages; let i = index"
                 [class.selected]="selectedPackage?.id === packageItem.id"
+                [class.recommended]="i === 1"
                 [disabled]="packagePrices[packageItem.id] == null"
                 (click)="selectOffer(packageItem)">
 
-                <span class="qg-offer-name">{{ packageItem.name }}{{ i === 1 ? ' · Önerilen' : '' }}</span>
+                <span class="qg-offer-badge" *ngIf="i === 1">ÖNERİLEN</span>
+
+                <span class="qg-offer-name">{{ packageItem.name }}</span>
 
                 <span class="qg-offer-price" *ngIf="packagePrices[packageItem.id] != null">
                   {{ packagePrices[packageItem.id] | number:'1.0-0' }} ₺<small>/ yıl</small>
                 </span>
                 <span class="qg-offer-price" *ngIf="packagePrices[packageItem.id] == null"><small>Fiyat alınamadı</small></span>
 
-                <span class="qg-offer-note">{{ packageItem.coverages.length }} / {{ offerCoverageRows.length }} teminat dahil</span>
+                <span class="qg-offer-monthly" *ngIf="packagePrices[packageItem.id] != null">Aylık yaklaşık {{ (packagePrices[packageItem.id] ?? 0) / 12 | number:'1.0-0' }} ₺ · {{ packageItem.coverages.length }} / {{ offerCoverageRows.length }} teminat</span>
 
                 <ul class="qg-offer-list">
                   <li
@@ -541,14 +549,14 @@
                   </li>
                 </ul>
 
-                <span class="qg-offer-pick">{{ selectedPackage?.id === packageItem.id ? 'Seçildi' : 'Seç' }}</span>
+                <span class="qg-offer-pick">{{ selectedPackage?.id === packageItem.id ? '✓ Seçili paket' : 'Bu paketi seç' }}</span>
 
               </button>
 
             </div>
 
             <div class="qg-limits" *ngIf="offerOptionRows.length > 0">
-              <span class="qg-limits-title">Limit seçenekleri</span>
+              <span class="qg-limits-title">Limitlerinizi ayarlayın<small>Tüm paketlere uygulanır</small></span>
               <label class="qg-limit" *ngFor="let row of offerOptionRows">
                 <small>{{ row.coverageName }}</small>
                 <select [disabled]="isRepricing" (change)="changeOfferOption(row.coverageId, $any($event.target).value)">
@@ -582,7 +590,7 @@
               class="qq-btn qq-btn-primary"
               [disabled]="!selectedPackage || isRepricing"
               (click)="continueWithOffer()">
-              {{ selectedPackage ? selectedPackage.name + ' ile Devam Et · ' + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺ →' : 'Bir Teklif Seçin' }}
+              {{ selectedPackage ? (isLoggedIn ? 'Teklifi Hesabıma Kaydet · ' : 'Giriş Yap ve Teklifi Kaydet · ') + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺ →' : 'Bir Teklif Seçin' }}
             </button>
 
           </div>
@@ -592,167 +600,20 @@
       </div>
 
 
-      <!-- STEP 7 -->
+      <!-- STEP 5 -->
 
       <div
         class="qq-step"
-        *ngIf="currentStep === 7 && createdQuote">
+        *ngIf="currentStep === 5">
 
-        <div class="qq-step-head">
-          <span class="qq-eyebrow">Özet ve Ödeme</span>
-          <h1>Satın Almadan Önce Kontrol Edin</h1>
-          <p>Bilgileriniz doğruysa onaylayıp ödemeyi tamamlayın. Poliçeniz ödeme sonrası hemen düzenlenir.</p>
-        </div>
-
-        <div class="qq-body qo-layout">
-
-          <div class="qo-left">
-
-            <div class="qo-card">
-  
-              <div class="qo-price">
-                <span class="qo-price-label">Ödenecek yıllık prim</span>
-                <strong>{{ createdQuote.premiumAmount | number:'1.2-2' }} ₺</strong>
-                <span class="qo-price-sub">Tek çekim · Kredi / banka kartı</span>
-              </div>
-  
-              <ul class="qo-facts">
-                <li><span>Sigortalı</span><strong>{{ customerName }}</strong></li>
-                <li><span>Araç</span><strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong></li>
-                <li><span>Plaka</span><strong>{{ selectedVehicle?.plateNumber }}</strong></li>
-                <li><span>Paket</span><strong>{{ selectedPackage?.name }}</strong></li>
-                <li><span>Poliçe süresi</span><strong>1 yıl, bugünden itibaren</strong></li>
-              </ul>
-
+        <div class="qq-body qq-body-center">
+          <div class="qq-loading">
+            <div class="qq-progress-ring" style="--qq-progress: 100">
+              <span>✓</span>
             </div>
-
+            <h1>{{ savingMessage || 'Teklifiniz hazırlanıyor' }}</h1>
+            <p>Birazdan müşteri portalınızda teklif detayına yönlendirileceksiniz. Satın alma ve poliçe işlemlerinizi oradan tamamlayabilirsiniz.</p>
           </div>
-
-          <div class="qo-right">
-
-            <div class="qo-right-head">
-              <span class="qo-title">Onaylar</span>
-              <span class="qo-count">{{ (acceptedTerms ? 1 : 0) + (acceptedKvkk ? 1 : 0) }} / 2</span>
-            </div>
-
-            <p class="qo-right-intro">Satın alma işlemini tamamlamak için aşağıdaki metinleri onaylamanız gerekir.</p>
-
-            <label class="qo-consent">
-              <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />
-              <span>Kasko sigortası genel şartlarını ve ön bilgilendirme formunu okudum, kabul ediyorum.</span>
-            </label>
-
-            <label class="qo-consent">
-              <input type="checkbox" [checked]="acceptedKvkk" (change)="acceptedKvkk = $any($event.target).checked" />
-              <span>Kişisel verilerimin teklif ve poliçe işlemleri için işlenmesine ilişkin aydınlatma metnini okudum.</span>
-            </label>
-
-            <p class="qo-demo-note">Bu bir demo ödemedir; kart bilgisi istenmez ve tutar çekilmez.</p>
-
-          </div>
-
-        </div>
-
-        <div class="qq-actions">
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-ghost"
-            [disabled]="isLoading"
-            (click)="goToStep(4)">
-            ← Teklife Dön
-          </button>
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-primary"
-            [disabled]="isLoading || !acceptedTerms || !acceptedKvkk"
-            (click)="completePurchase()">
-            {{ isLoading ? 'Ödeme alınıyor...' : 'Ödemeyi Tamamla · ' + (createdQuote.premiumAmount | number:'1.2-2') + ' ₺' }}
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- STEP 10 -->
-
-      <div
-        class="qq-step"
-        *ngIf="currentStep === 10 && createdPolicy">
-
-        <div class="qq-step-head qq-step-head-row">
-
-          <div>
-            <span class="qq-eyebrow">✓ Ödeme başarılı</span>
-            <h1>Aracınız Artık Güvence Altında</h1>
-            <p>Poliçeniz düzenlendi. Belgenizi indirip saklayın; hasar anında poliçe numaranız istenecek.</p>
-          </div>
-
-          <div class="qq-chip-summary">
-            <strong>{{ createdPolicy.policyNumber | recordNo:'full' }}</strong>
-            <span>Aktif · {{ createdPolicy.premiumAmount | number:'1.2-2' }} ₺ ödendi</span>
-          </div>
-
-        </div>
-
-        <div class="qq-body qo-layout">
-
-          <div class="qo-left">
-
-            <ul class="qo-facts">
-              <li><span>Sigortalı</span><strong>{{ customerName }}</strong></li>
-              <li><span>Araç</span><strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong></li>
-              <li><span>Plaka</span><strong>{{ selectedVehicle?.plateNumber }}</strong></li>
-              <li><span>Paket</span><strong>{{ selectedPackage?.name }}</strong></li>
-              <li><span>Koruma başlangıcı</span><strong>{{ createdPolicy.startDate | backendDate:'date' }}</strong></li>
-              <li><span>Koruma bitişi</span><strong>{{ createdPolicy.endDate | backendDate:'date' }}</strong></li>
-              <li><span>Araç kasko değeri</span><strong>{{ pricingResult?.marketValue | number:'1.0-0' }} ₺</strong></li>
-              <li><span>Ödenen prim</span><strong>{{ createdPolicy.premiumAmount | number:'1.2-2' }} ₺</strong></li>
-            </ul>
-
-            <div class="qo-help">
-              <strong>Hasar anında ne yapmalısınız?</strong>
-              <ol>
-                <li>Güvenli bir yere geçin, gerekirse 112'yi arayın.</li>
-                <li>Kaza tespit tutanağı düzenleyin veya polis çağırın.</li>
-                <li>Poliçe numaranızla hasar ihbarında bulunun.</li>
-              </ol>
-            </div>
-
-          </div>
-
-          <div class="qo-right">
-
-            <span class="qo-title">Poliçenizdeki teminatlar</span>
-
-            <ul class="qo-coverages">
-              <li *ngFor="let coverage of pricingResult?.coverages">{{ coverage.coverageName }}</li>
-            </ul>
-
-            <p class="qo-demo-note">Poliçeniz yenileme tarihinden 30 gün önce size hatırlatılır.</p>
-
-          </div>
-
-        </div>
-
-        <div class="qq-actions">
-
-          <a
-            routerLink="/customer/policies"
-            class="qq-btn qq-btn-ghost">
-            Poliçelerime Git
-          </a>
-
-          <button
-            type="button"
-            class="qq-btn qq-btn-primary"
-            [disabled]="isLoading"
-            (click)="createPolicyPdf()">
-            {{ isLoading ? 'PDF hazırlanıyor...' : 'Poliçe Belgesini İndir' }}
-          </button>
-
         </div>
 
       </div>

@@ -9,4 +9,6 @@ public class UpdateBrandSettingDto
     public string? LogoImage { get; set; }
 
     public string? LoginImage { get; set; }
+
+    public string? FaviconImage { get; set; }
 }

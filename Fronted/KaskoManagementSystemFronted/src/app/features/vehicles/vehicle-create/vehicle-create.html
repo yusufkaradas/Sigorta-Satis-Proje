@@ -134,17 +134,26 @@
         <div class="kf-grid kf-grid-3">
 
           <div class="kf-field kf-span-3">
-            <label for="plateNumber">Plakanız *</label>
-            <input
-              id="plateNumber"
-              type="text"
-              name="plateNumber"
-              [(ngModel)]="form.plateNumber"
-              (input)="onPlateInput()"
-              placeholder="Örn. 34 ABC 123"
-              maxlength="10"
-              autocomplete="off"
-              required />
+            <label for="plateNumber">Plaka <b class="plate-required">*</b></label>
+            <div class="plate-input" [class.invalid]="showPlateError">
+              <span>TR</span>
+              <input
+                id="plateNumber"
+                type="text"
+                name="plateNumber"
+                [value]="form.plateNumber"
+                (input)="onPlateInput($event)"
+                (blur)="plateTouched = true"
+                placeholder="34 ABC 123"
+                maxlength="11"
+                autocomplete="off"
+                required />
+            </div>
+            @if (!form.plateNumber) {
+              <small class="plate-hint plate-hint-required">Plaka zorunludur.</small>
+            } @else if (showPlateError) {
+              <small class="plate-hint">İl kodu (01-81) + 1-3 harf + rakam. Örn. 34 A 1234 · 06 AB 123 · 35 ABC 12</small>
+            }
           </div>
 
 

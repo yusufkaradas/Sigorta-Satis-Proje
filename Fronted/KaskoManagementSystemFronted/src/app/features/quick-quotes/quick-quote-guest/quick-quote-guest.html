@@ -69,31 +69,48 @@
             <div class="qq-step-head">
               <span class="qq-eyebrow">Adım 1</span>
               <h1>Aracınızı Tanıyalım</h1>
-              <p>Kasko değerinizi TSB kataloğundan alıyoruz. Üyelik gerekmez.</p>
+              <p>Kasko sigortası yapılacak aracın bilgilerini girin.</p>
             </div>
 
             <div class="qq-body qq-body-center">
 
-              <div class="qq-form">
+              <div class="qq-form qq-form-wide">
 
                 <div class="qq-field">
-                  <label for="category">Araç Sınıfı</label>
-                  <select id="category" name="category" [(ngModel)]="category" (ngModelChange)="onCategoryChange()">
-                    <option value="" disabled>{{ isLoadingCatalog() ? 'Yükleniyor...' : 'Sınıf seçin' }}</option>
-                    @for (item of categories(); track item) {
-                      <option [ngValue]="item">{{ categoryLabel(item) }}</option>
-                    }
-                  </select>
+                  <label for="plateNumber">Plaka <b class="qq-required">*</b></label>
+                  <div class="qq-phone qq-plate" [class.invalid]="showPlateError">
+                    <span>TR</span>
+                    <input id="plateNumber" type="text" autocomplete="off" maxlength="11" [value]="plateNumber" (input)="onPlateInput($event)" (blur)="onPlateBlur()" placeholder="34 ABC 123" />
+                  </div>
+                  @if (!plateNumber) {
+                    <small class="qq-field-required">Plaka zorunludur. Teklif için önce aracınızın plakasını girin.</small>
+                  } @else if (showPlateError) {
+                    <small class="qq-field-hint">Plaka; il kodu (01-81), 1-3 harf ve rakamdan oluşur. Örn. 34 A 1234 · 06 AB 123 · 35 ABC 12</small>
+                  }
                 </div>
 
-                <div class="qq-field">
-                  <label for="brandCode">Marka</label>
-                  <select id="brandCode" name="brandCode" [(ngModel)]="brandCode" (ngModelChange)="onBrandChange()" [disabled]="!category">
-                    <option value="" disabled>{{ !category ? 'Önce sınıf seçin' : 'Marka seçin' }}</option>
-                    @for (item of brands(); track item.code) {
-                      <option [ngValue]="item.code">{{ item.name }}</option>
-                    }
-                  </select>
+                <div class="qq-field-row">
+
+                  <div class="qq-field">
+                    <label for="category">Araç Sınıfı</label>
+                    <select id="category" name="category" [(ngModel)]="category" (ngModelChange)="onCategoryChange()">
+                      <option value="" disabled>{{ isLoadingCatalog() ? 'Yükleniyor...' : 'Sınıf seçin' }}</option>
+                      @for (item of categories(); track item) {
+                        <option [ngValue]="item">{{ categoryLabel(item) }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="qq-field">
+                    <label for="brandCode">Marka</label>
+                    <select id="brandCode" name="brandCode" [(ngModel)]="brandCode" (ngModelChange)="onBrandChange()" [disabled]="!category">
+                      <option value="" disabled>{{ !category ? 'Önce sınıf seçin' : 'Marka seçin' }}</option>
+                      @for (item of brands(); track item.code) {
+                        <option [ngValue]="item.code">{{ item.name }}</option>
+                      }
+                    </select>
+                  </div>
+
                 </div>
 
                 <div class="qq-field">
@@ -106,22 +123,31 @@
                   </select>
                 </div>
 
-                <div class="qq-field">
-                  <label for="modelYear">Model Yılı</label>
-                  <select id="modelYear" name="modelYear" [(ngModel)]="modelYear" [disabled]="!typeCode">
-                    <option [ngValue]="null" disabled>{{ !typeCode ? 'Önce model seçin' : 'Yıl seçin' }}</option>
-                    @for (item of years(); track item) {
-                      <option [ngValue]="item">{{ item }}</option>
-                    }
-                  </select>
+                <div class="qq-field-row">
+
+                  <div class="qq-field">
+                    <label for="modelYear">Model Yılı</label>
+                    <select id="modelYear" name="modelYear" [(ngModel)]="modelYear" [disabled]="!typeCode">
+                      <option [ngValue]="null" disabled>{{ !typeCode ? 'Önce model seçin' : 'Yıl seçin' }}</option>
+                      @for (item of years(); track item) {
+                        <option [ngValue]="item">{{ item }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="qq-field">
+                    <label for="vehicleColor">Renk</label>
+                    <select id="vehicleColor" name="vehicleColor" [(ngModel)]="color">
+                      <option value="" disabled>Renk seçin</option>
+                      @for (item of vehicleColors; track item) {
+                        <option [value]="item">{{ item }}</option>
+                      }
+                    </select>
+                  </div>
+
                 </div>
 
-                <div class="qq-field">
-                  <label for="plateNumber">Plaka (satın almak için gerekli)</label>
-                  <input id="plateNumber" type="text" [value]="plateNumber" (input)="onPlateInput($event)" placeholder="Plakanız yoksa boş bırakın" />
-                </div>
-
-                <p class="qq-note">Teklif için kimlik bilgisi istemiyoruz. Satın alma adımında sorulacak.</p>
+                <p class="qq-note">Kasko değeriniz TSB kataloğundan otomatik alınır.</p>
 
               </div>
 
@@ -152,7 +178,23 @@
 
             </div>
 
-            <div class="qq-body qq-risk-layout">
+            <div class="qq-body qq-risk-layout qq-risk-stack">
+
+              <aside class="qq-vehicle-box">
+                <span class="qq-vehicle-box-label">Teklif Alınan Araç</span>
+                <strong>{{ selectedBrandName }}</strong>
+                <p>{{ selectedTypeName }}</p>
+                <dl>
+                  <div><dt>Araç Sınıfı</dt><dd>{{ categoryLabels[category] || category || '—' }}</dd></div>
+                  <div><dt>Model Yılı</dt><dd>{{ modelYear }}</dd></div>
+                  <div><dt>Plaka</dt><dd><app-plate [value]="plateNumber" /></dd></div>
+                  <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
+                </dl>
+                <div class="qq-vehicle-box-value">
+                  <span>TSB Kasko Değeri</span>
+                  <strong>{{ lookupValue() !== null ? (lookupValue() | number:'1.0-0') + ' ₺' : 'Hesaplanıyor...' }}</strong>
+                </div>
+              </aside>
 
             <div class="qq-risk">
 
@@ -242,21 +284,7 @@
 
             </div>
 
-              <aside class="qq-vehicle-box">
-                <span class="qq-vehicle-box-label">Teklif Alınan Araç</span>
-                <strong>{{ selectedBrandName }}</strong>
-                <p>{{ selectedTypeName }}</p>
-                <dl>
-                  <div><dt>Araç Sınıfı</dt><dd>{{ categoryLabels[category] || category || '—' }}</dd></div>
-                  <div><dt>Model Yılı</dt><dd>{{ modelYear }}</dd></div>
-                  <div><dt>Plaka</dt><dd>{{ plateNumber || 'Plakasız' }}</dd></div>
-                  <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
-                </dl>
-                <div class="qq-vehicle-box-value">
-                  <span>TSB Kasko Değeri</span>
-                  <strong>{{ lookupValue() !== null ? (lookupValue() | number:'1.0-0') + ' ₺' : 'Hesaplanıyor...' }}</strong>
-                </div>
-              </aside>
+
 
             </div>
 
@@ -278,40 +306,35 @@
 
               <div class="qq-body qq-body-center">
 
-                <div class="qq-loading">
+                <div class="qq-loading-card">
 
-                  <div class="qq-progress-ring" [style.--qq-progress]="calculationProgress()">
-                    <span>%{{ calculationProgress() | number:'1.0-0' }}</span>
+                  <div class="qq-loading-top">
+                    <div class="qq-progress-ring qq-progress-ring-sm" [style.--qq-progress]="calculationProgress()">
+                      <span>%{{ calculationProgress() | number:'1.0-0' }}</span>
+                    </div>
+                    <div>
+                      <h1>Size özel teklifler hazırlanıyor</h1>
+                      <p>Birkaç saniye içinde paketlerin fiyatlarını yan yana göstereceğiz.</p>
+                    </div>
                   </div>
 
-                  <h1>Teklifiniz Hazırlanıyor</h1>
-
-                  <p>Aracınız için güncel fiyat kuralları uygulanıyor.</p>
-
-                  <div class="qq-loading-vehicle">
-                    <div>
-                      <small>Araç</small>
-                      <strong>{{ selectedBrandName }} {{ selectedTypeName }}</strong>
+                  <div class="qq-loading-car">
+                    <span class="qq-loading-plate"><b>TR</b>{{ plateNumber || 'Plakasız' }}</span>
+                    <div class="qq-loading-car-name">
+                      <strong>{{ selectedBrandName + ' ' + selectedTypeName }}</strong>
+                      <small>{{ modelYear }} model</small>
                     </div>
-                    <div>
-                      <small>Model Yılı</small>
-                      <strong>{{ modelYear }}</strong>
-                    </div>
-                    <div>
-                      <small>Plaka</small>
-                      <strong>{{ plateNumber || 'Plakasız' }}</strong>
-                    </div>
-                    <div>
-                      <small>TSB Kasko Değeri</small>
+                    <div class="qq-loading-car-value">
+                      <small>Kasko değeri</small>
                       <strong>{{ lookupValue() !== null ? (lookupValue() | number:'1.0-0') + ' ₺' : '—' }}</strong>
                     </div>
                   </div>
 
-                  <ul>
+                  <ul class="qq-loading-steps">
                     @for (stage of calculationStages; track stage; let i = $index) {
                       <li [class.done]="i < calculationStageIndex" [class.active]="i === calculationStageIndex">
-                        <span class="qq-stage-icon">{{ i < calculationStageIndex ? '✓' : (i === calculationStageIndex ? '•' : '') }}</span>
-                        {{ stage }}{{ i === calculationStageIndex ? '...' : '' }}
+                        <span class="qq-stage-icon">{{ i < calculationStageIndex ? '✓' : '' }}</span>
+                        {{ stage }}
                       </li>
                     }
                   </ul>
@@ -332,14 +355,18 @@
 
                 <div class="qg-offers">
 
-                  @for (item of estimate.packages; track item.packageId) {
-                    <button type="button" class="qg-offer" [class.selected]="selectedPackageId() === item.packageId" (click)="selectPackage(item)">
+                  @for (item of estimate.packages; track item.packageId; let i = $index) {
+                    <button type="button" class="qg-offer" [class.selected]="selectedPackageId() === item.packageId" [class.recommended]="i === 1" (click)="selectPackage(item)">
+
+                      @if (i === 1) {
+                        <span class="qg-offer-badge">ÖNERİLEN</span>
+                      }
 
                       <span class="qg-offer-name">{{ item.packageName }}</span>
 
                       <span class="qg-offer-price">{{ item.totalPremium | number:'1.0-0' }} ₺<small>/ yıl</small></span>
 
-                      <span class="qg-offer-note">{{ item.coverages.length }} / {{ allCoverages(estimate).length }} teminat dahil</span>
+                      <span class="qg-offer-monthly">Aylık yaklaşık {{ item.totalPremium / 12 | number:'1.0-0' }} ₺ · {{ item.coverages.length }} / {{ allCoverages(estimate).length }} teminat</span>
 
                       <ul class="qg-offer-list">
                         @for (coverage of allCoverages(estimate); track coverage.coverageId) {
@@ -347,7 +374,7 @@
                         }
                       </ul>
 
-                      <span class="qg-offer-pick">{{ selectedPackageId() === item.packageId ? 'Seçildi' : 'Seç' }}</span>
+                      <span class="qg-offer-pick">{{ selectedPackageId() === item.packageId ? '✓ Seçili paket' : 'Bu paketi seç' }}</span>
 
                     </button>
                   }
@@ -356,7 +383,7 @@
 
                 @if (optionCoverages(estimate).length > 0) {
                   <div class="qg-limits">
-                    <span class="qg-limits-title">Limit seçenekleri</span>
+                    <span class="qg-limits-title">Limitlerinizi ayarlayın<small>Tüm paketlere uygulanır</small></span>
                     @for (row of optionCoverages(estimate); track row.coverageId) {
                       <label class="qg-limit">
                         <small>{{ row.coverageName }}</small>
@@ -370,18 +397,7 @@
                   </div>
                 }
 
-                @if (selectedPackage; as chosen) {
-                  <div class="qg-total">
-                    <div>
-                      <small>Seçilen paket</small>
-                      <strong>{{ chosen.packageName }}</strong>
-                    </div>
-                    <div class="qg-total-price">
-                      <small>Yıllık prim</small>
-                      <strong>{{ chosen.totalPremium | number:'1.2-2' }} ₺</strong>
-                    </div>
-                  </div>
-                }
+
 
                 <p class="qq-note">{{ isRepricing() ? 'Fiyatlar seçtiğiniz limitlere göre güncelleniyor...' : 'Bu fiyat girdiğiniz bilgilere göre hesaplanan tahmini primdir. Limit seçimleri tüm paketlere uygulanır.' }}</p>
 
@@ -389,7 +405,12 @@
 
               <div class="qq-actions">
                 <button type="button" class="qq-btn qq-btn-ghost" (click)="restart()">Bilgileri Değiştir</button>
-                <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="continueToPurchase()">Satın Almak İçin Devam Et</button>
+                <div class="qg-action-summary">
+                  @if (selectedPackage; as chosen) {
+                    <span><small>{{ chosen.packageName }}</small><strong>{{ chosen.totalPremium | number:'1.2-2' }} ₺ / yıl</strong></span>
+                  }
+                  <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="continueToPurchase()">Teklifi Kaydet ve Satın Al →</button>
+                </div>
               </div>
 
             }

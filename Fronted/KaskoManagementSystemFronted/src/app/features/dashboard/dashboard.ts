@@ -54,12 +54,13 @@ interface ApprovalRow {
   count: number;
   tone: BadgeTone;
   link: string;
+  query?: Record<string, string>;
 }
 
 interface DayBar {
   label: string;
-  quotes: number;
-  policies: number;
+  amount: number;
+  count: number;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -232,13 +233,24 @@ export class Dashboard implements OnInit {
     const pendingRequests =
       (data?.pricingRequests ?? []).filter(request => request.status === 'Pending').length;
 
+    const reviewQuotes =
+      (data?.quotes ?? []).filter(quote => quote.status === 1).length;
+
     return [
+      {
+        label: 'İncelemedeki Teklif',
+        hint: 'Otomatik onay limitini aştı',
+        count: reviewQuotes,
+        tone: 'warning',
+        link: this.portal.basePath + '/quotes'
+      },
       {
         label: 'Fiyat Değişiklik Talebi',
         hint: this.portal.isManager ? 'Admin onayı bekliyor' : 'Onayınızı bekliyor',
         count: pendingRequests,
-        tone: pendingRequests > 0 ? 'warning' : 'neutral',
-        link: this.portal.basePath + '/pricing-requests'
+        tone: 'warning',
+        link: this.portal.basePath + '/requests',
+        query: { tab: 'pricing-requests' }
       },
       {
         label: 'Ödeme Bekleyen Poliçe',
@@ -328,13 +340,14 @@ export class Dashboard implements OnInit {
       const day =
         new Date(this.today.getTime() - (6 - index) * DAY_MS);
 
-      const sameDay = (value: string) =>
-        this.startOfDay(new Date(value)).getTime() === day.getTime();
+      const payments = (data?.payments ?? [])
+        .filter(payment => payment.status === 3)
+        .filter(payment => this.startOfDay(this.paymentDate(payment)).getTime() === day.getTime());
 
       return {
         label: index === 6 ? 'Bugün' : formatter.format(day),
-        quotes: (data?.quotes ?? []).filter(quote => sameDay(quote.createdDate)).length,
-        policies: (data?.policies ?? []).filter(policy => sameDay(policy.createdDate)).length
+        amount: this.sum(payments.map(payment => payment.amount)),
+        count: payments.length
       };
     });
   });
@@ -342,13 +355,13 @@ export class Dashboard implements OnInit {
   weekMax = computed(() =>
     Math.max(
       1,
-      ...this.lastSevenDays().map(day => Math.max(day.quotes, day.policies))
+      ...this.lastSevenDays().map(day => day.amount)
     )
   );
 
   weekTotals = computed(() => ({
-    quotes: this.sum(this.lastSevenDays().map(day => day.quotes)),
-    policies: this.sum(this.lastSevenDays().map(day => day.policies))
+    amount: this.sum(this.lastSevenDays().map(day => day.amount)),
+    count: this.sum(this.lastSevenDays().map(day => day.count))
   }));
 
   ngOnInit(): void {
@@ -370,6 +383,16 @@ export class Dashboard implements OnInit {
 
   barHeight(value: number): number {
     return Math.round((value / this.weekMax()) * 100);
+  }
+
+  shortAmount(value: number): string {
+    if (value >= 1000000) {
+      return (value / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' Mn';
+    }
+    if (value >= 1000) {
+      return Math.round(value / 1000).toLocaleString('tr-TR') + ' B';
+    }
+    return Math.round(value).toLocaleString('tr-TR');
   }
 
   daysLabel(days: number): string {

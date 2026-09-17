@@ -47,22 +47,30 @@ public class CustomerController : ControllerBase
         return Ok(customer);
     }
 
-    [HttpPost]
-    [Authorize(Roles="Admin")]
-    public async Task<IActionResult> Create(
-        CreateCustomerDto dto)
+    [HttpPost("{id:guid}/account")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CreateAccount(
+        Guid id,
+        [FromServices] ICustomerAccountService accountService)
     {
-        await _customerService.CreateAsync(dto);
+        var account = await accountService.CreateAccountAsync(id);
 
-        return StatusCode(StatusCodes.Status201Created);
+        return Ok(new
+        {
+            email = account.Email,
+            temporaryPassword = account.TemporaryPassword
+        });
     }
 
     [HttpPut]
     [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Update(
-        UpdateCustomerDto dto)
+        UpdateCustomerDto dto,
+        [FromServices] ICustomerAccountService accountService)
     {
         await _customerService.UpdateAsync(dto);
+
+        await accountService.SyncUserAsync(dto.Id);
 
         return NoContent();
     }
@@ -70,9 +78,13 @@ public class CustomerController : ControllerBase
    
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(
+        Guid id,
+        [FromServices] ICustomerAccountService accountService)
     {
         await _customerService.DeleteAsync(id);
+
+        await accountService.DeactivateUserAsync(id);
 
         return NoContent();
     }

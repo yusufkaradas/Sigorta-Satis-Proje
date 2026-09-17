@@ -52,7 +52,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/policies', label: 'Poliçeler', exact: false },
   { path: '/payments', label: 'Ödemeler', exact: false },
   { path: '/requests', label: 'Talepler', exact: false },
-  { path: '/tariff', label: 'Paket & Teminat', exact: false },
+  { path: '/tariff', label: 'Paketler', exact: false },
   { path: '/users', label: 'Kullanıcılar', exact: false },
   { path: '/roles', label: 'Roller', exact: false }
 ];
@@ -65,7 +65,7 @@ const MANAGER_MENU: MenuItem[] = [
   { path: '/manager/policies', label: 'Poliçeler', exact: false },
   { path: '/manager/payments', label: 'Ödemeler', exact: false },
   { path: '/manager/requests', label: 'Talepler', exact: false },
-  { path: '/manager/tariff', label: 'Paket & Teminat', exact: false }
+  { path: '/manager/tariff', label: 'Paketler', exact: false }
 ];
 
 @Component({

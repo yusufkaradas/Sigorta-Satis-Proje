@@ -1,3 +1,4 @@
+import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import {
   Component,
   OnInit,
@@ -14,6 +15,7 @@ import {
 } from '@angular/forms';
 
 import {
+  ActivatedRoute,
   Router,
   RouterLink
 } from '@angular/router';
@@ -31,12 +33,15 @@ import {
   RolesService
 } from '../../roles/roles.service';
 
+
+
 @Component({
   selector: 'app-user-create',
 
   standalone: true,
 
   imports: [
+    InputRuleDirective,
     CommonModule,
     FormsModule,
     RouterLink
@@ -57,6 +62,24 @@ export class UserCreate implements OnInit {
   private readonly router =
     inject(Router);
 
+  private readonly route =
+    inject(ActivatedRoute);
+
+  readonly maxBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return date.toISOString().slice(0, 10);
+  })();
+
+  readonly minBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 100);
+    return date.toISOString().slice(0, 10);
+  })();
+
+  get isCustomerRole(): boolean {
+    return this.roles().find(role => role.id === this.model.roleId)?.name === 'Customer';
+  }
 
   model: UserCreateDto = {
 
@@ -70,7 +93,17 @@ export class UserCreate implements OnInit {
 
     phoneNumber: '',
 
-    roleId: ''
+    roleId: '',
+
+    identityNumber: '',
+
+    dateOfBirth: '',
+
+    city: '',
+
+    district: '',
+
+    address: ''
 
   };
 
@@ -92,6 +125,11 @@ export class UserCreate implements OnInit {
         next: data => {
           this.roles.set(data ?? []);
           this.isLoadingRoles.set(false);
+          const presetRole = this.route.snapshot.queryParamMap.get('role');
+          const role = (data ?? []).find(item => item.name === presetRole);
+          if (role) {
+            this.model.roleId = role.id;
+          }
         },
         error: () => {
           this.errorMessage.set('Roller yüklenemedi.');
@@ -108,8 +146,12 @@ export class UserCreate implements OnInit {
     this.isLoading.set(true);
 
 
+    const payload: UserCreateDto = this.isCustomerRole
+      ? this.model
+      : { ...this.model, identityNumber: null, dateOfBirth: null, city: null, district: null, address: null };
+
     this.userService
-      .create(this.model)
+      .create(payload)
       .subscribe({
 
         next: () => {
@@ -117,7 +159,7 @@ export class UserCreate implements OnInit {
           this.isLoading.set(false);
 
           this.router.navigate([
-            '/users'
+            this.isCustomerRole ? '/customers' : '/users'
           ]);
 
         },

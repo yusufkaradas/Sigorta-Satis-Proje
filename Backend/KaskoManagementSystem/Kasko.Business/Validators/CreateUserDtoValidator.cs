@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Kasko.Business.DTOs.User;
 
 namespace Kasko.Business.Validators
@@ -33,6 +33,33 @@ namespace Kasko.Business.Validators
             
             RuleFor(x => x.RoleId)
                 .NotEmpty().WithMessage("Rol alanı boş olamaz.");
+        
+            When(x => !string.IsNullOrWhiteSpace(x.IdentityNumber), () =>
+            {
+                RuleFor(x => x.IdentityNumber)
+                    .Matches(@"^[1-9][0-9]{10}$").WithMessage("T.C. Kimlik No 11 haneli olmalı ve 0 ile başlamamalıdır.");
+
+                RuleFor(x => x.DateOfBirth)
+                    .NotNull().WithMessage("Doğum tarihi boş olamaz.")
+                    .Must(date => date <= DateTime.UtcNow.Date.AddYears(-18)).WithMessage("Müşteri 18 yaşından büyük olmalıdır.")
+                    .Must(date => date >= DateTime.UtcNow.Date.AddYears(-100)).WithMessage("Geçerli bir doğum tarihi giriniz.");
+
+                RuleFor(x => x.PhoneNumber)
+                    .NotEmpty().WithMessage("Müşteri için telefon numarası zorunludur.")
+                    .Matches(@"^(\+90|0)?5[0-9]{9}$").WithMessage("Telefon numarası 5 ile başlayan 10 haneli olmalıdır.");
+
+                RuleFor(x => x.City)
+                    .NotEmpty().WithMessage("İl boş olamaz.")
+                    .Length(2, 50).WithMessage("İl 2-50 karakter olmalıdır.");
+
+                RuleFor(x => x.District)
+                    .NotEmpty().WithMessage("İlçe boş olamaz.")
+                    .Length(2, 50).WithMessage("İlçe 2-50 karakter olmalıdır.");
+
+                RuleFor(x => x.Address)
+                    .NotEmpty().WithMessage("Adres boş olamaz.")
+                    .Length(10, 100).WithMessage("Adres 10-100 karakter olmalıdır.");
+            });
         }
     }
 }
