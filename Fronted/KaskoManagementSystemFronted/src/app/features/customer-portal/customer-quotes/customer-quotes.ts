@@ -1,4 +1,3 @@
-import { PlateBadge } from '../../../core/components/plate-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
@@ -30,7 +29,7 @@ import {
 @Component({
   selector: 'app-customer-quotes',
   standalone: true,
-  imports: [PlateBadge, 
+  imports: [
     CommonModule,
     RecordNumberPipe,
     RouterLink

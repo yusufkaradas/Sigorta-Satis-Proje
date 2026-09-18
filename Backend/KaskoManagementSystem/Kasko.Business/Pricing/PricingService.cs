@@ -489,6 +489,11 @@ public class PricingService : IPricingService
                 nameof(deductible));
         }
 
-        return Task.FromResult(1.00m);
+        return Task.FromResult(deductible switch
+        {
+            2m => 0.90m,
+            5m => 0.80m,
+            _ => 1.00m
+        });
     }
 }

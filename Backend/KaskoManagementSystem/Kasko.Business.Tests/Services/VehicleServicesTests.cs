@@ -56,8 +56,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = Guid.NewGuid(),
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024,
                 VehicleType = VehicleType.Sedan,
                 IsActive = true,
@@ -70,8 +70,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = Guid.NewGuid(),
                 PlateNumber = "06XYZ456",
                 VIN = "VIN987654321",
-                Brand = "Honda",
-                Model = "Civic",
+                Brand = "HONDA",
+                Model = "CIVIC",
                 ModelYear = 2023,
                 VehicleType = VehicleType.Sedan,
                 IsActive = false,
@@ -144,8 +144,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024,
                 VehicleType = VehicleType.Sedan,
                 FuelType = FuelType.Gasoline,
@@ -196,8 +196,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -237,8 +237,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -286,8 +286,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -341,9 +341,9 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
+                Brand = "TOYOTA",
                 BrandCode = "TOYOTA",
-                Model = "Corolla",
+                Model = "COROLLA",
                 TypeCode = "COROLLA-2024",
                 ModelYear = 2024,
                 VehicleType = VehicleType.Sedan,
@@ -360,8 +360,8 @@ namespace Kasko.Business.Tests.Services
                 BrandCode = "TOYOTA",
                 TypeCode = "COROLLA-2024",
 
-                BrandName = "Toyota",
-                TypeName = "Corolla",
+                BrandName = "TOYOTA",
+                TypeName = "COROLLA",
 
                 ModelYear = 2024,
 
@@ -491,10 +491,10 @@ namespace Kasko.Business.Tests.Services
                 PlateNumber = "34TSB001",
                 VIN = "TSBVIN123456",
 
-                Brand = "Toyota",
+                Brand = "TOYOTA",
                 BrandCode = "TOYOTA",
 
-                Model = "Corolla",
+                Model = "COROLLA",
                 TypeCode = "COROLLA-2024",
 
                 ModelYear = 2024,
@@ -564,10 +564,10 @@ namespace Kasko.Business.Tests.Services
                 PlateNumber = "34TSB002",
                 VIN = "TSBVIN654321",
 
-                Brand = "Toyota",
+                Brand = "TOYOTA",
                 BrandCode = "TOYOTA",
 
-                Model = "Corolla",
+                Model = "COROLLA",
                 TypeCode = "COROLLA-2024",
 
                 ModelYear = 2024,
@@ -593,8 +593,8 @@ namespace Kasko.Business.Tests.Services
                 BrandCode = dto.BrandCode,
                 TypeCode = dto.TypeCode,
 
-                BrandName = "Toyota",
-                TypeName = "Corolla",
+                BrandName = "TOYOTA",
+                TypeName = "COROLLA",
 
                 ModelYear = dto.ModelYear,
 
@@ -669,8 +669,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -716,8 +716,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -770,8 +770,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -830,8 +830,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = customerId,
                 PlateNumber = "34ABC123",
                 VIN = "VIN123456789",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2024
             };
 
@@ -884,8 +884,8 @@ namespace Kasko.Business.Tests.Services
                 CustomerId = Guid.NewGuid(),
                 PlateNumber = "34OLD111",
                 VIN = "OLDVIN123",
-                Brand = "Toyota",
-                Model = "Corolla",
+                Brand = "TOYOTA",
+                Model = "COROLLA",
                 ModelYear = 2020,
                 VehicleType = VehicleType.Sedan,
                 FuelType = FuelType.Gasoline,
@@ -908,10 +908,10 @@ namespace Kasko.Business.Tests.Services
                 PlateNumber = "34NEW222",
                 VIN = "NEWVIN456",
 
-                Brand = "Honda",
+                Brand = "HONDA",
                 BrandCode = "HONDA",
 
-                Model = "Civic",
+                Model = "CIVIC",
                 TypeCode = "CIVIC-2024",
 
                 ModelYear = 2024,
@@ -932,8 +932,8 @@ namespace Kasko.Business.Tests.Services
                 BrandCode = dto.BrandCode,
                 TypeCode = dto.TypeCode,
 
-                BrandName = "Honda",
-                TypeName = "Civic",
+                BrandName = "HONDA",
+                TypeName = "CIVIC",
 
                 ModelYear = dto.ModelYear,
 
@@ -1039,10 +1039,10 @@ namespace Kasko.Business.Tests.Services
                 PlateNumber = "34NEW222",
                 VIN = "NEWVIN456",
 
-                Brand = "Honda",
+                Brand = "HONDA",
                 BrandCode = "HONDA",
 
-                Model = "Civic",
+                Model = "CIVIC",
                 TypeCode = "CIVIC-2024",
 
                 ModelYear = 2024,

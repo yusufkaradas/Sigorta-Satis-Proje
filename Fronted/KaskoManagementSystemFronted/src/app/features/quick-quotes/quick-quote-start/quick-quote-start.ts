@@ -1,3 +1,4 @@
+import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { BrandService } from '../../../core/services/brand.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
@@ -342,17 +343,24 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     return [...seen.values()];
   }
 
-  get offerCoverageRows(): { coverageId: string; coverageName: string }[] {
-    const seen = new Map<string, string>();
-    [...this.packages]
-      .sort((a, b) => b.coverages.length - a.coverages.length)
-      .forEach(item => item.coverages.forEach(coverage => {
-        if (!seen.has(coverage.coverageId)) {
-          seen.set(coverage.coverageId, coverage.coverageName);
-        }
-      }));
-    return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  get offerCoverageRows(): CoverageRow[] {
+    return collectCoverageRows(this.packages);
   }
+
+  offerUpgrade(item: { id: string; coverages: { coverageId: string; coverageName: string; isDefault: boolean }[] }): string | null {
+    const chosen = this.selectedPackage;
+    if (!chosen || chosen.id === item.id) {
+      return null;
+    }
+    return upgradeNote(chosen.name, this.packagePrices[chosen.id], chosen.coverages.filter(c => c.isDefault).map(c => c.coverageId), this.packagePrices[item.id], item.coverages.filter(c => c.isDefault));
+  }
+
+  readonly limitHint = limitHint;
+
+  deductibleHint(): string {
+    return deductibleExample(this.deductible);
+  }
+
 
   packageIncludes(packageItem: QuickQuotePackage, coverageId: string): boolean {
     return packageItem.coverages.some(item => item.coverageId === coverageId);
@@ -393,8 +401,21 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
   packageResults: Record<string, QuickQuotePricingResponse | null> = {};
 
+  readonly deductibleOptions = [
+    { value: 0, label: 'Muafiyetsiz' },
+    { value: 2, label: '%2 muafiyet (%10 indirim)' },
+    { value: 5, label: '%5 muafiyet (%20 indirim)' }
+  ];
+
+  changeDeductible(value: number): void {
+    this.deductible = value;
+    this.changeOfferOption('', '');
+  }
+
   changeOfferOption(coverageId: string, optionId: string): void {
-    this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+    if (coverageId) {
+      this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+    }
     this.isRepricing = true;
 
     this.priceAllPackages().subscribe(results => {
@@ -428,6 +449,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       packageId: packageItem.id,
       usage: this.usage,
       claimsCount: this.claimsCount,
+      deductible: this.deductible,
       coverageOptionIds: this.coverageOptionIds
     };
 
@@ -469,6 +491,21 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
     this.customerService.getCurrentCustomer().subscribe({
       next: customer => {
+        if (draft.source === 'guest') {
+          let guestIdentity = '';
+          try {
+            guestIdentity = JSON.parse(sessionStorage.getItem('quickQuoteIdentity') ?? 'null')?.identityNumber ?? '';
+            sessionStorage.removeItem('quickQuoteIdentity');
+          } catch {
+          }
+          const customerIdentity = String((customer as { identityNumber?: string }).identityNumber ?? '').replace(/\D/g, '');
+          if (!guestIdentity || guestIdentity !== customerIdentity) {
+            this.isLoading = false;
+            this.router.navigate(['/customer']);
+            return;
+          }
+        }
+
         if (draft.vehicleId) {
           this.createPortalQuote(customer.id, draft.vehicleId, draft);
           return;
@@ -527,7 +564,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       vehicleId,
       usage: draft.usage ?? 'PRIVATE',
       claimsCount: draft.claimsCount ?? 0,
-      deductible: 0,
+      deductible: draft.deductible ?? 0,
       previousPolicyId: null,
       packageId: draft.packageId,
       coverageIds: [],

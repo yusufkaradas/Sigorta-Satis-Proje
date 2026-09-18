@@ -38,7 +38,7 @@
   <section class="login-section">
 
     <header class="login-header">
-      <span>SİGORTA PANELİ</span>
+      <span>{{ brand().headerTitle || 'SİGORTA PANELİ' }}</span>
     </header>
 
 
@@ -56,7 +56,7 @@
           <div class="form-group">
 
             <label for="email">
-              E-posta Adresi:
+              E-POSTA ADRESİ:
             </label>
 
             <input
@@ -79,7 +79,7 @@
           <div class="form-group">
 
             <label for="password">
-              Şifre:
+              ŞİFRE:
             </label>
 
             <div class="password-input-wrapper">
@@ -163,14 +163,14 @@
               class="login-button"
               [disabled]="isLoading"
             >
-              {{ isLoading ? 'Giriş Yapılıyor...' : 'Giriş yap' }}
+              {{ isLoading ? 'GİRİŞ YAPILIYOR...' : 'GİRİŞ YAP' }}
             </button>
 
             <a
               routerLink="/register"
               class="login-button"
             >
-              Kayıt Ol!
+              KAYIT OL!
             </a>
 
           </div>
@@ -183,7 +183,7 @@
 
 
     <footer class="login-footer">
-      © 2026 Sigorta Satış
+      {{ brand().slogan || '© 2026 Sigorta Satış' }}
     </footer>
 
   </section>

@@ -56,6 +56,16 @@ export interface PricingRuleChangeRequest {
   approvedDate?: string | null;
   status: ChangeRequestStatus;
   effectiveFrom: string;
+  rejectReason?: string | null;
+}
+
+export interface PricingRequestImpact {
+  supported: boolean;
+  totalQuotes?: number;
+  affectedQuotes?: number;
+  oldAverage?: number;
+  newAverage?: number;
+  changePercent?: number;
 }
 
 export interface CreatePricingRuleChangeRequest {
@@ -132,10 +142,14 @@ export class PricingService {
     );
   }
 
-  rejectRequest(id: string): Observable<void> {
+  rejectRequest(id: string, reason = ''): Observable<void> {
     return this.http.post<void>(
       `${this.requestsUrl}/${id}/reject`,
-      {}
+      { reason }
     );
+  }
+
+  getRequestImpact(id: string): Observable<PricingRequestImpact> {
+    return this.http.get<PricingRequestImpact>(`${this.requestsUrl}/${id}/impact`);
   }
 }

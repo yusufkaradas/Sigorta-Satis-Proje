@@ -89,11 +89,9 @@
           <tbody>
 
             @for (item of paged(); track item.id) {
-              <tr class="clickable-row" (click)="openDetail(item)">
+              <tr>
                 <td>
-                  <a [routerLink]="[portal.basePath + '/policies', item.policyId]" [title]="item.policyNumber" (click)="$event.stopPropagation()">
-                    <strong>{{ item.policyNumber | recordNo:'full' }}</strong>
-                  </a>
+                  <div class="date-cell"><strong class="record-no">{{ item.policyNumber | recordNo }}</strong><span class="time-value">{{ item.policyNumber | recordNo:'label' }}</span></div>
                 </td>
                 <td>{{ item.customerName }}</td>
                 <td class="col-reason" [title]="item.reason">{{ item.reason }}</td>
@@ -113,7 +111,7 @@
                   </div>
                 </td>
                 <td class="actions-cell col-actions">
-                  <button type="button" class="action-button" (click)="$event.stopPropagation(); openDetail(item)">Detay</button>
+                  <button type="button" class="action-button detail" (click)="openDetail(item)">Detay</button>
                   @if (item.status === Status.Pending) {
                     <button type="button" class="policy-button" (click)="$event.stopPropagation(); openDetail(item)">Karar Ver</button>
                   }

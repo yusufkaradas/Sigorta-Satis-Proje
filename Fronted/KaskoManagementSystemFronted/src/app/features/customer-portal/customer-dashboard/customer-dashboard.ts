@@ -175,7 +175,7 @@ export class CustomerDashboard implements OnInit {
     ]
   );
 
-  recentActivities = computed<ActivityRow[]>(
+  allActivities = computed<ActivityRow[]>(
     () => {
 
       const quoteRows =
@@ -214,9 +214,13 @@ export class CustomerDashboard implements OnInit {
             new Date(b.date || 0).getTime() -
             new Date(a.date || 0).getTime()
         )
-        .slice(0, 5);
+        .slice(0, 50);
     }
   );
+
+  recentActivities = computed(() => this.allActivities().slice(0, 4));
+
+  isActivityDialogOpen = signal(false);
 
   ngOnInit(): void {
 

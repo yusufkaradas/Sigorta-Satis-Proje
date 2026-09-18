@@ -126,6 +126,49 @@ namespace Kasko.API.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id:guid}/share")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Share(
+            Guid id,
+            [FromServices] INotificationService notificationService)
+        {
+            var quote = await _quoteService.GetByIdAsync(id);
+
+            if (quote == null)
+            {
+                return NotFound();
+            }
+
+            await notificationService.CreateAsync(
+                new Kasko.Business.DTOs.Notification.NotificationCreateDto
+                {
+                    CustomerId = quote.CustomerId,
+                    Type = "QUOTE_SHARED",
+                    Title = "Size özel kasko teklifi",
+                    Message = $"{quote.PremiumAmount:N2} ₺ tutarındaki kasko teklifiniz Tekliflerim sayfasında sizi bekliyor. Teklif {quote.ValidUntil:dd.MM.yyyy} tarihine kadar geçerlidir.",
+                    RelatedEntityId = quote.Id
+                });
+
+            return Ok(new { link = $"/customer/quotes/{quote.Id}" });
+        }
+
+        [HttpGet("{id:guid}/pdf")]
+        public async Task<IActionResult> DownloadPdf(
+            Guid id,
+            [FromServices] Kasko.Business.Interfaces.IPolicyPdfService pdfService)
+        {
+            var quote = await _quoteService.GetByIdAsync(id);
+
+            if (quote == null)
+            {
+                return NotFound();
+            }
+
+            var bytes = await pdfService.GenerateQuoteAsync(id);
+
+            return File(bytes, "application/pdf", $"Teklif-{quote.QuoteNumber}.pdf");
+        }
+
         [HttpPost("{id:guid}/purchase")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> Purchase(
@@ -157,6 +200,27 @@ namespace Kasko.API.Controllers
                     message = "Teklifiniz yetkili onayında. Onaylandığında satın alabilirsiniz."
                 });
             }
+
+            var today = DateTime.UtcNow.Date;
+            var requestedStart = dto.StartDate?.Date ?? today;
+
+            if (requestedStart < today || requestedStart > today.AddDays(30))
+            {
+                return BadRequest(new
+                {
+                    message = "Poliçe başlangıç tarihi bugünden itibaren en fazla 30 gün sonrası olabilir."
+                });
+            }
+
+            if (dto.InstallmentCount is not (1 or 3 or 6 or 9))
+            {
+                return BadRequest(new
+                {
+                    message = "Geçersiz taksit seçimi."
+                });
+            }
+
+            var startDate = requestedStart == today ? DateTime.UtcNow : requestedStart;
 
             if (dto.SimulateFailure)
             {
@@ -190,8 +254,8 @@ namespace Kasko.API.Controllers
                             CustomerId = quote.CustomerId,
                             VehicleId = quote.VehicleId,
                             QuoteId = id,
-                            StartDate = DateTime.UtcNow,
-                            EndDate = DateTime.UtcNow.AddYears(1)
+                            StartDate = startDate,
+                            EndDate = startDate.AddYears(1)
                         });
 
                 payment =
@@ -199,7 +263,8 @@ namespace Kasko.API.Controllers
                         new Kasko.Business.DTOs.Payment.PaymentCreateDto
                         {
                             PolicyId = policy.Id,
-                            SimulateFailure = false
+                            SimulateFailure = false,
+                            InstallmentCount = dto.InstallmentCount
                         });
             });
 

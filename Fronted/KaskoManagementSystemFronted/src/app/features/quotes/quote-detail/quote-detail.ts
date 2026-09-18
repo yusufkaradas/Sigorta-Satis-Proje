@@ -1,3 +1,5 @@
+import { IdBadge } from '../../../core/components/id-badge';
+import { infoDialog } from '../../../core/services/confirm-dialog';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
@@ -29,7 +31,7 @@ import {
 @Component({
   selector: 'app-quote-detail',
   standalone: true,
-  imports: [PlateBadge, 
+  imports: [IdBadge, PlateBadge, 
     BackendDatePipe,
     RecordNumberPipe,
     CommonModule,
@@ -110,6 +112,13 @@ export class QuoteDetail {
           );
 
           this.quote = data;
+
+          if (this.route.snapshot.queryParamMap.get('pay') === '1' && data?.status === QuoteStatus.Offered) {
+            this.acceptedTerms = true;
+            this.acceptedKvkk = true;
+            this.paymentError = '';
+            this.isPaymentOpen = true;
+          }
 
           this.isLoading = false;
 
@@ -401,6 +410,58 @@ get isPaymentFormValid(): boolean {
     this.cardCvv.length === 3;
 }
 
+readonly installmentOptions = [1, 3, 6, 9];
+
+installmentCount = 1;
+
+readonly minStartDate = new Date().toISOString().slice(0, 10);
+
+readonly maxStartDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+startDate = this.minStartDate;
+
+installmentAmount(count: number): number {
+  return (this.quote?.premiumAmount ?? 0) / count;
+}
+
+isSharing = false;
+
+shareQuote(): void {
+  if (!this.quote || this.isSharing) {
+    return;
+  }
+  this.isSharing = true;
+  this.quoteService.shareQuote(this.quote.id).subscribe({
+    next: result => {
+      this.isSharing = false;
+      const url = `${window.location.origin}${result.link}`;
+      navigator.clipboard?.writeText(url).catch(() => undefined);
+      infoDialog('Teklif müşteriye gönderildi', 'Teklif müşterinin portalına bildirim olarak iletildi ve bağlantı panoya kopyalandı.', [{ label: 'Bağlantı', value: url }]);
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.isSharing = false;
+      this.errorMessage = 'Teklif müşteriye gönderilemedi.';
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+downloadQuotePdf(): void {
+  if (!this.quote) {
+    return;
+  }
+  const number = this.quote.quoteNumber;
+  this.quoteService.downloadPdf(this.quote.id).subscribe(blob => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Teklif-${number}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
 purchaseQuote(): void {
   if (!this.quote || !this.acceptedTerms || !this.acceptedKvkk || !this.isPaymentFormValid) {
     this.paymentError = 'Kart bilgilerini eksiksiz ve doğru girin.';
@@ -412,7 +473,7 @@ purchaseQuote(): void {
 
   const simulateFailure = this.cardDigits === '4000000000000002';
 
-  this.quoteService.purchase(this.quote.id, simulateFailure).subscribe({
+  this.quoteService.purchase(this.quote.id, simulateFailure, this.installmentCount, this.startDate).subscribe({
     next: result => {
       this.isLoading = false;
       this.isPaymentOpen = false;

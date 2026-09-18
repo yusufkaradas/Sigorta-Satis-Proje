@@ -1,3 +1,4 @@
+import { IdBadge } from '../../../core/components/id-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   ChangeDetectorRef,
@@ -20,7 +21,7 @@ import { UserService } from '../users.service';
   selector: 'app-user-detail',
   standalone: true,
 
-  imports: [
+  imports: [IdBadge, 
     CommonModule,
     RouterLink
   ],

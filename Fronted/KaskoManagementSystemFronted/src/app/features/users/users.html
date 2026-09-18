@@ -146,7 +146,7 @@
 
             <td class="email-cell col-wide" [title]="user.email">{{ user.email }}</td>
 
-            <td>{{ formatPhone(user.phoneNumber) }}</td>
+            <td><app-id-badge [value]="user.phoneNumber" /></td>
 
             <td>
               <span class="user-status" [class.status-offered]="user.roleName === 'Admin' || user.roleName === 'Manager'" [class.active]="user.roleName === 'Customer'">

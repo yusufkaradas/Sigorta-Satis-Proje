@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Auth;
+using Kasko.Business.DTOs.Auth;
 
 namespace Kasko.Business.Interfaces
 {
@@ -7,5 +7,9 @@ namespace Kasko.Business.Interfaces
         Task<LoginResponseDto> LoginAsync(LoginDto dto);
 
         Task<Guid> RegisterAsync(RegisterDto dto);
+
+        Task<PasswordResetCodeResponseDto> SendPasswordResetCodeAsync(PasswordResetRequestDto dto);
+
+        Task ResetPasswordAsync(PasswordResetConfirmDto dto);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Kasko.Entities.Abstract;
+using Kasko.Entities.Abstract;
 
 namespace Kasko.Entities.Concrete;
 
@@ -23,6 +23,9 @@ public class PricingRuleChangeRequest : BaseEntity
     public string Status { get; set; } = "Pending";
 
     public DateTime EffectiveFrom { get; set; }
+
+
+    public string? RejectReason { get; set; }
 
     public PricingRule? PricingRule { get; set; }
 

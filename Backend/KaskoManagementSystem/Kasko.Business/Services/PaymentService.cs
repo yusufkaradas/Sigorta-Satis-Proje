@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Payment;
+using Kasko.Business.DTOs.Payment;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
 using Kasko.Business.Services.Abstract;
@@ -100,6 +100,8 @@ namespace Kasko.Business.Services.Concrete
 
                 FailureReason = failureReason,
 
+                InstallmentCount = dto.InstallmentCount is 3 or 6 or 9 ? dto.InstallmentCount : 1,
+
                 IsDeleted = false,
 
                 CreatedDate = DateTime.UtcNow
@@ -137,6 +139,7 @@ namespace Kasko.Business.Services.Concrete
             {
                 Id = payment.Id,
                 PolicyId = payment.PolicyId,
+                InstallmentCount = payment.InstallmentCount,
                 TransactionNumber = payment.TransactionNumber,
                 Amount = payment.Amount,
                 Status = payment.Status,
@@ -190,6 +193,7 @@ namespace Kasko.Business.Services.Concrete
             {
                 Id = payment.Id,
                 PolicyId = payment.PolicyId,
+                InstallmentCount = payment.InstallmentCount,
                 TransactionNumber =
                     payment.TransactionNumber,
                 Amount = payment.Amount,
@@ -250,6 +254,8 @@ namespace Kasko.Business.Services.Concrete
                 .Select(x => new PaymentListDto
                 {
                     Id = x.Id,
+
+                    InstallmentCount = x.InstallmentCount,
 
                     PolicyId = x.PolicyId,
 

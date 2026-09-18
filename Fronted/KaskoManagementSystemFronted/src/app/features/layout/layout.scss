@@ -8,12 +8,22 @@
 
 .kl-menu-dense .kl-menu-item {
   height: k.u(50);
-  font-size: k.u(20);
+  font-size: k.u(18);
 }
 
 .kl-dropdown-link {
   @include k.button(dark);
   @include k.button-small;
   width: 100%;
-  margin-top: 10px;
+  margin-top: k.u(10);
+}
+
+.kl-menu-manager {
+  margin-top: k.u(60);
+  gap: k.u(10);
+}
+
+.kl-menu-manager .kl-menu-item {
+  height: k.u(50);
+  font-size: k.u(18);
 }

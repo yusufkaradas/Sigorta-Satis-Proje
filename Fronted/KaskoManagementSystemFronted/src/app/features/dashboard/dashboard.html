@@ -10,31 +10,31 @@
 
   <div class="summary-grid">
 
-    <a class="summary-card" [routerLink]="portal.basePath + '/payments'">
+    <div class="summary-card">
       <span>Bu Ay Tahsilat</span>
       <strong>{{ monthlyCollection().amount | number:'1.0-0' }} ₺</strong>
       <small>
         {{ monthlyCollection().count }} başarılı ödeme · geçen ay {{ monthlyCollection().lastMonthAmount | number:'1.0-0' }} ₺
       </small>
-    </a>
+    </div>
 
-    <a class="summary-card" [routerLink]="portal.basePath + '/policies'">
+    <div class="summary-card">
       <span>Aktif Poliçe</span>
       <strong>{{ activePolicies().count }}</strong>
       <small>Toplam prim {{ activePolicies().premium | number:'1.0-0' }} ₺</small>
-    </a>
+    </div>
 
-    <a class="summary-card" [routerLink]="portal.basePath + '/quotes'">
+    <div class="summary-card">
       <span>Açık Teklif</span>
       <strong>{{ openQuotes().count }}</strong>
       <small>Teklif → kabul dönüşümü %{{ openQuotes().conversion }}</small>
-    </a>
+    </div>
 
-    <a class="summary-card" [routerLink]="portal.basePath + '/customers'">
+    <div class="summary-card">
       <span>Müşteri</span>
       <strong>{{ customerSummary().count }}</strong>
       <small>{{ customerSummary().vehicles }} araç · {{ customerSummary().insured }} poliçeli müşteri</small>
-    </a>
+    </div>
 
   </div>
 
@@ -45,43 +45,47 @@
 
     <section class="dashboard-card">
 
-      <h2>Satış Hunisi <small>Tüm zamanlar</small></h2>
+      <h2>Satılan Paketler <small>{{ packageTotal() }} poliçe</small></h2>
 
-      <ul class="db-funnel">
-        @for (step of funnel(); track step.label) {
-          <li>
-            <span class="db-funnel-label">{{ step.label }}</span>
-            <strong>{{ step.count }}</strong>
-            <span class="db-bar"><span [style.width.%]="step.percent"></span></span>
-            <small>%{{ step.percent }}</small>
-          </li>
-        }
-      </ul>
+      <div class="db-donut-wrap">
+        <div class="db-donut" [style.background]="packageGradient()">
+          <span><strong>{{ packageTotal() }}</strong><small>satış</small></span>
+        </div>
+        <ul class="db-donut-legend">
+          @for (item of packageStats(); track item.name) {
+            <li>
+              <i [style.background]="item.color"></i>
+              <span>{{ item.name }}</span>
+              <strong>{{ item.count }}</strong>
+              <small>%{{ item.percent }}</small>
+            </li>
+          } @empty {
+            <li class="db-empty">Henüz satış yok.</li>
+          }
+        </ul>
+      </div>
 
     </section>
 
     <section class="dashboard-card db-cell-expiring">
 
-      <h2>
-        Süresi Yaklaşan Teklifler
-        <small>3 gün içinde</small>
-      </h2>
+      <h2>Takip Listesi <small>Teklif 3 gün · Yenileme 30 gün</small></h2>
 
       <ul class="db-list">
-        @for (item of expiringQuotes(); track item.id) {
+        @for (item of followUps(); track item.id) {
           <li>
             <a [routerLink]="item.link">
               <span>
                 <strong>{{ item.title }}</strong>
-                <small>{{ item.subtitle }}</small>
+                <small>{{ item.kind }} · {{ item.subtitle }}</small>
               </span>
-              <span class="db-badge" [class.danger]="item.daysLeft <= 1" [class.warning]="item.daysLeft > 1">
+              <span class="db-badge" [class.danger]="item.daysLeft <= 1" [class.warning]="item.daysLeft > 1 && item.daysLeft <= 7" [class.info]="item.daysLeft > 7">
                 {{ daysLabel(item.daysLeft) }}
               </span>
             </a>
           </li>
         } @empty {
-          <li class="db-empty">Süresi yaklaşan teklif yok.</li>
+          <li class="db-empty">Takip gerektiren teklif veya poliçe yok.</li>
         }
       </ul>
 
@@ -89,6 +93,32 @@
 
 
     
+
+    <section class="dashboard-card db-cell-week">
+
+      <h2>
+        Son 7 Gün Tahsilat
+        <small class="db-legend">
+          <i class="db-dot quotes"></i> {{ weekTotals().amount | number:'1.0-0' }} ₺ · {{ weekTotals().count }} ödeme
+        </small>
+      </h2>
+
+      <div class="db-chart">
+        @for (day of lastSevenDays(); track day.label) {
+          <div class="db-chart-day">
+            <div class="db-chart-bars">
+              <span class="quotes" [style.height.%]="barHeight(day.amount)" [title]="(day.amount | number:'1.0-0') + ' ₺ · ' + day.count + ' ödeme'">
+                @if (day.amount > 0) {
+                  <em>{{ shortAmount(day.amount) }} ₺</em>
+                }
+              </span>
+            </div>
+            <small>{{ day.label }}</small>
+          </div>
+        }
+      </div>
+
+    </section>
 
     <section class="dashboard-card">
 
@@ -134,36 +164,27 @@
 
       </div>
 
-    </section>
-
-    <section class="dashboard-card db-cell-week">
-
-      <h2>
-        Son 7 Gün Tahsilat
-        <small class="db-legend">
-          <i class="db-dot quotes"></i> {{ weekTotals().amount | number:'1.0-0' }} ₺ · {{ weekTotals().count }} ödeme
-        </small>
-      </h2>
-
-      <div class="db-chart">
-        @for (day of lastSevenDays(); track day.label) {
-          <div class="db-chart-day">
-            <div class="db-chart-bars">
-              <span class="quotes" [style.height.%]="barHeight(day.amount)" [title]="(day.amount | number:'1.0-0') + ' ₺ · ' + day.count + ' ödeme'">
-                @if (day.amount > 0) {
-                  <em>{{ shortAmount(day.amount) }} ₺</em>
-                }
-              </span>
-            </div>
-            <small>{{ day.label }}</small>
-          </div>
-        }
-      </div>
+      <button type="button" class="db-card-foot" (click)="isActivityDialogOpen.set(true)">Tüm işlemleri gör →</button>
 
     </section>
 
 
     
+
+    <section class="dashboard-card db-cell-renewals">
+
+      <h2>Hızlı İşlemler</h2>
+
+      <div class="db-actions">
+        @for (action of quickActions; track action.label) {
+          <a [routerLink]="portal.basePath + action.path" [queryParams]="action.query" class="db-action">
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.hint }}</small>
+          </a>
+        }
+      </div>
+
+    </section>
 
     <section class="dashboard-card">
 
@@ -185,33 +206,44 @@
 
     </section>
 
-    <section class="dashboard-card db-cell-renewals">
-
-      <h2>
-        Yaklaşan Yenilemeler
-        <small>30 gün içinde</small>
-      </h2>
-
-      <ul class="db-list">
-        @for (item of upcomingRenewals(); track item.id) {
-          <li>
-            <a [routerLink]="item.link">
-              <span>
-                <strong>{{ item.title }}</strong>
-                <small>{{ item.subtitle }}</small>
-              </span>
-              <span class="db-badge" [class.warning]="item.daysLeft <= 7" [class.info]="item.daysLeft > 7">
-                {{ daysLabel(item.daysLeft) }}
-              </span>
-            </a>
-          </li>
-        } @empty {
-          <li class="db-empty">30 gün içinde bitecek poliçe yok.</li>
-        }
-      </ul>
-
-    </section>
-
   </div>
+
+
+  @if (isActivityDialogOpen()) {
+    <div class="rule-dialog-backdrop" (click)="isActivityDialogOpen.set(false)">
+      <div class="rule-dialog db-activity-dialog" (click)="$event.stopPropagation()">
+        <h2>Tüm İşlemler</h2>
+        <p class="rule-dialog-sub">Son {{ allActivities().length }} işlem · kayda gitmek için satıra tıklayın</p>
+        <div class="db-table db-activity-list">
+          <div class="db-row db-row-head">
+            <span>Tür</span>
+            <span>Kayıt</span>
+            <span>Tutar</span>
+            <span>Durum</span>
+            <span>Tarih</span>
+            <span>Saat</span>
+          </div>
+          @for (activity of allActivities(); track activity.type + activity.record) {
+          <a class="db-row" [routerLink]="activity.link">
+            <span><span class="db-type">{{ activity.type }}</span></span>
+            <span class="db-record">
+              <strong class="record-no" [title]="activity.record">{{ activity.record | recordNo:'full' }}</strong>
+              <small>{{ activity.detail }}</small>
+            </span>
+            <span class="db-amount">
+              {{ activity.amount !== null ? (activity.amount | number:'1.0-0') + ' ₺' : '—' }}
+            </span>
+            <span><span class="db-badge" [ngClass]="activity.tone">{{ activity.status }}</span></span>
+            <span class="db-date">{{ activity.date | backendDate:'date' }}</span>
+            <span class="db-date db-time">{{ activity.date | backendTime }}</span>
+          </a>
+        }
+        </div>
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="isActivityDialogOpen.set(false)">Kapat</button>
+        </div>
+      </div>
+    </div>
+  }
 
 </section>

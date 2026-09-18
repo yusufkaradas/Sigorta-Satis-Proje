@@ -81,6 +81,9 @@ public class BrandSettingService : IBrandSettingService
 
         setting.LoginImage = dto.LoginImage;
         setting.FaviconImage = dto.FaviconImage;
+        setting.HeaderTitle = string.IsNullOrWhiteSpace(dto.HeaderTitle) ? null : dto.HeaderTitle.Trim();
+        setting.Slogan = string.IsNullOrWhiteSpace(dto.Slogan) ? null : dto.Slogan.Trim();
+        setting.BrowserTitle = string.IsNullOrWhiteSpace(dto.BrowserTitle) ? null : dto.BrowserTitle.Trim();
 
         setting.UpdatedDate = DateTime.UtcNow;
 
@@ -126,6 +129,9 @@ public class BrandSettingService : IBrandSettingService
             LogoImage = setting.LogoImage,
             LoginImage = setting.LoginImage,
             FaviconImage = setting.FaviconImage,
+            HeaderTitle = setting.HeaderTitle,
+            Slogan = setting.Slogan,
+            BrowserTitle = setting.BrowserTitle,
             UpdatedDate = setting.UpdatedDate
         };
     }

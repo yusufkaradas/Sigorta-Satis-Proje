@@ -36,27 +36,27 @@ a.cp-stat:hover {
 
 .cp-panel-head {
   flex: 0 0 auto;
-  min-height: 52px;
-  padding: 8px 16px;
+  min-height: k.u(52);
+  padding: k.u(8) k.u(16);
   border-bottom: 1px solid k.$border;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: k.u(12);
 }
 
 .cp-panel-head h2 {
-  font-size: 15px;
+  font-size: k.u(15);
 }
 
 .cp-panel-head span {
   color: k.$text-secondary;
-  font-size: 12px;
+  font-size: k.u(12);
 }
 
 .cp-panel-head > a:not(.cp-btn) {
   color: k.$info;
-  font-size: 12px;
+  font-size: k.u(12);
   font-weight: 700;
   text-decoration: none;
 }
@@ -129,7 +129,7 @@ a.cp-stat:hover {
 
   div {
     display: flex;
-    gap: 6px;
+    gap: k.u(6);
   }
 }
 
@@ -142,7 +142,7 @@ a.cp-stat:hover {
   }
 
   .cp-table {
-    min-width: 600px;
+    min-width: k.u(600);
   }
 }
 
@@ -161,7 +161,7 @@ a.cp-stat:hover {
 
   small {
     color: k.$text-secondary;
-    font-size: 11px;
+    font-size: k.u(11);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -169,7 +169,7 @@ a.cp-stat:hover {
 }
 
 .cp-actions-col {
-  width: 190px;
+  width: k.u(190);
   white-space: nowrap;
 }
 
@@ -181,15 +181,15 @@ a.cp-stat:hover {
 .cp-act {
   display: inline-flex;
   align-items: center;
-  height: 26px;
-  margin-left: 6px;
-  padding: 0 10px;
+  height: k.u(26);
+  margin-left: k.u(6);
+  padding: 0 k.u(10);
   border: 1px solid k.$border;
-  border-radius: 6px;
+  border-radius: k.u(6);
   background: #fff;
   color: #000;
   font: inherit;
-  font-size: 12px;
+  font-size: k.u(12);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -217,7 +217,7 @@ a.cp-stat:hover {
 
 .cp-head-actions {
   display: flex;
-  gap: 8px;
+  gap: k.u(8);
 }
 
 .cp-table td.cp-actions {

@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.PricingRuleChangeRequest;
+using Kasko.Business.DTOs.PricingRuleChangeRequest;
 using Kasko.Business.Interfaces;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -181,7 +181,8 @@ public class PricingRuleChangeRequestService
 
     public async Task RejectAsync(
         Guid id,
-        Guid approvedBy)
+        Guid approvedBy,
+        string? reason = null)
     {
         var request =
             await _unitOfWork.PricingRuleChangeRequests
@@ -200,6 +201,7 @@ public class PricingRuleChangeRequestService
         }
 
         request.Status = "Rejected";
+        request.RejectReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         request.ApprovedBy = approvedBy;
         request.ApprovedDate = DateTime.UtcNow;
         request.UpdatedDate = DateTime.UtcNow;
@@ -225,7 +227,8 @@ public class PricingRuleChangeRequestService
             ApprovedBy = request.ApprovedBy,
             ApprovedDate = request.ApprovedDate,
             Status = request.Status,
-            EffectiveFrom = request.EffectiveFrom
+            EffectiveFrom = request.EffectiveFrom,
+            RejectReason = request.RejectReason
         };
     }
 }

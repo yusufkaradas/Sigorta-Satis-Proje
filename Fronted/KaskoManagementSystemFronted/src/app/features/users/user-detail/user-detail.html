@@ -34,7 +34,7 @@
         <dl class="kf-details">
           <div><dt>Ad</dt><dd>{{ user.firstName }}</dd></div>
           <div><dt>Soyad</dt><dd>{{ user.lastName }}</dd></div>
-          <div class="kf-span-all"><dt>Telefon</dt><dd>{{ user.phoneNumber || '—' }}</dd></div>
+          <div class="kf-span-all"><dt>Telefon</dt><dd><app-id-badge [value]="user.phoneNumber" /></dd></div>
         </dl>
       </section>
 

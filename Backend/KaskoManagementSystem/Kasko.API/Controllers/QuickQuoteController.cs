@@ -81,6 +81,23 @@ public class QuickQuoteController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("estimate/pdf")]
+    public async Task<IActionResult> EstimatePdf(
+        [FromBody] QuickQuoteEstimatePdfRequestDto dto,
+        [FromServices] IQuickQuoteEstimateService estimateService,
+        CancellationToken cancellationToken)
+    {
+        var result =
+            await estimateService.EstimateAsync(
+                dto,
+                cancellationToken);
+
+        var bytes =
+            await _policyPdfService.GenerateEstimateAsync(result, dto);
+
+        return File(bytes, "application/pdf", $"{(string.IsNullOrWhiteSpace(dto.Reference) ? $"Kasko-Teklif-{DateTime.Now:yyyyMMdd}" : dto.Reference)}.pdf");
+    }
+
     private string? ResolveVerificationToken()
     {
         return Request.Headers["X-QuickQuote-Token"].FirstOrDefault();
@@ -200,7 +217,7 @@ public class QuickQuoteController : ControllerBase
     }
 
     [HttpPost("otp/send")]
-    public IActionResult SendOtp(
+    public async Task<IActionResult> SendOtp(
         [FromBody] QuickQuoteCustomerLookupRequestDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.IdentityNumber) ||
@@ -211,6 +228,10 @@ public class QuickQuoteController : ControllerBase
                 message = "T.C. Kimlik No ve telefon numarası zorunludur."
             });
         }
+
+        await _customerService.GetForQuickQuoteAsync(
+            dto.IdentityNumber,
+            dto.PhoneNumber);
 
         var code =
             _verificationService.SendCode(

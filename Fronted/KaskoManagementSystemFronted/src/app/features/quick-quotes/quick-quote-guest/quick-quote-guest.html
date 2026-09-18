@@ -37,7 +37,7 @@
       <div class="qq-company">{{ brand().companyName }}</div>
 
       <a [routerLink]="isLoggedIn ? '/customer' : '/login'" class="qq-header-button">
-        {{ isLoggedIn ? 'Hesabım' : 'Giriş Yap' }}
+        {{ isLoggedIn ? 'HESABIM' : 'GİRİŞ YAP' }}
       </a>
 
     </header>
@@ -202,7 +202,7 @@
 
                 <div class="qq-risk-title">
                   <strong>Doğum Yılınız</strong>
-                  <small>Sürücü yaşı primi doğrudan etkiler</small>
+                  <small>Sürücü yaşı primi doğrudan etkiler. Kayıt olduğunuzda fiyat kimlik bilgilerinizdeki doğum tarihine göre kesinleşir.</small>
                 </div>
 
                 <div class="qq-field qq-field-inline">
@@ -370,9 +370,13 @@
 
                       <ul class="qg-offer-list">
                         @for (coverage of allCoverages(estimate); track coverage.coverageId) {
-                          <li [class.missing]="!hasCoverage(item, coverage.coverageId)">{{ coverage.coverageName }}</li>
+                          <li [class.missing]="!hasCoverage(item, coverage.coverageId)">{{ coverage.coverageName }}@if (coverage.description) {<i class="cov-help" [attr.data-tip]="coverage.description">?</i>}</li>
                         }
                       </ul>
+
+                      @if (offerUpgrade(item); as note) {
+                        <span class="qg-upgrade">{{ note }}</span>
+                      }
 
                       <span class="qg-offer-pick">{{ selectedPackageId() === item.packageId ? '✓ Seçili paket' : 'Bu paketi seç' }}</span>
 
@@ -392,14 +396,24 @@
                             <option [value]="option.id" [selected]="option.id === row.selectedId">{{ option.name }}{{ option.extraPrice > 0 ? ' (+' + (option.extraPrice | number:'1.0-0') + ' ₺)' : '' }}</option>
                           }
                         </select>
+                <em class="qg-deductible-hint">{{ limitHint(row.coverageName) }}</em>
                       </label>
                     }
+                    <label class="qg-limit">
+                      <small>Muafiyet</small>
+                      <select [value]="deductible" [disabled]="isRepricing()" (change)="changeDeductible(+$any($event.target).value)">
+                        @for (item of deductibleOptions; track item.value) {
+                          <option [value]="item.value" [selected]="item.value === deductible">{{ item.label }}</option>
+                        }
+                      </select>
+                      <em class="qg-deductible-hint">{{ deductibleHint() }}</em>
+                    </label>
                   </div>
                 }
 
 
 
-                <p class="qq-note">{{ isRepricing() ? 'Fiyatlar seçtiğiniz limitlere göre güncelleniyor...' : 'Bu fiyat girdiğiniz bilgilere göre hesaplanan tahmini primdir. Limit seçimleri tüm paketlere uygulanır.' }}</p>
+                <p class="qq-note">{{ isRepricing() ? 'Fiyatlar seçtiğiniz limitlere göre güncelleniyor...' : 'Bu fiyat girdiğiniz bilgilere göre hesaplanan tahmini primdir. Teklifi PDF olarak indirebilir, satın almak için kayıt olarak müşteri portalına geçebilirsiniz.' }}</p>
 
               </div>
 
@@ -409,11 +423,72 @@
                   @if (selectedPackage; as chosen) {
                     <span><small>{{ chosen.packageName }}</small><strong>{{ chosen.totalPremium | number:'1.2-2' }} ₺ / yıl</strong></span>
                   }
-                  <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="continueToPurchase()">Teklifi Kaydet ve Satın Al →</button>
+                  <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="createOffer()">Teklifi Oluştur →</button>
                 </div>
               </div>
 
             }
+
+          </div>
+
+        }
+
+        @if (currentStep() === 4 && selectedPackage; as chosen) {
+
+          <div class="qq-step">
+
+            <div class="qq-step-head">
+              <span class="qq-eyebrow">Adım 4</span>
+              <h1>Teklifiniz Oluşturuldu</h1>
+              <p>Teklifinizi PDF olarak indirebilir, satın almak için müşteri portalına geçebilirsiniz.</p>
+            </div>
+
+            <div class="qq-body qg-offer-done">
+
+              <div class="qg-done-card">
+                <div class="qg-done-head">
+                  <span class="qg-done-check">✓</span>
+                  <div>
+                    <small>Teklif No</small>
+                    <strong>{{ offerReference }}</strong>
+                  </div>
+                  <div class="qg-done-valid">
+                    <small>Geçerlilik</small>
+                    <strong>{{ offerValidUntil | date:'dd.MM.yyyy' }}</strong>
+                  </div>
+                </div>
+
+                <dl class="qg-done-grid">
+                  <div><dt>Araç</dt><dd>{{ selectedBrandName }} {{ selectedTypeName }}</dd></div>
+                  <div><dt>Plaka</dt><dd>{{ plateNumber || 'Plakasız' }}</dd></div>
+                  <div><dt>Paket</dt><dd>{{ chosen.packageName }}</dd></div>
+                  <div><dt>Teminat</dt><dd>{{ chosen.coverages.length }} teminat</dd></div>
+                  <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsCount === 0 ? 'Hasarsız' : claimsCount + ' hasar' }}</dd></div>
+                  <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+                </dl>
+
+                <div class="qg-done-price">
+                  <span>Yıllık prim</span>
+                  <strong>{{ chosen.totalPremium | number:'1.2-2' }} ₺</strong>
+                  <small>Peşin veya 9 taksitle aylık {{ chosen.totalPremium / 9 | number:'1.2-2' }} ₺</small>
+                </div>
+              </div>
+
+              <ol class="qg-done-steps">
+                <li><b>1</b> Teklifinizi PDF olarak indirin ve inceleyin.</li>
+                <li><b>2</b> Müşteri portalına giriş yapın ya da kayıt olun.</li>
+                <li><b>3</b> Teklif hesabınıza aktarılır; ödemeyi peşin veya taksitle tamamlayın.</li>
+              </ol>
+
+            </div>
+
+            <div class="qq-actions">
+              <button type="button" class="qq-btn qq-btn-ghost" (click)="currentStep.set(3)">← Paketlere Dön</button>
+              <div class="qg-action-summary">
+                <button type="button" class="qq-btn qq-btn-ghost" [disabled]="isDownloading()" (click)="downloadPdf()">{{ isDownloading() ? 'Hazırlanıyor...' : 'Teklifi PDF İndir' }}</button>
+                <button type="button" class="qq-btn qq-btn-primary" (click)="continueToPurchase()">{{ isLoggedIn ? 'Portalda Satın Al →' : 'Satın Almak İçin Kayıt Ol →' }}</button>
+              </div>
+            </div>
 
           </div>
 

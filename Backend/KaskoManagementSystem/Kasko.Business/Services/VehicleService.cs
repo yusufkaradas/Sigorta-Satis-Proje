@@ -238,8 +238,8 @@ namespace Kasko.Business.Services
 
                 PlateNumber = normalizedPlate,
                 VIN = dto.VIN,
-                Brand = dto.Brand,
-                Model = dto.Model,
+                Brand = dto.Brand.Trim().ToUpperInvariant(),
+                Model = dto.Model.Trim().ToUpperInvariant(),
                 ModelYear = dto.ModelYear,
                 BrandCode = dto.BrandCode,
                 TypeCode = dto.TypeCode,
@@ -382,10 +382,10 @@ namespace Kasko.Business.Services
 
             vehicle.PlateNumber = dto.PlateNumber;
             vehicle.VIN = dto.VIN;
-            vehicle.Brand = dto.Brand;
+            vehicle.Brand = dto.Brand.Trim().ToUpperInvariant();
             vehicle.BrandCode = dto.BrandCode;
 
-            vehicle.Model = dto.Model;
+            vehicle.Model = dto.Model.Trim().ToUpperInvariant();
             vehicle.ModelYear = dto.ModelYear;
 
             vehicle.TypeCode = dto.TypeCode;

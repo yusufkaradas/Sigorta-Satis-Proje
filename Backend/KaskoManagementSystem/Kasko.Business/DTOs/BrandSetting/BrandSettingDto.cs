@@ -12,5 +12,11 @@ public class BrandSettingDto
 
     public string? FaviconImage { get; set; }
 
+    public string? HeaderTitle { get; set; }
+
+    public string? Slogan { get; set; }
+
+    public string? BrowserTitle { get; set; }
+
     public DateTime? UpdatedDate { get; set; }
 }

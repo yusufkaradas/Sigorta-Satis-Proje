@@ -1,3 +1,4 @@
+import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
@@ -47,7 +48,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     { number: 1, label: 'Araç Bilgileri' },
     { number: 2, label: 'Sürücü Bilgileri' },
     { number: 3, label: 'Teklifleriniz' },
-    { number: 4, label: 'Satın Alma' }
+    { number: 4, label: 'Teklif Özeti' }
   ];
 
   readonly categoryLabels: Record<string, string> = {
@@ -281,17 +282,24 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     return Math.max(0, new Date().getFullYear() - (this.modelYear ?? new Date().getFullYear()));
   }
 
-  allCoverages(estimate: GuestEstimateResult): { coverageId: string; coverageName: string }[] {
-    const seen = new Map<string, string>();
-    [...estimate.packages]
-      .sort((a, b) => b.coverages.length - a.coverages.length)
-      .forEach(item => item.coverages.forEach(coverage => {
-        if (!seen.has(coverage.coverageId)) {
-          seen.set(coverage.coverageId, coverage.coverageName);
-        }
-      }));
-    return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  allCoverages(estimate: GuestEstimateResult): CoverageRow[] {
+    return collectCoverageRows(estimate.packages);
   }
+
+  offerUpgrade(item: GuestEstimatePackage): string | null {
+    const chosen = this.selectedPackage;
+    if (!chosen || chosen.packageId === item.packageId) {
+      return null;
+    }
+    return upgradeNote(chosen.packageName, chosen.totalPremium, chosen.coverages.map(c => c.coverageId), item.totalPremium, item.coverages);
+  }
+
+  readonly limitHint = limitHint;
+
+  deductibleHint(): string {
+    return deductibleExample(this.deductible);
+  }
+
 
   coverageOptionIds: Record<string, string> = {};
 
@@ -312,8 +320,23 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     return [...seen.values()];
   }
 
+  readonly deductibleOptions = [
+    { value: 0, label: 'Muafiyetsiz' },
+    { value: 2, label: '%2 muafiyet (%10 indirim)' },
+    { value: 5, label: '%5 muafiyet (%20 indirim)' }
+  ];
+
+  changeDeductible(value: number): void {
+    this.deductible = value;
+    this.reprice();
+  }
+
   changeOption(coverageId: string, optionId: string): void {
     this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+    this.reprice();
+  }
+
+  private reprice(): void {
     this.isRepricing.set(true);
     this.guestService.estimate(this.buildEstimateRequest()).subscribe({
       next: data => {
@@ -321,6 +344,48 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         this.isRepricing.set(false);
       },
       error: () => this.isRepricing.set(false)
+    });
+  }
+
+  isDownloading = signal(false);
+
+  offerReference = '';
+
+  offerValidUntil = new Date();
+
+  createOffer(): void {
+    if (!this.selectedPackage) {
+      return;
+    }
+    const now = new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    this.offerReference = `HT-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    this.offerValidUntil = new Date(now.getTime() + 7 * 86400000);
+    this.errorMessage.set('');
+    this.currentStep.set(4);
+  }
+
+  downloadPdf(): void {
+    this.isDownloading.set(true);
+    this.guestService.estimatePdf({
+      ...this.buildEstimateRequest(),
+      packageId: this.selectedPackageId(),
+      plateNumber: this.plateNumber.trim(),
+      reference: this.offerReference || null
+    }).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${this.offerReference || 'Kasko-Teklif'}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.isDownloading.set(false);
+      },
+      error: () => {
+        this.isDownloading.set(false);
+        this.errorMessage.set('PDF oluşturulamadı. Lütfen tekrar deneyin.');
+      }
     });
   }
 
@@ -443,6 +508,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         color: this.color,
         usage: this.usage,
         claimsCount: this.claimsCount,
+        deductible: this.deductible,
         packageId: this.selectedPackageId(),
         coverageOptionIds: this.coverageOptionIds
       }));

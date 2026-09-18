@@ -1,3 +1,5 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
 :host {
   display: block;
   height: 100%;
@@ -9,31 +11,31 @@
 }
 
 .notif-state {
-  padding: 40px;
+  padding: k.u(40);
   text-align: center;
   color: #6b7280;
 }
 
 .notif-list {
   margin: 0;
-  padding: 8px 16px;
+  padding: k.u(8) k.u(16);
   list-style: none;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: k.u(8);
 }
 
 .notif-item {
   width: 100%;
-  padding: 12px 14px;
+  padding: k.u(12) k.u(14);
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: k.u(10);
   background: #fff;
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: k.u(10) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: k.u(12);
   text-align: left;
   cursor: pointer;
 
@@ -48,8 +50,8 @@
 }
 
 .notif-dot {
-  width: 8px;
-  height: 8px;
+  width: k.u(8);
+  height: k.u(8);
   border-radius: 50%;
   background: transparent;
 }
@@ -62,31 +64,31 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: k.u(3);
 }
 
 .notif-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: k.u(8);
 
   strong {
-    font-size: 14px;
+    font-size: k.u(14);
   }
 }
 
 .notif-tag {
-  padding: 1px 8px;
+  padding: 1px k.u(8);
   border-radius: 999px;
   background: #f3f4f6;
   color: #374151;
-  font-size: 11px;
+  font-size: k.u(11);
   font-weight: 600;
 }
 
 .notif-message {
   color: #4b5563;
-  font-size: 13px;
+  font-size: k.u(13);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -94,7 +96,7 @@
 
 .notif-date {
   color: #6b7280;
-  font-size: 12px;
+  font-size: k.u(12);
   text-align: right;
 
   small {
@@ -103,16 +105,16 @@
 }
 
 .notif-pager {
-  padding: 10px 16px;
+  padding: k.u(10) k.u(16);
   border-top: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: #6b7280;
-  font-size: 12px;
+  font-size: k.u(12);
 
   div {
     display: flex;
-    gap: 6px;
+    gap: k.u(6);
   }
 }

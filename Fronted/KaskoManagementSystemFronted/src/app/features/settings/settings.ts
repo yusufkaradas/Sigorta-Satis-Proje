@@ -25,6 +25,12 @@ export class Settings implements OnInit {
 
   systemName = '';
 
+  headerTitle = '';
+
+  slogan = '';
+
+  browserTitle = '';
+
   logoImage = signal<string | null>(null);
 
   loginImage = signal<string | null>(null);
@@ -41,6 +47,9 @@ export class Settings implements OnInit {
     const current = this.brandService.brand();
     this.companyName = current.companyName;
     this.systemName = current.systemName;
+    this.headerTitle = current.headerTitle ?? '';
+    this.slogan = current.slogan ?? '';
+    this.browserTitle = current.browserTitle ?? '';
     this.logoImage.set(current.logoImage ?? null);
     this.loginImage.set(current.loginImage ?? null);
     this.faviconImage.set(current.faviconImage ?? null);
@@ -150,6 +159,9 @@ export class Settings implements OnInit {
       .update({
         companyName: this.companyName.trim(),
         systemName: this.systemName.trim(),
+        headerTitle: this.headerTitle.trim() || null,
+        slogan: this.slogan.trim() || null,
+        browserTitle: this.browserTitle.trim() || null,
         logoImage: this.logoImage(),
         loginImage: this.loginImage(),
         faviconImage: this.faviconImage()

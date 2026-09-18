@@ -1,3 +1,4 @@
+import { IdBadge } from '../../../core/components/id-badge';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { CancellationService, CancellationStatus, PolicyCancellation, estimateRefund } from '../../cancellations/cancellation.service';
@@ -27,7 +28,7 @@ import {
 @Component({
   selector: 'app-policy-detail',
   standalone: true,
-  imports: [PlateBadge, 
+  imports: [IdBadge, PlateBadge, 
     BackendDatePipe,
     RecordNumberPipe,
     CommonModule,
@@ -532,6 +533,27 @@ private loadPayment(
   }
 
   isDownloading = false;
+
+  downloadTerms(): void {
+    if (!this.policy?.id) {
+      return;
+    }
+    const number = this.policy.policyNumber;
+    this.policyService.downloadTermsPdf(this.policy.id).subscribe({
+      next: blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${number ?? 'police'}-Genel-Sartlar.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.errorMessage = 'Genel şartlar belgesi oluşturulamadı.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   downloadPdf(): void {
 

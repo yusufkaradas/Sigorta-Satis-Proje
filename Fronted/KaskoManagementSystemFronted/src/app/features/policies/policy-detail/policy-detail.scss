@@ -1,4 +1,29 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
 :host {
   display: block;
   height: 100%;
+}
+
+.pd-coverages {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: k.u(6);
+
+  .kf-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: k.u(12);
+  }
+
+  strong {
+    overflow: visible;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #6b7280;
+    text-align: right;
+  }
 }

@@ -125,6 +125,9 @@
                   <span class="request-status" [ngClass]="statusClass(request.status)">
                     {{ statusText(request.status) }}
                   </span>
+                  @if (request.rejectReason) {
+                    <small class="request-reject-reason" [title]="request.rejectReason">{{ request.rejectReason }}</small>
+                  }
                 </td>
                 <td class="actions-cell col-actions">
                   <button type="button" class="detail-button" (click)="openDetail(request)">{{ !portal.isManager && request.status === 'Pending' ? 'İncele' : 'Detay' }}</button>
@@ -190,6 +193,18 @@
           {{ impactText(request) }}
         </p>
 
+        @if (impact(); as sim) {
+          @if (sim.supported && sim.affectedQuotes) {
+            <div class="rule-simulation">
+              <strong>Etki Simülasyonu · Son 30 gün</strong>
+              <span>{{ sim.totalQuotes }} tekliften {{ sim.affectedQuotes }} tanesi bu kuraldan etkilenirdi.</span>
+              <span>Ortalama prim {{ sim.oldAverage | number:'1.0-0' }} ₺ → {{ sim.newAverage | number:'1.0-0' }} ₺ <b [class.impact-up]="(sim.changePercent ?? 0) > 0" [class.impact-down]="(sim.changePercent ?? 0) < 0">({{ (sim.changePercent ?? 0) > 0 ? '+' : '' }}%{{ sim.changePercent }})</b></span>
+            </div>
+          } @else if (sim.supported) {
+            <div class="rule-simulation"><strong>Etki Simülasyonu · Son 30 gün</strong><span>Son 30 günde bu kuraldan etkilenen teklif yok.</span></div>
+          }
+        }
+
         <dl class="rule-facts">
           <div><dt>Gerekçe</dt><dd>{{ request.reason }}</dd></div>
           <div><dt>Talep Eden</dt><dd>{{ requesterName(request.requestedBy) }} · {{ request.requestedDate | date:'dd.MM.yyyy HH:mm' }}</dd></div>
@@ -197,7 +212,20 @@
           @if (request.approvedDate) {
             <div><dt>Karar Tarihi</dt><dd>{{ request.approvedDate | date:'dd.MM.yyyy HH:mm' }}</dd></div>
           }
+          @if (request.rejectReason) {
+            <div><dt>Ret Gerekçesi</dt><dd>{{ request.rejectReason }}</dd></div>
+          }
         </dl>
+
+        @if (!portal.isManager && request.status === 'Pending') {
+          <label class="rule-reject-note">
+            <span>Ret gerekçesi (reddederseniz manager görür)</span>
+            <textarea rows="2" [value]="rejectNote" (input)="rejectNote = $any($event.target).value" placeholder="Örn. Piyasa verileriyle uyumlu değil"></textarea>
+          </label>
+          @if (errorMessage()) {
+            <div class="rule-dialog-error">{{ errorMessage() }}</div>
+          }
+        }
 
         <div class="rule-dialog-actions">
           <button type="button" class="clear-button" (click)="closeDetail()">Kapat</button>

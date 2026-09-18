@@ -600,6 +600,15 @@ namespace Kasko.Business.Services
                     DateTime.UtcNow.Year - vehicle.ModelYear,
                     dto.Usage);
 
+            var vehicleCategory =
+                await ResolveVehicleCategoryAsync(vehicle);
+
+            if (vehicleCategory != null &&
+                !string.Equals(vehicleCategory, "Otomobil", StringComparison.OrdinalIgnoreCase))
+            {
+                reviewReasons.Add($"{vehicleCategory} sınıfı araç (ticari / ağır vasıta ayrıca değerlendirilir)");
+            }
+
             var quote = new Quote
             {
                 Id = Guid.NewGuid(),
@@ -916,6 +925,25 @@ namespace Kasko.Business.Services
 
             return age < 0 ? 0 : age;
         }
+        private async Task<string?> ResolveVehicleCategoryAsync(Vehicle vehicle)
+        {
+            if (string.IsNullOrWhiteSpace(vehicle.BrandCode) || string.IsNullOrWhiteSpace(vehicle.TypeCode))
+            {
+                return null;
+            }
+
+            var catalog = _unitOfWork.VehicleValueCatalogs;
+
+            if (catalog == null)
+            {
+                return null;
+            }
+
+            var entry = await catalog.GetActiveByKeyAsync(vehicle.BrandCode, vehicle.TypeCode, vehicle.ModelYear);
+
+            return string.IsNullOrWhiteSpace(entry?.VehicleCategory) ? null : entry.VehicleCategory;
+        }
+
         private async Task<List<string>> EvaluateAutoApprovalAsync(
             decimal premium,
             decimal marketValue,
@@ -925,9 +953,9 @@ namespace Kasko.Business.Services
         {
             var reasons = new List<string>();
 
-            var maxPremium = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_PREMIUM", 75000m);
-            var maxMarketValue = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_MARKET_VALUE", 3000000m);
-            var maxClaims = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_CLAIMS", 1m);
+            var maxPremium = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_PREMIUM", 150000m);
+            var maxMarketValue = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_MARKET_VALUE", 5000000m);
+            var maxClaims = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_CLAIMS", 2m);
             var maxVehicleAge = await GetRuleOrDefaultAsync("AUTO_APPROVE_MAX_VEHICLE_AGE", 12m);
 
             if (premium > maxPremium)

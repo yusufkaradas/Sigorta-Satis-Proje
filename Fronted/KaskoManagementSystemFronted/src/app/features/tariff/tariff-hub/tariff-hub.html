@@ -1,0 +1,23 @@
+<div class="hub">
+
+  <nav class="hub-tabs" aria-label="Paketler">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        class="hub-tab"
+        [class.active]="active() === tab.key"
+        [attr.aria-current]="active() === tab.key ? 'page' : null"
+        (click)="select(tab.key)">
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="hub-body">
+    @switch (active()) {
+      @case ('rules') { <app-pricing-rules [embedded]="true" /> }
+      @default { <app-tariff [embedded]="true" /> }
+    }
+  </div>
+
+</div>

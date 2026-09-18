@@ -1465,7 +1465,7 @@ public class QuoteServiceTests
                     RiskAdjustedPremium = 22_000m,
                     Coverages = Array.Empty<PricingCoverageResult>(),
                     CoveragePremium = 0m,
-                    TotalPremium = 150_000m
+                    TotalPremium = 200_000m
                 });
         _quoteRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Quote>()))
@@ -1504,7 +1504,7 @@ public class QuoteServiceTests
         Assert.Contains("Prim", result.ReviewReason);
 
         Assert.Equal(
-               150000m,
+               200000m,
                result.PremiumAmount);
 
         Assert.False(

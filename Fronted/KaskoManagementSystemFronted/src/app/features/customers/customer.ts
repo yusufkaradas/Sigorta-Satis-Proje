@@ -1,3 +1,4 @@
+import { IdBadge } from '../../core/components/id-badge';
 import {
   Component,
   OnInit,
@@ -46,7 +47,7 @@ interface CustomerRow {
 
 @Component({
   selector: 'app-customers',
-  imports: [
+  imports: [IdBadge, 
     CommonModule,
     RouterLink
   ],
@@ -281,7 +282,7 @@ export class Customers implements OnInit {
       return value || '—';
     }
 
-    return `0${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`;
+    return `+90 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`;
   }
 
   private titleCase(value: string): string {

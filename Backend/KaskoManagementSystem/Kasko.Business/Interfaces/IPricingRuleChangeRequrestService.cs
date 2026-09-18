@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.PricingRuleChangeRequest;
+using Kasko.Business.DTOs.PricingRuleChangeRequest;
 
 namespace Kasko.Business.Interfaces;
 
@@ -14,5 +14,5 @@ public interface IPricingRuleChangeRequestService
 
     Task ApproveAsync(Guid id, Guid approvedBy);
 
-    Task RejectAsync(Guid id, Guid approvedBy);
+    Task RejectAsync(Guid id, Guid approvedBy, string? reason = null);
 }

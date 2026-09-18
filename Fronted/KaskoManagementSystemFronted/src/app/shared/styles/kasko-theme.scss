@@ -436,7 +436,8 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: u(20);
+    font-size: u(18);
+    font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
     transition: background 0.15s ease, color 0.15s ease;
@@ -460,7 +461,8 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     background: $danger;
     color: $surface;
     font-family: $font;
-    font-size: u(20);
+    font-size: u(18);
+    font-weight: 600;
     cursor: pointer;
   }
 
@@ -537,7 +539,8 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     overflow: hidden;
     font-family: $font;
     font-size: u(15);
-    font-weight: 400;
+    font-weight: 600;
+    text-transform: uppercase;
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
@@ -973,7 +976,11 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
     .brand-system {
-      font-size: u(15);
+      width: auto;
+      min-width: u(200);
+      max-width: u(280);
+      padding: 0 u(16);
+      font-size: u(14);
     }
 
     .brand-image-placeholder {

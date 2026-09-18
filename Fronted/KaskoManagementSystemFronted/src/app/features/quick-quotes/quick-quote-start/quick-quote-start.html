@@ -53,7 +53,7 @@
         *ngIf="!isLoggedIn"
         routerLink="/login"
         class="qq-header-button">
-        Giriş Yap
+        GİRİŞ YAP
       </a>
 
       <a
@@ -113,17 +113,23 @@
                 T.C. Kimlik No
               </label>
 
-              <input
-                id="identityNumber"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                maxlength="11"
-                [value]="identityNumber"
-                [disabled]="otpSent"
-                (input)="onIdentityInput($event)"
-                (keydown)="onNumericKeydown($event)"
-                placeholder="11 haneli T.C. Kimlik No" />
+              <div class="qq-phone qq-tc">
+
+                <span>T.C.</span>
+  
+                <input
+                  id="identityNumber"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  maxlength="11"
+                  [value]="identityNumber"
+                  [disabled]="otpSent"
+                  (input)="onIdentityInput($event)"
+                  (keydown)="onNumericKeydown($event)"
+                  placeholder="11 haneli T.C. Kimlik No" />
+
+              </div>
 
             </div>
 
@@ -170,7 +176,7 @@
                 (keydown.enter)="onContinue()"
                 placeholder="6 haneli kod" />
 
-              <small class="qq-otp-demo">Demo: SMS yerine kodunuz burada gösteriliyor → <b>{{ demoCode }}</b></small>
+              <div class="demo-code-box">Demo doğrulama kodu: <strong>{{ demoCode }}</strong></div>
 
               <div class="qq-otp-actions">
                 <button type="button" class="qq-link" [disabled]="isLoading" (click)="resetOtp()">Bilgileri değiştir</button>
@@ -545,9 +551,11 @@
                   <li
                     *ngFor="let row of offerCoverageRows"
                     [class.missing]="!packageIncludes(packageItem, row.coverageId)">
-                    {{ row.coverageName }}
+                    {{ row.coverageName }}<i class="cov-help" *ngIf="row.description" [attr.data-tip]="row.description">?</i>
                   </li>
                 </ul>
+
+                <span class="qg-upgrade" *ngIf="offerUpgrade(packageItem) as note">{{ note }}</span>
 
                 <span class="qg-offer-pick">{{ selectedPackage?.id === packageItem.id ? '✓ Seçili paket' : 'Bu paketi seç' }}</span>
 
@@ -567,6 +575,14 @@
                     {{ option.name }}{{ option.extraPrice > 0 ? ' (+' + (option.extraPrice | number:'1.0-0') + ' ₺)' : '' }}
                   </option>
                 </select>
+                <em class="qg-deductible-hint">{{ limitHint(row.coverageName) }}</em>
+              </label>
+              <label class="qg-limit">
+                <small>Muafiyet</small>
+                <select [disabled]="isRepricing" (change)="changeDeductible(+$any($event.target).value)">
+                  <option *ngFor="let item of deductibleOptions" [value]="item.value" [selected]="item.value === deductible">{{ item.label }}</option>
+                </select>
+                <em class="qg-deductible-hint">{{ deductibleHint() }}</em>
               </label>
             </div>
 

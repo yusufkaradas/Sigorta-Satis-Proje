@@ -105,6 +105,9 @@ public class QuickQuoteEstimateService : IQuickQuoteEstimateService
                     {
                         CoverageId = x.CoverageId,
                         CoverageName = x.CoverageName,
+                        Description = package.Coverages
+                            .FirstOrDefault(c => c.CoverageId == x.CoverageId)?
+                            .Description,
                         Price = x.CalculatedPrice,
                         Limit = x.Limit,
                         OptionName = x.OptionName,

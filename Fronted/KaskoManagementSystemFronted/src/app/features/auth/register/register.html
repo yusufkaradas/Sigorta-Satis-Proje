@@ -36,7 +36,7 @@
   <section class="register-section">
 
     <header class="register-header">
-      <span>SİGORTA PANELİ</span>
+      <span>{{ brand().headerTitle || 'SİGORTA PANELİ' }}</span>
     </header>
 
 
@@ -115,18 +115,24 @@
                 T.C. Kimlik No
               </label>
 
-              <input
-                id="identityNumber"
-                name="identityNumber"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                maxlength="11"
-                placeholder="11 haneli T.C. Kimlik No"
-                [value]="identityNumber"
-                (input)="onIdentityInput($event)"
-                (keydown)="onNumericKeydown($event)"
-              />
+              <div class="phone-input tc-input">
+
+                <span class="phone-prefix tc-prefix">T.C.</span>
+  
+                <input
+                  id="identityNumber"
+                  name="identityNumber"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  maxlength="11"
+                  placeholder="11 haneli T.C. Kimlik No"
+                  [value]="identityNumber"
+                  (input)="onIdentityInput($event)"
+                  (keydown)="onNumericKeydown($event)"
+                />
+
+              </div>
 
             </div>
 
@@ -231,7 +237,7 @@
             </div>
 
 
-            <div class="form-group">
+            <div class="form-group form-group-address">
 
               <label for="address">
                 Adres
@@ -252,7 +258,7 @@
             <div class="form-group">
 
               <label for="password">
-                Şifre
+                Şifre <small class="label-hint">(8-20 karakter, büyük/küçük harf ve rakam)</small>
               </label>
 
               <div class="password-input-wrapper">
@@ -266,7 +272,7 @@
                       : 'password'
                   "
                   autocomplete="new-password"
-                  placeholder="8-20 karakter, büyük/küçük harf ve rakam"
+                  placeholder="Şifrenizi girin" title="8-20 karakter; büyük harf, küçük harf ve rakam içermeli"
                   [(ngModel)]="password"
                 />
 
@@ -379,7 +385,7 @@
 
 
     <footer class="register-footer">
-      © 2026 Sigorta Satış
+      {{ brand().slogan || '© 2026 Sigorta Satış' }}
     </footer>
 
   </section>

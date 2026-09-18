@@ -42,7 +42,7 @@
 
           <div class="kf-field">
             <label for="identityNumber">T.C. Kimlik No *</label>
-            <input appInputRule="digits" [ruleMaxLength]="11" id="identityNumber" type="text" inputmode="numeric" maxlength="11" name="identityNumber" [(ngModel)]="form.identityNumber" />
+            <div class="kf-prefix-input kf-prefix-tc"><span>T.C.</span><input appInputRule="digits" [ruleMaxLength]="11" id="identityNumber" type="text" inputmode="numeric" maxlength="11" name="identityNumber" [(ngModel)]="form.identityNumber" /></div>
           </div>
 
           <div class="kf-field">
@@ -74,7 +74,7 @@
 
           <div class="kf-field">
             <label for="phoneNumber">Telefon *</label>
-            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="form.phoneNumber" />
+            <div class="kf-prefix-input"><span>+90</span><input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="form.phoneNumber" /></div>
           </div>
 
           <div class="kf-field">

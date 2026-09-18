@@ -273,7 +273,15 @@ public class CustomerService : ICustomerService
                 inputPhone[2..];
         }
 
-        if (storedPhone != inputPhone)
+        var storedLast10 = storedPhone.Length >= 10 ? storedPhone[^10..] : storedPhone;
+        var inputLast10 = inputPhone.Length >= 10 ? inputPhone[^10..] : inputPhone;
+
+        if (storedLast10 != inputLast10 && !customer.IsDeleted)
+        {
+            throw new BadRequestException("Bu T.C. Kimlik No sistemimizde farklı bir telefon numarasıyla kayıtlı. Lütfen kayıtlı cep telefonunuzu girin veya hesabınızla giriş yapın.");
+        }
+
+        if (storedLast10 != inputLast10)
         {
             return new QuickQuoteCustomerLookupResponseDto
             {

@@ -14,7 +14,8 @@
 
     <nav
       class="kl-menu"
-      [class.kl-menu-dense]="menuItems.length > 8">
+      [class.kl-menu-dense]="menuItems.length > 8"
+      [class.kl-menu-manager]="isManager">
 
       @for (item of menuItems; track item.path) {
         <a

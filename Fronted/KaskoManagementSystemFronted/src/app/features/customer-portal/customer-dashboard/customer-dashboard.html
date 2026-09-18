@@ -7,37 +7,29 @@
 
   <section class="cp-stats">
 
-    <a
-      routerLink="/customer/vehicles"
-      class="cp-stat">
+    <div class="cp-stat">
       <span>Araçlarım</span>
       <strong>{{ vehicles().length }}</strong>
       <small>Kayıtlı araç</small>
-    </a>
+    </div>
 
-    <a
-      routerLink="/customer/quotes"
-      class="cp-stat">
+    <div class="cp-stat">
       <span>Tekliflerim</span>
       <strong>{{ quotes().length }}</strong>
       <small>{{ activeQuoteCount() }} bekleyen teklif</small>
-    </a>
+    </div>
 
-    <a
-      routerLink="/customer/policies"
-      class="cp-stat">
+    <div class="cp-stat">
       <span>Aktif Poliçelerim</span>
       <strong>{{ activePolicyCount() }}</strong>
       <small>Toplam {{ policies().length }} poliçe</small>
-    </a>
+    </div>
 
-    <a
-      routerLink="/customer/payments"
-      class="cp-stat">
+    <div class="cp-stat">
       <span>Ödemelerim</span>
       <strong>{{ paidTotal() | number:'1.0-0' }} ₺</strong>
       <small>{{ payments().length }} işlem</small>
-    </a>
+    </div>
 
   </section>
 
@@ -154,6 +146,8 @@
 
       </div>
 
+      <button type="button" class="cd-card-foot" (click)="isActivityDialogOpen.set(true)">Tüm işlemlerimi gör →</button>
+
     </article>
 
 
@@ -231,5 +225,51 @@
 
 
   </section>
+
+
+  <div *ngIf="isActivityDialogOpen()" class="rule-dialog-backdrop" (click)="isActivityDialogOpen.set(false)">
+    <div class="rule-dialog cd-activity-dialog" (click)="$event.stopPropagation()">
+      <h2>Tüm İşlemlerim</h2>
+      <p class="rule-dialog-sub">Son {{ allActivities().length }} işleminiz · kayda gitmek için satıra tıklayın</p>
+      <div class="cp-table-wrap cd-activity-list">
+        <table class="cp-table">
+
+          <thead>
+            <tr>
+              <th class="cd-col-type">Tür</th>
+              <th>Numara</th>
+              <th>Durum</th>
+              <th class="cd-col-date">Tarih</th>
+              <th>Saat</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let row of allActivities()"
+              [routerLink]="row.link">
+              <td class="cp-muted">{{ row.type }}</td>
+              <td class="cp-strong record-no" [title]="row.number">{{ row.number | recordNo }}</td>
+              <td>
+                <span
+                  class="cp-badge"
+                  [ngClass]="row.statusClass">
+                  {{ row.statusText }}
+                </span>
+              </td>
+              <td class="cp-muted">{{ row.date | backendDate:'date' }}</td>
+              <td class="cp-muted">{{ row.date | backendTime }}</td>
+            </tr>
+
+          </tbody>
+
+        </table>
+      </div>
+      <div class="rule-dialog-actions">
+        <button type="button" class="clear-button" (click)="isActivityDialogOpen.set(false)">Kapat</button>
+      </div>
+    </div>
+  </div>
 
 </div>

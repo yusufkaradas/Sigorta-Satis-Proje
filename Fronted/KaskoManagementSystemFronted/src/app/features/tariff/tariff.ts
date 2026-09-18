@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { injectPortalContext } from '../../core/services/portal-context';
@@ -32,6 +32,8 @@ interface EditTarget {
   styleUrl: './tariff.scss'
 })
 export class TariffPage implements OnInit {
+
+  @Input() embedded = false;
 
   private readonly service = inject(TariffService);
 

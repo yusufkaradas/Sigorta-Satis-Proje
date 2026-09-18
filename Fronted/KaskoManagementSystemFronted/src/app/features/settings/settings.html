@@ -37,7 +37,22 @@
           <input id="systemName" name="systemName" type="text" maxlength="60" [(ngModel)]="systemName" placeholder="Örn. Sigorta Yönetim Sistemi" />
         </div>
 
-        <p class="kf-note">Bu iki yazı giriş ekranının sol panelinde görünür.</p>
+        <div class="kf-field">
+          <label for="headerTitle">Üst Başlık</label>
+          <input id="headerTitle" name="headerTitle" type="text" maxlength="40" [(ngModel)]="headerTitle" placeholder="Örn. SİGORTA PANELİ" />
+        </div>
+
+        <div class="kf-field">
+          <label for="browserTitle">Tarayıcı Sekme Adı</label>
+          <input id="browserTitle" name="browserTitle" type="text" maxlength="60" [(ngModel)]="browserTitle" placeholder="Örn. NetSigorta" />
+        </div>
+
+        <div class="kf-field">
+          <label for="slogan">Slogan</label>
+          <input id="slogan" name="slogan" type="text" maxlength="80" [(ngModel)]="slogan" placeholder="Örn. Güvenle her yolda" />
+        </div>
+
+        <p class="kf-note">Şirket ve sistem adı giriş ekranının sol panelinde; üst başlık giriş, kayıt ve şifre ekranlarının üst bandında; slogan bu ekranların alt kısmında görünür. Boş bırakılırsa varsayılan yazı kullanılır.</p>
 
       </section>
 

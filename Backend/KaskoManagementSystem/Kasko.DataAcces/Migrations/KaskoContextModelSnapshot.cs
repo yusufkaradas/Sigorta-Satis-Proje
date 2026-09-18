@@ -28,6 +28,9 @@ namespace Kasko.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BrowserTitle")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CompanyName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -47,6 +50,9 @@ namespace Kasko.DataAccess.Migrations
                     b.Property<string>("FaviconImage")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("HeaderTitle")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -54,6 +60,9 @@ namespace Kasko.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LogoImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Slogan")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SystemName")
@@ -460,6 +469,9 @@ namespace Kasko.DataAccess.Migrations
 
                     b.Property<string>("FailureReason")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InstallmentCount")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1038,6 +1050,9 @@ namespace Kasko.DataAccess.Migrations
 
                     b.Property<string>("Reason")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectReason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("RequestedBy")

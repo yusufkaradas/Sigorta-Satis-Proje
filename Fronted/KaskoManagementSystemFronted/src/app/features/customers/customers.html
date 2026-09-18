@@ -6,29 +6,29 @@
 
   <div class="customer-stats-grid">
 
-    <button type="button" class="customer-stat-card" (click)="onFilterChange('all')">
+    <div class="customer-stat-card">
       <span>Toplam Müşteri</span>
       <strong>{{ stats().total }}</strong>
       <small>{{ stats().active }} aktif · {{ stats().passive }} pasif</small>
-    </button>
+    </div>
 
-    <button type="button" class="customer-stat-card" (click)="onFilterChange('insured')">
+    <div class="customer-stat-card">
       <span>Poliçesi Olan</span>
       <strong>{{ stats().insured }}</strong>
       <small>Müşterilerin %{{ stats().insuredRate }}'i aktif poliçeli</small>
-    </button>
+    </div>
 
-    <button type="button" class="customer-stat-card" (click)="onFilterChange('uninsured')">
+    <div class="customer-stat-card">
       <span>Teklif Fırsatı</span>
       <strong>{{ stats().uninsured }}</strong>
       <small>Aktif ama poliçesi olmayan müşteri</small>
-    </button>
+    </div>
 
-    <button type="button" class="customer-stat-card" (click)="onFilterChange('noVehicle')">
+    <div class="customer-stat-card">
       <span>Aracı Kayıtsız</span>
       <strong>{{ stats().noVehicle }}</strong>
       <small>{{ stats().renewalSoon }} müşterinin poliçesi 30 günde bitiyor</small>
-    </button>
+    </div>
 
   </div>
 
@@ -114,9 +114,9 @@
               </div>
             </td>
 
-            <td class="customer-mono" title="Kişisel veri gizlendi">{{ row.maskedIdentity }}</td>
+            <td title="Kişisel veri gizlendi"><app-id-badge kind="tc" [value]="row.maskedIdentity" /></td>
 
-            <td class="customer-mono">{{ row.phone }}</td>
+            <td><app-id-badge [value]="row.phone" /></td>
 
             <td [title]="row.location">{{ row.location || '—' }}</td>
 

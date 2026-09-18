@@ -97,6 +97,7 @@
               <td class="cp-actions" (click)="$event.stopPropagation()">
                 <a class="cp-act" [routerLink]="['/customer/policies', policy.id]">Detay</a>
                 <a *ngIf="policy.status === PolicyStatus.Draft" class="cp-act cp-act-primary" [routerLink]="['/customer/policies', policy.id]">Öde</a>
+                <a *ngIf="canRenew(policy)" class="cp-act cp-act-primary" [routerLink]="['/customer/policies', policy.id]">Yenile</a>
               </td>
 
             </tr>

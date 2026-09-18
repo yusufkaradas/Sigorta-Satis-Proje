@@ -1,9 +1,12 @@
-﻿using Kasko.Business.DTOs.Auth;
+using Kasko.Business.DTOs.Auth;
 using Kasko.Business.Interfaces;
 using Kasko.Business.Security;
 using Kasko.Business.Exceptions;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace Kasko.Business.Services;
 
@@ -173,5 +176,86 @@ public class AuthService : IAuthService
             .SaveChangesAsync();
 
         return customer.Id;
+    }
+
+    private static readonly ConcurrentDictionary<string, (string Code, DateTime ExpiresAt, int Attempts)> ResetCodes = new();
+
+    public async Task<PasswordResetCodeResponseDto> SendPasswordResetCodeAsync(PasswordResetRequestDto dto)
+    {
+        var email = (dto.Email ?? string.Empty).Trim().ToLowerInvariant();
+
+        var user = (await _unitOfWork.Users.FindAsync(x => x.Email.ToLower() == email && !x.IsDeleted)).FirstOrDefault();
+
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("Bu e-posta adresiyle kayıtlı aktif bir hesap bulunamadı.");
+        }
+
+        var code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+
+        ResetCodes[email] = (code, DateTime.UtcNow.AddMinutes(5), 0);
+
+        var digits = new string((user.PhoneNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+        var masked = digits.Length >= 4 ? $"+90 5** *** ** {digits[^2..]}" : "kayıtlı telefonunuz";
+
+        return new PasswordResetCodeResponseDto
+        {
+            MaskedPhone = masked,
+            DemoCode = code
+        };
+    }
+
+    public async Task ResetPasswordAsync(PasswordResetConfirmDto dto)
+    {
+        var email = (dto.Email ?? string.Empty).Trim().ToLowerInvariant();
+
+        if (!ResetCodes.TryGetValue(email, out var pending))
+        {
+            throw new BadRequestException("Doğrulama kodu bulunamadı. Lütfen yeni kod isteyin.");
+        }
+
+        if (pending.ExpiresAt < DateTime.UtcNow)
+        {
+            ResetCodes.TryRemove(email, out _);
+            throw new BadRequestException("Doğrulama kodunun süresi doldu. Lütfen yeni kod isteyin.");
+        }
+
+        if (pending.Attempts >= 5)
+        {
+            ResetCodes.TryRemove(email, out _);
+            throw new BadRequestException("Çok fazla hatalı deneme yapıldı. Lütfen yeni kod isteyin.");
+        }
+
+        if (!string.Equals(pending.Code, dto.Code?.Trim(), StringComparison.Ordinal))
+        {
+            ResetCodes[email] = pending with { Attempts = pending.Attempts + 1 };
+            throw new BadRequestException("Doğrulama kodu hatalı.");
+        }
+
+        var password = dto.NewPassword ?? string.Empty;
+
+        if (password.Length < 8 || password.Length > 20 ||
+            !Regex.IsMatch(password, "[A-Z]") ||
+            !Regex.IsMatch(password, "[a-z]") ||
+            !Regex.IsMatch(password, "[0-9]"))
+        {
+            throw new BadRequestException("Şifre 8-20 karakter olmalı; en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.");
+        }
+
+        var user = (await _unitOfWork.Users.FindAsync(x => x.Email.ToLower() == email && !x.IsDeleted)).FirstOrDefault();
+
+        if (user == null)
+        {
+            throw new NotFoundException("Kullanıcı bulunamadı.");
+        }
+
+        user.PasswordHash = _passwordHasherService.HashPassword(user, password);
+        user.UpdatedDate = DateTime.UtcNow;
+
+        await _unitOfWork.Users.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        ResetCodes.TryRemove(email, out _);
     }
 }

@@ -1,3 +1,4 @@
+import { IdBadge } from '../../../core/components/id-badge';
 import { confirmDialog, infoDialog } from '../../../core/services/confirm-dialog';
 import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
 import {
@@ -36,7 +37,7 @@ import {
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [
+  imports: [IdBadge, 
     CommonModule,
     FormsModule,
     InputRuleDirective,

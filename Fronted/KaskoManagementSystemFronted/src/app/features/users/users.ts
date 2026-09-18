@@ -1,3 +1,4 @@
+import { IdBadge } from '../../core/components/id-badge';
 import { confirmDialog } from '../../core/services/confirm-dialog';
 import {
   ChangeDetectorRef,
@@ -42,7 +43,7 @@ import {
   selector: 'app-users',
   standalone: true,
 
-  imports: [
+  imports: [IdBadge, 
     CommonModule,
     FormsModule,
     RouterLink
@@ -103,7 +104,7 @@ formatPhone(value?: string | null): string {
   if (digits.length !== 10) {
     return value || '—';
   }
-  return `0${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`;
+  return `+90 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`;
 }
 
 roleLabel(roleName?: string | null): string {

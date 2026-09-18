@@ -84,12 +84,20 @@ offer(id: string): Observable<void> {
   return this.http.post<void>(`${this.apiUrl}/${id}/offer`, {});
 }
 
-purchase(id: string, simulateFailure = false): Observable<{ policyId: string; policyNumber: string; paymentId: string }> {
+purchase(id: string, simulateFailure = false, installmentCount = 1, startDate: string | null = null): Observable<{ policyId: string; policyNumber: string; paymentId: string }> {
   return this.http.post<{ policyId: string; policyNumber: string; paymentId: string }>(
     `${this.apiUrl}/${id}/purchase`,
-    { acceptedTerms: true, simulateFailure },
+    { acceptedTerms: true, simulateFailure, installmentCount, startDate },
     { headers: { 'X-Silent-Error': '1' } }
   );
+}
+
+shareQuote(id: string): Observable<{ link: string }> {
+  return this.http.post<{ link: string }>(`${this.apiUrl}/${id}/share`, {});
+}
+
+downloadPdf(id: string): Observable<Blob> {
+  return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
 }
 
 changeStatus(

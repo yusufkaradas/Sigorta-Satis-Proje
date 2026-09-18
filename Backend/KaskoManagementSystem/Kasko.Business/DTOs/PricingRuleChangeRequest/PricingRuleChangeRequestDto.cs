@@ -1,4 +1,4 @@
-﻿namespace Kasko.Business.DTOs.PricingRuleChangeRequest;
+namespace Kasko.Business.DTOs.PricingRuleChangeRequest;
 
 public class PricingRuleChangeRequestDto
 {
@@ -23,4 +23,7 @@ public class PricingRuleChangeRequestDto
     public string Status { get; set; } = string.Empty;
 
     public DateTime EffectiveFrom { get; set; }
+
+
+    public string? RejectReason { get; set; }
 }

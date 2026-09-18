@@ -231,7 +231,7 @@
                   {{ quote.vehicleDescription || '—' }}
                 </strong>
 
-                <app-plate *ngIf="quote.plateNumber" [value]="quote.plateNumber" size="sm" />
+                <span *ngIf="quote.plateNumber">{{ quote.plateNumber }}</span>
 
               </div>
 

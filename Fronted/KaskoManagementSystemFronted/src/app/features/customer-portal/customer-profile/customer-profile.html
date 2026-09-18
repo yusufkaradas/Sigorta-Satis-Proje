@@ -59,7 +59,7 @@
 
           <div class="kf-field">
             <label for="phoneNumber">Telefon *</label>
-            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" placeholder="05XX XXX XX XX" [(ngModel)]="phoneNumber" />
+            <div class="kf-prefix-input"><span>+90</span><input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" placeholder="5XX XXX XX XX" [(ngModel)]="phoneNumber" /></div>
           </div>
 
           <div class="kf-field">

@@ -37,7 +37,7 @@
 
           <div class="kf-field">
             <label for="phoneNumber">Telefon {{ isCustomerRole ? '*' : '' }}</label>
-            <input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" [required]="isCustomerRole" placeholder="5XX XXX XX XX" />
+            <div class="kf-prefix-input"><span>+90</span><input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" [(ngModel)]="model.phoneNumber" [required]="isCustomerRole" placeholder="5XX XXX XX XX" /></div>
           </div>
 
           <div class="kf-field">
@@ -79,7 +79,7 @@
 
           <div class="kf-field">
             <label for="identityNumber">T.C. Kimlik No *</label>
-            <input appInputRule="digits" [ruleMaxLength]="11" maxlength="11" inputmode="numeric" id="identityNumber" type="text" name="identityNumber" [(ngModel)]="model.identityNumber" required placeholder="11 haneli" />
+            <div class="kf-prefix-input kf-prefix-tc"><span>T.C.</span><input appInputRule="digits" [ruleMaxLength]="11" maxlength="11" inputmode="numeric" id="identityNumber" type="text" name="identityNumber" [(ngModel)]="model.identityNumber" required placeholder="11 haneli" /></div>
           </div>
 
           <div class="kf-field">

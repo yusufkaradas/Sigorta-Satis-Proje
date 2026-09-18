@@ -1,10 +1,12 @@
-﻿using Kasko.Entities.Enums;
+using Kasko.Entities.Enums;
 
 namespace Kasko.Business.DTOs.Payment
 {
     public class PaymentDto
     {
         public Guid Id { get; set; }
+
+        public int InstallmentCount { get; set; } = 1;
 
         public Guid PolicyId { get; set; }
 

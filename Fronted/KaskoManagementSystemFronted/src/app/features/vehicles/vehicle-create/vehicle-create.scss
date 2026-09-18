@@ -1,18 +1,20 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
 :host {
   display: block;
   height: 100%;
 }
 
 .vc-value {
-  margin-top: 12px;
-  padding: 10px 16px;
-  border-radius: 12px;
+  margin-top: k.u(12);
+  padding: k.u(10) k.u(16);
+  border-radius: k.u(12);
   background: #535353;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: k.u(16);
 
   span,
   small {
@@ -20,18 +22,18 @@
   }
 
   span {
-    font-size: 12px;
+    font-size: k.u(12);
     font-weight: 600;
   }
 
   small {
     margin-top: 2px;
     color: #d1d5db;
-    font-size: 11px;
+    font-size: k.u(11);
   }
 
   strong {
-    font-size: 22px;
+    font-size: k.u(22);
     white-space: nowrap;
   }
 }

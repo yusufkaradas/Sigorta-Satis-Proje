@@ -269,7 +269,7 @@ export class Dashboard implements OnInit {
     ];
   });
 
-  recentActivities = computed<ActivityRow[]>(() => {
+  allActivities = computed<ActivityRow[]>(() => {
 
     const data = this.data();
 
@@ -325,8 +325,69 @@ export class Dashboard implements OnInit {
     return rows
       .filter(row => !Number.isNaN(row.date.getTime()))
       .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, 5);
+      .slice(0, 50);
   });
+
+  recentActivities = computed(() => this.allActivities().slice(0, 4));
+
+  private readonly packageColors = ['#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#6b7280'];
+
+  packageStats = computed(() => {
+    const sold = (this.data()?.quotes ?? []).filter(quote => quote.status === 3);
+    const groups = new Map<string, number>();
+    for (const quote of sold) {
+      const name = (quote as { packageName?: string }).packageName || 'Diğer';
+      groups.set(name, (groups.get(name) ?? 0) + 1);
+    }
+    const total = sold.length;
+    return [...groups.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count], index) => ({
+        name,
+        count,
+        percent: this.percent(count, total),
+        color: this.packageColors[index % this.packageColors.length]
+      }));
+  });
+
+  packageTotal = computed(() => this.packageStats().reduce((sum, item) => sum + item.count, 0));
+
+  packageGradient = computed(() => {
+    const stats = this.packageStats();
+    const total = this.packageTotal();
+    if (!total) {
+      return '#e5e7eb';
+    }
+    let start = 0;
+    const parts = stats.map(item => {
+      const end = start + (item.count / total) * 100;
+      const part = `${item.color} ${start}% ${end}%`;
+      start = end;
+      return part;
+    });
+    return `conic-gradient(${parts.join(', ')})`;
+  });
+
+  followUps = computed(() => [
+    ...this.expiringQuotes().map(item => ({ ...item, kind: 'Teklif' })),
+    ...this.upcomingRenewals().map(item => ({ ...item, kind: 'Yenileme' }))
+  ].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 5));
+
+  get quickActions(): { label: string; hint: string; path: string; query?: Record<string, string> }[] {
+    const actions: { label: string; hint: string; path: string; query?: Record<string, string> }[] = [
+      { label: '+ Yeni Teklif', hint: 'Müşteri için teklif hazırla', path: '/quotes/new' },
+      { label: '+ Yeni Müşteri', hint: 'Kullanıcı ve müşteri kaydı', path: '/users/new', query: { role: 'Customer' } },
+      { label: '+ Yeni Araç', hint: 'TSB değeriyle araç ekle', path: '/vehicles/new' },
+      { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
+      { label: 'TSB Kasko Listesi', hint: 'Güncel değer listesini yükle', path: '/vehicles', query: { tab: 'catalog' } },
+      { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
+    ];
+    return this.portal.isManager
+      ? actions.filter(item => !['/quotes/new', '/users/new', '/vehicles/new'].includes(item.path) && item.query?.['tab'] !== 'catalog')
+      : actions;
+  }
+
+  isActivityDialogOpen = signal(false);
 
   lastSevenDays = computed<DayBar[]>(() => {
 

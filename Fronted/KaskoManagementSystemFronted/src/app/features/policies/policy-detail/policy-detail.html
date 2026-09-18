@@ -18,7 +18,7 @@
           </span>
         </h1>
         <p *ngIf="policy">
-          Kasko · {{ policy.startDate | backendDate }} → {{ policy.endDate | backendDate }} · Düzenlenme: {{ policy.createdDate | backendDate:'datetime' }}
+          {{ quote?.packageName || 'Kasko Sigortası' }} · Koruma: {{ policy.startDate | backendDate:'date' }} – {{ policy.endDate | backendDate:'date' }}
         </p>
       </div>
       <div class="kf-head-actions">
@@ -37,6 +37,13 @@
           [disabled]="isDownloading"
           (click)="downloadPdf()">
           {{ isDownloading ? 'Hazırlanıyor...' : 'Poliçe PDF İndir' }}
+        </button>
+        <button
+          *ngIf="policy && (policy.status === PolicyStatus.Active || policy.status === PolicyStatus.Expired)"
+          type="button"
+          class="kf-btn-outline"
+          (click)="downloadTerms()">
+          Genel Şartlar
         </button>
         <button
           *ngIf="isCustomerMode && policy?.status === PolicyStatus.Active && cancellation?.status !== CancellationStatus.Pending && !isCancelFormOpen"
@@ -94,7 +101,7 @@
 
         <dl class="kf-details">
           <div class="kf-span-all"><dt>Müşteri</dt><dd>{{ quote?.customerName || policy.customerName || '—' }}</dd></div>
-          <div><dt>Telefon</dt><dd>{{ quote?.customerPhone || '—' }}</dd></div>
+          <div><dt>Telefon</dt><dd><app-id-badge [value]="quote?.customerPhone" /></dd></div>
           <div><dt>E-posta</dt><dd [title]="quote?.customerEmail || ''">{{ quote?.customerEmail || '—' }}</dd></div>
           <div><dt>Marka</dt><dd>{{ quote?.brand || policy.brand || '—' }}</dd></div>
           <div><dt>Model</dt><dd [title]="quote?.model || policy.model || ''">{{ quote?.model || policy.model || '—' }}</dd></div>
@@ -116,7 +123,7 @@
           Teminat bilgisi bulunamadı.
         </div>
 
-        <ul *ngIf="quote?.coverages?.length" class="kf-list kf-list-2">
+        <ul *ngIf="quote?.coverages?.length" class="kf-list pd-coverages">
           <li
             *ngFor="let coverage of (quote?.coverages ?? []).slice(0, 10)"
             class="kf-list-item">
@@ -145,11 +152,12 @@
 
         <dl *ngIf="!isPaymentLoading && payment" class="kf-details kf-details-1">
           <div>
-            <dt>İşlem No</dt>
-            <dd><a [routerLink]="[basePath + '/payments', payment.id]">{{ payment.transactionNumber | recordNo:'full' }}</a></dd>
+            <dt>Ödeme No</dt>
+            <dd><a class="record-link" [routerLink]="[basePath + '/payments', payment.id]">{{ payment.transactionNumber | recordNo }}</a></dd>
           </div>
           <div><dt>Ödeme Tarihi</dt><dd>{{ payment.paymentDate | backendDate:'datetime' }}</dd></div>
-          <div><dt>Durum</dt><dd><span class="kf-badge status-success">Başarılı</span></dd></div>
+          <div><dt>Ödeme Şekli</dt><dd>{{ ($any(payment).installmentCount || 1) > 1 ? $any(payment).installmentCount + ' taksit · aylık ' + ((policy.premiumAmount / $any(payment).installmentCount) | number:'1.2-2') + ' ₺' : 'Peşin' }}</dd></div>
+          <div><dt>Durum</dt><dd><span class="kf-badge status-success">Ödendi</span></dd></div>
         </dl>
 
         <div *ngIf="!isPaymentLoading && !payment" class="kf-empty">

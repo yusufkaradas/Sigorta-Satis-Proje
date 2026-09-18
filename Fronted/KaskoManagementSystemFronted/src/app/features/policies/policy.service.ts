@@ -55,6 +55,10 @@ export class PolicyService {
     return this.http.post<{ id: string }>(`${this.apiUrl}/renew`, request);
   }
 
+  downloadTermsPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/terms-pdf`, { responseType: 'blob' });
+  }
+
   downloadPdf(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }

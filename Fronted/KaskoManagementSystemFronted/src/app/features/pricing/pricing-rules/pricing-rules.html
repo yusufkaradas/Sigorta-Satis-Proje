@@ -113,6 +113,7 @@
                   </span>
                 </td>
                 <td class="actions-cell">
+                  <button type="button" class="detail-button" (click)="openHistory(rule)">Geçmiş</button>
                   @if (portal.isManager) {
                     @if (hasPendingRequest(rule.id)) {
                       <span class="rule-status status-pending">Talep Bekliyor</span>
@@ -221,6 +222,36 @@
 
   }
 
+  @if (historyCode(); as code) {
+    <div class="rule-dialog-backdrop" (click)="historyCode.set(null)">
+      <div class="rule-dialog" (click)="$event.stopPropagation()">
+        <h2>{{ describe(code).title }}</h2>
+        <p class="rule-dialog-sub">{{ describe(code).group }} · değişiklik geçmişi</p>
+        <ol class="rule-history">
+          @for (item of historyRows(); track item.id; let i = $index) {
+            <li [class.current]="i === 0">
+              <span class="rule-history-version">v{{ item.version }}</span>
+              <div>
+                <strong>{{ formatValue(item.code, item.value) }}</strong>
+                <small>{{ item.effectiveFrom | date:'dd.MM.yyyy' }} tarihinden itibaren · {{ item.isActive ? 'Aktif' : 'Pasif' }}</small>
+              </div>
+              @if (historyRows()[i + 1]; as previous) {
+                <em [class.impact-up]="item.value > previous.value" [class.impact-down]="item.value < previous.value">
+                  {{ item.value > previous.value ? '▲' : item.value < previous.value ? '▼' : '=' }} {{ formatValue(previous.code, previous.value) }} → {{ formatValue(item.code, item.value) }}
+                </em>
+              } @else {
+                <em>İlk tanım</em>
+              }
+            </li>
+          }
+        </ol>
+        <div class="rule-dialog-actions">
+          <button type="button" class="clear-button" (click)="historyCode.set(null)">Kapat</button>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (editorMode()) {
 
     <div class="rule-dialog-backdrop" (click)="closeRuleEditor()">
@@ -231,25 +262,38 @@
 
         <p class="rule-dialog-sub">
           {{ editorMode() === 'create'
-            ? 'Yeni bir katsayı veya oran tanımlayın. Kod, fiyat hesabında kuralı bulmak için kullanılır.'
+            ? 'Değiştirmek istediğiniz kuralı seçin, yeni değerini ve geçerlilik tarihini girin. Yeni değer bu tarihten sonraki tekliflere uygulanır.'
             : ruleCode + ' kuralının bilgilerini güncelleyin.' }}
         </p>
 
         <div class="rule-dialog-grid">
 
           <label>
-            <span>Kod</span>
-            <input type="text" name="ruleCode" [(ngModel)]="ruleCode" [disabled]="editorMode() === 'edit'" placeholder="REGION_VERY_HIGH" />
+            <span>Kural</span>
+            @if (editorMode() === 'edit') {
+              <input type="text" name="ruleCode" [value]="describe(ruleCode, ruleName).title" disabled />
+            } @else {
+              <select name="ruleCode" [ngModel]="ruleCode" (ngModelChange)="selectRuleCode($event)">
+                <option value="" disabled>Kural seçin</option>
+                @for (group of ruleCodeGroups(); track group.group) {
+                  <optgroup [label]="group.group">
+                    @for (item of group.items; track item.code) {
+                      <option [value]="item.code">{{ item.title }}</option>
+                    }
+                  </optgroup>
+                }
+              </select>
+            }
           </label>
 
           <label>
             <span>Değer</span>
-            <input type="number" step="any" name="ruleValue" [(ngModel)]="ruleValue" placeholder="1.25" />
+            <input type="number" step="any" name="ruleValue" [(ngModel)]="ruleValue" placeholder="Örn. 1,25" />
           </label>
 
           <label class="rule-dialog-full">
             <span>Kural Adı</span>
-            <input type="text" name="ruleName" [(ngModel)]="ruleName" placeholder="Çok Yüksek Bölge Riski" />
+            <input type="text" name="ruleName" [(ngModel)]="ruleName" placeholder="Kural seçince otomatik dolar" />
           </label>
 
           <label class="rule-dialog-full">

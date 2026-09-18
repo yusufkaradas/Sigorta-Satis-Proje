@@ -172,7 +172,7 @@ public class PolicyPdfService : IPolicyPdfService
 
                     column.Item().Text("ÖZEL ŞARTLAR VE BİLGİLENDİRME").Bold().FontSize(11).FontColor(Primary);
 
-                    foreach (var (title, body) in Conditions(policy))
+                    foreach (var (title, body) in Conditions(policy, quote.PricingSnapshot?.DeductibleFactor ?? 1m))
                     {
                         column.Item().Column(item =>
                         {
@@ -183,6 +183,392 @@ public class PolicyPdfService : IPolicyPdfService
                 });
 
                 page.Footer().Element(footer => ComposeFooter(footer, policy, verificationCode));
+            });
+        }).GeneratePdf();
+    }
+
+    public async Task<byte[]> GenerateTermsAsync(Guid policyId)
+    {
+        var policy =
+            await _unitOfWork.Policies
+                .GetByIdIncludingDetailsAsync(policyId);
+
+        if (policy == null || policy.IsDeleted)
+        {
+            throw new NotFoundException("Poliçe bulunamadı.");
+        }
+
+        var quote =
+            await _unitOfWork.Quotes
+                .GetByIdIncludingDetailsAsync(policy.QuoteId);
+
+        if (quote == null)
+        {
+            throw new NotFoundException("Teklif bulunamadı.");
+        }
+
+        var brand =
+            (await _brandSettings.GetAllAsync()).FirstOrDefault();
+
+        var companyName = string.IsNullOrWhiteSpace(brand?.CompanyName)
+            ? "Kasko Sigorta"
+            : brand!.CompanyName;
+
+        var logo = DecodeImage(brand?.LogoImage);
+
+        var verificationCode = BuildVerificationCode(policy);
+
+        var sections = new List<(string Title, string Body)>
+        {
+            ("1. Sigortacı ve Aracı Bilgisi",
+                $"Bu sözleşme {companyName} tarafından düzenlenmiştir. Poliçe ve ödeme işlemleri müşteri portalı üzerinden yürütülür; tüm belgelere Poliçelerim sayfasından ulaşabilirsiniz."),
+            ("2. Sigortanın Konusu",
+                "Kasko sigortası, poliçede yazılı aracın teminat tablosunda belirtilen risklerden doğan maddi hasarlarını poliçe süresi boyunca güvence altına alır."),
+            ("3. Teminat Dışında Kalan Haller",
+                "Alkollü veya ehliyetsiz araç kullanımı, kasıtlı hasar, aracın kiraya verilmesi, yarış ve deneme sürüşleri ile poliçede yer almayan riskler teminat dışıdır."),
+            ("4. Hasar Anında Yapılması Gerekenler",
+                "Hasarı en geç 5 iş günü içinde bildirin, olay yerinde tutanak veya polis raporu alın, aracı onarım için eksper incelemesinden önce değiştirmeyin."),
+            ("5. Prim Ödemesi",
+                "Prim peşin veya seçilen taksit sayısına göre kartınızdan tahsil edilir. Taksitin ödenmemesi halinde teminat ödeme yapılana kadar askıya alınabilir."),
+            ("6. Cayma ve İptal",
+                "Poliçe başlangıcından itibaren 30 gün içinde cayma hakkınızı kullanabilirsiniz. İptal talebinde iade, poliçenin kullanılmayan gün sayısına göre hesaplanır."),
+            ("7. Kişisel Verilerin Korunması",
+                "Kişisel verileriniz 6698 sayılı Kanun kapsamında yalnızca sigorta sözleşmesinin kurulması ve yürütülmesi amacıyla işlenir, yasal zorunluluklar dışında üçüncü kişilerle paylaşılmaz."),
+            ("8. Uyuşmazlıkların Çözümü",
+                "Sözleşmeden doğan uyuşmazlıklarda öncelikle müşteri hizmetlerine başvurabilir, sonuç alamazsanız Sigorta Tahkim Komisyonu'na veya yetkili mahkemelere başvurabilirsiniz.")
+        };
+
+        sections.AddRange(Conditions(policy, quote.PricingSnapshot?.DeductibleFactor ?? 1m)
+            .Select((item, index) => ($"{9 + index}. {item.Title.Split(' ', 2).Last()}", item.Body)));
+
+        QuestPDF.Settings.License =
+            LicenseType.Community;
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(x => x.FontSize(8.5f).FontColor("#111827"));
+
+                page.Header().Element(header => ComposeHeader(header, companyName, logo, policy, quote));
+
+                page.Content().PaddingTop(10).Column(column =>
+                {
+                    column.Spacing(7);
+
+                    column.Item().Text("ÖN BİLGİLENDİRME FORMU VE GENEL ŞARTLAR ÖZETİ").Bold().FontSize(11).FontColor(Primary);
+
+                    foreach (var (title, body) in sections)
+                    {
+                        column.Item().Column(item =>
+                        {
+                            item.Item().Text(title).Bold().FontSize(9);
+                            item.Item().PaddingTop(2).Text(body).FontColor("#374151").LineHeight(1.35f);
+                        });
+                    }
+                });
+
+                page.Footer().Element(footer => ComposeFooter(footer, policy, verificationCode));
+            });
+        }).GeneratePdf();
+    }
+
+    public async Task<byte[]> GenerateQuoteAsync(Guid quoteId)
+    {
+        var quote =
+            await _unitOfWork.Quotes
+                .GetByIdIncludingDetailsAsync(quoteId);
+
+        if (quote == null || quote.IsDeleted)
+        {
+            throw new NotFoundException("Teklif bulunamadı.");
+        }
+
+        var brand =
+            (await _brandSettings.GetAllAsync()).FirstOrDefault();
+
+        var companyName = string.IsNullOrWhiteSpace(brand?.CompanyName)
+            ? "Kasko Sigorta"
+            : brand!.CompanyName;
+
+        var logo = DecodeImage(brand?.LogoImage);
+
+        var customer = quote.Customer;
+
+        var vehicle = quote.Vehicle;
+
+        var total = quote.PremiumAmount;
+
+        var net = Math.Round(total / (1 + ExpenseTaxRate), 2, MidpointRounding.AwayFromZero);
+
+        var marketValue = quote.PricingSnapshot?.MarketValue ?? vehicle.MarketValue;
+
+        var deductibleFactor = quote.PricingSnapshot?.DeductibleFactor ?? 1m;
+
+        QuestPDF.Settings.License =
+            LicenseType.Community;
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(x => x.FontSize(8.5f).FontColor("#111827"));
+
+                page.Header().Column(column =>
+                {
+                    column.Item().Row(row =>
+                    {
+                        if (logo != null)
+                        {
+                            row.ConstantItem(90).Height(42).Image(logo).FitArea();
+                            row.ConstantItem(10);
+                        }
+
+                        row.RelativeItem().Column(title =>
+                        {
+                            title.Item().Text(companyName).Bold().FontSize(15).FontColor(Primary);
+                            title.Item().Text("KASKO SİGORTASI TEKLİF FORMU").SemiBold().FontSize(10).FontColor(Muted);
+                        });
+
+                        row.ConstantItem(210).Border(1).BorderColor(Line).Padding(6).Column(meta =>
+                        {
+                            MetaLine(meta, "Teklif No", quote.QuoteNumber);
+                            MetaLine(meta, "Teklif Tarihi", $"{quote.CreatedDate.ToLocalTime():dd.MM.yyyy HH:mm}");
+                            MetaLine(meta, "Geçerlilik", $"{quote.ValidUntil.ToLocalTime():dd.MM.yyyy}");
+                            MetaLine(meta, "Paket", string.IsNullOrWhiteSpace(quote.PackageName) ? "Kasko" : quote.PackageName);
+                        });
+                    });
+
+                    column.Item().PaddingTop(8).LineHorizontal(1.5f).LineColor(Primary);
+                });
+
+                page.Content().PaddingTop(10).Column(column =>
+                {
+                    column.Spacing(9);
+
+                    column.Item().Row(row =>
+                    {
+                        row.Spacing(9);
+
+                        row.RelativeItem().Element(box => InfoBox(box, "SİGORTA ETTİREN", new[]
+                        {
+                            ("Adı Soyadı", $"{customer.FirstName} {customer.LastName}"),
+                            ("T.C. Kimlik No", MaskIdentity(customer.IdentityNumber)),
+                            ("Telefon", MaskPhone(customer.PhoneNumber)),
+                            ("E-posta", MaskEmail(customer.Email))
+                        }));
+
+                        row.RelativeItem().Element(box => InfoBox(box, "ARAÇ", new[]
+                        {
+                            ("Marka / Model", $"{vehicle.Brand} {vehicle.Model}"),
+                            ("Model Yılı", vehicle.ModelYear.ToString()),
+                            ("Plaka", string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "—" : vehicle.PlateNumber),
+                            ("Sigorta Bedeli (TSB Rayiç)", $"{marketValue:N2} TL")
+                        }));
+                    });
+
+                    column.Item().Element(box => ComposeCoverages(box, quote));
+
+                    column.Item().Element(box => InfoBox(box, "PRİM BİLGİLERİ", new[]
+                    {
+                        ("Net Prim", $"{net:N2} TL"),
+                        ("Gider Vergisi (%5)", $"{total - net:N2} TL"),
+                        ("Toplam Prim (Peşin)", $"{total:N2} TL"),
+                        ("Taksit Seçenekleri", $"3 x {total / 3:N2} TL · 6 x {total / 6:N2} TL · 9 x {total / 9:N2} TL"),
+                        ("Muafiyet", deductibleFactor < 1m ? $"Hasar başına %{(deductibleFactor <= 0.80m ? 5 : 2)}" : "Muafiyetsiz")
+                    }));
+
+                    column.Item().Background(Soft).Padding(8).Text(
+                        $"Bu teklif {quote.ValidUntil.ToLocalTime():dd.MM.yyyy} tarihine kadar geçerlidir. Prim, teklif tarihindeki beyanlarınıza ve TSB kasko değer listesine göre hesaplanmıştır. " +
+                        "Satın alma işlemini müşteri portalınızdaki Tekliflerim bölümünden tamamlayabilirsiniz.")
+                        .FontSize(8).FontColor(Primary);
+                });
+
+                page.Footer().Column(column =>
+                {
+                    column.Item().LineHorizontal(0.5f).LineColor(Line);
+                    column.Item().PaddingTop(4).Text($"Teklif No: {quote.QuoteNumber}").FontSize(7).FontColor(Muted);
+                    column.Item().PaddingTop(2).AlignCenter()
+                        .Text("Bu belge eğitim amaçlı bir staj projesinde üretilmiştir; gerçek bir sigorta teklifi değildir.")
+                        .FontSize(7).Italic().FontColor(Muted);
+                });
+            });
+        }).GeneratePdf();
+    }
+
+    public async Task<byte[]> GenerateEstimateAsync(
+        Kasko.Business.DTOs.QuickQuote.QuickQuoteEstimateResultDto estimate,
+        Kasko.Business.DTOs.QuickQuote.QuickQuoteEstimatePdfRequestDto request)
+    {
+        var brand =
+            (await _brandSettings.GetAllAsync()).FirstOrDefault();
+
+        var companyName = string.IsNullOrWhiteSpace(brand?.CompanyName)
+            ? "Kasko Sigorta"
+            : brand!.CompanyName;
+
+        var logo = DecodeImage(brand?.LogoImage);
+
+        var createdAt = DateTime.Now;
+
+        var validUntil = createdAt.Date.AddDays(7);
+
+        var reference = string.IsNullOrWhiteSpace(request.Reference) ? $"HT-{createdAt:yyyyMMdd-HHmm}" : request.Reference.Trim();
+
+        var coverageNames = estimate.Packages
+            .SelectMany(x => x.Coverages)
+            .Select(x => x.CoverageName)
+            .Distinct()
+            .ToList();
+
+        var deductibleText = request.Deductible switch
+        {
+            2m => "Hasar başına %2",
+            5m => "Hasar başına %5",
+            _ => "Muafiyetsiz"
+        };
+
+        QuestPDF.Settings.License =
+            LicenseType.Community;
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(x => x.FontSize(8.5f).FontColor("#111827"));
+
+                page.Header().Column(column =>
+                {
+                    column.Item().Row(row =>
+                    {
+                        if (logo != null)
+                        {
+                            row.ConstantItem(90).Height(42).Image(logo).FitArea();
+                            row.ConstantItem(10);
+                        }
+
+                        row.RelativeItem().Column(title =>
+                        {
+                            title.Item().Text(companyName).Bold().FontSize(15).FontColor(Primary);
+                            title.Item().Text("KASKO HIZLI TEKLİF KARŞILAŞTIRMASI").SemiBold().FontSize(10).FontColor(Muted);
+                        });
+
+                        row.ConstantItem(210).Border(1).BorderColor(Line).Padding(6).Column(meta =>
+                        {
+                            MetaLine(meta, "Referans", reference);
+                            MetaLine(meta, "Teklif Tarihi", $"{createdAt:dd.MM.yyyy HH:mm}");
+                            MetaLine(meta, "Geçerlilik", $"{validUntil:dd.MM.yyyy}");
+                        });
+                    });
+
+                    column.Item().PaddingTop(8).LineHorizontal(1.5f).LineColor(Primary);
+                });
+
+                page.Content().PaddingTop(10).Column(column =>
+                {
+                    column.Spacing(9);
+
+                    column.Item().Row(row =>
+                    {
+                        row.Spacing(9);
+
+                        row.RelativeItem().Element(box => InfoBox(box, "ARAÇ", new[]
+                        {
+                            ("Marka / Model", $"{estimate.BrandName} {estimate.TypeName}"),
+                            ("Model Yılı", estimate.ModelYear.ToString()),
+                            ("Plaka", string.IsNullOrWhiteSpace(request.PlateNumber) ? "—" : request.PlateNumber!),
+                            ("Sigorta Bedeli (TSB Rayiç)", $"{estimate.MarketValue:N2} TL")
+                        }));
+
+                        row.RelativeItem().Element(box => InfoBox(box, "BEYAN EDİLEN BİLGİLER", new[]
+                        {
+                            ("Kullanım", string.Equals(request.Usage, "PRIVATE", StringComparison.OrdinalIgnoreCase) ? "Özel" : "Ticari"),
+                            ("Hasar Geçmişi", request.ClaimsCount == 0 ? "Hasarsız" : $"{request.ClaimsCount} hasar"),
+                            ("Sürücü Doğum Yılı", request.BirthYear > 0 ? request.BirthYear.ToString() : "—"),
+                            ("Muafiyet", deductibleText)
+                        }));
+                    });
+
+                    column.Item().Border(1).BorderColor(Line).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(2);
+                            foreach (var _ in estimate.Packages)
+                            {
+                                columns.RelativeColumn(1.4f);
+                            }
+                        });
+
+                        table.Cell().Background(Primary).Padding(6).Text("TEMİNAT").Bold().FontColor("#FFFFFF");
+
+                        foreach (var package in estimate.Packages)
+                        {
+                            var selected = package.PackageId == request.PackageId;
+                            table.Cell().Background(selected ? "#2563EB" : Primary).Padding(6).AlignCenter()
+                                .Text(selected ? $"{package.PackageName} (Seçili)" : package.PackageName).Bold().FontColor("#FFFFFF");
+                        }
+
+                        foreach (var name in coverageNames)
+                        {
+                            table.Cell().BorderTop(0.5f).BorderColor(Line).Padding(5).Text(name);
+
+                            foreach (var package in estimate.Packages)
+                            {
+                                var coverage = package.Coverages.FirstOrDefault(x => x.CoverageName == name);
+                                var text = coverage == null
+                                    ? "—"
+                                    : !string.IsNullOrWhiteSpace(coverage.OptionName)
+                                        ? coverage.OptionName!
+                                        : coverage.Limit.HasValue ? $"{coverage.Limit:N0} TL" : "Dahil";
+                                table.Cell().BorderTop(0.5f).BorderColor(Line).Padding(5).AlignCenter()
+                                    .Text(text).FontColor(coverage == null ? Muted : "#111827");
+                            }
+                        }
+
+                        table.Cell().Background(Soft).Padding(6).Text("YILLIK PRİM (Vergiler dahil)").Bold();
+
+                        foreach (var package in estimate.Packages)
+                        {
+                            table.Cell().Background(Soft).Padding(6).AlignCenter().Text($"{package.TotalPremium:N2} TL").Bold().FontSize(10);
+                        }
+
+                        table.Cell().Padding(5).Text("9 taksitle aylık").FontColor(Muted);
+
+                        foreach (var package in estimate.Packages)
+                        {
+                            table.Cell().Padding(5).AlignCenter().Text($"{package.TotalPremium / 9:N2} TL").FontColor(Muted);
+                        }
+                    });
+
+                    column.Item().Background(Soft).Padding(8).Column(note =>
+                    {
+                        note.Spacing(3);
+                        note.Item().Text("Nasıl satın alırım?").Bold().FontColor(Primary);
+                        note.Item().Text("1. Müşteri portalına giriş yapın; hesabınız yoksa birkaç dakikada kayıt olun.").FontSize(8);
+                        note.Item().Text("2. Aracınızı ekleyip Tekliflerim > Yeni Teklif Al adımlarıyla dilediğiniz paketi seçin.").FontSize(8);
+                        note.Item().Text("3. Peşin veya 3/6/9 taksitle ödemenizi yapın; poliçeniz anında düzenlenir.").FontSize(8);
+                    });
+
+                    column.Item().Text(
+                        $"Bu teklif bilgilendirme amaçlıdır ve {validUntil:dd.MM.yyyy} tarihine kadar geçerlidir. Kesin prim, portalda beyanlarınız ve güncel TSB kasko değeri doğrulandıktan sonra belirlenir.")
+                        .FontSize(7.5f).FontColor(Muted);
+                });
+
+                page.Footer().Column(column =>
+                {
+                    column.Item().LineHorizontal(0.5f).LineColor(Line);
+                    column.Item().PaddingTop(4).Text($"Referans: {reference}").FontSize(7).FontColor(Muted);
+                    column.Item().PaddingTop(2).AlignCenter()
+                        .Text("Bu belge eğitim amaçlı bir staj projesinde üretilmiştir; gerçek bir sigorta teklifi değildir.")
+                        .FontSize(7).Italic().FontColor(Muted);
+                });
             });
         }).GeneratePdf();
     }
@@ -327,10 +713,25 @@ public class PolicyPdfService : IPolicyPdfService
 
                 foreach (var payment in payments)
                 {
-                    table.Cell().PaddingTop(2).Text("Peşin");
-                    table.Cell().PaddingTop(2).Text($"{(payment.PaymentDate ?? payment.CreatedDate).ToLocalTime():dd.MM.yyyy}");
-                    table.Cell().PaddingTop(2).AlignRight().Text($"{payment.Amount:N2} TL");
-                    table.Cell().PaddingTop(2).AlignRight().Text(PaymentStatusText(payment.Status));
+                    var count = payment.InstallmentCount > 1 ? payment.InstallmentCount : 1;
+                    var paidAt = (payment.PaymentDate ?? payment.CreatedDate).ToLocalTime();
+                    var perInstallment = Math.Round(payment.Amount / count, 2, MidpointRounding.AwayFromZero);
+
+                    for (var index = 0; index < count; index++)
+                    {
+                        var amount = index == count - 1
+                            ? payment.Amount - perInstallment * (count - 1)
+                            : perInstallment;
+
+                        var status = payment.Status != PaymentStatus.Successful
+                            ? PaymentStatusText(payment.Status)
+                            : index == 0 ? "Ödendi" : "Karttan tahsil edilecek";
+
+                        table.Cell().PaddingTop(2).Text(count == 1 ? "Peşin" : $"{index + 1}/{count}. Taksit");
+                        table.Cell().PaddingTop(2).Text($"{paidAt.AddMonths(index):dd.MM.yyyy}");
+                        table.Cell().PaddingTop(2).AlignRight().Text($"{amount:N2} TL");
+                        table.Cell().PaddingTop(2).AlignRight().Text(status);
+                    }
                 }
             });
         });
@@ -362,7 +763,7 @@ public class PolicyPdfService : IPolicyPdfService
         });
     }
 
-    private static IEnumerable<(string Title, string Body)> Conditions(Policy policy)
+    private static IEnumerable<(string Title, string Body)> Conditions(Policy policy, decimal deductibleFactor)
     {
         yield return ("1. Teminatın Kapsamı",
             "Bu poliçe, üzerinde bilgileri yazılı aracı, teminat tablosunda gösterilen riskler için poliçe başlangıç ve bitiş tarihleri arasında güvence altına alır. " +
@@ -373,7 +774,9 @@ public class PolicyPdfService : IPolicyPdfService
             "Bu bilgilerin eksik veya yanlış olduğunun anlaşılması halinde tazminattan indirim yapılabilir veya poliçe iptal edilebilir.");
 
         yield return ("3. Muafiyet",
-            "Bu poliçede hasar tazminatlarından muafiyet kesintisi yapılmaz. Hasarın teminat kapsamındaki tutarı eksper raporuna göre ödenir.");
+            deductibleFactor < 1m
+                ? $"Bu poliçede her hasarda, hasar tutarının %{(deductibleFactor <= 0.80m ? 5 : 2)}'i oranında muafiyet uygulanır ve bu tutar tazminattan düşülür. Muafiyet seçimi karşılığında primde indirim yapılmıştır."
+                : "Bu poliçede hasar tazminatlarından muafiyet kesintisi yapılmaz. Hasarın teminat kapsamındaki tutarı eksper raporuna göre ödenir.");
 
         yield return ("4. Prim Ödemesi",
             "Sigortacının sorumluluğu primin ödenmesiyle başlar. Poliçede gösterilen toplam prime %5 gider vergisi dahildir. " +

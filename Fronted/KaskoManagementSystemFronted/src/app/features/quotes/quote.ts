@@ -1,4 +1,3 @@
-import { PlateBadge } from '../../core/components/plate-badge';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
@@ -139,7 +138,7 @@ import {
 
   standalone: true,
 
-  imports: [PlateBadge, 
+  imports: [
     RecordNumberPipe,
     CommonModule,
 

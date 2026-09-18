@@ -63,7 +63,11 @@
 
           <div class="kf-field">
             <label for="catalogFile">Excel dosyası (.xlsx) *</label>
-            <input id="catalogFile" type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="isImporting()" />
+            <label class="ci-file" [class.disabled]="isImporting()">
+              <span class="kf-file-button">Dosya Seç</span>
+              <span class="ci-file-name">{{ selectedFile()?.name || 'Dosya seçilmedi' }}</span>
+              <input id="catalogFile" type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="isImporting()" hidden />
+            </label>
           </div>
 
         </div>

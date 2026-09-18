@@ -144,6 +144,19 @@ export class PricingRules implements OnInit {
 
   readonly formatValue = formatPricingValue;
 
+  historyCode = signal<string | null>(null);
+
+  historyRows = computed(() => {
+    const code = this.historyCode();
+    return this.rules()
+      .filter(rule => rule.code === code)
+      .sort((a, b) => (b.version ?? 0) - (a.version ?? 0));
+  });
+
+  openHistory(rule: PricingRule): void {
+    this.historyCode.set(rule.code);
+  }
+
   readonly describe = describePricingRule;
 
   ngOnInit(): void {
@@ -195,6 +208,38 @@ export class PricingRules implements OnInit {
 
   ruleEffectiveFrom = '';
 
+  ruleCodeGroups = computed(() => {
+    const latest = new Map<string, PricingRule>();
+    for (const rule of this.rules()) {
+      const current = latest.get(rule.code);
+      if (!current || (rule.version ?? 0) > (current.version ?? 0)) {
+        latest.set(rule.code, rule);
+      }
+    }
+    const groups = new Map<string, { code: string; title: string }[]>();
+    for (const rule of latest.values()) {
+      const info = this.describe(rule.code, rule.name, rule.description);
+      const list = groups.get(info.group) ?? [];
+      list.push({ code: rule.code, title: info.title });
+      groups.set(info.group, list);
+    }
+    return [...groups.entries()]
+      .map(([group, items]) => ({ group, items: items.sort((a, b) => a.title.localeCompare(b.title, 'tr')) }))
+      .sort((a, b) => a.group.localeCompare(b.group, 'tr'));
+  });
+
+  selectRuleCode(code: string): void {
+    this.ruleCode = code;
+    const current = this.rules()
+      .filter(rule => rule.code === code)
+      .sort((a, b) => (b.version ?? 0) - (a.version ?? 0))[0];
+    if (current) {
+      this.ruleName = current.name;
+      this.ruleDescription = current.description ?? '';
+      this.ruleValue = current.value;
+    }
+  }
+
   openCreateRule(): void {
     this.editorMode.set('create');
     this.editingRuleId = '';
@@ -229,7 +274,7 @@ export class PricingRules implements OnInit {
     const code = this.ruleCode.trim().toUpperCase();
 
     if (this.editorMode() === 'create' && !/^[A-Z0-9_]{3,40}$/.test(code)) {
-      this.formError.set('Kod en az 3 karakter olmalı; sadece büyük harf, rakam ve alt çizgi içerebilir. Örnek: REGION_VERY_HIGH');
+      this.formError.set('Lütfen listeden bir kural seçin.');
       return;
     }
 

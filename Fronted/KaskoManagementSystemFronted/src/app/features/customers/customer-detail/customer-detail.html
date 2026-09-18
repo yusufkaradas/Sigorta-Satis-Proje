@@ -34,7 +34,7 @@
         <dl class="kf-details">
           <div><dt>Ad</dt><dd>{{ customer.firstName }}</dd></div>
           <div><dt>Soyad</dt><dd>{{ customer.lastName }}</dd></div>
-          <div><dt>T.C. Kimlik No</dt><dd>{{ customer.identityNumber }}</dd></div>
+          <div><dt>T.C. Kimlik No</dt><dd><app-id-badge kind="tc" [value]="customer.identityNumber" /></dd></div>
           <div><dt>Durum</dt><dd>{{ getStatusText() }}</dd></div>
           <div><dt>Doğum Tarihi</dt><dd>{{ customer.dateOfBirth | backendDate:'date' }}</dd></div>
           <div><dt>Kayıt Tarihi</dt><dd>{{ customer.createdDate | backendDate:'datetime' }}</dd></div>
@@ -52,7 +52,7 @@
         <h2 class="kf-section-title">İletişim ve Adres</h2>
         <dl class="kf-details">
           <div><dt>E-posta</dt><dd [title]="customer.email">{{ customer.email }}</dd></div>
-          <div><dt>Telefon</dt><dd>{{ customer.phoneNumber }}</dd></div>
+          <div><dt>Telefon</dt><dd><app-id-badge [value]="customer.phoneNumber" /></dd></div>
           <div><dt>Şehir</dt><dd>{{ customer.city }}</dd></div>
           <div><dt>İlçe</dt><dd>{{ customer.district }}</dd></div>
           <div class="kf-span-all"><dt>Adres</dt><dd [title]="customer.address || ''">{{ customer.address || '—' }}</dd></div>

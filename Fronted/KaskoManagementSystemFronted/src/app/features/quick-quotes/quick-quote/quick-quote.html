@@ -37,7 +37,7 @@
       <div class="qq-company">{{ brand().companyName }}</div>
 
       <a [routerLink]="isLoggedIn ? '/customer' : '/login'" class="qq-header-button">
-        {{ isLoggedIn ? 'Hesabım' : 'Giriş Yap' }}
+        {{ isLoggedIn ? 'HESABIM' : 'GİRİŞ YAP' }}
       </a>
 
     </header>
@@ -51,17 +51,27 @@
 
         <div class="qq-landing">
 
-          <h1>Teklif Sistemimiz</h1>
+          <div class="qq-landing-card">
 
-          <p>T.C. Kimlik No ve telefonunuzla başlayın; kayıtlıysanız araçlarınız otomatik gelir, değilseniz üyelik olmadan devam edersiniz.</p>
+            <span class="qq-landing-eyebrow">KASKO SİGORTASI</span>
 
-          <div class="qq-landing-actions">
+            <h1>Aracınız İçin Kasko Teklifi Alın</h1>
 
-            <a routerLink="/quick-quote/start" class="qq-btn qq-btn-primary">Hemen Teklif Al</a>
+            <p>T.C. Kimlik No ve cep telefonunuzla başlayın. Kayıtlıysanız araçlarınız otomatik gelir, değilseniz üyelik olmadan devam edersiniz.</p>
+
+            <div class="qq-landing-actions">
+              <a routerLink="/quick-quote/start" class="qq-btn qq-btn-primary">HEMEN TEKLİF AL</a>
+            </div>
+
+            <ul class="qq-landing-features">
+              <li><strong>1 DAKİKA</strong><small>3 adımda teklif</small></li>
+              <li><strong>TSB DEĞERİ</strong><small>Güncel kasko değer listesi</small></li>
+              <li><strong>3 PAKET</strong><small>Yan yana karşılaştırma</small></li>
+            </ul>
+
+            <span class="qq-landing-note">Bilgileriniz 6698 sayılı KVKK kapsamında yalnızca teklif hazırlamak için kullanılır. <button type="button" class="qq-kvkk-link" (click)="showKvkk()">KVKK Aydınlatma Metni</button></span>
 
           </div>
-
-          <span class="qq-landing-note">Teklifiniz 3 adımda, yaklaşık 1 dakikada hazır olur.</span>
 
         </div>
 

@@ -15,9 +15,8 @@
 
   <div class="hub-body">
     @switch (active()) {
-      @case ('pricing-requests') { <app-pricing-requests [embedded]="true" /> }
-      @case ('pricing-rules') { <app-pricing-rules [embedded]="true" /> }
-      @default { <app-cancellations [embedded]="true" /> }
+      @case ('cancellations') { <app-cancellations [embedded]="true" /> }
+      @default { <app-pricing-requests [embedded]="true" /> }
     }
   </div>
 

@@ -1,3 +1,5 @@
+import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
+import { ToastService } from '../../../core/services/toast.service';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import {
   CommonModule
@@ -103,6 +105,8 @@ export class QuoteCreate implements OnInit, OnDestroy {
   private readonly quoteService =
     inject(QuoteService);
 
+  private readonly toast = inject(ToastService);
+
   private readonly router =
     inject(Router);
 
@@ -204,17 +208,24 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   pricedCoverages: { coverageId: string; coverageName: string; calculatedPrice: number; limit: number | null; optionName?: string | null }[] = [];
 
-  get allCoverageRows(): { coverageId: string; coverageName: string }[] {
-    const seen = new Map<string, string>();
-    [...this.packages]
-      .sort((a, b) => b.coverages.length - a.coverages.length)
-      .forEach(item => item.coverages.forEach(coverage => {
-        if (!seen.has(coverage.coverageId)) {
-          seen.set(coverage.coverageId, coverage.coverageName);
-        }
-      }));
-    return [...seen.entries()].map(([coverageId, coverageName]) => ({ coverageId, coverageName }));
+  get allCoverageRows(): CoverageRow[] {
+    return collectCoverageRows(this.packages);
   }
+
+  offerUpgrade(option: PackageQuoteOption): string | null {
+    const chosen = this.packageQuotes.find(item => item.package.id === this.packageId);
+    if (!chosen || chosen.package.id === option.package.id) {
+      return null;
+    }
+    return upgradeNote(chosen.package.name, chosen.totalPremium, chosen.package.coverages.filter(c => c.isDefault).map(c => c.coverageId), option.totalPremium, option.package.coverages.filter(c => c.isDefault));
+  }
+
+  readonly limitHint = limitHint;
+
+  deductibleHint(): string {
+    return deductibleExample(this.deductible);
+  }
+
 
   sortedCoverageRows(item: InsurancePackage) {
     return [...this.allCoverageRows].sort((a, b) =>
@@ -242,17 +253,39 @@ export class QuoteCreate implements OnInit, OnDestroy {
       ?? '';
   }
 
+  readonly claimOptions = [
+    { value: 0, label: 'Hasarsız', hint: 'İndirim uygulanır' },
+    { value: 1, label: '1 Hasar', hint: 'Son dönemde' },
+    { value: 2, label: '2 Hasar', hint: 'Son dönemde' },
+    { value: 3, label: '3 ve Üzeri', hint: 'Ek prim uygulanır' }
+  ];
+
+  readonly deductibleOptions = [
+    { value: 0, label: 'Muafiyetsiz' },
+    { value: 2, label: '%2 muafiyet (%10 indirim)' },
+    { value: 5, label: '%5 muafiyet (%20 indirim)' }
+  ];
+
+  changeDeductible(value: number): void {
+    this.deductible = value;
+    this.calculatePackageComparisons(false);
+  }
+
   changeOption(coverageId: string, optionId: string): void {
     this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
     this.calculatePackageComparisons(false);
   }
 
   readonly comparisonStages = [
-    'Araç ve TSB kasko değeri kontrol ediliyor',
-    'Risk bilgileri değerlendiriliyor',
-    'Paket fiyatları hesaplanıyor',
-    'Teklifler hazırlanıyor'
+    'Aracınız tanınıyor',
+    'Güncel kasko değeri alınıyor',
+    'Size özel indirimler uygulanıyor',
+    'Paketler karşılaştırılıyor'
   ];
+
+  acceptedTerms = false;
+
+  acceptedKvkk = false;
 
   readonly comparisonDurationMs = 4000;
 
@@ -1794,9 +1827,18 @@ export class QuoteCreate implements OnInit, OnDestroy {
    * Kullanıcıyı listeye değil,
    * oluşturulan teklifin detayına götürüyoruz.
    */
-  this.router.navigate(
-    [this.route.snapshot.data['mode'] === 'manager' ? '/manager/quotes' : this.isCustomerMode ? '/customer/quotes' : '/quotes', response.id]
-  );
+  const detailPath = [this.route.snapshot.data['mode'] === 'manager' ? '/manager/quotes' : this.isCustomerMode ? '/customer/quotes' : '/quotes', response.id];
+
+  if (this.isCustomerMode && response.status === 2) {
+    this.router.navigate(detailPath, { queryParams: { pay: 1 } });
+    return;
+  }
+
+  if (this.isCustomerMode) {
+    this.toast.show('info', 'Teklifiniz onaya gönderildi', ['Özel inceleme gerektiği için yetkili onayına gönderildi. Onaylandığında bildirim alacak ve buradan satın alabileceksiniz.']);
+  }
+
+  this.router.navigate(detailPath);
 
 },
 

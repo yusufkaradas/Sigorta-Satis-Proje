@@ -1,4 +1,4 @@
-﻿using Kasko.Business.DTOs.Auth;
+using Kasko.Business.DTOs.Auth;
 using Kasko.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,5 +42,21 @@ public class AuthController : ControllerBase
         {
             customerId
         });
+    }
+
+    [HttpPost("forgot-password/send")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SendResetCode(PasswordResetRequestDto dto)
+    {
+        return Ok(await _authService.SendPasswordResetCodeAsync(dto));
+    }
+
+    [HttpPost("forgot-password/reset")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword(PasswordResetConfirmDto dto)
+    {
+        await _authService.ResetPasswordAsync(dto);
+
+        return Ok(new { message = "Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz." });
     }
 }

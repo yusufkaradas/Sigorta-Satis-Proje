@@ -21,6 +21,8 @@
           Oluşturulma: {{ formatCreatedDate(quote.createdDate) }} · Geçerlilik: {{ quote.validUntil | backendDate }}
         </p>
       </div>
+      <button *ngIf="!isCustomerMode && quote && quote.status === QuoteStatus.Offered" type="button" class="kf-btn" [disabled]="isSharing" (click)="shareQuote()">{{ isSharing ? 'Gönderiliyor...' : 'Müşteriye Gönder' }}</button>
+      <button type="button" class="kf-btn-outline" (click)="downloadQuotePdf()">Teklif PDF</button>
       <button type="button" class="kf-btn-outline" (click)="goBack()">← Tekliflere Dön</button>
     </div>
 
@@ -33,6 +35,10 @@
     </div>
 
     <div *ngIf="isLoading" class="kf-state">Teklif yükleniyor...</div>
+
+    <div *ngIf="!isCustomerMode && quote && quote.status === QuoteStatus.Draft && quote.reviewReason" class="kf-alert kf-alert-warning">
+      <strong>Yönetici onayı gerekiyor.</strong> {{ quote.reviewReason }}. İnceleyip uygunsa "Müşteriye Sun" ile teklifi müşteriye açın.
+    </div>
 
     <div *ngIf="!isLoading && quote" class="kf-body kf-body-3">
 
@@ -48,7 +54,7 @@
           <div class="kf-span-all"><dt>Paket</dt><dd>{{ quote.packageName || '—' }}</dd></div>
           <div class="kf-span-all"><dt>Araç Değeri</dt><dd>{{ quote.marketValue != null ? (quote.marketValue | number:'1.0-2') + ' ₺' : '—' }}</dd></div>
           <div class="kf-span-all"><dt>Müşteri</dt><dd>{{ quote.customerName || '—' }}</dd></div>
-          <div><dt>Telefon</dt><dd>{{ quote.customerPhone || '—' }}</dd></div>
+          <div><dt>Telefon</dt><dd><app-id-badge [value]="quote.customerPhone" /></dd></div>
           <div><dt>E-posta</dt><dd [title]="quote.customerEmail || ''">{{ quote.customerEmail || '—' }}</dd></div>
         </dl>
 
@@ -71,7 +77,7 @@
             *ngFor="let coverage of (quote.coverages ?? []).slice(0, 10)"
             class="kf-list-item">
             <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
-            <span>{{ coverage.calculatedPrice | number:'1.2-2' }} ₺</span>
+            <span>{{ $any(coverage).optionName || (coverage.limit ? (coverage.limit | number:'1.0-0') + ' ₺' : (coverage.calculatedPrice > 0 ? '+' + (coverage.calculatedPrice | number:'1.0-0') + ' ₺' : 'Dahil')) }}</span>
           </li>
         </ul>
 
@@ -126,9 +132,6 @@
           Düzenle
         </a>
 
-        <span *ngIf="!isCustomerMode && quote.status === QuoteStatus.Draft && quote.reviewReason" class="kf-note">
-          Onay gerekçesi: {{ quote.reviewReason }}
-        </span>
 
         <button
           *ngIf="!isCustomerMode && quote.status === QuoteStatus.Draft"
@@ -150,6 +153,8 @@
       </div>
 
       <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-purchase">
+
+        <span class="kf-note kf-price-lock">🔒 Fiyatınız {{ quote.validUntil | backendDate }} tarihine kadar sabittir; bu süre içinde tarife değişse bile aynı fiyattan satın alabilirsiniz.</span>
 
         <label class="kf-consent">
           <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />
@@ -183,7 +188,23 @@
 
     <h2>Güvenli Ödeme</h2>
 
-    <p class="rule-dialog-sub">{{ quote.packageName || 'Kasko' }} · {{ quote.plateNumber }} · Tek çekim</p>
+    <p class="rule-dialog-sub">{{ quote.packageName || 'Kasko' }} · {{ quote.plateNumber }} · {{ installmentCount === 1 ? 'Peşin' : installmentCount + ' taksit' }}</p>
+
+    <div class="pay-options">
+      <label class="pay-start">
+        <span>Poliçe başlangıç tarihi</span>
+        <input type="date" [min]="minStartDate" [max]="maxStartDate" [value]="startDate" (change)="startDate = $any($event.target).value || minStartDate" />
+      </label>
+      <div class="pay-installments">
+        <span>Ödeme şekli</span>
+        <div>
+          <button type="button" *ngFor="let count of installmentOptions" [class.active]="installmentCount === count" (click)="installmentCount = count">
+            <strong>{{ count === 1 ? 'Peşin' : count + ' Taksit' }}</strong>
+            <small>{{ count === 1 ? '' : count + ' x ' }}{{ installmentAmount(count) | number:'1.2-2' }} ₺</small>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div class="pay-amount">
       <span>Ödenecek tutar</span>

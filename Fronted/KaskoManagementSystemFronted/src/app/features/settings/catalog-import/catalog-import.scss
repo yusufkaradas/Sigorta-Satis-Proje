@@ -1,17 +1,19 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
 :host {
   display: block;
   height: 100%;
 }
 
 .ci-reclassify {
-  margin-top: 16px;
-  padding: 12px 14px;
+  margin-top: k.u(16);
+  padding: k.u(12) k.u(14);
   border: 1px dashed #d1d5db;
-  border-radius: 10px;
+  border-radius: k.u(10);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: k.u(12);
 
   strong,
   span {
@@ -20,28 +22,66 @@
 
   span {
     color: #6b7280;
-    font-size: 12px;
+    font-size: k.u(12);
   }
 }
 
 .ci-rules {
-  margin: 12px 0 0;
-  padding-left: 18px;
+  margin: k.u(12) 0 0;
+  padding-left: k.u(18);
   color: #4b5563;
-  font-size: 12px;
+  font-size: k.u(12);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: k.u(4);
 }
 
 .ci-actions {
-  padding: 12px 0 0;
+  padding: k.u(12) 0 0;
   border-top: 0;
 }
 
 .ci-result {
-  margin: 12px 0 0;
+  margin: k.u(12) 0 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.ci-file {
+  height: k.u(38);
+  padding: 0 k.u(4) 0 k.u(4);
+  border: 1px solid #d1d5db;
+  border-radius: k.u(8);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: k.u(10);
+  cursor: pointer;
+
+  .kf-file-button {
+    height: k.u(30);
+    padding: 0 k.u(14);
+    display: inline-flex;
+    align-items: center;
+    font-size: k.u(13);
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.ci-file-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: k.u(13);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ci-reclassify strong {
+  font-size: k.u(14);
 }

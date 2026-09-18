@@ -143,6 +143,12 @@ export class PricingRequests implements OnInit {
 
   selectedRequest = signal<PricingRuleChangeRequest | null>(null);
 
+  impact = signal<{ supported: boolean; totalQuotes?: number; affectedQuotes?: number; oldAverage?: number; newAverage?: number; changePercent?: number } | null>(null);
+
+  rejectNote = '';
+
+  private lastRejectReason = '';
+
   ruleInfo(ruleId: string) {
     const rule = this.rules().find(item => item.id === ruleId);
     return describePricingRule(rule?.code, rule?.name, rule?.description);
@@ -158,6 +164,12 @@ export class PricingRequests implements OnInit {
 
   openDetail(request: PricingRuleChangeRequest): void {
     this.selectedRequest.set(request);
+    this.rejectNote = '';
+    this.impact.set(null);
+    this.pricingService.getRequestImpact(request.id).subscribe({
+      next: result => this.impact.set(result),
+      error: () => this.impact.set({ supported: false })
+    });
   }
 
   closeDetail(): void {
@@ -255,15 +267,19 @@ export class PricingRequests implements OnInit {
 
   async reject(request: PricingRuleChangeRequest): Promise<void> {
 
-    this.closeDetail();
+    const reason = this.rejectNote.trim();
+    this.lastRejectReason = reason;
 
-    if (!await confirmDialog(`${this.ruleLabel(request.pricingRuleId)} için talep reddedilsin mi?`)) {
+    if (reason.length < 5) {
+      this.errorMessage.set('Reddetmek için en az 5 karakterlik bir gerekçe yazın; manager bu gerekçeyi görür.');
       return;
     }
 
+    this.closeDetail();
+
     this.runAction(
       request,
-      this.pricingService.rejectRequest(request.id),
+      this.pricingService.rejectRequest(request.id, reason),
       'Rejected',
       'Talep reddedildi.'
     );
@@ -287,7 +303,7 @@ export class PricingRequests implements OnInit {
         this.requests.update(list =>
           list.map(item =>
             item.id === request.id
-              ? { ...item, status, approvedDate: new Date().toISOString() }
+              ? { ...item, status, approvedDate: new Date().toISOString(), rejectReason: status === 'Rejected' ? this.lastRejectReason : item.rejectReason }
               : item
           )
         );

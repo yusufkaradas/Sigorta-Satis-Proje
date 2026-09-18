@@ -1,3 +1,4 @@
+import { infoDialog } from '../../../core/services/confirm-dialog';
 import {
   Component,
   inject
@@ -39,6 +40,15 @@ export class QuickQuote {
   readonly steps = [
     { number: 1, label: 'Araç Bilgileri' },
     { number: 2, label: 'Sürücü Bilgileri' },
-    { number: 3, label: 'Teklifleriniz' }
+    { number: 3, label: 'Teklifleriniz' },
+    { number: 4, label: 'Teklif Özeti' }
   ];
+
+  showKvkk(): void {
+    infoDialog(
+      'KVKK Aydınlatma Metni',
+      'Kişisel verileriniz (T.C. Kimlik No, iletişim ve araç bilgileri) 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında; kasko teklifi hazırlanması, sözleşmenin kurulması ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenir. Verileriniz yasal zorunluluklar dışında üçüncü kişilerle paylaşılmaz. Bilgi alma, düzeltme ve silme taleplerinizi destek@netsigorta.com adresine iletebilirsiniz.',
+      [{ label: 'Veri Sorumlusu', value: this.brand().companyName }, { label: 'Not', value: 'Bu metin eğitim amaçlı demo içeriktir.' }]
+    );
+  }
 }

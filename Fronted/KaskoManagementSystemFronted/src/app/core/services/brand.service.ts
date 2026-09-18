@@ -8,6 +8,9 @@ export interface BrandSetting {
   logoImage?: string | null;
   loginImage?: string | null;
   faviconImage?: string | null;
+  headerTitle?: string | null;
+  slogan?: string | null;
+  browserTitle?: string | null;
   updatedDate?: string | null;
 }
 
@@ -31,6 +34,7 @@ export class BrandService {
         if (data) {
           this.brand.set(data);
           this.applyFavicon(data.faviconImage);
+          this.applyTitle(data.browserTitle);
         }
       },
       error: () => undefined
@@ -43,7 +47,12 @@ export class BrandService {
       .pipe(tap(result => {
         this.brand.set(result);
         this.applyFavicon(result.faviconImage);
+        this.applyTitle(result.browserTitle);
       }));
+  }
+
+  private applyTitle(value?: string | null): void {
+    document.title = value?.trim() || 'NetSigorta';
   }
 
   private applyFavicon(value?: string | null): void {

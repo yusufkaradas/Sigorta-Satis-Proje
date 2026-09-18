@@ -201,4 +201,12 @@ export class CustomerPolicies implements OnInit {
         }
       });
   }
+
+  canRenew(policy: { status: number; endDate: string }): boolean {
+    if (policy.status !== PolicyStatus.Active) {
+      return false;
+    }
+    const days = Math.ceil((new Date(policy.endDate).getTime() - Date.now()) / 86400000);
+    return days >= 0 && days <= 60;
+  }
 }
