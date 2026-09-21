@@ -43,13 +43,11 @@ export class UserDetail {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   user: User | null = null;
 
   isLoading = true;
 
   errorMessage = '';
-
 
   ngOnInit(): void {
 
@@ -69,24 +67,17 @@ export class UserDetail {
     this.loadUser(id);
   }
 
-
   private loadUser(id: string): void {
 
     this.isLoading = true;
 
     this.errorMessage = '';
 
-
     this.userService
       .getById(id)
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'USER DETAIL RESPONSE:',
-            data
-          );
 
           this.user = data;
 
@@ -113,40 +104,30 @@ export class UserDetail {
       });
   }
 
-
   async deleteUser(): Promise<void> {
 
     if (!this.user) {
       return;
     }
 
-
     const confirmed =
       await confirmDialog(
         `${this.user.firstName} ${this.user.lastName} adlı kullanıcıyı silmek istediğinize emin misiniz?`
       );
 
-
     if (!confirmed) {
       return;
     }
 
-
     this.isLoading = true;
 
     this.errorMessage = '';
-
 
     this.userService
       .delete(this.user.id)
       .subscribe({
 
         next: () => {
-
-          console.log(
-            'USER DELETE SUCCESS:',
-            this.user?.id
-          );
 
           this.router.navigate([
             '/users'
@@ -178,7 +159,6 @@ export class UserDetail {
 
       });
   }
-
 
   goBack(): void {
 

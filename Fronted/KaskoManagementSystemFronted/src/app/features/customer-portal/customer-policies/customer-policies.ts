@@ -42,7 +42,7 @@ export class CustomerPolicies implements OnInit {
   private readonly policyService =
     inject(PolicyService);
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   policies = signal<Policy[]>([]);
 

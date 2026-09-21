@@ -61,7 +61,7 @@ export class Policies {
 
   currentPage = 1;
 
-  pageSize = 5;
+  pageSize = 8;
 
   get totalPages(): number {
 
@@ -150,11 +150,6 @@ export class Policies {
 
         next: (data) => {
 
-          console.log(
-            'POLICIES RESPONSE:',
-            data
-          );
-
           this.policies =
             newestFirst(Array.isArray(data) ? data : []);
 
@@ -163,21 +158,6 @@ export class Policies {
           this.filterPolicies();
 
           this.isLoading = false;
-
-          console.log(
-            'POLICIES COUNT:',
-            this.policies.length
-          );
-
-          console.log(
-            'FILTERED POLICIES COUNT:',
-            this.filteredPolicies.length
-          );
-
-          console.log(
-            'PAGINATED POLICIES:',
-            this.paginatedPolicies
-          );
 
           // Angular ekranı zorunlu olarak
           // yeniden render etsin.

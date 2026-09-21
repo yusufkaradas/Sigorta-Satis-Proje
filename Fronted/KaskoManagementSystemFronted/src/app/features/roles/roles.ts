@@ -55,7 +55,7 @@ export class Roles {
 
   searchTerm = '';
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   currentPage = 1;
 
@@ -139,11 +139,6 @@ export class Roles {
     this.rolesService.getAll().subscribe({
 
       next: (data) => {
-
-        console.log(
-          'ROLES API RESPONSE:',
-          data
-        );
 
         this.roles = data ?? [];
 

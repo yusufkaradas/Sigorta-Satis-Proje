@@ -458,14 +458,68 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       return;
     }
 
-    try {
-      sessionStorage.setItem('quickQuoteDraft', JSON.stringify(draft));
-    } catch {
-      this.errorMessage = 'Teklifiniz kaydedilemedi. Lütfen tekrar deneyin.';
+    if (!this.selectedVehicle?.id) {
+      this.errorMessage = 'Teklif için araç seçin.';
       return;
     }
 
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.quickQuoteService.createQuote({
+      identityNumber: this.identityNumber,
+      phoneNumber: this.normalizedPhoneNumber,
+      vehicleId: this.selectedVehicle.id,
+      usage: this.usage,
+      claimsCount: this.claimsCount,
+      packageId: packageItem.id,
+      deductible: this.deductible,
+      coverageIds: [],
+      coverageOptionIds: this.coverageOptionIds
+    }).subscribe({
+      next: quote => {
+        this.isLoading = false;
+        this.createdQuote = {
+          id: quote.id,
+          quoteNumber: quote.quoteNumber,
+          packageName: quote.packageName ?? packageItem.name,
+          premiumAmount: quote.premiumAmount ?? this.packagePrices[packageItem.id] ?? 0,
+          validUntil: quote.validUntil,
+          status: quote.status
+        };
+        this.currentStep = 6;
+        this.cdr.detectChanges();
+      },
+      error: error => {
+        this.isLoading = false;
+        this.errorMessage = error?.error?.message ?? error?.error?.detail ?? 'Teklifiniz oluşturulamadı. Lütfen tekrar deneyin.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  createdQuote: { id: string; quoteNumber: string; packageName: string; premiumAmount: number; validUntil: string; status: number } | null = null;
+
+  get createdQuoteNeedsReview(): boolean {
+    return this.createdQuote?.status === 1;
+  }
+
+  purchaseCreatedQuote(): void {
+    if (!this.createdQuote) {
+      return;
+    }
+
+    try {
+      sessionStorage.setItem('quickQuoteResume', this.createdQuote.id);
+    } catch {
+    }
+
     this.router.navigate(['/login'], { queryParams: { email: this.customerEmail } });
+  }
+
+  finishCreatedQuote(): void {
+    this.createdQuote = null;
+    this.router.navigate(['/quick-quote/new']);
   }
 
   savingMessage = '';

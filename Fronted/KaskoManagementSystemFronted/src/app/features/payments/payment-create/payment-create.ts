@@ -96,11 +96,6 @@ isTermsAccepted = false;
 
         next: (data) => {
 
-          console.log(
-            'PAYMENT CREATE POLICY RESPONSE:',
-            data
-          );
-
           this.policy = data;
 
           if (
@@ -263,11 +258,6 @@ if (!/^\d{3}$/.test(this.cvv)){
       .subscribe({
 
         next: (payment) => {
-
-          console.log(
-            'PAYMENT CREATE SUCCESS:',
-            payment
-          );
 
           this.successMessage =
             'Ödeme başarıyla tamamlandı. Poliçe aktif hale getirildi.';

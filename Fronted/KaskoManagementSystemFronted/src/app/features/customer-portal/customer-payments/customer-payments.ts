@@ -52,7 +52,7 @@ export class CustomerPayments implements OnInit {
   private readonly policyService =
     inject(PolicyService);
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   payments = signal<Payment[]>([]);
 

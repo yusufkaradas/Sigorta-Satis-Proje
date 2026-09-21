@@ -35,10 +35,11 @@
 
     <div class="kf-actions kf-actions-between">
       <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
-      <div *ngIf="role" class="kf-head-actions">
+      <div *ngIf="role && !isSystemRole" class="kf-head-actions">
         <button type="button" class="kf-btn-danger" (click)="deleteRole()">Rolü Sil</button>
         <a [routerLink]="['/roles', role.id, 'edit']" class="kf-btn">Düzenle</a>
       </div>
+      <span *ngIf="role && isSystemRole" class="kf-note">Sistem rolleri yetkilendirmenin temelidir; silinemez ve yeniden adlandırılamaz.</span>
     </div>
 
   </section>

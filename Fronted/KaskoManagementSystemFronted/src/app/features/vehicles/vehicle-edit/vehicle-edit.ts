@@ -90,7 +90,6 @@ export class VehicleEdit {
   readonly isCustomerMode =
     this.portal.isCustomer;
 
-
   vehicleId = '';
 
   customers: Customer[] = [];
@@ -125,7 +124,6 @@ isLoadingTypes = false;
 isLoadingYears = false;
 
 isLoadingTsbValue = false;
-
 
  form: UpdateVehicleRequest = {
 
@@ -164,7 +162,6 @@ isLoadingTsbValue = false;
   isActive: true
 
 };
-
 
   ngOnInit(): void {
 
@@ -292,7 +289,6 @@ private loadTsbValue(): void {
 
     this.errorMessage = '';
 
-
     (this.isCustomerMode ? of([] as Customer[]) : this.customerService.getCustomers())
       .subscribe({
 
@@ -300,7 +296,6 @@ private loadTsbValue(): void {
 
           this.customers =
             customers ?? [];
-
 
           this.vehicleService
             .getVehicleById(this.vehicleId)
@@ -370,14 +365,11 @@ this.customerName = customer
   : '—';
                 this.selectedBrandCode = vehicle.brandCode ?? '';
 
-
                 this.selectedTypeCode = vehicle.typeCode ?? '';
 
                 this.selectedModelYear = vehicle.modelYear;
 
-
                 this.loadVehicleTsbData();
-
 
                 this.isLoading = false;
 
@@ -425,7 +417,6 @@ this.customerName = customer
 
   }
 
-
   plateTouched = false;
 
   onPlateInput(event?: Event): void {
@@ -460,11 +451,9 @@ this.customerName = customer
       return;
     }
 
-
     this.errorMessage = '';
 
     this.successMessage = '';
-
 
     if (!this.vehicleId) {
 
@@ -475,7 +464,6 @@ this.customerName = customer
 
     }
 
-
     if (!this.form.customerId) {
 
       this.errorMessage =
@@ -484,7 +472,6 @@ this.customerName = customer
       return;
 
     }
-
 
     this.isSubmitting = true;
 
@@ -496,16 +483,10 @@ this.vehicleService.updateVehicle(this.form)
 
         next: () => {
 
-          console.log(
-            'VEHICLE UPDATE SUCCESS'
-          );
-
-
           this.successMessage =
             'Araç başarıyla güncellendi.';
 
           this.isSubmitting = false;
-
 
           setTimeout(() => {
 
@@ -535,7 +516,6 @@ this.vehicleService.updateVehicle(this.form)
             error?.error
           );
 
-
           this.errorMessage =
             this.getErrorMessage(error);
 
@@ -549,7 +529,6 @@ this.vehicleService.updateVehicle(this.form)
 
   }
 
-
   cancel(): void {
 
     this.router.navigate([
@@ -558,7 +537,6 @@ this.vehicleService.updateVehicle(this.form)
     ]);
 
   }
-
 
   private getErrorMessage(
     error: any
@@ -573,13 +551,11 @@ this.vehicleService.updateVehicle(this.form)
 
     }
 
-
     if (error?.status === 401) {
 
       return 'Oturumunuz geçerli değil.';
 
     }
-
 
     if (error?.status === 403) {
 
@@ -589,20 +565,17 @@ this.vehicleService.updateVehicle(this.form)
 
     }
 
-
     if (error?.status === 404) {
 
       return 'Araç veya müşteri bulunamadı.';
 
     }
 
-
     if (error?.status === 0) {
 
       return 'Backend sunucusuna ulaşılamadı.';
 
     }
-
 
     return (
       'Araç güncellenirken bir hata oluştu.'

@@ -38,7 +38,7 @@
 
       <div class="search-wrapper">
         <span class="search-label">Kural Ara</span>
-        <input
+        <input maxlength="60"
           type="text"
           placeholder="Kod veya kural adı ara..."
           [value]="searchText()"
@@ -200,7 +200,7 @@
 
           <label>
             <span>Mevcut Değer</span>
-            <input type="text" [value]="formatValue(rule.code, rule.value) + '  (' + rule.value + ')'" disabled />
+            <input maxlength="6" type="text" [value]="formatValue(rule.code, rule.value) + '  (' + rule.value + ')'" disabled />
           </label>
 
           <label>
@@ -215,7 +215,7 @@
 
           <label class="rule-dialog-full">
             <span>Gerekçe</span>
-            <textarea rows="3" name="reason" [(ngModel)]="reason" placeholder="Değişikliğin nedenini açıklayın (en az 10 karakter)"></textarea>
+            <textarea maxlength="500" rows="3" name="reason" [(ngModel)]="reason" placeholder="Değişikliğin nedenini açıklayın (en az 10 karakter)"></textarea>
           </label>
 
         </div>
@@ -286,7 +286,7 @@
           <label>
             <span>Kural</span>
             @if (editorMode() === 'edit') {
-              <input type="text" name="ruleCode" [value]="describe(ruleCode, ruleName).title" disabled />
+              <input maxlength="6" type="text" name="ruleCode" [value]="describe(ruleCode, ruleName).title" disabled />
             } @else {
               <select name="ruleCode" [ngModel]="ruleCode" (ngModelChange)="selectRuleCode($event)">
                 <option value="" disabled>Kural seçin</option>
@@ -308,12 +308,12 @@
 
           <label class="rule-dialog-full">
             <span>Kural Adı</span>
-            <input type="text" name="ruleName" [(ngModel)]="ruleName" placeholder="Kural seçince otomatik dolar" />
+            <input maxlength="100" type="text" name="ruleName" [(ngModel)]="ruleName" placeholder="Kural seçince otomatik dolar" />
           </label>
 
           <label class="rule-dialog-full">
             <span>Açıklama</span>
-            <textarea rows="2" name="ruleDescription" [(ngModel)]="ruleDescription" placeholder="Kuralın ne zaman uygulandığını kısaca yazın"></textarea>
+            <textarea maxlength="500" rows="2" name="ruleDescription" [(ngModel)]="ruleDescription" placeholder="Kuralın ne zaman uygulandığını kısaca yazın"></textarea>
           </label>
 
           @if (editorMode() === 'create') {

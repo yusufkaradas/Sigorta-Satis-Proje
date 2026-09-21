@@ -40,13 +40,15 @@ export class RoleDetail {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   role: Role | null = null;
+
+  get isSystemRole(): boolean {
+    return !!this.role && (this.role.isSystem ?? ['Admin', 'Manager', 'Customer'].includes(this.role.name));
+  }
 
   isLoading = true;
 
   errorMessage = '';
-
 
   ngOnInit(): void {
 
@@ -66,7 +68,6 @@ export class RoleDetail {
     this.loadRole(id);
   }
 
-
   loadRole(id: string): void {
 
     this.isLoading = true;
@@ -78,11 +79,6 @@ export class RoleDetail {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'ROLE DETAIL RESPONSE:',
-            data
-          );
 
           this.role = data;
 
@@ -110,7 +106,6 @@ export class RoleDetail {
       });
   }
 
-
   async deleteRole(): Promise<void> {
 
     if (!this.role) {
@@ -136,11 +131,6 @@ export class RoleDetail {
 
         next: () => {
 
-          console.log(
-            'ROLE DELETE SUCCESS:',
-            this.role?.id
-          );
-
           this.router.navigate([
             '/roles'
           ]);
@@ -164,7 +154,6 @@ export class RoleDetail {
 
       });
   }
-
 
   goBack(): void {
 

@@ -62,7 +62,7 @@ export class PricingRequests implements OnInit {
   readonly portal =
     injectPortalContext();
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   requests = signal<PricingRuleChangeRequest[]>([]);
 

@@ -52,7 +52,6 @@ export class CustomerEdit {
     return date.toISOString().slice(0, 10);
   })();
 
-
   private readonly route =
     inject(ActivatedRoute);
 
@@ -173,20 +172,11 @@ export class CustomerEdit {
     this.successMessage = '';
     this.errorMessage = '';
 
-    console.log(
-      'CUSTOMER UPDATE REQUEST:',
-      this.form
-    );
-
     this.customerService
       .updateCustomer(this.form)
       .subscribe({
 
         next: () => {
-
-          console.log(
-            'CUSTOMER UPDATE BAŞARILI'
-          );
 
           this.successMessage =
             'Müşteri başarıyla güncellendi.';

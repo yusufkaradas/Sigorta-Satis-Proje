@@ -69,16 +69,10 @@ export class PolicyDetail {
 
   readonly PolicyStatus = PolicyStatus;
 
-
   ngOnInit(): void {
 
     const id =
       this.route.snapshot.paramMap.get('id');
-
-    console.log(
-      'POLICY DETAIL ID:',
-      id
-    );
 
     if (!id) {
 
@@ -95,12 +89,7 @@ export class PolicyDetail {
     this.loadPolicy(id);
   }
 
-
   loadPolicy(id: string): void {
-
-    console.log(
-      'POLICY DETAIL LOAD START'
-    );
 
     this.isLoading = true;
 
@@ -111,11 +100,6 @@ export class PolicyDetail {
       .subscribe({
 
         next: (data) => {
-
-  console.log(
-    'POLICY DETAIL RESPONSE:',
-    data
-  );
 
   this.policy = data;
 
@@ -132,11 +116,6 @@ export class PolicyDetail {
       .subscribe({
 
         next: (quoteData) => {
-
-          console.log(
-            'POLICY DETAIL QUOTE RESPONSE:',
-            quoteData
-          );
 
           this.quote = quoteData;
 
@@ -192,7 +171,6 @@ export class PolicyDetail {
       });
   }
 
-
   getStatusText(
     status: PolicyStatus
   ): string {
@@ -215,7 +193,6 @@ export class PolicyDetail {
         return 'Bilinmiyor';
     }
   }
-
 
   getStatusClass(
     status: PolicyStatus
@@ -261,11 +238,6 @@ async cancelPolicy(): Promise<void> {
     .subscribe({
 
       next: () => {
-
-        console.log(
-          'POLICY CANCEL SUCCESS:',
-          this.policy?.id
-        );
 
         // İşlem başarılı olduktan sonra
         // güncel poliçeyi tekrar backend'den çekiyoruz.
@@ -313,11 +285,6 @@ async deletePolicy(): Promise<void> {
     .subscribe({
 
       next: () => {
-
-        console.log(
-          'POLICY DELETE SUCCESS:',
-          this.policy?.id
-        );
 
         this.router.navigate([
           this.basePath + '/policies'
@@ -389,11 +356,6 @@ private loadPayment(
 
         this.payment =
           policyPayments[0] ?? null;
-
-        console.log(
-          'POLICY DETAIL PAYMENT RESPONSE:',
-          this.payment
-        );
 
         this.isPaymentLoading = false;
 

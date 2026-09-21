@@ -381,9 +381,16 @@ export class Dashboard implements OnInit {
       { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
       { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
     ];
-    return this.portal.isManager
-      ? actions.filter(item => !['/quotes/new', '/users/new', '/vehicles/new'].includes(item.path) && item.query?.['tab'] !== 'catalog')
-      : actions;
+    if (this.portal.isManager) {
+      return [
+        { label: '+ Yeni Teklif', hint: 'Müşteri için teklif hazırla', path: '/quotes/new' },
+        { label: 'Müşteriler', hint: 'Müşteri portföyü', path: '/customers' },
+        { label: 'Poliçeler', hint: 'Aktif ve yenilenecek poliçeler', path: '/policies' },
+        { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
+        { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
+      ];
+    }
+    return actions;
   }
 
   isActivityDialogOpen = signal(false);

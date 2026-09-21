@@ -24,7 +24,6 @@ import {
   VehiclesService
 } from './vehicle.service';
 
-
 import {
   injectPortalContext
 } from '../../core/services/portal-context';
@@ -55,7 +54,6 @@ export class Vehicle {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   vehicles: VehicleModel[] = [];
 
   isLoading = true;
@@ -66,13 +64,11 @@ export class Vehicle {
 
   currentPage = 1;
 
-  pageSize = 5;
-
+  pageSize = 8;
 
   ngOnInit(): void {
     this.loadVehicles();
   }
-
 
   private loadVehicles(): void {
 
@@ -84,16 +80,6 @@ export class Vehicle {
       .subscribe({
 
         next: (data: VehicleModel[]) => {
-
-          console.log(
-            'VEHICLES RESPONSE:',
-            data
-          );
-
-          console.log(
-            'VEHICLES COUNT:',
-            data.length
-          );
 
           this.vehicles =
             newestFirst(data);
@@ -138,7 +124,6 @@ export class Vehicle {
       });
   }
 
-
   get totalMarketValue(): number {
     return this.vehicles.reduce((total, vehicle) => total + (vehicle.marketValue ?? 0), 0);
   }
@@ -160,20 +145,17 @@ export class Vehicle {
     return this.vehicles.length;
   }
 
-
   get activeVehicleCount(): number {
     return this.vehicles.filter(
       vehicle => vehicle.isActive
     ).length;
   }
 
-
   get inactiveVehicleCount(): number {
     return this.vehicles.filter(
       vehicle => !vehicle.isActive
     ).length;
   }
-
 
   get filteredVehicles(): VehicleModel[] {
 
@@ -206,7 +188,6 @@ export class Vehicle {
     );
   }
 
-
   get pagedVehicles(): VehicleModel[] {
 
     const start =
@@ -219,7 +200,6 @@ export class Vehicle {
     );
   }
 
-
   get totalPages(): number {
 
     return Math.max(
@@ -231,7 +211,6 @@ export class Vehicle {
     );
   }
 
-
   get pageNumbers(): number[] {
     const total = this.totalPages;
     const current = Math.min(this.currentPage, total);
@@ -240,11 +219,9 @@ export class Vehicle {
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
-
   onSearch(): void {
     this.currentPage = 1;
   }
-
 
   goToPage(page: number): void {
 
@@ -258,20 +235,17 @@ export class Vehicle {
     this.currentPage = page;
   }
 
-
   previousPage(): void {
     this.goToPage(
       this.currentPage - 1
     );
   }
 
-
   nextPage(): void {
     this.goToPage(
       this.currentPage + 1
     );
   }
-
 
   getStatusText(
     vehicle: VehicleModel
@@ -281,7 +255,6 @@ export class Vehicle {
       ? 'Aktif'
       : 'Pasif';
   }
-
 
   getVehicleTypeText(
     vehicleType: number

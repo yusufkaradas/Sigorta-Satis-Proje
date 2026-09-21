@@ -28,8 +28,10 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
+        var loginEmail = (dto.Email ?? string.Empty).Trim().ToLower();
+
         var users = await _unitOfWork.Users
-            .FindAsync(x => x.Email == dto.Email);
+            .FindAsync(x => x.Email.ToLower() == loginEmail && !x.IsDeleted);
 
         var user = users.FirstOrDefault();
 
@@ -63,8 +65,8 @@ public class AuthService : IAuthService
 
         if (role == null)
         {
-            throw new Exception(
-                "Kullanıcı rolü bulunamadı.");
+            throw new BadRequestException(
+                "Hesabınıza bir rol atanmamış. Lütfen yöneticinizle iletişime geçin.");
         }
 
         var tokenResult =

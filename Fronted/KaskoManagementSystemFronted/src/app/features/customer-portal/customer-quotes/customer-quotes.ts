@@ -43,7 +43,7 @@ export class CustomerQuotes implements OnInit {
   private readonly quoteService =
     inject(QuoteService);
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   quotes = signal<Quote[]>([]);
 

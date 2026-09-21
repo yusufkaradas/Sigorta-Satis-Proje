@@ -38,7 +38,6 @@ import {
   CustomerService
 } from '../../customers/customers.service';
 
-
 @Component({
   selector: 'app-vehicle-create',
 
@@ -177,7 +176,6 @@ export class VehicleCreate {
     return this.catalogInfo?.vehicleCategory || '';
   }
 
-
 customers: Customer[] = [];
 brands: VehicleValueBrand[] = [];
 customerVehicles: Vehicle[] = [];
@@ -206,7 +204,6 @@ isLoadingYears = false;
 
 isLoadingTsbValue = false;
 
-
   isLoadingCustomers = true;
 
   isSubmitting = false;
@@ -214,7 +211,6 @@ isLoadingTsbValue = false;
   errorMessage = '';
 
   successMessage = '';
-
 
   form: CreateVehicleRequest = {
 
@@ -251,7 +247,6 @@ isLoadingTsbValue = false;
 
   };
 
-
   ngOnInit(): void {
 
     if (this.isCustomerMode) {
@@ -263,13 +258,11 @@ isLoadingTsbValue = false;
 
     this.loadCategories();
 
-
   }
 
   private loadCustomers(): void {
 
     this.isLoadingCustomers = true;
-
 
     this.customerService
       .getCustomers()
@@ -277,29 +270,15 @@ isLoadingTsbValue = false;
 
         next: (data: Customer[]) => {
 
-          console.log(
-            'CUSTOMERS RESPONSE:',
-            data
-          );
-
-          console.log(
-            'CUSTOMERS COUNT:',
-            data.length
-          );
-
-
           this.customers =
             data ?? [];
-
 
           this.isLoadingCustomers =
             false;
 
-
           this.cdr.detectChanges();
 
         },
-
 
         error: (error: any) => {
 
@@ -329,10 +308,8 @@ console.error(
           this.errorMessage =
             'Müşteriler yüklenemedi.';
 
-
           this.isLoadingCustomers =
             false;
-
 
           this.cdr.detectChanges();
 
@@ -461,7 +438,6 @@ plateTouched = false;
 
     this.successMessage = '';
 
-
     if (!this.isCustomerMode && !this.form.customerId) {
 
       this.errorMessage =
@@ -505,9 +481,7 @@ plateTouched = false;
 
     }
 
-
     this.isSubmitting = true;
-
 
     const request = {
       ...this.form,
@@ -522,18 +496,10 @@ plateTouched = false;
 
         next: (response) => {
 
-          console.log(
-            'VEHICLE CREATE RESPONSE:',
-            response
-          );
-
-
           this.successMessage =
             'Araç başarıyla oluşturuldu.';
 
-
           this.isSubmitting = false;
-
 
           setTimeout(() => {
 
@@ -555,7 +521,6 @@ plateTouched = false;
 
         },
 
-
         error: (error: any) => {
 
           console.error(
@@ -573,13 +538,10 @@ plateTouched = false;
             error?.error
           );
 
-
           this.errorMessage =
             this.getErrorMessage(error);
 
-
           this.isSubmitting = false;
-
 
           this.cdr.detectChanges();
 
@@ -783,11 +745,6 @@ onYearChange(): void {
     this.isLoadingTsbValue =
       false;
 
-    console.log(
-      'TSB ARAÇ DEĞERİ:',
-      result
-    );
-
     this.cdr.detectChanges();
 
   },
@@ -826,7 +783,6 @@ onYearChange(): void {
 
   }
 
-
   private getErrorMessage(
     error: any
   ): string {
@@ -848,7 +804,6 @@ onYearChange(): void {
 
     }
 
-
     if (error?.status === 401) {
 
       return (
@@ -856,7 +811,6 @@ onYearChange(): void {
       );
 
     }
-
 
     if (error?.status === 403) {
 
@@ -866,7 +820,6 @@ onYearChange(): void {
 
     }
 
-
     if (error?.status === 0) {
 
       return (
@@ -874,7 +827,6 @@ onYearChange(): void {
       );
 
     }
-
 
     return (
       'Araç oluşturulurken bir hata oluştu.'

@@ -50,17 +50,14 @@ export class RoleEdit {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   roleId = '';
 
   role: Role | null = null;
-
 
   form: RoleUpdateDto = {
     id: '',
     name: ''
   };
-
 
   isLoading = true;
 
@@ -69,7 +66,6 @@ export class RoleEdit {
   successMessage = '';
 
   errorMessage = '';
-
 
   ngOnInit(): void {
 
@@ -91,7 +87,6 @@ export class RoleEdit {
     this.loadRole(id);
   }
 
-
   private loadRole(id: string): void {
 
     this.isLoading = true;
@@ -103,11 +98,6 @@ export class RoleEdit {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'ROLE EDIT LOAD:',
-            data
-          );
 
           this.role = data;
 
@@ -147,7 +137,6 @@ export class RoleEdit {
       });
   }
 
-
   submit(): void {
 
     if (!this.form.name.trim()) {
@@ -158,13 +147,11 @@ export class RoleEdit {
       return;
     }
 
-
     this.isSubmitting = true;
 
     this.successMessage = '';
 
     this.errorMessage = '';
-
 
     const request: RoleUpdateDto = {
 
@@ -174,22 +161,11 @@ export class RoleEdit {
 
     };
 
-
-    console.log(
-      'ROLE UPDATE REQUEST:',
-      request
-    );
-
-
     this.rolesService
       .update(request)
       .subscribe({
 
         next: () => {
-
-          console.log(
-            'ROLE UPDATE SUCCESS'
-          );
 
           this.successMessage =
             'Rol başarıyla güncellendi.';
@@ -197,7 +173,6 @@ export class RoleEdit {
           this.isSubmitting = false;
 
           this.cdr.detectChanges();
-
 
           setTimeout(() => {
 
@@ -227,7 +202,6 @@ export class RoleEdit {
             error?.error
           );
 
-
           if (error?.status === 400) {
 
             this.errorMessage =
@@ -252,7 +226,6 @@ export class RoleEdit {
               'Rol güncellenirken bir hata oluştu.';
           }
 
-
           this.isSubmitting = false;
 
           this.cdr.detectChanges();
@@ -260,7 +233,6 @@ export class RoleEdit {
 
       });
   }
-
 
   goBack(): void {
 

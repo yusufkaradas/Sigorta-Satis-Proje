@@ -3221,3 +3221,79 @@
 .qq-page .qq-vehicle-box dl dd .plate-badge {
   max-width: 100%;
 }
+
+.qq-offer-ready {
+  width: min(100%, k.u(620));
+  padding: k.u(28) k.u(32);
+  border: 2px solid k.$black;
+  border-radius: k.u(18);
+  background: k.$surface;
+  color: k.$text;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: k.u(10);
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: k.u(24);
+  }
+
+  p {
+    margin: 0;
+    color: k.$text-secondary;
+    font-size: k.u(14);
+  }
+
+  small {
+    color: #166534;
+    font-size: k.u(12);
+    font-weight: 700;
+  }
+}
+
+.qq-offer-ready-icon {
+  width: k.u(56);
+  height: k.u(56);
+  border-radius: 50%;
+  background: #22c55e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: k.u(28);
+  font-weight: 800;
+}
+
+.qq-offer-ready-grid {
+  width: 100%;
+  margin: k.u(6) 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: k.u(8);
+
+  div {
+    padding: k.u(10) k.u(12);
+    border: 1px solid #e2e8f0;
+    border-radius: k.u(10);
+    text-align: left;
+  }
+
+  dt {
+    color: k.$text-secondary;
+    font-size: k.u(11);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: k.u(2) 0 0;
+    font-size: k.u(15);
+    font-weight: 800;
+  }
+}
+
+.qq-offer-ready-price {
+  color: k.$primary;
+}

@@ -29,7 +29,7 @@ export class Cancellations implements OnInit {
 
   readonly Status = CancellationStatus;
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   requests = signal<PolicyCancellation[]>([]);
 

@@ -606,7 +606,7 @@
               class="qq-btn qq-btn-primary"
               [disabled]="!selectedPackage || isRepricing"
               (click)="continueWithOffer()">
-              {{ selectedPackage ? (isLoggedIn ? 'Teklifi Hesabıma Kaydet · ' : 'Giriş Yap ve Teklifi Kaydet · ') + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺' : 'Bir Teklif Seçin' }}
+              {{ selectedPackage ? (isLoggedIn ? 'Teklifi Hesabıma Kaydet · ' : 'Teklifi Oluştur · ') + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺' : 'Bir Teklif Seçin' }}
             </button>
 
           </div>
@@ -615,6 +615,40 @@
 
       </div>
 
+
+      <div
+        class="qq-step"
+        *ngIf="currentStep === 6 && createdQuote as quote">
+
+        <div class="qq-body qq-body-center">
+          <div class="qq-offer-ready">
+            <span class="qq-offer-ready-icon">✓</span>
+            <h1>Teklifiniz Hazır</h1>
+            <p>{{ createdQuoteNeedsReview ? 'Teklifiniz oluşturuldu ve uzman onayına gönderildi. Onaylandığında size bildirim gelecek.' : 'Teklifiniz hesabınıza kaydedildi. Dilediğiniz zaman giriş yaparak satın alabilirsiniz.' }}</p>
+
+            <dl class="qq-offer-ready-grid">
+              <div><dt>Teklif No</dt><dd>{{ quote.quoteNumber }}</dd></div>
+              <div><dt>Paket</dt><dd>{{ quote.packageName }}</dd></div>
+              <div><dt>Yıllık Prim</dt><dd class="qq-offer-ready-price">{{ quote.premiumAmount | number:'1.2-2' }} ₺</dd></div>
+              <div><dt>Geçerlilik</dt><dd>{{ quote.validUntil | date:'dd.MM.yyyy' }}</dd></div>
+            </dl>
+
+            <small>Fiyatınız geçerlilik tarihine kadar sabittir.</small>
+          </div>
+        </div>
+
+        <div class="qq-actions">
+          <button type="button" class="qq-btn qq-btn-ghost" (click)="finishCreatedQuote()">Kapat</button>
+          <button
+            *ngIf="!createdQuoteNeedsReview"
+            type="button"
+            class="qq-btn qq-btn-primary"
+            (click)="purchaseCreatedQuote()">
+            Giriş Yap ve Satın Al
+          </button>
+        </div>
+
+      </div>
 
       <!-- STEP 5 -->
 

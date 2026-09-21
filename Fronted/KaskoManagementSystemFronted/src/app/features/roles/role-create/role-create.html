@@ -32,7 +32,7 @@
 
         <div class="kf-field">
           <label for="roleName">Rol Adı *</label>
-          <input id="roleName" name="roleName" type="text" placeholder="Örn. Manager" [(ngModel)]="name" [disabled]="isLoading" />
+          <input maxlength="100" id="roleName" name="roleName" type="text" placeholder="Örn. Manager" [(ngModel)]="name" [disabled]="isLoading" />
           <small>Sistemde tanımlı roller: Admin, Manager, Customer.</small>
         </div>
 

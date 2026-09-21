@@ -63,7 +63,7 @@
             <label for="roleId">Rol *</label>
             <select id="roleId" name="roleId" [(ngModel)]="model.roleId" required>
               <option value="" disabled>Rol seçin</option>
-              <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
+              <option *ngFor="let role of allowedRoles" [value]="role.id">{{ role.name }}</option>
             </select>
           </div>
 

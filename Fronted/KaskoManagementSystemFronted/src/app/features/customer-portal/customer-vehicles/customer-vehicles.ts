@@ -46,7 +46,7 @@ export class CustomerVehicles implements OnInit {
   private readonly vehicleService =
     inject(VehiclesService);
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   vehicles = signal<Vehicle[]>([]);
 

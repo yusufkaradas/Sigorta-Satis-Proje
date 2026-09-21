@@ -8,7 +8,6 @@ import { finalize } from 'rxjs';
 
 import { QuoteService } from './quote.service';
 
-
 export enum QuoteStatus {
 
   Draft = 1,
@@ -96,7 +95,6 @@ export interface Quote {
   pricingSnapshot?: QuotePricingSnapshot | null;
 }
 
-
 export interface QuoteCreateDto {
 
   customerId: string;
@@ -121,13 +119,11 @@ export interface QuoteCreateDto {
 
 }
 
-
 export interface QuoteUpdateDto {
 
   validUntil: string;
 
 }
-
 
 import {
   injectPortalContext
@@ -153,7 +149,6 @@ import {
 
 })
 
-
 export class Quotes {
 readonly instanceId =
     Math.random().toString(36).substring(2, 8);
@@ -165,7 +160,6 @@ readonly instanceId =
   readonly portal =
     injectPortalContext();
 
-
   private readonly router =
 
     inject(Router);
@@ -175,30 +169,21 @@ readonly instanceId =
 
   readonly QuoteStatus = QuoteStatus;
 
-
   quotes: Quote[] = [];
-
 
   filteredQuotes: Quote[] = [];
 
-
   currentPage = 1;
 
-
-  pageSize = 5;
-
+  pageSize = 8;
 
   isLoading = true;
 
-
   errorMessage = '';
-
 
   searchText = '';
 
-
   selectedStatus = '';
-
 
   get totalPages(): number {
 
@@ -212,7 +197,6 @@ readonly instanceId =
 
   }
 
-
   get paginatedQuotes(): Quote[] {
 
     const start =
@@ -221,11 +205,9 @@ readonly instanceId =
 
       this.pageSize;
 
-
     const end =
 
       start + this.pageSize;
-
 
     return this.filteredQuotes.slice(
 
@@ -236,7 +218,6 @@ readonly instanceId =
     );
 
   }
-
 
   deadlineText(value?: string | null): string {
     if (!value) {
@@ -266,19 +247,11 @@ readonly instanceId =
 
 ngOnInit(): void {
 
-  console.log(
-    'QUOTES COMPONENT INSTANCE:',
-    this.instanceId
-  );
-
   this.loadQuotes();
 
 }
 
-
 loadQuotes(): void {
-
-  console.log('LOAD QUOTES START');
 
   this.isLoading = true;
   this.errorMessage = '';
@@ -289,32 +262,12 @@ loadQuotes(): void {
 
       next: (data) => {
 
-        console.log(
-          'QUOTES RESPONSE:',
-          data
-        );
-
         this.quotes =
             newestFirst(data);
-
-        console.log(
-          'QUOTES ASSIGNED:',
-          this.quotes.length
-        );
 
         this.filterQuotes();
 
         this.isLoading = false;
-
-        console.log(
-          'FILTERED QUOTES:',
-          this.filteredQuotes.length
-        );
-
-        console.log(
-          'IS LOADING:',
-          this.isLoading
-        );
 
         this.cdr.detectChanges();
 
@@ -349,11 +302,9 @@ loadQuotes(): void {
 
         .toLowerCase();
 
-
     this.filteredQuotes =
 
       this.quotes.filter(quote => {
-
 
         const matchesSearch =
 
@@ -377,7 +328,6 @@ loadQuotes(): void {
 
             .includes(search);
 
-
         const matchesStatus =
 
           !this.selectedStatus ||
@@ -385,7 +335,6 @@ loadQuotes(): void {
           String(quote.status) ===
 
           this.selectedStatus;
-
 
         return (
 
@@ -397,11 +346,9 @@ loadQuotes(): void {
 
       });
 
-
     this.currentPage = 1;
 
   }
-
 
   clearFilters(): void {
 
@@ -419,7 +366,6 @@ loadQuotes(): void {
 
   }
 
-
   getStatusText(
 
     status: QuoteStatus
@@ -432,31 +378,25 @@ loadQuotes(): void {
 
         return 'Taslak';
 
-
       case QuoteStatus.Offered:
 
         return 'Teklif Verildi';
-
 
       case QuoteStatus.Accepted:
 
         return 'Kabul Edildi';
 
-
       case QuoteStatus.Rejected:
 
         return 'Reddedildi';
-
 
       case QuoteStatus.Expired:
 
         return 'Süresi Doldu';
 
-
       case QuoteStatus.Cancelled:
 
         return 'İptal Edildi';
-
 
       default:
 
@@ -465,7 +405,6 @@ loadQuotes(): void {
     }
 
   }
-
 
   getStatusClass(
 
@@ -479,31 +418,25 @@ loadQuotes(): void {
 
         return 'status-draft';
 
-
       case QuoteStatus.Offered:
 
         return 'status-offered';
-
 
       case QuoteStatus.Accepted:
 
         return 'status-accepted';
 
-
       case QuoteStatus.Rejected:
 
         return 'status-rejected';
-
 
       case QuoteStatus.Expired:
 
         return 'status-expired';
 
-
       case QuoteStatus.Cancelled:
 
         return 'status-cancelled';
-
 
       default:
 
@@ -512,7 +445,6 @@ loadQuotes(): void {
     }
 
   }
-
 
   get openQuoteCount(): number {
     return this.quotes.filter(quote =>
@@ -548,7 +480,6 @@ loadQuotes(): void {
 
   }
 
-
   get activeQuotes(): number {
 
     return this.quotes.filter(
@@ -562,7 +493,6 @@ loadQuotes(): void {
     ).length;
 
   }
-
 
   get passiveQuotes(): number {
 
@@ -586,7 +516,6 @@ loadQuotes(): void {
 
   }
 
-
   get deletedQuotes(): number {
 
     return this.quotes.filter(
@@ -602,7 +531,6 @@ loadQuotes(): void {
     ).length;
 
   }
-
 
   openDetail(id: string): void {
 
@@ -638,11 +566,9 @@ openCreate(): void {
 
     }
 
-
     this.currentPage = page;
 
   }
-
 
   nextPage(): void {
 
@@ -659,7 +585,6 @@ openCreate(): void {
     }
 
   }
-
 
   previousPage(): void {
 

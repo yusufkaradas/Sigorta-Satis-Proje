@@ -25,7 +25,6 @@ import {
   QuoteService
 } from '../quote.service';
 
-
 @Component({
   selector: 'app-quote-edit',
   standalone: true,
@@ -50,7 +49,6 @@ export class QuoteEdit {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   quote: Quote | null = null;
 
   validUntil = '';
@@ -62,7 +60,6 @@ export class QuoteEdit {
   errorMessage = '';
 
   successMessage = '';
-
 
   ngOnInit(): void {
 
@@ -82,7 +79,6 @@ export class QuoteEdit {
     this.loadQuote(id);
   }
 
-
   loadQuote(id: string): void {
 
     this.isLoading = true;
@@ -94,11 +90,6 @@ export class QuoteEdit {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'QUOTE EDIT RESPONSE:',
-            data
-          );
 
           this.quote = data;
 
@@ -136,7 +127,6 @@ export class QuoteEdit {
       });
   }
 
-
   save(): void {
 
     if (!this.quote) {
@@ -151,7 +141,6 @@ export class QuoteEdit {
       return;
     }
 
-
     const selectedDate =
       new Date(this.validUntil);
 
@@ -165,7 +154,6 @@ export class QuoteEdit {
       0
     );
 
-
     if (selectedDate < today) {
 
       this.errorMessage =
@@ -174,25 +162,16 @@ export class QuoteEdit {
       return;
     }
 
-
     this.isSaving = true;
 
     this.errorMessage = '';
 
     this.successMessage = '';
 
-
     const dto = {
       validUntil:
         this.validUntil
     };
-
-
-    console.log(
-      'QUOTE UPDATE REQUEST:',
-      dto
-    );
-
 
     this.quoteService
       .update(
@@ -203,17 +182,12 @@ export class QuoteEdit {
 
         next: () => {
 
-          console.log(
-            'QUOTE UPDATE SUCCESS'
-          );
-
           this.isSaving = false;
 
           this.successMessage =
             'Teklif başarıyla güncellendi.';
 
           this.cdr.detectChanges();
-
 
           setTimeout(() => {
 
@@ -244,7 +218,6 @@ export class QuoteEdit {
 
       });
   }
-
 
   goBack(): void {
 

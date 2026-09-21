@@ -170,7 +170,33 @@ public class UserService : IUserService
             throw new NotFoundException("Rol bulunamadı.");
         }
 
-       
+        var currentRole = await _unitOfWork.Roles.GetByIdAsync(user.RoleId);
+        var currentRoleName = currentRole?.Name ?? string.Empty;
+        var isSelf = CurrentUserId() == user.Id;
+
+        if (user.RoleId != dto.RoleId)
+        {
+            if (isSelf)
+            {
+                throw new BadRequestException("Kendi rolünüzü değiştiremezsiniz.");
+            }
+
+            if ((currentRoleName == "Customer") != (role.Name == "Customer"))
+            {
+                throw new BadRequestException("Müşteri hesapları personel rolüne, personel hesapları müşteri rolüne dönüştürülemez. Yeni bir kullanıcı oluşturun.");
+            }
+        }
+
+        if (isSelf && !dto.IsActive)
+        {
+            throw new BadRequestException("Kendi hesabınızı pasife alamazsınız.");
+        }
+
+        if (currentRoleName == "Admin" && (role.Name != "Admin" || !dto.IsActive))
+        {
+            await EnsureAnotherActiveAdminAsync(user.Id);
+        }
+
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.Email = dto.Email;
@@ -225,6 +251,21 @@ public class UserService : IUserService
 
         var existingUser = await _unitOfWork.Users.GetByIdAsync(id);
 
+        if (existingUser != null && deletedBy == existingUser.Id)
+        {
+            throw new BadRequestException("Kendi hesabınızı silemezsiniz.");
+        }
+
+        if (existingUser != null)
+        {
+            var existingRole = await _unitOfWork.Roles.GetByIdAsync(existingUser.RoleId);
+
+            if (existingRole?.Name == "Admin")
+            {
+                await EnsureAnotherActiveAdminAsync(existingUser.Id);
+            }
+        }
+
         var result = await _unitOfWork.Users
             .DeleteUserAsync(id, deletedBy);
 
@@ -249,6 +290,33 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
     }
     
+    private Guid? CurrentUserId()
+    {
+        var value = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(value, out var id) ? id : null;
+    }
+
+    private async Task EnsureAnotherActiveAdminAsync(Guid excludedUserId)
+    {
+        var adminRole = (await _unitOfWork.Roles.FindAsync(x => x.Name == "Admin")).FirstOrDefault();
+
+        if (adminRole == null)
+        {
+            return;
+        }
+
+        var otherAdmins = await _unitOfWork.Users.AnyAsync(x =>
+            x.RoleId == adminRole.Id &&
+            x.Id != excludedUserId &&
+            x.IsActive &&
+            !x.IsDeleted);
+
+        if (!otherAdmins)
+        {
+            throw new BadRequestException("Sistemde en az bir aktif yönetici (Admin) kalmalıdır.");
+        }
+    }
+
     private readonly IHttpContextAccessor _httpContextAccessor;
 
 }

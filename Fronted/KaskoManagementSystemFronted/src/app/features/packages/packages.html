@@ -51,59 +51,64 @@
         <p class="matrix-hint">
           {{ portal.isManager ? 'Paketlerin hangi teminatları kapsadığını gösterir. Değişiklik yetkisi yöneticidedir.' : 'Hücreye tıklayarak teminatı pakete ekleyin veya çıkarın. Değişiklik yeni tekliflerde hemen geçerli olur; müşteri karşılaştırma tablosu buradan beslenir.' }}
         </p>
-        <table class="matrix-table">
-          <thead>
-            <tr>
-              <th>Teminat</th>
-              @for (item of data.packages; track item.id) {
-                <th>
-                  <strong>{{ item.name }}</strong>
-                  <small>{{ item.coverageIds?.length ?? item.coverageNames.length }} teminat · × {{ item.factor | number:'1.2-2' }}</small>
-                </th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (coverage of data.coverages; track coverage.id) {
-              <tr>
-                <td>
-                  <strong>{{ coverage.name }}</strong>
-                  @if (coverage.isRequired) { <span class="matrix-required">Zorunlu</span> }
-                  <small>{{ coverage.description }}</small>
-                </td>
-                @for (item of data.packages; track item.id) {
-                  <td class="matrix-cell">
-                    <button
-                      type="button"
-                      class="matrix-toggle"
-                      [class.on]="isIncluded(item.id, coverage.id)"
-                      [class.readonly]="portal.isManager"
-                      [disabled]="matrixBusy() === item.id + coverage.id"
-                      [title]="portal.isManager ? '' : (isIncluded(item.id, coverage.id) ? 'Paketten çıkar' : 'Pakete ekle')"
-                      (click)="toggleCoverage(item.id, coverage.id, coverage.name, coverage.isRequired)">
-                      {{ isIncluded(item.id, coverage.id) ? '✓ Dahil' : '— Kapsam dışı' }}
-                    </button>
-                  </td>
-                }
-              </tr>
-            }
-            <tr class="matrix-desc-row">
-              <td><strong>Paket Açıklaması</strong><small>Müşterinin paket kartında gördüğü metin</small></td>
-              @for (item of data.packages; track item.id) {
-                <td>
-                  @if (portal.isManager) {
-                    <small>{{ item.description }}</small>
-                  } @else {
-                    <textarea rows="3" maxlength="250" [value]="descriptionOf(item.id, item.description)" (input)="descriptionDrafts[item.id] = $any($event.target).value"></textarea>
-                    @if (descriptionDrafts[item.id] !== undefined && descriptionDrafts[item.id] !== item.description) {
-                      <button type="button" class="offer-button" [disabled]="matrixBusy() === item.id" (click)="saveDescription(item.id)">Kaydet</button>
-                    }
+
+        <div class="matrix-split">
+          @for (half of coverageHalves(); track $index) {
+            <table class="matrix-table">
+              <thead>
+                <tr>
+                  <th>Teminat</th>
+                  @for (item of data.packages; track item.id) {
+                    <th>
+                      <strong>{{ item.name.replace(' Paket', '') }}</strong>
+                      <small>{{ item.coverageIds?.length ?? item.coverageNames.length }} teminat · × {{ item.factor | number:'1.2-2' }}</small>
+                    </th>
                   }
-                </td>
+                </tr>
+              </thead>
+              <tbody>
+                @for (coverage of half; track coverage.id) {
+                  <tr>
+                    <td [title]="coverage.description ?? ''">
+                      <strong>{{ coverage.name }}</strong>
+                      @if (coverage.isRequired) { <span class="matrix-required">Zorunlu</span> }
+                    </td>
+                    @for (item of data.packages; track item.id) {
+                      <td class="matrix-cell">
+                        <button
+                          type="button"
+                          class="matrix-toggle"
+                          [class.on]="isIncluded(item.id, coverage.id)"
+                          [class.readonly]="portal.isManager"
+                          [disabled]="matrixBusy() === item.id + coverage.id"
+                          [title]="portal.isManager ? '' : (isIncluded(item.id, coverage.id) ? 'Paketten çıkar' : 'Pakete ekle')"
+                          (click)="toggleCoverage(item.id, coverage.id, coverage.name, coverage.isRequired)">
+                          {{ isIncluded(item.id, coverage.id) ? '✓ Dahil' : '— Yok' }}
+                        </button>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <div class="matrix-descs">
+          @for (item of data.packages; track item.id) {
+            <div class="matrix-desc">
+              <label>{{ item.name }} açıklaması</label>
+              @if (portal.isManager) {
+                <p>{{ item.description }}</p>
+              } @else {
+                <textarea rows="2" maxlength="250" [value]="descriptionOf(item.id, item.description)" (input)="descriptionDrafts[item.id] = $any($event.target).value"></textarea>
+                @if (descriptionDrafts[item.id] !== undefined && descriptionDrafts[item.id] !== item.description) {
+                  <button type="button" class="offer-button" [disabled]="matrixBusy() === item.id" (click)="saveDescription(item.id)">Kaydet</button>
+                }
               }
-            </tr>
-          </tbody>
-        </table>
+            </div>
+          }
+        </div>
       </div>
 
     } @else if (tab() === 'tariff' && tariff(); as data) {
@@ -133,9 +138,9 @@
           <div class="tariff-scroll">
             @for (item of data.coverages; track item.id) {
               <div class="tariff-row">
-                <div class="tariff-row-main">
+                <div class="tariff-row-main" [title]="item.description ?? ''">
                   <strong>{{ item.name }}</strong>
-                  <small [title]="item.description ?? ''">{{ item.description }}</small>
+                  <small>{{ item.description }}</small>
                 </div>
                 <span class="tariff-value">{{ coveragePriceText(item.pricingType, item.basePrice, item.rate) }}</span>
                 @if (item.pricingType === 1 && item.basePrice === 0) {
@@ -155,7 +160,7 @@
           <div class="tariff-scroll">
             @for (row of optionRows(); track row.option.id) {
               <div class="tariff-row">
-                <div class="tariff-row-main">
+                <div class="tariff-row-main" [title]="row.coverage.name">
                   <strong>{{ row.option.name }}</strong>
                   <small>{{ row.coverage.name }}{{ row.option.isDefault ? ' · varsayılan' : '' }}</small>
                 </div>
@@ -229,7 +234,7 @@
         <div class="rule-dialog-grid">
           <label>
             <span>Mevcut Değer</span>
-            <input type="text" [value]="valueText(target.field, target.currentValue)" disabled />
+            <input maxlength="100" type="text" [value]="valueText(target.field, target.currentValue)" disabled />
           </label>
           <label>
             <span>Yeni Değer</span>
@@ -284,7 +289,7 @@
         @if (!portal.isManager && item.status === Status.Pending) {
           <label class="rule-dialog-note">
             <span>Not <small>(reddederken zorunlu)</small></span>
-            <textarea rows="2" [value]="decisionNote" (input)="decisionNote = $any($event.target).value"></textarea>
+            <textarea maxlength="500" rows="2" [value]="decisionNote" (input)="decisionNote = $any($event.target).value"></textarea>
           </label>
         }
         @if (formError()) {

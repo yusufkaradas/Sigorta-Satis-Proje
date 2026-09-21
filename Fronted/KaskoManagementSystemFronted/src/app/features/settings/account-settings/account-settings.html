@@ -67,17 +67,17 @@
 
           <div class="kf-field kf-span-all">
             <label for="currentPassword">Mevcut Şifre *</label>
-            <input id="currentPassword" [type]="showPassword ? 'text' : 'password'" name="currentPassword" autocomplete="current-password" [(ngModel)]="currentPassword" />
+            <input maxlength="20" id="currentPassword" [type]="showPassword ? 'text' : 'password'" name="currentPassword" autocomplete="current-password" [(ngModel)]="currentPassword" />
           </div>
 
           <div class="kf-field">
             <label for="newPassword">Yeni Şifre *</label>
-            <input id="newPassword" [type]="showPassword ? 'text' : 'password'" name="newPassword" autocomplete="new-password" [(ngModel)]="newPassword" />
+            <input maxlength="20" id="newPassword" [type]="showPassword ? 'text' : 'password'" name="newPassword" autocomplete="new-password" [(ngModel)]="newPassword" />
           </div>
 
           <div class="kf-field">
             <label for="confirmPassword">Yeni Şifre (Tekrar) *</label>
-            <input id="confirmPassword" [type]="showPassword ? 'text' : 'password'" name="confirmPassword" autocomplete="new-password" [(ngModel)]="confirmPassword" />
+            <input maxlength="20" id="confirmPassword" [type]="showPassword ? 'text' : 'password'" name="confirmPassword" autocomplete="new-password" [(ngModel)]="confirmPassword" />
           </div>
 
           <label class="kf-span-all kf-muted">

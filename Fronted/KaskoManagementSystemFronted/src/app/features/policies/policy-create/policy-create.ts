@@ -85,7 +85,6 @@ export class PolicyCreate {
       Validators.required
     ]
 
-    
   });
 
   get customerId() {
@@ -227,11 +226,6 @@ private loadQuoteContext(): void {
 
     };
 
-    console.log(
-      'POLICY CREATE DTO:',
-      dto
-    );
-
     this.isSubmitting = true;
 
     this.policyService
@@ -240,16 +234,7 @@ private loadQuoteContext(): void {
 
       next: (response) => {
 
-  console.log(
-    'POLICY CREATE RESPONSE:',
-    response
-  );
-
-
   this.isSubmitting = false;
-  
-
-
 
   if (!response?.id) {
 
@@ -259,10 +244,8 @@ private loadQuoteContext(): void {
     return;
   }
 
-
   this.successMessage =
     'Poliçe taslak olarak oluşturuldu. Ödeme ekranına yönlendiriliyorsunuz...';
-
 
   setTimeout(() => {
 

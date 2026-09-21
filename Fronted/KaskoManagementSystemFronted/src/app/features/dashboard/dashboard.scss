@@ -739,3 +739,13 @@ a.db-row:hover {
 .db-donut-legend span {
   text-transform: none;
 }
+
+.db-actions {
+  grid-auto-rows: k.u(42);
+  align-content: start;
+  gap: k.u(6);
+}
+
+.db-action {
+  height: k.u(42);
+}

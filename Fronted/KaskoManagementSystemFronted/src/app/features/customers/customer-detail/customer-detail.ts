@@ -197,11 +197,6 @@ export class CustomerDetail {
     const id =
       this.route.snapshot.paramMap.get('id');
 
-    console.log(
-      'CUSTOMER DETAIL ID:',
-      id
-    );
-
     if (!id) {
 
       this.errorMessage =
@@ -227,11 +222,6 @@ export class CustomerDetail {
       .subscribe({
 
         next: (data: Customer) => {
-
-          console.log(
-            'CUSTOMER DETAIL RESPONSE:',
-            data
-          );
 
           this.customer = data;
 
@@ -274,20 +264,11 @@ export class CustomerDetail {
     return;
   }
 
-  console.log(
-    'CUSTOMER DELETE REQUEST:',
-    this.customer.id
-  );
-
   this.customerService
     .deleteCustomer(this.customer.id)
     .subscribe({
 
       next: () => {
-
-        console.log(
-          'CUSTOMER DELETE BAŞARILI'
-        );
 
         this.router.navigate([
           '/customers'

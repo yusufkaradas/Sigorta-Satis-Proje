@@ -9,6 +9,7 @@ import { BackendDatePipe } from '../../core/pipes/backend-date.pipe';
 import {
   Tariff,
   TariffChangeRequest,
+  TariffCoverage,
   TariffField,
   TariffRequestStatus,
   TariffService,
@@ -43,7 +44,7 @@ export class PackagesPage implements OnInit {
 
   readonly Status = TariffRequestStatus;
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   tariff = signal<Tariff | null>(null);
 
@@ -54,6 +55,25 @@ export class PackagesPage implements OnInit {
   tab = signal<'tariff' | 'matrix' | 'requests'>('tariff');
 
   matrixBusy = signal('');
+
+  coverageHalves(): TariffCoverage[][] {
+    const list = this.sortedCoverages();
+    const middle = Math.ceil(list.length / 2);
+    return [list.slice(0, middle), list.slice(middle)];
+  }
+
+  sortedCoverages(): TariffCoverage[] {
+    const data = this.tariff();
+    if (!data) {
+      return [];
+    }
+    const included = (coverageId: string) =>
+      data.packages.filter(item => item.coverageIds?.includes(coverageId)).length;
+    return [...data.coverages].sort((a, b) =>
+      Number(b.isRequired) - Number(a.isRequired) ||
+      included(b.id) - included(a.id) ||
+      a.name.localeCompare(b.name, 'tr'));
+  }
 
   descriptionDrafts: Record<string, string> = {};
 

@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 export interface Role {
   id: string;
   name: string;
+  userCount?: number;
+  isSystem?: boolean;
 }
 
 export interface RoleUpdateDto {

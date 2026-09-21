@@ -33,7 +33,6 @@ import {
   RolesService
 } from '../../roles/roles.service';
 
-
 @Component({
   selector: 'app-user-edit',
 
@@ -76,9 +75,18 @@ export class UserEdit implements OnInit {
 
   errorMessage = '';
 
-
   roles: Role[] = [];
 
+  originalRoleId = '';
+
+  get allowedRoles(): Role[] {
+    const original = this.roles.find(role => role.id === this.originalRoleId);
+    if (!original) {
+      return this.roles;
+    }
+    const isCustomer = original.name === 'Customer';
+    return this.roles.filter(role => (role.name === 'Customer') === isCustomer);
+  }
 
   model: UserUpdateDto = {
 
@@ -98,7 +106,6 @@ export class UserEdit implements OnInit {
 
   };
 
-
   ngOnInit(): void {
 
     this.userId =
@@ -115,28 +122,15 @@ export class UserEdit implements OnInit {
 
       setTimeout(() => {
 
-        console.log(
-
-          'USER EDIT FINAL STATE:',
-
-          this.isLoading,
-
-          this.user,
-
-          this.model
-
-        );
 }, 0);
       return;
     }
-
 
     this.loadRoles();
 
     this.loadUser();
 
   }
-
 
  private loadRoles(): void {
 
@@ -145,11 +139,6 @@ export class UserEdit implements OnInit {
     .subscribe({
 
       next: (data: Role[]) => {
-
-        console.log(
-          'ROLES FOR USER EDIT:',
-          data
-        );
 
         this.roles = data ?? [];
 
@@ -171,20 +160,10 @@ export class UserEdit implements OnInit {
                       user.id === this.userId
                   );
 
-                console.log(
-                  'CURRENT USER FROM LIST:',
-                  currentUser
-                );
-
                 if (currentUser?.roleId) {
 
                   this.model.roleId =
                     currentUser.roleId;
-
-                  console.log(
-                    'ROLE ID FOUND:',
-                    this.model.roleId
-                  );
 
                 }
 
@@ -222,21 +201,17 @@ export class UserEdit implements OnInit {
 
 }
 
-
   private loadUser(): void {
 
     this.isLoading = true;
 
     this.errorMessage = '';
 
-
     this.userService
       .getById(this.userId)
       .subscribe({
 
     next: (user: User) => {
-
-  console.log('USER EDIT USER GELDİ:', user);
 
   this.user = user;
 
@@ -250,7 +225,7 @@ export class UserEdit implements OnInit {
     isActive: user.isActive
   };
 
-  console.log('USER EDIT MODEL:', this.model);
+  this.originalRoleId = user.roleId ?? '';
 
   this.isLoading = false;
 
@@ -279,7 +254,6 @@ export class UserEdit implements OnInit {
 
   }
 
-
   save(): void {
 
   if (this.isSaving) {
@@ -294,11 +268,6 @@ export class UserEdit implements OnInit {
     .subscribe({
 
       next: () => {
-
-        console.log(
-          'USER UPDATE SUCCESS:',
-          this.model.id
-        );
 
         this.isSaving = false;
 
@@ -328,7 +297,6 @@ export class UserEdit implements OnInit {
 
 }
 
-
   cancel(): void {
 
     this.router.navigate([
@@ -337,7 +305,6 @@ export class UserEdit implements OnInit {
     ]);
 
   }
-
 
   goBack(): void {
 

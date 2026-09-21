@@ -62,7 +62,6 @@ import {
   CoverageOption
 } from '../insurance-package.service';
 
-
 interface PackageQuoteOption {
 
   package: InsurancePackage;
@@ -87,7 +86,6 @@ interface PackageQuoteOption {
 
   errorMessage: string | null;
 }
-
 
 @Component({
   selector: 'app-quote-create',
@@ -131,7 +129,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
   private readonly previousPolicyService =
     inject(PreviousPolicyService);
 
-
   // ==================================================
   // DATA
   // ==================================================
@@ -170,7 +167,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   previousPolicies: PreviousPolicy[] = [];
 
-
   // ==================================================
   // PACKAGE COMPARISON
   // ==================================================
@@ -181,10 +177,8 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   isComparingPackages = false;
 
-
   selectedPackage:
     InsurancePackage | null = null;
-
 
   // ==================================================
   // PRICING RESULT
@@ -225,7 +219,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
   deductibleHint(): string {
     return deductibleExample(this.deductible);
   }
-
 
   sortedCoverageRows(item: InsurancePackage) {
     return [...this.allCoverageRows].sort((a, b) =>
@@ -336,7 +329,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-
   // ==================================================
   // FORM
   // ==================================================
@@ -358,13 +350,11 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   validUntil = '';
 
-
   // ==================================================
   // COVERAGES
   // ==================================================
 
   selectedCoverageIds: string[] = [];
-
 
   // ==================================================
   // STATE
@@ -384,9 +374,7 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   errorMessage = '';
 
-
   private calculationRequestId = 0;
-
 
   // ==================================================
   // WIZARD
@@ -397,7 +385,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
   vehicleBlockMessage = '';
 
   readonly totalSteps = 4;
-
 
   // ==================================================
   // INIT
@@ -421,7 +408,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.loadPackages();
   }
 
-
   // ==================================================
   // VALID UNTIL
   // ==================================================
@@ -437,7 +423,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.validUntil =
       date.toISOString().split('T')[0];
   }
-
 
   // ==================================================
   // CUSTOMERS
@@ -484,7 +469,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       });
   }
 
-
   // ==================================================
   // CUSTOMER CHANGE
   // ==================================================
@@ -527,7 +511,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
     this.loadPreviousPolicies();
   }
-
 
   // ==================================================
   // CUSTOMER VEHICLES
@@ -617,16 +600,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
             this.selectVehicle(preselectedVehicleId);
           }
 
-          console.log(
-            'CUSTOMER SELECTED:',
-            this.customerId
-          );
-
-          console.log(
-            'CUSTOMER VEHICLES:',
-            this.vehicles
-          );
-
           this.cdr.detectChanges();
         },
 
@@ -648,7 +621,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         }
       });
   }
-
 
   // ==================================================
   // VEHICLE SELECT
@@ -725,7 +697,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-
   // ==================================================
   // VEHICLE CHANGE
   // ==================================================
@@ -740,7 +711,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       this.vehicleId
     );
   }
-
 
   // ==================================================
   // PREVIOUS POLICIES
@@ -777,11 +747,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
           this.isLoadingPreviousPolicies = false;
 
-          console.log(
-            'PREVIOUS POLICIES:',
-            this.previousPolicies
-          );
-
           this.cdr.detectChanges();
         },
 
@@ -808,7 +773,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         }
       });
   }
-
 
   // ==================================================
   // PREVIOUS POLICY CHANGE
@@ -840,17 +804,7 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.claimsCount =
       selectedPolicy.claimsCount;
 
-    console.log(
-      'SELECTED PREVIOUS POLICY:',
-      selectedPolicy
-    );
-
-    console.log(
-      'CLAIMS COUNT FROM PREVIOUS POLICY:',
-      this.claimsCount
-    );
   }
-
 
   // ==================================================
   // PACKAGES
@@ -899,16 +853,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
           this.isLoadingPackages = false;
 
-          console.log(
-            'PACKAGES:',
-            this.packages
-          );
-
-          console.log(
-            'COMPARISON PACKAGES:',
-            this.comparisonPackages
-          );
-
           this.cdr.detectChanges();
         },
 
@@ -929,7 +873,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       });
   }
 
-
   // ==================================================
   // PACKAGE HELPERS
   // ==================================================
@@ -949,7 +892,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       );
   }
 
-
   private getCoverageTotal(
     insurancePackage: InsurancePackage
   ): number {
@@ -966,7 +908,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         0
       );
   }
-
 
   private buildQuoteDto(
     insurancePackage: InsurancePackage,
@@ -1007,7 +948,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     };
   }
 
-
   // ==================================================
   // PACKAGE COMPARISON
   // ==================================================
@@ -1021,7 +961,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     if (
       !this.customerId ||
       !this.vehicleId
@@ -1032,7 +971,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     if (
       this.comparisonPackages.length === 0
@@ -1047,7 +985,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
           .slice(0, 3);
     }
 
-
     if (
       this.comparisonPackages.length === 0
     ) {
@@ -1058,10 +995,8 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     const requestId =
       ++this.calculationRequestId;
-
 
     this.isCalculating = true;
 
@@ -1121,7 +1056,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
             null
         })
       );
-
 
     const requests =
       this.comparisonPackages.map(
@@ -1238,7 +1172,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         }
       );
 
-
     forkJoin(requests)
       .subscribe({
 
@@ -1290,7 +1223,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       });
   }
 
-
   // ==================================================
   // PACKAGE SELECT
   // ==================================================
@@ -1310,7 +1242,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     if (
       selectedOption.errorMessage
     ) {
@@ -1320,7 +1251,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     this.packageId =
       selectedOption.package.id;
@@ -1356,11 +1286,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
     this.errorMessage = '';
 
-    console.log(
-      'PACKAGE SELECTED:',
-      selectedOption
-    );
-
     /*
      * Paket seçiminden sonra artık
      * teklif özeti hazırdır.
@@ -1370,7 +1295,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
      */
     this.cdr.detectChanges();
   }
-
 
   // ==================================================
   // PACKAGE CHANGE SUPPORT
@@ -1396,7 +1320,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     this.selectedCoverageIds =
       this.getDefaultCoverageIds(
         selected
@@ -1407,14 +1330,12 @@ export class QuoteCreate implements OnInit, OnDestroy {
         selected
       );
 
-
     const packageQuote =
       this.packageQuotes.find(
         option =>
           option.package.id ===
           selected.id
       );
-
 
     if (packageQuote) {
 
@@ -1424,7 +1345,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     if (
       this.customerId &&
@@ -1438,7 +1358,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   this.cdr.detectChanges();
   }
-
 
   // ==================================================
   // SELECTED PACKAGE CALCULATION
@@ -1454,7 +1373,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     const selectedPackage =
       this.selectedPackage ??
       this.packages.find(
@@ -1464,11 +1382,9 @@ export class QuoteCreate implements OnInit, OnDestroy {
       ) ??
       null;
 
-
     if (!selectedPackage) {
       return;
     }
-
 
     const coverageIds =
       this.selectedCoverageIds.length > 0
@@ -1477,22 +1393,18 @@ export class QuoteCreate implements OnInit, OnDestroy {
             selectedPackage
           );
 
-
     const dto =
       this.buildQuoteDto(
         selectedPackage,
         coverageIds
       );
 
-
     const requestId =
       ++this.calculationRequestId;
-
 
     this.isCalculating = true;
 
     this.errorMessage = '';
-
 
     this.quoteService
       .calculate(dto)
@@ -1506,7 +1418,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
           ) {
             return;
           }
-
 
           this.marketValue =
             response?.marketValue ??
@@ -1570,7 +1481,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       });
   }
 
-
   // ==================================================
   // RESET PRICING
   // ==================================================
@@ -1592,7 +1502,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     this.packageCoverageTotal = 0;
   }
 
-
   // ==================================================
   // WIZARD
   // ==================================================
@@ -1600,7 +1509,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
   nextStep(): void {
 
     this.errorMessage = '';
-
 
     // ------------------------------------------------
     // STEP 1 → STEP 2
@@ -1618,7 +1526,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         return;
       }
 
-
       if (!this.vehicleId) {
 
         this.errorMessage =
@@ -1635,12 +1542,10 @@ export class QuoteCreate implements OnInit, OnDestroy {
         return;
       }
 
-
       this.currentStep = 2;
 
       return;
     }
-
 
     // ------------------------------------------------
     // STEP 2 → STEP 3
@@ -1661,7 +1566,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         return;
       }
 
-
       /*
        * Paket ekranına geçildiği anda
        * 3 paket için gerçek fiyatları hesapla.
@@ -1672,7 +1576,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     // ------------------------------------------------
     // STEP 3 → STEP 4
@@ -1690,7 +1593,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         return;
       }
 
-
       this.currentStep = 4;
 
       this.pricedCoverages = [];
@@ -1699,7 +1601,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     // ------------------------------------------------
     // STEP 4
@@ -1719,7 +1620,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
     }
   }
 
-
   // ==================================================
   // BACK
   // ==================================================
@@ -1727,7 +1627,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
   previousStep(): void {
 
     this.errorMessage = '';
-
 
     if (
       this.currentStep === 4
@@ -1741,7 +1640,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
 
-
     if (
       this.currentStep === 3
     ) {
@@ -1753,7 +1651,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     if (
       this.currentStep === 2
@@ -1768,7 +1665,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
       return;
     }
   }
-
 
   // ==================================================
   // CREATE QUOTE
@@ -1788,7 +1684,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       return;
     }
-
 
     const dto: QuoteCreateDto = {
 
@@ -1823,28 +1718,15 @@ export class QuoteCreate implements OnInit, OnDestroy {
         this.validUntil
     };
 
-
-    console.log(
-      'CREATE QUOTE REQUEST:',
-      dto
-    );
-
-
     this.isSaving = true;
 
     this.errorMessage = '';
-
 
     this.quoteService
       .create(dto)
       .subscribe({
 
         next: (response) => {
-
-  console.log(
-    'CREATE QUOTE RESPONSE:',
-    response
-  );
 
   this.isSaving = false;
 
@@ -1895,7 +1777,6 @@ export class QuoteCreate implements OnInit, OnDestroy {
         }
       });
   }
-
 
   // ==================================================
   // CANCEL

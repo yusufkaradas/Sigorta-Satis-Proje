@@ -114,6 +114,14 @@ export class Login {
                 'quickQuotePurchase'
               );
 
+            const resumeQuoteId = sessionStorage.getItem('quickQuoteResume');
+
+            if (role === 'Customer' && resumeQuoteId) {
+              sessionStorage.removeItem('quickQuoteResume');
+              this.router.navigate(['/customer/quotes', resumeQuoteId], { queryParams: { pay: 1 } });
+              return;
+            }
+
             if (role === 'Customer' && !!sessionStorage.getItem('quickQuoteDraft')) {
               this.router.navigate(['/quick-quote/start']);
               return;

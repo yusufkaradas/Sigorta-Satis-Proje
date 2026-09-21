@@ -51,7 +51,7 @@ export class Payments {
   searchTerm = '';
 
   currentPage = 1;
-  pageSize = 5;
+  pageSize = 8;
 
   private readonly http =
     inject(HttpClient);
@@ -98,11 +98,6 @@ export class Payments {
     this.paymentsService.getAll().subscribe({
 
       next: (data) => {
-
-        console.log(
-          'PAYMENTS API RESPONSE:',
-          data
-        );
 
         this.payments =
             newestFirst(data);

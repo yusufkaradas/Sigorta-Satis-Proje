@@ -69,7 +69,6 @@ export class VehicleDetail {
   private readonly customerService =
   inject(CustomerService);
 
-
   vehicle: Vehicle | null = null;
 
   isLoading = true;
@@ -84,12 +83,10 @@ export class VehicleDetail {
 
   }
 
-
   private loadVehicle(): void {
 
     const id =
       this.route.snapshot.paramMap.get('id');
-
 
     if (!id) {
 
@@ -102,23 +99,11 @@ export class VehicleDetail {
 
     }
 
-
-    console.log(
-      'VEHICLE DETAIL ID:',
-      id
-    );
-
-
     this.vehicleService
       .getVehicleById(id)
       .subscribe({
 
        next: (data) => {
-
-  console.log(
-    'VEHICLE DETAIL RESPONSE:',
-    data
-  );
 
   this.vehicle = data;
 
@@ -168,7 +153,6 @@ export class VehicleDetail {
 
 },
 
-
         error: (error) => {
 
           console.error(
@@ -191,7 +175,6 @@ export class VehicleDetail {
             error?.error
           );
 
-
           if (
             error?.status === 404
           ) {
@@ -213,7 +196,6 @@ export class VehicleDetail {
 
           }
 
-
           this.isLoading = false;
 
           this.cdr.detectChanges();
@@ -223,7 +205,6 @@ export class VehicleDetail {
       });
 
   }
-
 
   getVehicleTypeText(
     value: number
@@ -259,7 +240,6 @@ export class VehicleDetail {
 
   }
 
-
   getFuelTypeText(
     value?: number
   ): string {
@@ -285,7 +265,6 @@ export class VehicleDetail {
 
   }
 
-
   getTransmissionTypeText(
     value?: number
   ): string {
@@ -305,7 +284,6 @@ export class VehicleDetail {
 
   }
 
-
   getStatusText(
     vehicle: Vehicle
   ): string {
@@ -321,28 +299,18 @@ async deleteVehicle(): Promise<void> {
     return;
   }
 
-
   const confirmed =
     await confirmDialog(
       'Bu aracı silmek istediğinize emin misiniz?'
     );
 
-
   if (!confirmed) {
     return;
   }
 
-
-  console.log(
-    'VEHICLE DELETE ID:',
-    this.vehicle.id
-  );
-
-
   this.isLoading = true;
 
   this.errorMessage = '';
-
 
   this.vehicleService
     .deleteVehicle(
@@ -352,17 +320,11 @@ async deleteVehicle(): Promise<void> {
 
       next: () => {
 
-        console.log(
-          'VEHICLE DELETE SUCCESS'
-        );
-
-
         this.router.navigate(
           ['/vehicles']
         );
 
       },
-
 
       error: (error: any) => {
 
@@ -380,7 +342,6 @@ async deleteVehicle(): Promise<void> {
           'BODY:',
           error?.error
         );
-
 
         if (error?.status === 401) {
 
@@ -407,7 +368,6 @@ async deleteVehicle(): Promise<void> {
             'Araç silinirken bir hata oluştu.';
 
         }
-
 
         this.isLoading = false;
 

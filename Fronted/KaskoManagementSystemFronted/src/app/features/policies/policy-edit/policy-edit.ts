@@ -46,7 +46,6 @@ export class PolicyEdit {
 
   successMessage = '';
 
-
   ngOnInit(): void {
 
     const id =
@@ -64,7 +63,6 @@ export class PolicyEdit {
 
     this.loadPolicy(id);
   }
-
 
   loadPolicy(id: string): void {
 
@@ -109,7 +107,6 @@ export class PolicyEdit {
 
       });
   }
-
 
   save(): void {
 
@@ -169,11 +166,6 @@ export class PolicyEdit {
 
         next: () => {
 
-          console.log(
-            'POLICY UPDATE SUCCESS:',
-            this.policy?.id
-          );
-
           this.isSaving = false;
 
           this.router.navigate([
@@ -215,7 +207,6 @@ export class PolicyEdit {
       });
   }
 
-
   cancel(): void {
 
     if (!this.policy) {
@@ -227,7 +218,6 @@ export class PolicyEdit {
       this.policy.id
     ]);
   }
-
 
   private formatDateForInput(
     value: string

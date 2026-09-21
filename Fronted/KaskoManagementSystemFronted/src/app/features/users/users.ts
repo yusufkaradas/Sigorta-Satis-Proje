@@ -39,7 +39,6 @@ import {
   switchMap
 } from 'rxjs/operators';
 
-
 @Component({
   selector: 'app-users',
   standalone: true,
@@ -62,12 +61,11 @@ export class Users implements OnInit {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
  users: User[] = [];
 
 filteredUsers: User[] = [];
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   currentPage = 1;
 
@@ -151,7 +149,6 @@ ngOnInit(): void {
 
     this.errorMessage = '';
 
-
     this.userService
       .getAll()
       .pipe(
@@ -184,7 +181,6 @@ ngOnInit(): void {
 
         },
 
-
         error: (error: any) => {
 
           console.error(
@@ -207,7 +203,6 @@ ngOnInit(): void {
 
   }
 
-
   filterUsers(): void {
 
     this.currentPage = 1;
@@ -216,7 +211,6 @@ ngOnInit(): void {
       this.searchText
         .trim()
         .toLowerCase();
-
 
     if (!search) {
 
@@ -227,7 +221,6 @@ ngOnInit(): void {
 
     }
 
-
     this.filteredUsers =
       this.users.filter(
         (user: User) => {
@@ -236,21 +229,17 @@ ngOnInit(): void {
             `${user.firstName} ${user.lastName}`
               .toLowerCase();
 
-
           const email =
             (user.email ?? '')
               .toLowerCase();
-
 
           const phone =
             (user.phoneNumber ?? '')
               .toLowerCase();
 
-
           const role =
             (user.roleName ?? '')
               .toLowerCase();
-
 
           return (
 
@@ -270,7 +259,6 @@ ngOnInit(): void {
 
   }
 
-
   async deleteUser(id: string): Promise<void> {
 
     const confirmed =
@@ -278,18 +266,15 @@ ngOnInit(): void {
         'Bu kullanıcıyı silmek istediğinize emin misiniz?'
       );
 
-
     if (!confirmed) {
 
       return;
 
     }
 
-
     this.isLoading = true;
 
     this.errorMessage = '';
-
 
     this.userService
       .delete(id)
@@ -297,30 +282,20 @@ ngOnInit(): void {
 
         next: () => {
 
-          console.log(
-            'USER DELETE SUCCESS:',
-            id
-          );
-
-
           this.users =
             this.users.filter(
               user =>
                 user.id !== id
             );
 
-
           this.filterUsers();
-
 
           this.isLoading =
             false;
 
-
           this.cdr.detectChanges();
 
         },
-
 
         error: (error: any) => {
 
@@ -329,15 +304,12 @@ ngOnInit(): void {
             error
           );
 
-
           this.errorMessage =
             error?.error?.message ??
             'Kullanıcı silinirken bir hata oluştu.';
 
-
           this.isLoading =
             false;
-
 
           this.cdr.detectChanges();
 

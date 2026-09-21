@@ -62,11 +62,6 @@ export class PaymentDetail {
     const id =
       this.route.snapshot.paramMap.get('id');
 
-    console.log(
-      'PAYMENT DETAIL ID:',
-      id
-    );
-
     if (!id) {
 
       this.errorMessage =
@@ -92,11 +87,6 @@ export class PaymentDetail {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'PAYMENT DETAIL RESPONSE:',
-            data
-          );
 
           this.payment = data;
 

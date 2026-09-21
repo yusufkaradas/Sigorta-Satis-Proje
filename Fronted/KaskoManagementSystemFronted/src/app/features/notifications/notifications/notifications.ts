@@ -24,7 +24,7 @@ export class Notifications implements OnInit {
 
   private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   readonly typeLabel = notificationTypeLabel;
 

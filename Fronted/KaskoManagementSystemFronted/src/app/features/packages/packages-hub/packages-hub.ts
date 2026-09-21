@@ -38,7 +38,7 @@ export class PackagesHub {
 
   readonly active = computed<RequestTab>(() => {
     const value = this.tabParam();
-    return this.tabs.some(tab => tab.key === value) ? (value as RequestTab) : 'tariff';
+    return this.tabs.some(tab => tab.key === value) ? (value as RequestTab) : this.tabs[0].key;
   });
 
   select(tab: RequestTab): void {

@@ -27,22 +27,22 @@
 
           <div class="kf-field">
             <label for="fullName">Ad Soyad</label>
-            <input id="fullName" type="text" [value]="customer.firstName + ' ' + customer.lastName" disabled />
+            <input maxlength="100" id="fullName" type="text" [value]="customer.firstName + ' ' + customer.lastName" disabled />
           </div>
 
           <div class="kf-field">
             <label for="identity">T.C. Kimlik No</label>
-            <div class="kf-prefix-input kf-prefix-tc"><span>T.C.</span><input id="identity" type="text" [value]="maskedIdentity" disabled /></div>
+            <div class="kf-prefix-input kf-prefix-tc"><span>T.C.</span><input maxlength="11" id="identity" type="text" [value]="maskedIdentity" disabled /></div>
           </div>
 
           <div class="kf-field">
             <label for="birth">Doğum Tarihi</label>
-            <input id="birth" type="text" [value]="customer.dateOfBirth ? (customer.dateOfBirth | date:'dd.MM.yyyy') : '—'" disabled />
+            <input maxlength="100" id="birth" type="text" [value]="customer.dateOfBirth ? (customer.dateOfBirth | date:'dd.MM.yyyy') : '—'" disabled />
           </div>
 
           <div class="kf-field">
             <label for="mail">E-posta</label>
-            <input id="mail" type="text" [value]="customer.email" disabled />
+            <input maxlength="100" id="mail" type="text" [value]="customer.email" disabled />
           </div>
 
           <p class="kf-span-all kf-muted">Kimlik ve e-posta bilgilerinizi değiştirmek için müşteri hizmetleriyle iletişime geçin.</p>

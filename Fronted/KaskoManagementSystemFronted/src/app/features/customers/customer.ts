@@ -66,7 +66,7 @@ export class Customers implements OnInit {
   readonly portal =
     injectPortalContext();
 
-  readonly pageSize = 5;
+  readonly pageSize = 8;
 
   private readonly apiUrl =
     environment.apiBaseUrl;

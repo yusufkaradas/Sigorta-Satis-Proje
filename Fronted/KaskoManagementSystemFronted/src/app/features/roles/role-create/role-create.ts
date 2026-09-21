@@ -34,7 +34,6 @@ export class RoleCreate {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   name = '';
 
   isLoading = false;
@@ -43,16 +42,13 @@ export class RoleCreate {
 
   successMessage = '';
 
-
   onSubmit(): void {
 
     this.errorMessage = '';
     this.successMessage = '';
 
-
     const name =
       this.name.trim();
-
 
     if (!name) {
 
@@ -62,14 +58,11 @@ export class RoleCreate {
       return;
     }
 
-
     const dto: RoleCreateDto = {
       name
     };
 
-
     this.isLoading = true;
-
 
     this.rolesService
       .create(dto)
@@ -77,18 +70,12 @@ export class RoleCreate {
 
         next: (response) => {
 
-          console.log(
-            'ROLE CREATE RESPONSE:',
-            response
-          );
-
           this.isLoading = false;
 
           this.successMessage =
             'Rol başarıyla oluşturuldu.';
 
           this.cdr.detectChanges();
-
 
           setTimeout(() => {
 
@@ -100,7 +87,6 @@ export class RoleCreate {
 
         },
 
-
         error: (error) => {
 
           console.error(
@@ -109,7 +95,6 @@ export class RoleCreate {
           );
 
           this.isLoading = false;
-
 
           if (
             error?.status === 400
@@ -126,7 +111,6 @@ export class RoleCreate {
 
           }
 
-
           this.cdr.detectChanges();
 
         }
@@ -134,7 +118,6 @@ export class RoleCreate {
       });
 
   }
-
 
   goBack(): void {
 

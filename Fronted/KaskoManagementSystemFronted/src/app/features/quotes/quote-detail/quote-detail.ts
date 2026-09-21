@@ -64,17 +64,14 @@ export class QuoteDetail {
   private readonly cdr =
     inject(ChangeDetectorRef);
 
-
   readonly QuoteStatus =
     QuoteStatus;
-
 
   quote: Quote | null = null;
 
   isLoading = true;
 
   errorMessage = '';
-
 
   ngOnInit(): void {
 
@@ -94,7 +91,6 @@ export class QuoteDetail {
     this.loadQuote(id);
   }
 
-
   loadQuote(id: string): void {
 
     this.isLoading = true;
@@ -106,11 +102,6 @@ export class QuoteDetail {
       .subscribe({
 
         next: (data) => {
-
-          console.log(
-            'QUOTE DETAIL RESPONSE:',
-            data
-          );
 
           this.quote = data;
 
@@ -172,7 +163,6 @@ private parseBackendDate(
   return parsedDate;
 }
 
-
 formatCreatedDate(
   value?: string | null
 ): string {
@@ -227,7 +217,6 @@ formatCreatedDate(
     }
   }
 
-
   getStatusClass(
     status: QuoteStatus | number
   ): string {
@@ -256,7 +245,6 @@ formatCreatedDate(
         return '';
     }
   }
-
 
 acceptedTerms = false;
 
@@ -584,11 +572,6 @@ async changeStatus(status: QuoteStatus): Promise<void> {
 
         next: () => {
 
-          console.log(
-            'QUOTE DELETE SUCCESS:',
-            this.quote?.id
-          );
-
           this.router.navigate([
             this.basePath + '/quotes'
           ]);
@@ -613,7 +596,6 @@ async changeStatus(status: QuoteStatus): Promise<void> {
       });
   }
 
-
   goBack(): void {
 
     this.router.navigate([
@@ -621,13 +603,11 @@ async changeStatus(status: QuoteStatus): Promise<void> {
     ]);
   }
 
-
   get isDraft(): boolean {
 
     return this.quote?.status ===
       QuoteStatus.Draft;
   }
-
 
   get isOffered(): boolean {
 
@@ -635,13 +615,11 @@ async changeStatus(status: QuoteStatus): Promise<void> {
       QuoteStatus.Offered;
   }
 
-
   get canEdit(): boolean {
 
     return this.isDraft ||
       this.isOffered;
   }
-
 
   get canDelete(): boolean {
 

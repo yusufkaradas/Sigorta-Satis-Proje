@@ -56,7 +56,7 @@ export class PricingRules implements OnInit {
   readonly portal =
     injectPortalContext();
 
-  readonly pageSize = 5;
+  readonly pageSize = 7;
 
   rules = signal<PricingRule[]>([]);
 

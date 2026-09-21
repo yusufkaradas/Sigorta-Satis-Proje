@@ -39,7 +39,7 @@
 
       <div class="search-wrapper">
         <span class="search-label">Müşteri Ara</span>
-        <input
+        <input maxlength="100"
           type="text"
           [value]="searchTerm()"
           (input)="onSearch($any($event.target).value)"

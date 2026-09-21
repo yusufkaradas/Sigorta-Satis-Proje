@@ -220,7 +220,7 @@
         @if (!portal.isManager && request.status === 'Pending') {
           <label class="rule-reject-note">
             <span>Ret gerekçesi (reddederseniz manager görür)</span>
-            <textarea rows="2" [value]="rejectNote" (input)="rejectNote = $any($event.target).value" placeholder="Örn. Piyasa verileriyle uyumlu değil"></textarea>
+            <textarea maxlength="500" rows="2" [value]="rejectNote" (input)="rejectNote = $any($event.target).value" placeholder="Örn. Piyasa verileriyle uyumlu değil"></textarea>
           </label>
           @if (errorMessage()) {
             <div class="rule-dialog-error">{{ errorMessage() }}</div>

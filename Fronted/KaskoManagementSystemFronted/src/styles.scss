@@ -2038,3 +2038,302 @@ app-root {
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
+
+$list-pages: '.customers-content', '.payments-content', '.policies-content', '.quotes-content', '.requests-content', '.roles-content', '.rules-content', '.users-content', '.vehicles-content';
+
+@each $page in $list-pages {
+  #{$page} table {
+    .user-status,
+    .customer-status,
+    .vehicle-status,
+    .quote-status,
+    .policy-status,
+    .request-status,
+    .rule-status,
+    .role-status,
+    .status-badge,
+    .kf-badge,
+    .payment-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: k.u(112);
+      height: k.u(24);
+      padding: 0 k.u(10);
+      border-radius: 999px;
+      font-size: k.u(11);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    thead th:last-child,
+    tbody td:last-child {
+      width: k.u(200);
+      min-width: k.u(200);
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    tbody td:last-child {
+      overflow: visible;
+    }
+
+    tbody td:last-child > a,
+    tbody td:last-child > button,
+    tbody td.actions-cell > a,
+    tbody td.actions-cell > button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: k.u(72);
+      height: k.u(30);
+      margin: 0 k.u(6) 0 0;
+      padding: 0 k.u(12);
+      font-size: k.u(12);
+      vertical-align: middle;
+    }
+  }
+}
+
+.cp-table {
+  .cp-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: k.u(112);
+    height: k.u(24);
+    font-size: k.u(11);
+    white-space: nowrap;
+  }
+}
+
+.rule-dialog-actions {
+  flex-wrap: wrap;
+  row-gap: k.u(8);
+
+  > button,
+  > a {
+    flex: 0 0 auto;
+    min-width: 0;
+    height: k.u(34);
+    padding: 0 k.u(14);
+    font-size: k.u(12);
+    white-space: nowrap;
+  }
+}
+
+.rules-content table {
+  .rule-status {
+    min-width: k.u(80);
+  }
+
+  thead th:last-child,
+  tbody td:last-child {
+    width: k.u(250);
+    min-width: k.u(250);
+  }
+
+  tbody td:last-child > a,
+  tbody td:last-child > button,
+  tbody td.actions-cell > a,
+  tbody td.actions-cell > button {
+    min-width: 0;
+    height: k.u(28);
+    margin-right: k.u(4);
+    padding: 0 k.u(10);
+    font-size: k.u(11);
+  }
+
+  tbody td.actions-cell {
+    white-space: nowrap;
+  }
+}
+
+.rule-dialog .rule-dialog-actions {
+  justify-content: flex-end;
+
+  > button,
+  > a,
+  > .clear-button,
+  > .new-rule-button,
+  > .policy-button,
+  > .action-button {
+    height: k.u(36);
+    min-width: k.u(110);
+    padding: 0 k.u(18);
+    border-radius: k.u(10);
+    font-size: k.u(13);
+    font-weight: 700;
+  }
+}
+
+.rule-dialog .kf-consent {
+  align-self: end;
+  height: k.u(38);
+  font-size: k.u(13);
+  font-weight: 700;
+
+  input {
+    width: k.u(18);
+    height: k.u(18);
+  }
+}
+
+@each $page in $list-pages {
+  #{$page} table {
+    td:has(> .user-status),
+    td:has(> .customer-status),
+    td:has(> .vehicle-status),
+    td:has(> .quote-status),
+    td:has(> .policy-status),
+    td:has(> .request-status),
+    td:has(> .rule-status),
+    td:has(> .role-status),
+    td:has(> .status-badge),
+    td:has(> .kf-badge),
+    td:has(> .payment-status) {
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .user-status,
+    .customer-status,
+    .vehicle-status,
+    .quote-status,
+    .policy-status,
+    .request-status,
+    .role-status,
+    .status-badge,
+    .kf-badge,
+    .payment-status {
+      min-width: k.u(100);
+      max-width: 100%;
+    }
+  }
+}
+
+@each $page in '.customers-content', '.vehicles-content', '.policies-content', '.payments-content', '.roles-content' {
+  #{$page} table {
+    thead th:last-child,
+    tbody td:last-child {
+      width: k.u(120);
+      min-width: k.u(120);
+    }
+  }
+}
+
+@each $page in $list-pages {
+  #{$page} table {
+    td:has(app-id-badge),
+    td:has(app-plate),
+    td:has(.id-badge),
+    td:has(.plate-badge) {
+      overflow: visible;
+      text-overflow: clip;
+    }
+  }
+}
+
+.users-content table {
+  thead th:last-child,
+  tbody td:last-child {
+    width: k.u(250);
+    min-width: k.u(250);
+  }
+
+  tbody td:last-child .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: k.u(28);
+    margin-right: k.u(4);
+    padding: 0 k.u(10);
+    font-size: k.u(11);
+  }
+
+  tbody td:last-child > div {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: k.u(4);
+  }
+}
+
+.cp-table {
+  th.cp-actions-col,
+  td.cp-actions {
+    width: k.u(210);
+    min-width: k.u(210);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td.cp-actions .cp-act {
+    min-width: k.u(72);
+    height: k.u(30);
+    margin: 0 k.u(6) 0 0;
+    padding: 0 k.u(12);
+    justify-content: center;
+    border: 0;
+    border-radius: k.u(8);
+    background: #535353;
+    color: #fff;
+    font-size: k.u(12);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  td.cp-actions .cp-act-primary {
+    background: #3b82f6;
+  }
+
+  td.cp-actions .cp-act-danger {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  td:has(> .cp-badge) {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .cp-badge {
+    min-width: k.u(100);
+    height: k.u(24);
+    padding: 0 k.u(10);
+    border-radius: 999px;
+    font-size: k.u(11);
+    font-weight: 800;
+  }
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+optgroup,
+option,
+code,
+kbd {
+  font-family: k.$font;
+}
+
+.hub-tab,
+.tariff-tabs button,
+.rule-group-chips button,
+.matrix-toggle,
+.sim code,
+.sim-code,
+.kf-btn,
+.kf-btn-outline,
+.offer-button,
+.action-button,
+.detail-button,
+.policy-button,
+.clear-button,
+.new-rule-button {
+  font-family: k.$font;
+}
