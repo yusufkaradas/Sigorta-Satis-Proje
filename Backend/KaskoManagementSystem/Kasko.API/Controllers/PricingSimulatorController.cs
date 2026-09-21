@@ -32,9 +32,9 @@ public class PricingSimulatorController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Simulate([FromBody] SimulationRequest request)
     {
-        if (request.MarketValue <= 0)
+        if (request.MarketValue <= 0 || request.MarketValue > 100_000_000)
         {
-            throw new BadRequestException("Araç değeri sıfırdan büyük olmalıdır.");
+            throw new BadRequestException("Araç değeri 1 ₺ ile 100.000.000 ₺ arasında olmalıdır.");
         }
 
         if (request.DriverAge < 18 || request.DriverAge > 99)

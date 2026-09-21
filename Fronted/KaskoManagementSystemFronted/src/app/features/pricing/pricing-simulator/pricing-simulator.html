@@ -19,7 +19,7 @@
       <div class="sim-fields">
         <label class="kf-field">
           <span>Araç Değeri (TSB)</span>
-          <input type="number" name="marketValue" min="1" step="10000" [(ngModel)]="marketValue" />
+          <input type="number" name="marketValue" min="1" max="100000000" step="10000" [(ngModel)]="marketValue" />
         </label>
 
         <label class="kf-field">
@@ -33,7 +33,7 @@
 
         <label class="kf-field">
           <span>Sürücü Yaşı</span>
-          <input type="number" name="driverAge" min="18" max="99" [(ngModel)]="driverAge" />
+          <input type="number" name="driverAge" min="18" max="99" data-max-digits="2" [(ngModel)]="driverAge" />
         </label>
 
         <label class="kf-field">

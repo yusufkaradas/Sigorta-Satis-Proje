@@ -18,5 +18,30 @@ export class App {
 
   constructor() {
     this.brandService.load();
+
+    document.addEventListener('input', event => {
+      const input = event.target as HTMLInputElement | null;
+
+      if (!input || input.tagName !== 'INPUT' || input.type !== 'number' || input.value === '') {
+        return;
+      }
+
+      const digits = Number(input.dataset['maxDigits'] ?? 12);
+      let value = input.value;
+
+      if (value.replace(/[^0-9]/g, '').length > digits) {
+        value = value.slice(0, value.length - (value.replace(/[^0-9]/g, '').length - digits));
+      }
+
+      const max = input.max !== '' ? Number(input.max) : null;
+
+      if (max !== null && Number(value) > max) {
+        value = String(max);
+      }
+
+      if (value !== input.value) {
+        input.value = value;
+      }
+    }, true);
   }
 }

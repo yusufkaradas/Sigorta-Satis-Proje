@@ -378,14 +378,12 @@ export class Dashboard implements OnInit {
       { label: '+ Yeni Teklif', hint: 'Müşteri için teklif hazırla', path: '/quotes/new' },
       { label: '+ Yeni Müşteri', hint: 'Kullanıcı ve müşteri kaydı', path: '/users/new', query: { role: 'Customer' } },
       { label: '+ Yeni Araç', hint: 'TSB değeriyle araç ekle', path: '/vehicles/new' },
-      { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
-      { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
+      { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' }
     ];
     if (this.portal.isManager) {
       return [
         { label: '+ Yeni Teklif', hint: 'Müşteri için teklif hazırla', path: '/quotes/new' },
         { label: 'Müşteriler', hint: 'Müşteri portföyü', path: '/customers' },
-        { label: 'Poliçeler', hint: 'Aktif ve yenilenecek poliçeler', path: '/policies' },
         { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
         { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
       ];

@@ -82,8 +82,13 @@ export class PricingSimulator implements OnInit {
   simulate(): void {
     this.errorMessage.set('');
 
-    if (!this.marketValue || this.marketValue <= 0) {
-      this.errorMessage.set('Araç değeri girin.');
+    if (!this.marketValue || this.marketValue <= 0 || this.marketValue > 100000000) {
+      this.errorMessage.set('Araç değeri 1 ₺ ile 100.000.000 ₺ arasında olmalıdır.');
+      return;
+    }
+
+    if (!this.driverAge || this.driverAge < 18 || this.driverAge > 99) {
+      this.errorMessage.set('Sürücü yaşı 18 ile 99 arasında olmalıdır.');
       return;
     }
 
