@@ -23,7 +23,7 @@
       </div>
       <button *ngIf="!isCustomerMode && quote && quote.status === QuoteStatus.Offered" type="button" class="kf-btn" [disabled]="isSharing" (click)="shareQuote()">{{ isSharing ? 'Gönderiliyor...' : 'Müşteriye Gönder' }}</button>
       <button type="button" class="kf-btn-outline" (click)="downloadQuotePdf()">Teklif PDF</button>
-      <button type="button" class="kf-btn-outline" (click)="goBack()">← Tekliflere Dön</button>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Tekliflere Dön</button>
     </div>
 
     <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">
@@ -113,7 +113,7 @@
 
     <div class="kf-actions kf-actions-between">
 
-      <button type="button" class="kf-btn-outline" (click)="goBack()">← Geri Dön</button>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
 
       <div *ngIf="quote && !isCustomerMode" class="kf-head-actions">
 
@@ -152,10 +152,11 @@
         <span class="kf-note">Teklifiniz yetkili onayında{{ quote.reviewReason ? ' (' + quote.reviewReason + ')' : '' }}. Onaylandığında size bildirim gelir ve buradan satın alabilirsiniz.</span>
       </div>
 
-      <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-purchase">
+      <div *ngIf="quote && isCustomerMode && quote.status === QuoteStatus.Offered" class="kf-purchase kf-purchase-offer">
 
         <span class="kf-note kf-price-lock">🔒 Fiyatınız {{ quote.validUntil | backendDate }} tarihine kadar sabittir; bu süre içinde tarife değişse bile aynı fiyattan satın alabilirsiniz.</span>
 
+        <div class="kf-consents">
         <label class="kf-consent">
           <input type="checkbox" [checked]="acceptedTerms" (change)="acceptedTerms = $any($event.target).checked" />
           Genel şartları ve ön bilgilendirme formunu okudum.
@@ -165,6 +166,7 @@
           <input type="checkbox" [checked]="acceptedKvkk" (change)="acceptedKvkk = $any($event.target).checked" />
           KVKK aydınlatma metnini okudum.
         </label>
+        </div>
 
         <button
           type="button"

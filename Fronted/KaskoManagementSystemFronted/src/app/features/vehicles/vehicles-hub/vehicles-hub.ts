@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
 import { Vehicle } from '../vehicle';
-import { CatalogImport } from '../../settings/catalog-import/catalog-import';
+import { CatalogImport } from '../catalog-import/catalog-import';
 
 type RequestTab = 'vehicles' | 'catalog';
 

@@ -14,7 +14,7 @@
         <h1>{{ isCustomerRole ? 'Müşteri Hesabı Oluştur' : 'Kullanıcı Ekle' }}</h1>
         <p>{{ isCustomerRole ? 'Müşteri kaydı ve portal giriş hesabı birlikte oluşturulur; iki kayıt birbirine bağlı kalır.' : 'Sisteme giriş yapacak personeli ekleyin ve rolünü belirleyin.' }}</p>
       </div>
-      <a routerLink="/users" class="kf-btn-outline">← Kullanıcılara Dön</a>
+      <a routerLink="/users" class="kf-btn-outline">Kullanıcılara Dön</a>
     </div>
 
     <div *ngIf="errorMessage()" class="kf-alert kf-alert-error">{{ errorMessage() }}</div>

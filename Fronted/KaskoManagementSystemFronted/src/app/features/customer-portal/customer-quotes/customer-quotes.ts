@@ -1,3 +1,4 @@
+import { newestFirst } from '../../../core/utils/list-sort';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
@@ -220,7 +221,7 @@ export class CustomerQuotes implements OnInit {
       .getAll()
       .subscribe({
         next: data => {
-          this.quotes.set(data ?? []);
+          this.quotes.set(newestFirst(data));
           this.isLoading.set(false);
         },
         error: error => {

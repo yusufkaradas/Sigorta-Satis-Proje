@@ -336,14 +336,14 @@ export class Dashboard implements OnInit {
     const sold = (this.data()?.quotes ?? []).filter(quote => quote.status === 3);
     const groups = new Map<string, number>();
     for (const quote of sold) {
-      const name = (quote as { packageName?: string }).packageName || 'Diğer';
+      const name = (quote as { packageName?: string }).packageName || 'Paketsiz (eski kayıt)';
       groups.set(name, (groups.get(name) ?? 0) + 1);
     }
     const total = sold.length;
     return [...groups.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([name, count], index) => ({
-        name,
+        name: name.replace(/\s*Paket$/i, '').toLocaleUpperCase('tr-TR'),
         count,
         percent: this.percent(count, total),
         color: this.packageColors[index % this.packageColors.length]
@@ -379,7 +379,6 @@ export class Dashboard implements OnInit {
       { label: '+ Yeni Müşteri', hint: 'Kullanıcı ve müşteri kaydı', path: '/users/new', query: { role: 'Customer' } },
       { label: '+ Yeni Araç', hint: 'TSB değeriyle araç ekle', path: '/vehicles/new' },
       { label: 'Talepler', hint: 'Fiyat ve iptal talepleri', path: '/requests' },
-      { label: 'TSB Kasko Listesi', hint: 'Güncel değer listesini yükle', path: '/vehicles', query: { tab: 'catalog' } },
       { label: 'Paketler', hint: 'Paket, teminat ve fiyat kuralları', path: '/tariff' }
     ];
     return this.portal.isManager

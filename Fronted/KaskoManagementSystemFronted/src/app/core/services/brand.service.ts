@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
@@ -19,7 +20,7 @@ export class BrandService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/BrandSetting';
+  private readonly apiUrl = `${environment.apiBaseUrl}/BrandSetting`;
 
   readonly brand = signal<BrandSetting>({
     companyName: 'Şirket Adı',

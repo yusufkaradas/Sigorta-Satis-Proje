@@ -1,0 +1,103 @@
+<div class="kf-page">
+
+  <div class="kf-title">
+    AYARLAR
+  </div>
+
+  <div class="kf-panel">
+
+    <div class="kf-panel-head">
+      <div>
+        <h1>{{ firstName || lastName ? firstName + ' ' + lastName : 'Hesabım' }}</h1>
+        <p>{{ roleName }} · Hesap ve giriş bilgilerinizi buradan güncelleyebilirsiniz.</p>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>
+
+    <div *ngIf="isLoading" class="kf-state">Bilgileriniz yükleniyor...</div>
+
+    <div *ngIf="!isLoading" class="kf-body kf-body-half">
+
+      <form class="kf-section" (ngSubmit)="save()">
+
+        <h2 class="kf-section-title">Hesap Bilgileri</h2>
+
+        <div class="kf-grid">
+
+          <div class="kf-field">
+            <label for="firstName">Ad *</label>
+            <input id="firstName" type="text" name="firstName" maxlength="50" [(ngModel)]="firstName" />
+          </div>
+
+          <div class="kf-field">
+            <label for="lastName">Soyad *</label>
+            <input id="lastName" type="text" name="lastName" maxlength="50" [(ngModel)]="lastName" />
+          </div>
+
+          <div class="kf-field">
+            <label for="email">E-posta *</label>
+            <input id="email" type="email" name="email" maxlength="100" [(ngModel)]="email" />
+          </div>
+
+          <div class="kf-field">
+            <label for="phoneNumber">Telefon</label>
+            <div class="kf-prefix-input"><span>+90</span><input appInputRule="phone" [ruleMaxLength]="10" maxlength="10" id="phoneNumber" type="tel" name="phoneNumber" placeholder="5XX XXX XX XX" [(ngModel)]="phoneNumber" /></div>
+          </div>
+
+          <p class="kf-span-all kf-muted">E-posta adresiniz sisteme giriş için kullanılır.</p>
+
+        </div>
+
+        <div class="kf-actions">
+          <button type="submit" class="kf-btn" [disabled]="isSaving">
+            {{ isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+          </button>
+        </div>
+
+      </form>
+
+      <form class="kf-section" (ngSubmit)="changePassword()">
+
+        <h2 class="kf-section-title">Şifre Değiştir</h2>
+
+        <div *ngIf="passwordError" class="kf-alert kf-alert-error">{{ passwordError }}</div>
+
+        <div class="kf-grid">
+
+          <div class="kf-field kf-span-all">
+            <label for="currentPassword">Mevcut Şifre *</label>
+            <input id="currentPassword" [type]="showPassword ? 'text' : 'password'" name="currentPassword" autocomplete="current-password" [(ngModel)]="currentPassword" />
+          </div>
+
+          <div class="kf-field">
+            <label for="newPassword">Yeni Şifre *</label>
+            <input id="newPassword" [type]="showPassword ? 'text' : 'password'" name="newPassword" autocomplete="new-password" [(ngModel)]="newPassword" />
+          </div>
+
+          <div class="kf-field">
+            <label for="confirmPassword">Yeni Şifre (Tekrar) *</label>
+            <input id="confirmPassword" [type]="showPassword ? 'text' : 'password'" name="confirmPassword" autocomplete="new-password" [(ngModel)]="confirmPassword" />
+          </div>
+
+          <label class="kf-span-all kf-muted">
+            <input type="checkbox" name="showPassword" [(ngModel)]="showPassword" /> Şifreleri göster
+          </label>
+
+          <p class="kf-span-all kf-muted">En az 8 karakter; büyük harf, küçük harf ve rakam içermelidir.</p>
+
+        </div>
+
+        <div class="kf-actions">
+          <button type="submit" class="kf-btn" [disabled]="isChangingPassword">
+            {{ isChangingPassword ? 'Değiştiriliyor...' : 'Şifreyi Değiştir' }}
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>

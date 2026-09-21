@@ -42,8 +42,8 @@
       <div class="notif-pager">
         <span>{{ notifications().length }} bildirim · Sayfa {{ page() }} / {{ totalPages() }}</span>
         <div>
-          <button type="button" class="cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">← Önceki</button>
-          <button type="button" class="cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki →</button>
+          <button type="button" class="cp-btn-ghost" [disabled]="page() === 1" (click)="changePage(-1)">Önceki</button>
+          <button type="button" class="cp-btn-ghost" [disabled]="page() === totalPages()" (click)="changePage(1)">Sonraki</button>
         </div>
       </div>
     }

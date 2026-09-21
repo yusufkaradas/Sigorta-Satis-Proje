@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -57,13 +58,17 @@ export class QuickQuoteGuestService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/QuickQuote';
+  private readonly apiUrl = `${environment.apiBaseUrl}/QuickQuote`;
 
   estimatePdf(request: GuestEstimateRequest & { packageId?: string | null; plateNumber?: string; reference?: string | null }): Observable<Blob> {
     return this.http.post(`${this.apiUrl}/estimate/pdf`, request, { responseType: 'blob' });
   }
 
+  plateEligibility(plate: string): Observable<{ eligible: boolean; message: string | null }> {
+    return this.http.get<{ eligible: boolean; message: string | null }>(`${this.apiUrl}/plate-eligibility`, { params: { plate } });
+  }
+
   estimate(request: GuestEstimateRequest): Observable<GuestEstimateResult> {
-    return this.http.post<GuestEstimateResult>(`${this.apiUrl}/estimate`, request);
+    return this.http.post<GuestEstimateResult>(`${this.apiUrl}/estimate`, request, { headers: { 'X-No-Loader': '1' } });
   }
 }

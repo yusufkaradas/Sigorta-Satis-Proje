@@ -1,3 +1,4 @@
+import { newestFirst } from '../../core/utils/list-sort';
 import { PlateBadge } from '../../core/components/plate-badge';
 import { Input } from '@angular/core';
 import {
@@ -94,7 +95,8 @@ export class Vehicle {
             data.length
           );
 
-          this.vehicles = data ?? [];
+          this.vehicles =
+            newestFirst(data);
 
           this.currentPage = 1;
 

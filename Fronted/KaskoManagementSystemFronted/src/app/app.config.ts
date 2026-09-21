@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 
 import { authInterceptor } from './core/interceptors/auth-interceptor';
 import { errorInterceptor } from './core/interceptors/error-interceptor';
+import { loadingInterceptor } from './core/interceptors/loading-interceptor';
 
 registerLocaleData(localeTr);
 
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([loadingInterceptor, authInterceptor, errorInterceptor])),
     { provide: LOCALE_ID, useValue: 'tr' }
   ]
 };

@@ -1,4 +1,4 @@
-using Kasko.Entities.Enums;
+﻿using Kasko.Entities.Enums;
 
 namespace Kasko.Business.DTOs.Tariff;
 
@@ -22,11 +22,25 @@ public class TariffPackageDto
     public decimal Factor { get; set; }
 
     public List<string> CoverageNames { get; set; } = new();
+
+    public List<Guid> CoverageIds { get; set; } = new();
+}
+
+public class SetPackageCoverageDto
+{
+    public bool Included { get; set; }
+}
+
+public class UpdatePackageInfoDto
+{
+    public string? Description { get; set; }
 }
 
 public class TariffCoverageDto
 {
     public Guid Id { get; set; }
+
+    public bool IsRequired { get; set; }
 
     public string Name { get; set; } = string.Empty;
 

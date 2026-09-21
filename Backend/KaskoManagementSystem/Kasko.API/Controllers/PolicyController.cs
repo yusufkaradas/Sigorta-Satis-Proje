@@ -82,23 +82,6 @@ namespace Kasko.API.Controllers
 
             return NoContent();
         }
-        [HttpGet("{id:guid}/terms-pdf")]
-        public async Task<IActionResult> DownloadTermsPdf(
-            Guid id,
-            [FromServices] Kasko.Business.Interfaces.IPolicyPdfService pdfService)
-        {
-            var policy = await _policyService.GetByIdAsync(id);
-
-            if (policy == null)
-            {
-                return NotFound();
-            }
-
-            var bytes = await pdfService.GenerateTermsAsync(id);
-
-            return File(bytes, "application/pdf", $"{policy.PolicyNumber}-Genel-Sartlar.pdf");
-        }
-
         [HttpGet("{id:guid}/pdf")]
         public async Task<IActionResult> DownloadPdf(
             Guid id,

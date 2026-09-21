@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { IdBadge } from '../../core/components/id-badge';
 import {
   Component,
@@ -68,7 +69,7 @@ export class Customers implements OnInit {
   readonly pageSize = 5;
 
   private readonly apiUrl =
-    'https://localhost:7086/api';
+    environment.apiBaseUrl;
 
   customers = signal<Customer[]>([]);
 
@@ -117,7 +118,7 @@ export class Customers implements OnInit {
 
     return [...this.customers()]
       .sort((a, b) =>
-        `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, 'tr')
+        new Date(b.createdDate ?? 0).getTime() - new Date(a.createdDate ?? 0).getTime()
       )
       .map(customer => ({
         customer,

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import {
   Injectable,
   inject
@@ -47,7 +48,7 @@ export class InsurancePackageService {
     inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/InsurancePackage';
+    `${environment.apiBaseUrl}/InsurancePackage`;
 
   getPackages():
     Observable<InsurancePackage[]> {

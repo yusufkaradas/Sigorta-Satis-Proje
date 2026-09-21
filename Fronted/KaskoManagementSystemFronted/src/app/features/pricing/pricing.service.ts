@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import {
   Injectable,
   inject
@@ -84,10 +85,10 @@ export class PricingService {
     inject(HttpClient);
 
   private readonly rulesUrl =
-    'https://localhost:7086/api/PricingRule';
+    `${environment.apiBaseUrl}/PricingRule`;
 
   private readonly requestsUrl =
-    'https://localhost:7086/api/PricingRuleChangeRequest';
+    `${environment.apiBaseUrl}/PricingRuleChangeRequest`;
 
   getRules(): Observable<PricingRule[]> {
     return this.http.get<PricingRule[]>(

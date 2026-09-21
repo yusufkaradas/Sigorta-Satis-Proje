@@ -89,13 +89,21 @@ export class PricingRules implements OnInit {
       const term =
         this.searchText().trim().toLocaleLowerCase('tr');
 
+      const group = this.groupFilter();
+
       return this.rules()
+        .filter(rule =>
+          !group ||
+          this.describe(rule.code, rule.name, rule.description).group === group
+        )
         .filter(rule =>
           !term ||
           rule.code.toLocaleLowerCase('tr').includes(term) ||
           rule.name.toLocaleLowerCase('tr').includes(term)
         )
-        .sort((a, b) => a.code.localeCompare(b.code, 'tr'));
+        .sort((a, b) =>
+          this.groupOrder(a) - this.groupOrder(b) ||
+          a.code.localeCompare(b.code, 'tr'));
     }
   );
 
@@ -161,6 +169,48 @@ export class PricingRules implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  readonly groupNames = ['Temel Oran', 'Araç Yaşı', 'Kullanım Tipi', 'Sürücü Yaşı', 'Hasar Geçmişi', 'Bölge Riski', 'Otomatik Onay', 'Diğer'];
+
+  groupFilter = signal('');
+
+  groupChips = computed(() =>
+    this.groupNames
+      .map(name => ({
+        name,
+        count: this.rules().filter(rule => this.describe(rule.code, rule.name, rule.description).group === name).length
+      }))
+      .filter(item => item.count > 0)
+  );
+
+  selectGroup(name: string): void {
+    this.groupFilter.set(this.groupFilter() === name ? '' : name);
+    this.currentPage.set(1);
+  }
+
+  private groupOrder(rule: PricingRule): number {
+    const index = this.groupNames.indexOf(this.describe(rule.code, rule.name, rule.description).group);
+    return index < 0 ? this.groupNames.length : index;
+  }
+
+  isFactorRule(code: string): boolean {
+    return !code.startsWith('AUTO_') && !code.includes('RATE');
+  }
+
+  effectText(value: number): string {
+    const percent = Math.round((value - 1) * 100);
+    if (percent === 0) {
+      return 'Etkisiz';
+    }
+    return percent > 0 ? `%${percent} ek prim` : `%${Math.abs(percent)} indirim`;
+  }
+
+  effectClass(value: number): string {
+    if (value > 1) {
+      return 'up';
+    }
+    return value < 1 ? 'down' : 'flat';
   }
 
   onSearch(value: string): void {

@@ -3163,3 +3163,61 @@
     background: #fde68a;
   }
 }
+
+.qq-page .qq-vehicle-box dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: k.u(10) k.u(14);
+  align-items: start;
+}
+
+.qq-page .qq-vehicle-box dl > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(4);
+}
+
+.qq-page .qq-vehicle-box dl dd {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qq-page .qq-vehicle-box .plate-badge {
+  width: 100%;
+  max-width: k.u(150);
+}
+
+.qq-page .qq-btn {
+  height: k.u(42);
+  min-height: k.u(42);
+  padding: 0 k.u(22);
+  border-radius: k.u(12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: k.u(14);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qq-page .qg-offer-pick {
+  height: k.u(42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.qq-page .qq-options.qq-cols-2 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.qq-page .qq-vehicle-box dl .qq-vehicle-plate-row {
+  grid-column: 1 / -1;
+}
+
+.qq-page .qq-vehicle-box dl dd .plate-badge {
+  max-width: 100%;
+}

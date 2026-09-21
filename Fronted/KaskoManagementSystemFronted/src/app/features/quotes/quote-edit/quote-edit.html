@@ -11,7 +11,7 @@
         <h1>{{ quote?.quoteNumber || 'Teklif' }} Düzenle</h1>
         <p>Teklifin geçerlilik tarihini güncelleyin.</p>
       </div>
-      <button type="button" class="kf-btn-outline" (click)="goBack()">← Geri Dön</button>
+      <button type="button" class="kf-btn-outline" (click)="goBack()">Geri Dön</button>
     </div>
 
     <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>

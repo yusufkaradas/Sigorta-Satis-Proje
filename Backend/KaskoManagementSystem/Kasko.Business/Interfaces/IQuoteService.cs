@@ -19,5 +19,9 @@ namespace Kasko.Business.Services
         Task ChangeStatusAsync(Guid id, QuoteStatus newStatus);
 
         Task<PricingCalculation> CalculateAsync(CreateQuoteDto dto);
+
+        Task<QuoteEligibilityDto> CheckVehicleEligibilityAsync(Guid vehicleId);
+
+        Task<QuoteEligibilityDto> CheckPlateEligibilityAsync(string plateNumber);
     }
 }

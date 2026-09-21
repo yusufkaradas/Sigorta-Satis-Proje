@@ -172,3 +172,24 @@
   border: 1px solid k.$border;
   border-radius: k.u(10);
 }
+
+.cd-actions {
+  justify-content: flex-start;
+  gap: k.u(10);
+}
+
+.cd-actions .cp-btn {
+  height: k.u(46);
+  flex: 0 0 auto;
+}
+
+:host ::ng-deep .cd-grid .cp-panel > .cp-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cd-card-foot {
+  padding: k.u(8) k.u(16);
+  line-height: 1.2;
+}

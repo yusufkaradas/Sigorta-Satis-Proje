@@ -1,4 +1,4 @@
-using Kasko.Business.DTOs.Payment;
+﻿using Kasko.Business.DTOs.Payment;
 using Kasko.Business.DTOs.Policy;
 using Kasko.Business.DTOs.QuickQuote;
 using Kasko.Business.DTOs.Quote;
@@ -65,6 +65,19 @@ public class QuickQuoteController : ControllerBase
             paymentService;
         _policyPdfService = 
             policyPdfService;
+    }
+
+    [HttpGet("plate-eligibility")]
+    public async Task<IActionResult> PlateEligibility([FromQuery] string plate)
+    {
+        var result = await _quoteService.CheckPlateEligibilityAsync(plate);
+
+        if (!result.Eligible)
+        {
+            result.Message = "Bu plakaya ait süresi devam eden bir kasko poliçesi bulunuyor. Yeni teklif, poliçe bitimine 60 gün kala yenileme olarak alınabilir.";
+        }
+
+        return Ok(result);
     }
 
     [HttpPost("estimate")]

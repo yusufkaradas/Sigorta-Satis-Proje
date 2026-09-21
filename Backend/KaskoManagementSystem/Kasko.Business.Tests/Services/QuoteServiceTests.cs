@@ -2261,7 +2261,7 @@ public class QuoteServiceTests
                     r.DriverAge == 31 &&
                     r.Usage == "PRIVATE" &&
                     r.ClaimsCount == 0 &&
-                    r.Region == "NORMAL" &&
+                    r.Region == "HIGH" &&
                     r.Deductible == 0 &&
                     r.CoverageIds.Count == 0),
                 It.IsAny<CancellationToken>()))

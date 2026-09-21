@@ -394,6 +394,8 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   currentStep = 1;
 
+  vehicleBlockMessage = '';
+
   readonly totalSteps = 4;
 
 
@@ -696,11 +698,29 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
     this.errorMessage = '';
 
-    /*
-     * Araç seçildiğinde otomatik olarak
-     * Step 2'ye geçiyoruz.
-     */
-    this.currentStep = 2;
+    this.vehicleBlockMessage = '';
+
+    this.quoteService.eligibility(selectedVehicle.id).subscribe({
+      next: result => {
+        if (this.vehicleId !== selectedVehicle.id) {
+          return;
+        }
+
+        if (!result.eligible) {
+          this.vehicleBlockMessage = result.message ?? 'Bu araç için şu anda yeni teklif alınamaz.';
+          this.errorMessage = this.vehicleBlockMessage;
+          this.currentStep = 1;
+        } else {
+          this.currentStep = 2;
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.currentStep = 2;
+        this.cdr.detectChanges();
+      }
+    });
 
     this.cdr.detectChanges();
   }
@@ -993,6 +1013,14 @@ export class QuoteCreate implements OnInit, OnDestroy {
   // ==================================================
 
   calculatePackageComparisons(animate = true): void {
+
+    if (this.vehicleBlockMessage) {
+      this.errorMessage = this.vehicleBlockMessage;
+      this.currentStep = 1;
+      this.cdr.detectChanges();
+      return;
+    }
+
 
     if (
       !this.customerId ||
@@ -1595,6 +1623,14 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
         this.errorMessage =
           'Devam etmek için araç seçin.';
+
+        return;
+      }
+
+      if (this.vehicleBlockMessage) {
+
+        this.errorMessage =
+          this.vehicleBlockMessage;
 
         return;
       }

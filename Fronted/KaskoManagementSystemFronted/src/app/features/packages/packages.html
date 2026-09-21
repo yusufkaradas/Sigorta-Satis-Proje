@@ -30,6 +30,7 @@
     <div class="rules-toolbar">
       <div class="tariff-tabs">
         <button type="button" [class.active]="tab() === 'tariff'" (click)="tab.set('tariff')">Tarife</button>
+        <button type="button" [class.active]="tab() === 'matrix'" (click)="tab.set('matrix')">Paket İçerikleri</button>
         <button type="button" [class.active]="tab() === 'requests'" (click)="tab.set('requests')">
           Değişiklik Talepleri
           @if (pendingCount() > 0) {
@@ -44,6 +45,67 @@
 
     @if (isLoading()) {
       <div class="state-message"><strong>Tarife yükleniyor...</strong></div>
+    } @else if (tab() === 'matrix' && tariff(); as data) {
+
+      <div class="matrix-wrap">
+        <p class="matrix-hint">
+          {{ portal.isManager ? 'Paketlerin hangi teminatları kapsadığını gösterir. Değişiklik yetkisi yöneticidedir.' : 'Hücreye tıklayarak teminatı pakete ekleyin veya çıkarın. Değişiklik yeni tekliflerde hemen geçerli olur; müşteri karşılaştırma tablosu buradan beslenir.' }}
+        </p>
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Teminat</th>
+              @for (item of data.packages; track item.id) {
+                <th>
+                  <strong>{{ item.name }}</strong>
+                  <small>{{ item.coverageIds?.length ?? item.coverageNames.length }} teminat · × {{ item.factor | number:'1.2-2' }}</small>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (coverage of data.coverages; track coverage.id) {
+              <tr>
+                <td>
+                  <strong>{{ coverage.name }}</strong>
+                  @if (coverage.isRequired) { <span class="matrix-required">Zorunlu</span> }
+                  <small>{{ coverage.description }}</small>
+                </td>
+                @for (item of data.packages; track item.id) {
+                  <td class="matrix-cell">
+                    <button
+                      type="button"
+                      class="matrix-toggle"
+                      [class.on]="isIncluded(item.id, coverage.id)"
+                      [class.readonly]="portal.isManager"
+                      [disabled]="matrixBusy() === item.id + coverage.id"
+                      [title]="portal.isManager ? '' : (isIncluded(item.id, coverage.id) ? 'Paketten çıkar' : 'Pakete ekle')"
+                      (click)="toggleCoverage(item.id, coverage.id, coverage.name, coverage.isRequired)">
+                      {{ isIncluded(item.id, coverage.id) ? '✓ Dahil' : '— Kapsam dışı' }}
+                    </button>
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="matrix-desc-row">
+              <td><strong>Paket Açıklaması</strong><small>Müşterinin paket kartında gördüğü metin</small></td>
+              @for (item of data.packages; track item.id) {
+                <td>
+                  @if (portal.isManager) {
+                    <small>{{ item.description }}</small>
+                  } @else {
+                    <textarea rows="3" maxlength="250" [value]="descriptionOf(item.id, item.description)" (input)="descriptionDrafts[item.id] = $any($event.target).value"></textarea>
+                    @if (descriptionDrafts[item.id] !== undefined && descriptionDrafts[item.id] !== item.description) {
+                      <button type="button" class="offer-button" [disabled]="matrixBusy() === item.id" (click)="saveDescription(item.id)">Kaydet</button>
+                    }
+                  }
+                </td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     } @else if (tab() === 'tariff' && tariff(); as data) {
 
       <div class="tariff-grid">
@@ -138,7 +200,7 @@
                 <td>{{ item.requestedDate | backendDate:'datetime' }}</td>
                 <td><span class="request-status" [ngClass]="statusClass(item.status)">{{ statusText(item.status) }}</span></td>
                 <td class="actions-cell">
-                  <button type="button" class="action-button" (click)="$event.stopPropagation(); openRequest(item)">Detay</button>
+                  <button type="button" class="action-button detail" (click)="$event.stopPropagation(); openRequest(item)">Detay</button>
                 </td>
               </tr>
             } @empty {

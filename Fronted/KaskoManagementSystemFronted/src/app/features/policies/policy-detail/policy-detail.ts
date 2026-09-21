@@ -1,3 +1,4 @@
+import { pdfFileName } from '../../../core/utils/pdf-file-name';
 import { IdBadge } from '../../../core/components/id-badge';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
@@ -534,27 +535,6 @@ private loadPayment(
 
   isDownloading = false;
 
-  downloadTerms(): void {
-    if (!this.policy?.id) {
-      return;
-    }
-    const number = this.policy.policyNumber;
-    this.policyService.downloadTermsPdf(this.policy.id).subscribe({
-      next: blob => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${number ?? 'police'}-Genel-Sartlar.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: () => {
-        this.errorMessage = 'Genel şartlar belgesi oluşturulamadı.';
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
   downloadPdf(): void {
 
     if (!this.policy?.id || this.isDownloading) {
@@ -569,7 +549,7 @@ private loadPayment(
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${this.policy?.policyNumber ?? "police"}.pdf`;
+        link.download = pdfFileName('Kasko-Policesi', this.policy?.policyNumber, this.quote?.plateNumber, this.quote?.customerName || this.policy?.customerName);
         link.click();
         window.URL.revokeObjectURL(url);
         this.isDownloading = false;

@@ -1,3 +1,4 @@
+import { newestFirst } from '../../core/utils/list-sort';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import {
@@ -5,7 +6,7 @@ import {
   Component,
   inject
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import {
@@ -25,8 +26,7 @@ import {
   imports: [
     RecordNumberPipe,
     CommonModule,
-    FormsModule,
-    RouterLink
+    FormsModule
   ],
   templateUrl: './policies.html',
   styleUrl: './policies.scss'
@@ -156,9 +156,7 @@ export class Policies {
           );
 
           this.policies =
-            Array.isArray(data)
-              ? data
-              : [];
+            newestFirst(Array.isArray(data) ? data : []);
 
           this.currentPage = 1;
 

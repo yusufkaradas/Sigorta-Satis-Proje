@@ -1,3 +1,4 @@
+import { newestFirst } from '../../core/utils/list-sort';
 import { IdBadge } from '../../core/components/id-badge';
 import { confirmDialog } from '../../core/services/confirm-dialog';
 import {
@@ -172,7 +173,7 @@ ngOnInit(): void {
         next: (data: User[]) => {
 
           this.users =
-            data ?? [];
+            newestFirst(data);
 
           this.filterUsers();
 

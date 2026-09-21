@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 
 import {
@@ -24,7 +25,7 @@ export class UserService {
     inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/User';
+    `${environment.apiBaseUrl}/User`;
 
 
   getAll(): Observable<User[]> {

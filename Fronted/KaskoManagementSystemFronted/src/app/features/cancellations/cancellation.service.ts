@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -47,7 +48,7 @@ export class CancellationService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/PolicyCancellation';
+  private readonly apiUrl = `${environment.apiBaseUrl}/PolicyCancellation`;
 
   getAll(): Observable<PolicyCancellation[]> {
     return this.http.get<PolicyCancellation[]>(this.apiUrl);

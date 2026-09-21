@@ -20,7 +20,7 @@
           }}
         </p>
       </div>
-      <button type="button" class="kf-btn-outline" (click)="cancel()">← Tekliflere Dön</button>
+      <button type="button" class="kf-btn-outline" (click)="cancel()">Tekliflere Dön</button>
     </div>
 
     <ol class="kf-steps">
@@ -256,7 +256,7 @@
           <span class="kf-muted">{{ option.package.description }}</span>
 
           <ul class="qc-coverages">
-            <li *ngFor="let row of sortedCoverageRows(option.package)" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
+            <li *ngFor="let row of allCoverageRows" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
               {{ packageHasCoverage(option.package, row.coverageId) ? '✓' : '✕' }} {{ row.coverageName }}<i class="cov-help" *ngIf="row.description" [attr.data-tip]="row.description">?</i>
             </li>
           </ul>
@@ -370,7 +370,7 @@
         class="kf-btn-outline"
         [disabled]="currentStep === 1"
         (click)="previousStep()">
-        ← Geri
+        Geri
       </button>
 
       <button
@@ -379,7 +379,7 @@
         class="kf-btn"
         [disabled]="!vehicleId"
         (click)="nextStep()">
-        Risk Bilgilerine Geç →
+        Risk Bilgilerine Geç
       </button>
 
       <button
@@ -387,7 +387,7 @@
         type="button"
         class="kf-btn"
         (click)="nextStep()">
-        Teklifleri Getir →
+        Teklifleri Getir
       </button>
 
       <button
@@ -396,7 +396,7 @@
         class="kf-btn"
         [disabled]="!packageId"
         (click)="nextStep()">
-        Özete Geç →
+        Özete Geç
       </button>
 
       <button
@@ -404,7 +404,7 @@
         type="submit"
         class="kf-btn-success"
         [disabled]="!packageId || calculatedPremium === null || isSaving || (isCustomerMode && (!acceptedTerms || !acceptedKvkk))">
-        {{ isSaving ? 'Teklif Oluşturuluyor...' : (isCustomerMode ? 'Satın Al →' : 'Teklifi Oluştur') }}
+        {{ isSaving ? 'Teklif Oluşturuluyor...' : (isCustomerMode ? 'Satın Al' : 'Teklifi Oluştur') }}
       </button>
 
     </div>

@@ -13,7 +13,7 @@ import {
   TariffRequestStatus,
   TariffService,
   TariffTargetType
-} from './tariff.service';
+} from './packages.service';
 
 interface EditTarget {
   targetType: TariffTargetType;
@@ -25,13 +25,13 @@ interface EditTarget {
 }
 
 @Component({
-  selector: 'app-tariff',
+  selector: 'app-packages',
   standalone: true,
   imports: [CommonModule, FormsModule, BackendDatePipe],
-  templateUrl: './tariff.html',
-  styleUrl: './tariff.scss'
+  templateUrl: './packages.html',
+  styleUrl: './packages.scss'
 })
-export class TariffPage implements OnInit {
+export class PackagesPage implements OnInit {
 
   @Input() embedded = false;
 
@@ -51,7 +51,63 @@ export class TariffPage implements OnInit {
 
   isLoading = signal(true);
 
-  tab = signal<'tariff' | 'requests'>('tariff');
+  tab = signal<'tariff' | 'matrix' | 'requests'>('tariff');
+
+  matrixBusy = signal('');
+
+  descriptionDrafts: Record<string, string> = {};
+
+  isIncluded(packageId: string, coverageId: string): boolean {
+    return this.tariff()?.packages.find(item => item.id === packageId)?.coverageIds?.includes(coverageId) ?? false;
+  }
+
+  toggleCoverage(packageId: string, coverageId: string, coverageName: string, required: boolean): void {
+    if (this.portal.isManager || this.matrixBusy()) {
+      return;
+    }
+    const included = this.isIncluded(packageId, coverageId);
+    if (included && required) {
+      this.toast.error(`${coverageName} zorunlu teminattır, paketten çıkarılamaz.`);
+      return;
+    }
+    this.matrixBusy.set(packageId + coverageId);
+    this.service.setPackageCoverage(packageId, coverageId, !included).subscribe({
+      next: () => {
+        this.matrixBusy.set('');
+        this.toast.success(included ? `${coverageName} paketten çıkarıldı.` : `${coverageName} pakete eklendi.`);
+        this.load(true);
+      },
+      error: error => {
+        this.matrixBusy.set('');
+        this.toast.error(error?.error?.detail ?? error?.error?.message ?? 'Paket içeriği güncellenemedi.');
+      }
+    });
+  }
+
+  descriptionOf(packageId: string, fallback: string | null | undefined): string {
+    return this.descriptionDrafts[packageId] ?? fallback ?? '';
+  }
+
+  saveDescription(packageId: string): void {
+    const text = (this.descriptionDrafts[packageId] ?? '').trim();
+    if (!text) {
+      this.toast.error('Paket açıklaması boş olamaz.');
+      return;
+    }
+    this.matrixBusy.set(packageId);
+    this.service.updatePackageInfo(packageId, text).subscribe({
+      next: () => {
+        this.matrixBusy.set('');
+        delete this.descriptionDrafts[packageId];
+        this.toast.success('Paket açıklaması güncellendi.');
+        this.load(true);
+      },
+      error: error => {
+        this.matrixBusy.set('');
+        this.toast.error(error?.error?.detail ?? error?.error?.message ?? 'Açıklama kaydedilemedi.');
+      }
+    });
+  }
 
   page = signal(1);
 

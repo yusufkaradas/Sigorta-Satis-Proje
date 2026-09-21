@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
@@ -15,7 +16,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokenStorage = inject(TokenStorageService);
 
-  private readonly apiUrl = 'https://localhost:7086/api/Auth';
+  private readonly apiUrl = `${environment.apiBaseUrl}/Auth`;
 
   login(
     request: LoginRequest,

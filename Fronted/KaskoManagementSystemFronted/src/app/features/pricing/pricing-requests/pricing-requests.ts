@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   CommonModule
@@ -194,7 +195,7 @@ export class PricingRequests implements OnInit {
 
     if (!this.portal.isManager) {
       this.http
-        .get<{ id: string; firstName: string; lastName: string }[]>('https://localhost:7086/api/User')
+        .get<{ id: string; firstName: string; lastName: string }[]>(`${environment.apiBaseUrl}/User`)
         .pipe(catchError(() => of([])))
         .subscribe(users =>
           this.userNames.set(new Map(users.map(user => [user.id, `${user.firstName} ${user.lastName}`])))

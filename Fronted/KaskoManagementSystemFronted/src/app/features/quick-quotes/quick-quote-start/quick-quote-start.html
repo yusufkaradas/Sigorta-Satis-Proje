@@ -299,7 +299,7 @@
             type="button"
             class="qq-btn qq-btn-ghost"
             (click)="goToStep(1)">
-            ← Geri
+            Geri
           </button>
 
           <button
@@ -307,7 +307,7 @@
             class="qq-btn qq-btn-primary"
             [disabled]="!selectedVehicle || isLoading"
             (click)="continueWithVehicle()">
-            Devam Et →
+            Devam Et
           </button>
 
         </div>
@@ -431,7 +431,7 @@
             <strong>{{ vehicle.brand }}</strong>
             <p>{{ vehicle.model }}</p>
             <dl>
-              <div><dt>Plaka</dt><dd><app-plate [value]="vehicle.plateNumber" /></dd></div>
+              <div class="qq-vehicle-plate-row"><dt>Plaka</dt><dd><app-plate [value]="vehicle.plateNumber" /></dd></div>
               <div><dt>Model Yılı</dt><dd>{{ vehicle.modelYear }}</dd></div>
               <div><dt>Araç Yaşı</dt><dd>{{ vehicleAge }} yaş</dd></div>
               <div><dt>Yakıt / Vites</dt><dd>{{ fuelTypeLabel(vehicle.fuelType) }} · {{ transmissionTypeLabel(vehicle.transmissionType) }}</dd></div>
@@ -450,7 +450,7 @@
             type="button"
             class="qq-btn qq-btn-ghost"
             (click)="goToStep(2)">
-            ← Araç Değiştir
+            Araç Değiştir
           </button>
 
           <button
@@ -458,7 +458,7 @@
             class="qq-btn qq-btn-primary"
             [disabled]="isLoading"
             (click)="loadPackages()">
-            Teklifleri Getir →
+            Teklifleri Getir
           </button>
 
         </div>
@@ -598,7 +598,7 @@
               type="button"
               class="qq-btn qq-btn-ghost"
               (click)="goToStep(3)">
-              ← Bilgileri Değiştir
+              Bilgileri Değiştir
             </button>
 
             <button
@@ -606,7 +606,7 @@
               class="qq-btn qq-btn-primary"
               [disabled]="!selectedPackage || isRepricing"
               (click)="continueWithOffer()">
-              {{ selectedPackage ? (isLoggedIn ? 'Teklifi Hesabıma Kaydet · ' : 'Giriş Yap ve Teklifi Kaydet · ') + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺ →' : 'Bir Teklif Seçin' }}
+              {{ selectedPackage ? (isLoggedIn ? 'Teklifi Hesabıma Kaydet · ' : 'Giriş Yap ve Teklifi Kaydet · ') + (packagePrices[selectedPackage.id] | number:'1.0-0') + ' ₺' : 'Bir Teklif Seçin' }}
             </button>
 
           </div>

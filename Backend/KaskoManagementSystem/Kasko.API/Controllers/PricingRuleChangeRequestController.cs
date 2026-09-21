@@ -83,7 +83,7 @@ public class PricingRuleChangeRequestController : ControllerBase
 
     [HttpPost("{id:guid}/reject")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Reject(Guid id, [FromBody] RejectPricingRequestDto? dto)
+    public async Task<IActionResult> Reject(Guid id, [FromBody] RejectPricingRuleChangeRequestDto? dto)
     {
         var userIdClaim =
             User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -164,9 +164,4 @@ public class PricingRuleChangeRequestController : ControllerBase
             changePercent = oldAverage == 0 ? 0 : Math.Round((newAverage - oldAverage) / oldAverage * 100, 1)
         });
     }
-}
-
-public class RejectPricingRequestDto
-{
-    public string? Reason { get; set; }
 }

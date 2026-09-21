@@ -1,4 +1,4 @@
-using Kasko.Business.DTOs.Quote;
+﻿using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Pricing;
 using Kasko.DataAccess.Repositories.Abstract;
@@ -1000,25 +1000,73 @@ namespace Kasko.Business.Services
 
         private async Task EnsureNoActivePolicyAsync(Guid vehicleId)
         {
+            var message = await GetActivePolicyBlockMessageAsync(new[] { vehicleId });
+
+            if (message != null)
+            {
+                throw new BadRequestException(message);
+            }
+        }
+
+        private async Task<string?> GetActivePolicyBlockMessageAsync(IEnumerable<Guid> vehicleIds)
+        {
+            var ids = vehicleIds.ToList();
+
             var renewalWindowStart =
                 DateTime.UtcNow.AddDays(60);
 
             var activePolicy =
                 (await _unitOfWork.Policies
                     .FindAsync(x =>
-                        x.VehicleId == vehicleId &&
+                        ids.Contains(x.VehicleId) &&
                         !x.IsDeleted &&
                         x.Status == PolicyStatus.Active))
                     .OrderByDescending(x => x.EndDate)
                     .FirstOrDefault();
 
-            if (activePolicy != null &&
-                activePolicy.EndDate > renewalWindowStart)
+            if (activePolicy == null ||
+                activePolicy.EndDate <= renewalWindowStart)
             {
-                throw new BadRequestException(
-                    $"Bu aracın {activePolicy.EndDate:dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala yenileme olarak alınabilir.");
+                return null;
             }
+
+            return $"Bu aracın {activePolicy.EndDate.ToLocalTime():dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala ({activePolicy.EndDate.AddDays(-60).ToLocalTime():dd.MM.yyyy} tarihinden itibaren) yenileme olarak alınabilir.";
         }
+
+        public async Task<QuoteEligibilityDto> CheckVehicleEligibilityAsync(Guid vehicleId)
+        {
+            var message = await GetActivePolicyBlockMessageAsync(new[] { vehicleId });
+
+            return new QuoteEligibilityDto { Eligible = message == null, Message = message };
+        }
+
+        public async Task<QuoteEligibilityDto> CheckPlateEligibilityAsync(string plateNumber)
+        {
+            var normalized = NormalizePlate(plateNumber);
+
+            if (string.IsNullOrEmpty(normalized))
+            {
+                return new QuoteEligibilityDto { Eligible = true };
+            }
+
+            var vehicleIds =
+                (await _unitOfWork.Vehicles.FindAsync(x => !x.IsDeleted))
+                    .Where(x => NormalizePlate(x.PlateNumber) == normalized)
+                    .Select(x => x.Id)
+                    .ToList();
+
+            if (vehicleIds.Count == 0)
+            {
+                return new QuoteEligibilityDto { Eligible = true };
+            }
+
+            var message = await GetActivePolicyBlockMessageAsync(vehicleIds);
+
+            return new QuoteEligibilityDto { Eligible = message == null, Message = message };
+        }
+
+        private static string NormalizePlate(string? plate) =>
+            new string((plate ?? string.Empty).Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
 
         private async Task CancelOpenQuotesAsync(Guid vehicleId)
         {
@@ -1058,7 +1106,8 @@ namespace Kasko.Business.Services
                 await _unitOfWork
                     .PackageCoverages
                     .FindAsync(x =>
-                        x.InsurancePackageId == packageId.Value);
+                        x.InsurancePackageId == packageId.Value &&
+                        !x.IsDeleted);
 
             var allowedCoverageIds =
                 packageCoverages
@@ -1087,9 +1136,46 @@ namespace Kasko.Business.Services
 
             return requestedCoverageIds.ToArray();
         }
-        private string ResolveRegion(string? city)
+        private static readonly HashSet<string> HighRiskCities = new(StringComparer.Ordinal)
         {
-            return "NORMAL";
+            "ISTANBUL", "ANKARA", "IZMIR", "BURSA", "KOCAELI", "ANTALYA"
+        };
+
+        private static readonly HashSet<string> NormalRiskCities = new(StringComparer.Ordinal)
+        {
+            "ADANA", "AYDIN", "BALIKESIR", "DENIZLI", "DIYARBAKIR", "ERZURUM", "ESKISEHIR",
+            "GAZIANTEP", "HATAY", "KAHRAMANMARAS", "KAYSERI", "KONYA", "MALATYA", "MANISA",
+            "MARDIN", "MERSIN", "MUGLA", "ORDU", "SAKARYA", "SAMSUN", "SANLIURFA",
+            "TEKIRDAG", "TRABZON", "VAN"
+        };
+
+        public static string ResolveRegion(string? city)
+        {
+            if (string.IsNullOrWhiteSpace(city))
+            {
+                return "NORMAL";
+            }
+
+            var normalized = new string(city.Trim()
+                .Select(c => c switch
+                {
+                    'ı' or 'İ' or 'i' or 'I' => 'I',
+                    'ş' or 'Ş' => 'S',
+                    'ğ' or 'Ğ' => 'G',
+                    'ü' or 'Ü' => 'U',
+                    'ö' or 'Ö' => 'O',
+                    'ç' or 'Ç' => 'C',
+                    _ => char.ToUpperInvariant(c)
+                })
+                .Where(char.IsLetter)
+                .ToArray());
+
+            if (HighRiskCities.Contains(normalized))
+            {
+                return "HIGH";
+            }
+
+            return NormalRiskCities.Contains(normalized) ? "NORMAL" : "LOW";
         }
     }
 }

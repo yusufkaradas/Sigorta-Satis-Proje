@@ -58,6 +58,13 @@
 
     </div>
 
+    <div class="rule-group-chips">
+      <button type="button" [class.active]="!groupFilter()" (click)="groupFilter.set(''); currentPage.set(1)">Tümü <b>{{ rules().length }}</b></button>
+      @for (chip of groupChips(); track chip.name) {
+        <button type="button" [class.active]="groupFilter() === chip.name" (click)="selectGroup(chip.name)">{{ chip.name }} <b>{{ chip.count }}</b></button>
+      }
+    </div>
+
     @if (successMessage()) {
       <div class="rules-notice">
         {{ successMessage() }}
@@ -83,6 +90,7 @@
               <th>Grup</th>
               <th>Kural</th>
               <th>Değer</th>
+              <th>Etkisi</th>
               <th>Versiyon</th>
               <th>Geçerlilik</th>
               <th>Durum</th>
@@ -102,6 +110,13 @@
                   </div>
                 </td>
                 <td><strong [title]="rule.value">{{ formatValue(rule.code, rule.value) }}</strong></td>
+                <td>
+                  @if (isFactorRule(rule.code)) {
+                    <span class="rule-effect" [class]="'rule-effect ' + effectClass(rule.value)">{{ effectText(rule.value) }}</span>
+                  } @else {
+                    <span class="rule-effect flat">{{ rule.code.startsWith('AUTO_') ? 'Onay sınırı' : 'Oran' }}</span>
+                  }
+                </td>
                 <td>v{{ rule.version }}</td>
                 <td>{{ rule.effectiveFrom | date:'dd.MM.yyyy' }}</td>
                 <td>
@@ -133,7 +148,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="empty-row">Kural bulunamadı.</td>
+                <td colspan="8" class="empty-row">Kural bulunamadı.</td>
               </tr>
             }
 

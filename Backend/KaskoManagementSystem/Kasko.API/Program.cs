@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Kasko.API.Extensions;
 using Kasko.API.Serialization;
@@ -125,9 +125,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("LocalDevelopment", policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:4200",
-                "https://localhost:4200")
+            .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                ?? new[] { "http://localhost:4200", "https://localhost:4200" })
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -170,7 +169,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();

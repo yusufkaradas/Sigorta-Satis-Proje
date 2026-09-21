@@ -1,4 +1,4 @@
-using Kasko.Business.DTOs.Tariff;
+﻿using Kasko.Business.DTOs.Tariff;
 using Kasko.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +27,24 @@ public class TariffController : ControllerBase
     public async Task<IActionResult> GetRequests()
     {
         return Ok(await _service.GetRequestsAsync());
+    }
+
+    [HttpPut("packages/{packageId:guid}/coverages/{coverageId:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SetPackageCoverage(Guid packageId, Guid coverageId, [FromBody] SetPackageCoverageDto dto)
+    {
+        await _service.SetPackageCoverageAsync(packageId, coverageId, dto.Included);
+
+        return NoContent();
+    }
+
+    [HttpPut("packages/{packageId:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdatePackageInfo(Guid packageId, [FromBody] UpdatePackageInfoDto dto)
+    {
+        await _service.UpdatePackageInfoAsync(packageId, dto.Description);
+
+        return NoContent();
     }
 
     [HttpPost("requests")]

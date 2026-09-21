@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { BrandService } from '../../../core/services/brand.service';
 import {
   Component,
@@ -32,7 +33,7 @@ export class ForgotPassword {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/Auth/forgot-password';
+  private readonly apiUrl = `${environment.apiBaseUrl}/Auth/forgot-password`;
 
   readonly brand = this.brandService.brand;
 

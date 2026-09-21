@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ export class PolicyService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/Policy';
+  private readonly apiUrl = `${environment.apiBaseUrl}/Policy`;
 
   getAll(): Observable<Policy[]> {
     return this.http.get<Policy[]>(this.apiUrl);
@@ -53,10 +54,6 @@ export class PolicyService {
     coverageIds: string[];
   }): Observable<{ id: string }> {
     return this.http.post<{ id: string }>(`${this.apiUrl}/renew`, request);
-  }
-
-  downloadTermsPdf(id: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${id}/terms-pdf`, { responseType: 'blob' });
   }
 
   downloadPdf(id: string): Observable<Blob> {

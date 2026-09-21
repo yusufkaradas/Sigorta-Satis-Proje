@@ -155,7 +155,7 @@
 
             <div class="qq-actions">
               <a routerLink="/" class="qq-btn qq-btn-ghost">Vazgeç</a>
-              <button type="button" class="qq-btn qq-btn-primary" [disabled]="!canContinueVehicle" (click)="goToDriver()">Devam Et</button>
+              <button type="button" class="qq-btn qq-btn-primary" [disabled]="!canContinueVehicle || isCheckingPlate()" (click)="goToDriver()">{{ isCheckingPlate() ? 'Kontrol Ediliyor...' : 'Devam Et' }}</button>
             </div>
 
           </div>
@@ -220,12 +220,12 @@
 
                 <div class="qq-risk-title">
                   <strong>Kullanım Şekli</strong>
-                  <small>Aracınızı nasıl kullanıyorsunuz?</small>
+                  <small>{{ isCommercialOnly ? categoryLabel(category) + ' sınıfı araçlar ticari kullanım olarak fiyatlanır.' : 'Aracınızı nasıl kullanıyorsunuz?' }}</small>
                 </div>
 
                 <div class="qq-options qq-cols-2">
 
-                  <button type="button" class="qq-option" [class.selected]="usage === 'PRIVATE'" (click)="usage = 'PRIVATE'">
+                  <button type="button" class="qq-option" [class.selected]="usage === 'PRIVATE'" [disabled]="isCommercialOnly" (click)="usage = 'PRIVATE'">
                     <strong>Özel Kullanım</strong>
                     <small>Günlük / bireysel</small>
                   </button>
@@ -289,8 +289,8 @@
             </div>
 
             <div class="qq-actions">
-              <button type="button" class="qq-btn qq-btn-ghost" (click)="backToVehicle()">← Araç Bilgileri</button>
-              <button type="button" class="qq-btn qq-btn-primary" [disabled]="!canCalculate" (click)="calculate()">Teklifleri Getir →</button>
+              <button type="button" class="qq-btn qq-btn-ghost" (click)="backToVehicle()">Araç Bilgileri</button>
+              <button type="button" class="qq-btn qq-btn-primary" [disabled]="!canCalculate" (click)="calculate()">Teklifleri Getir</button>
             </div>
 
           </div>
@@ -423,7 +423,7 @@
                   @if (selectedPackage; as chosen) {
                     <span><small>{{ chosen.packageName }}</small><strong>{{ chosen.totalPremium | number:'1.2-2' }} ₺ / yıl</strong></span>
                   }
-                  <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="createOffer()">Teklifi Oluştur →</button>
+                  <button type="button" class="qq-btn qq-btn-primary" [disabled]="!selectedPackage" (click)="createOffer()">Teklifi Oluştur</button>
                 </div>
               </div>
 
@@ -483,10 +483,10 @@
             </div>
 
             <div class="qq-actions">
-              <button type="button" class="qq-btn qq-btn-ghost" (click)="currentStep.set(3)">← Paketlere Dön</button>
+              <button type="button" class="qq-btn qq-btn-ghost" (click)="currentStep.set(3)">Paketlere Dön</button>
               <div class="qg-action-summary">
                 <button type="button" class="qq-btn qq-btn-ghost" [disabled]="isDownloading()" (click)="downloadPdf()">{{ isDownloading() ? 'Hazırlanıyor...' : 'Teklifi PDF İndir' }}</button>
-                <button type="button" class="qq-btn qq-btn-primary" (click)="continueToPurchase()">{{ isLoggedIn ? 'Portalda Satın Al →' : 'Satın Almak İçin Kayıt Ol →' }}</button>
+                <button type="button" class="qq-btn qq-btn-primary" (click)="continueToPurchase()">{{ isLoggedIn ? 'Portalda Satın Al' : 'Satın Almak İçin Kayıt Ol' }}</button>
               </div>
             </div>
 

@@ -61,7 +61,7 @@
           </p>
 
           @if (prefilledFromQuote) {
-            <p>T.C. Kimlik No ve telefonunuz hızlı tekliften otomatik dolduruldu.</p>
+            <p>T.C. Kimlik No{{ birthYearFromQuote ? ', telefon ve doğum yılınız' : ' ve telefonunuz' }} hızlı tekliften otomatik dolduruldu.</p>
           }
 
         </div>
@@ -149,6 +149,12 @@
                 type="date"
                 [(ngModel)]="dateOfBirth"
               />
+
+              @if (birthYearMismatch) {
+                <small class="field-warning">Hızlı teklifte doğum yılınızı {{ birthYearFromQuote }} seçtiniz. Farklı yıl girerseniz prim yeniden hesaplanır.</small>
+              } @else if (birthYearFromQuote) {
+                <small class="field-hint">Gün ve ayı kimliğinizdeki bilgiye göre düzeltin.</small>
+              }
 
             </div>
 

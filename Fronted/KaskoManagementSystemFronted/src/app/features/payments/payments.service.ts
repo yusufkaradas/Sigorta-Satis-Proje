@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -26,7 +27,7 @@ export class PaymentsService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/Payment';
+    `${environment.apiBaseUrl}/Payment`;
 
   getAll(): Observable<Payment[]> {
     return this.http.get<Payment[]>(

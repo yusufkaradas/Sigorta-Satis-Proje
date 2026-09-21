@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Kasko.Business.DTOs.Customer;
 using Kasko.Business.DTOs.QuickQuote;
 using Kasko.Business.Exceptions;
@@ -332,11 +332,49 @@ public class CustomerService : ICustomerService
                 "Müşteri bulunamadı.");
         }
 
+        var hasActivePolicy =
+            (await _unitOfWork.Policies.FindAsync(x =>
+                x.CustomerId == id &&
+                !x.IsDeleted &&
+                x.Status == Kasko.Entities.Enums.PolicyStatus.Active))
+            .Any();
+
+        if (hasActivePolicy)
+        {
+            throw new BadRequestException(
+                "Aktif poliçesi bulunan müşteri silinemez. Önce poliçeyi iptal edin veya süresinin dolmasını bekleyin.");
+        }
+
+        var now = DateTime.UtcNow;
+
         customer.IsDeleted = true;
-        customer.DeletedDate = DateTime.UtcNow;
+        customer.DeletedDate = now;
         customer.DeletedBy = deletedBy;
 
         await _unitOfWork.Customers.UpdateAsync(customer);
+
+        foreach (var quote in await _unitOfWork.Quotes.FindAsync(x => x.CustomerId == id && !x.IsDeleted))
+        {
+            quote.IsDeleted = true;
+            quote.DeletedDate = now;
+            quote.DeletedBy = deletedBy;
+            await _unitOfWork.Quotes.UpdateAsync(quote);
+        }
+
+        foreach (var vehicle in await _unitOfWork.Vehicles.FindAsync(x => x.CustomerId == id && !x.IsDeleted))
+        {
+            vehicle.IsDeleted = true;
+            vehicle.IsActive = false;
+            vehicle.DeletedDate = now;
+            vehicle.DeletedBy = deletedBy;
+            await _unitOfWork.Vehicles.UpdateAsync(vehicle);
+        }
+
+        foreach (var user in await _unitOfWork.Users.FindAsync(x => x.CustomerId == id))
+        {
+            user.IsActive = false;
+            await _unitOfWork.Users.UpdateAsync(user);
+        }
 
         await _unitOfWork.SaveChangesAsync();
     }

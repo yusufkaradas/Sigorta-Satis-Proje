@@ -1,4 +1,4 @@
-using Kasko.Business.Interfaces;
+﻿using Kasko.Business.Interfaces;
 using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Services.Abstract;
 using Kasko.Business.Services;
@@ -43,6 +43,13 @@ namespace Kasko.API.Controllers
 
             }
             return Ok(quote);
+        }
+
+        [HttpGet("eligibility/{vehicleId:guid}")]
+        [Authorize(Roles = "Admin,Manager,Customer")]
+        public async Task<IActionResult> Eligibility(Guid vehicleId)
+        {
+            return Ok(await _quoteService.CheckVehicleEligibilityAsync(vehicleId));
         }
 
         [HttpPost("calculate")]

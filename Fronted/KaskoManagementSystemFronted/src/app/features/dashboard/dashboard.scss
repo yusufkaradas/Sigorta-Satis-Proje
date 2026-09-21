@@ -638,3 +638,104 @@ a.db-row:hover {
   padding: k.u(8) k.u(16);
   line-height: 1.2;
 }
+
+.db-actions {
+  grid-auto-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.db-action {
+  height: auto;
+  min-height: 0;
+  padding: k.u(6) k.u(10);
+  justify-content: center;
+
+  strong {
+    font-size: k.u(12);
+  }
+
+  small {
+    font-size: k.u(9);
+  }
+}
+
+.db-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: k.u(8);
+  overflow: hidden;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    display: none;
+  }
+}
+
+.db-actions {
+  grid-auto-rows: k.u(46);
+  align-content: start;
+}
+
+.db-action {
+  height: k.u(46);
+}
+
+.db-action {
+  border: 0;
+  border-radius: k.u(10);
+  background: #535353;
+  color: k.$surface;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+
+  strong {
+    font-size: k.u(13);
+    letter-spacing: 0.02em;
+  }
+
+  &:hover {
+    background: #3f3f3f;
+    color: k.$surface;
+  }
+
+  &:first-child {
+    background: k.$info;
+
+    &:hover {
+      background: #2563eb;
+    }
+  }
+}
+
+.db-actions {
+  grid-auto-rows: k.u(42);
+  gap: k.u(6);
+}
+
+.db-action {
+  height: k.u(42);
+}
+
+.db-actions {
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+  gap: k.u(6);
+  overflow: hidden;
+}
+
+.db-action {
+  height: auto;
+  min-height: 0;
+}
+
+.db-donut-legend span {
+  text-transform: none;
+}

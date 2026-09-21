@@ -1,3 +1,4 @@
+import { pdfFileName } from '../../../core/utils/pdf-file-name';
 import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { CommonModule } from '@angular/common';
@@ -149,7 +150,12 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     return this.categoryLabels[value] ?? value;
   }
 
+  get isCommercialOnly(): boolean {
+    return !!this.category && this.category !== 'Otomobil';
+  }
+
   onCategoryChange(): void {
+    this.usage = this.isCommercialOnly ? 'COMMERCIAL' : 'PRIVATE';
     this.brandCode = '';
     this.typeCode = '';
     this.modelYear = null;
@@ -270,6 +276,26 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
       this.errorMessage.set('Lütfen plaka, araç sınıfı, marka, model, yıl ve renk bilgisini girin.');
       return;
     }
+    this.isCheckingPlate.set(true);
+    this.guestService.plateEligibility(this.plateNumber.trim()).subscribe({
+      next: result => {
+        this.isCheckingPlate.set(false);
+        if (!result.eligible) {
+          this.errorMessage.set(result.message ?? 'Bu plaka için şu anda yeni teklif alınamaz.');
+          return;
+        }
+        this.openDriverStep();
+      },
+      error: () => {
+        this.isCheckingPlate.set(false);
+        this.openDriverStep();
+      }
+    });
+  }
+
+  isCheckingPlate = signal(false);
+
+  private openDriverStep(): void {
     this.lookupValue.set(null);
     this.catalogService.lookup(this.brandCode, this.typeCode, this.modelYear as number).subscribe({
       next: data => this.lookupValue.set(data?.value ?? null),
@@ -377,7 +403,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${this.offerReference || 'Kasko-Teklif'}.pdf`;
+        link.download = pdfFileName('Kasko-Teklif-Karsilastirmasi', this.offerReference, this.plateNumber);
         link.click();
         URL.revokeObjectURL(url);
         this.isDownloading.set(false);
@@ -507,6 +533,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         plateNumber: this.plateNumber.trim(),
         color: this.color,
         usage: this.usage,
+        birthYear: this.birthYear,
         claimsCount: this.claimsCount,
         deductible: this.deductible,
         packageId: this.selectedPackageId(),

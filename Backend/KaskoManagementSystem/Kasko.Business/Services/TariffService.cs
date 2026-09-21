@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Kasko.Business.DTOs.Tariff;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
@@ -68,6 +68,10 @@ public class TariffService : ITariffService
                         .Where(x => x.InsurancePackageId == package.Id && coverageNames.ContainsKey(x.CoverageId))
                         .Select(x => coverageNames[x.CoverageId])
                         .OrderBy(x => x)
+                        .ToList(),
+                    CoverageIds = packageCoverages
+                        .Where(x => x.InsurancePackageId == package.Id)
+                        .Select(x => x.CoverageId)
                         .ToList()
                 })
                 .ToList(),
@@ -77,6 +81,7 @@ public class TariffService : ITariffService
                 .Select(coverage => new TariffCoverageDto
                 {
                     Id = coverage.Id,
+                    IsRequired = coverage.IsRequired,
                     Name = coverage.Name,
                     Description = coverage.Description,
                     PricingType = coverage.PricingType,
@@ -96,6 +101,105 @@ public class TariffService : ITariffService
                 })
                 .ToList()
         };
+    }
+
+    public async Task SetPackageCoverageAsync(Guid packageId, Guid coverageId, bool included)
+    {
+        var package = await _unitOfWork.InsurancePackages.GetByIdAsync(packageId);
+
+        if (package == null || package.IsDeleted)
+        {
+            throw new NotFoundException("Paket bulunamadı.");
+        }
+
+        var coverage = await _unitOfWork.Coverages.GetByIdAsync(coverageId);
+
+        if (coverage == null || coverage.IsDeleted)
+        {
+            throw new NotFoundException("Teminat bulunamadı.");
+        }
+
+        if (!included && coverage.IsRequired)
+        {
+            throw new BadRequestException($"{coverage.Name} zorunlu teminattır, paketten çıkarılamaz.");
+        }
+
+        var existing = (await _unitOfWork.PackageCoverages.FindAsync(x =>
+                x.InsurancePackageId == packageId &&
+                x.CoverageId == coverageId))
+            .ToList();
+
+        var active = existing.FirstOrDefault(x => !x.IsDeleted);
+
+        if (included)
+        {
+            if (active != null)
+            {
+                return;
+            }
+
+            var restored = existing.FirstOrDefault();
+
+            if (restored != null)
+            {
+                restored.IsDeleted = false;
+                restored.DeletedDate = null;
+                restored.IsDefault = true;
+                await _unitOfWork.PackageCoverages.UpdateAsync(restored);
+            }
+            else
+            {
+                await _unitOfWork.PackageCoverages.AddAsync(new PackageCoverage
+                {
+                    InsurancePackageId = packageId,
+                    CoverageId = coverageId,
+                    IsDefault = true
+                });
+            }
+        }
+        else
+        {
+            if (active == null)
+            {
+                return;
+            }
+
+            var remaining = (await _unitOfWork.PackageCoverages.FindAsync(x =>
+                    x.InsurancePackageId == packageId && !x.IsDeleted))
+                .Count();
+
+            if (remaining <= 1)
+            {
+                throw new BadRequestException("Pakette en az bir teminat bulunmalıdır.");
+            }
+
+            active.IsDeleted = true;
+            active.DeletedDate = DateTime.UtcNow;
+            await _unitOfWork.PackageCoverages.UpdateAsync(active);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdatePackageInfoAsync(Guid packageId, string? description)
+    {
+        var package = await _unitOfWork.InsurancePackages.GetByIdAsync(packageId);
+
+        if (package == null || package.IsDeleted)
+        {
+            throw new NotFoundException("Paket bulunamadı.");
+        }
+
+        var text = description?.Trim();
+
+        if (string.IsNullOrEmpty(text) || text.Length > 250)
+        {
+            throw new BadRequestException("Paket açıklaması 1-250 karakter olmalıdır.");
+        }
+
+        package.Description = text;
+        await _unitOfWork.InsurancePackages.UpdateAsync(package);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<TariffChangeRequestDto>> GetRequestsAsync()

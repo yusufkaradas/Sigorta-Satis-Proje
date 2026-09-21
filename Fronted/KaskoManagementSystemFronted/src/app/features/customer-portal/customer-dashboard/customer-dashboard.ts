@@ -218,7 +218,7 @@ export class CustomerDashboard implements OnInit {
     }
   );
 
-  recentActivities = computed(() => this.allActivities().slice(0, 4));
+  recentActivities = computed(() => this.allActivities().slice(0, 3));
 
   isActivityDialogOpen = signal(false);
 

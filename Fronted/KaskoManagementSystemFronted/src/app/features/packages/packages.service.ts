@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -19,6 +20,7 @@ export interface TariffPackage {
   description?: string | null;
   factor: number;
   coverageNames: string[];
+  coverageIds?: string[];
 }
 
 export interface TariffOption {
@@ -30,6 +32,7 @@ export interface TariffOption {
 
 export interface TariffCoverage {
   id: string;
+  isRequired: boolean;
   name: string;
   description?: string | null;
   pricingType: number;
@@ -72,10 +75,18 @@ export class TariffService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api/Tariff';
+  private readonly apiUrl = `${environment.apiBaseUrl}/Tariff`;
 
   getTariff(): Observable<Tariff> {
     return this.http.get<Tariff>(this.apiUrl);
+  }
+
+  setPackageCoverage(packageId: string, coverageId: string, included: boolean): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/packages/${packageId}/coverages/${coverageId}`, { included });
+  }
+
+  updatePackageInfo(packageId: string, description: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/packages/${packageId}`, { description });
   }
 
   getRequests(): Observable<TariffChangeRequest[]> {

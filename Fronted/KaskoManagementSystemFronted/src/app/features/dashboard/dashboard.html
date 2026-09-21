@@ -164,7 +164,7 @@
 
       </div>
 
-      <button type="button" class="db-card-foot" (click)="isActivityDialogOpen.set(true)">Tüm işlemleri gör →</button>
+      <button type="button" class="db-card-foot" (click)="isActivityDialogOpen.set(true)">Tüm işlemleri gör</button>
 
     </section>
 
@@ -177,7 +177,7 @@
 
       <div class="db-actions">
         @for (action of quickActions; track action.label) {
-          <a [routerLink]="portal.basePath + action.path" [queryParams]="action.query" class="db-action">
+          <a [routerLink]="portal.basePath + action.path" [queryParams]="action.query" class="db-action" [title]="action.hint">
             <strong>{{ action.label }}</strong>
             <small>{{ action.hint }}</small>
           </a>

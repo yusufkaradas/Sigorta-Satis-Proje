@@ -39,20 +39,13 @@
           {{ isDownloading ? 'Hazırlanıyor...' : 'Poliçe PDF İndir' }}
         </button>
         <button
-          *ngIf="policy && (policy.status === PolicyStatus.Active || policy.status === PolicyStatus.Expired)"
-          type="button"
-          class="kf-btn-outline"
-          (click)="downloadTerms()">
-          Genel Şartlar
-        </button>
-        <button
           *ngIf="isCustomerMode && policy?.status === PolicyStatus.Active && cancellation?.status !== CancellationStatus.Pending && !isCancelFormOpen"
           type="button"
           class="kf-btn-outline"
           (click)="isCancelFormOpen = true">
           İptal Talebi
         </button>
-        <button type="button" class="kf-btn-outline" (click)="goBack()">← Poliçelere Dön</button>
+        <button type="button" class="kf-btn-outline" (click)="goBack()">Poliçelere Dön</button>
       </div>
     </div>
 

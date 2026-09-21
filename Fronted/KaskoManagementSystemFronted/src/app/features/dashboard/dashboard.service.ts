@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -80,7 +81,7 @@ export class DashboardService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'https://localhost:7086/api';
+  private readonly apiUrl = environment.apiBaseUrl;
 
   getDashboardData(): Observable<DashboardData> {
     return forkJoin({

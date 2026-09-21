@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import {
   HttpClient
@@ -76,7 +77,7 @@ export class CustomerService {
     inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/Customer';
+    `${environment.apiBaseUrl}/Customer`;
 
 
   getCurrentCustomer(): Observable<Customer> {

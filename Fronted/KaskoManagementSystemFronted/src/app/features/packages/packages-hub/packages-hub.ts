@@ -3,25 +3,30 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-import { TariffPage } from '../tariff';
+import { PackagesPage } from '../packages';
 import { PricingRules } from '../../pricing/pricing-rules/pricing-rules';
+import { PricingSimulator } from '../../pricing/pricing-simulator/pricing-simulator';
+import { injectPortalContext } from '../../../core/services/portal-context';
 
-type RequestTab = 'tariff' | 'rules';
+type RequestTab = 'tariff' | 'rules' | 'formula';
 
 @Component({
-  selector: 'app-tariff-hub',
+  selector: 'app-packages-hub',
   standalone: true,
-  imports: [TariffPage, PricingRules],
-  templateUrl: './tariff-hub.html',
+  imports: [PackagesPage, PricingRules, PricingSimulator],
+  templateUrl: './packages-hub.html',
   styleUrl: '../../requests/requests-hub.scss'
 })
-export class TariffHub {
+export class PackagesHub {
 
   private readonly route = inject(ActivatedRoute);
 
   private readonly router = inject(Router);
 
+  private readonly portal = injectPortalContext();
+
   readonly tabs: { key: RequestTab; label: string }[] = [
+    ...(this.portal.isManager ? [] : [{ key: 'formula' as RequestTab, label: 'Formül & Simülatör' }]),
     { key: 'tariff', label: 'Paket & Teminat' },
     { key: 'rules', label: 'Fiyat Kuralları' }
   ];

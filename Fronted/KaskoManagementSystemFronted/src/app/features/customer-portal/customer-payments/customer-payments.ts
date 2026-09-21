@@ -1,3 +1,4 @@
+import { newestFirst } from '../../../core/utils/list-sort';
 import { BackendDatePipe, BackendTimePipe } from '../../../core/pipes/backend-date.pipe';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
@@ -197,7 +198,7 @@ export class CustomerPayments implements OnInit {
       .getAll()
       .subscribe({
         next: data => {
-          this.payments.set(data ?? []);
+          this.payments.set(newestFirst(data));
           this.isLoading.set(false);
         },
         error: error => {

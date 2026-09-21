@@ -1,3 +1,5 @@
+import { environment } from '../../../environments/environment';
+import { newestFirst } from '../../core/utils/list-sort';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import {
   ChangeDetectorRef,
@@ -66,7 +68,7 @@ export class Payments {
 
   private loadPolicyLookup(): void {
     this.http
-      .get<{ id: string; policyNumber: string; customerName?: string }[]>('https://localhost:7086/api/Policy')
+      .get<{ id: string; policyNumber: string; customerName?: string }[]>(`${environment.apiBaseUrl}/Policy`)
       .subscribe({
         next: policies => {
           this.policyLookup = new Map(
@@ -102,7 +104,8 @@ export class Payments {
           data
         );
 
-        this.payments = data ?? [];
+        this.payments =
+            newestFirst(data);
 
         this.currentPage = 1;
         this.isLoading = false;

@@ -1,3 +1,4 @@
+import { newestFirst } from '../../../core/utils/list-sort';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import {
   CommonModule
@@ -198,7 +199,7 @@ export class CustomerVehicles implements OnInit {
       .getVehicles()
       .subscribe({
         next: data => {
-          this.vehicles.set(data ?? []);
+          this.vehicles.set(newestFirst(data));
           this.isLoading.set(false);
         },
         error: error => {

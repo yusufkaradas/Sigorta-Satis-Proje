@@ -1,4 +1,5 @@
-import { TariffHub } from './features/tariff/tariff-hub/tariff-hub';
+import { AccountSettings } from './features/settings/account-settings/account-settings';
+import { PackagesHub } from './features/packages/packages-hub/packages-hub';
 import { VehiclesHub } from './features/vehicles/vehicles-hub/vehicles-hub';
 import { Routes } from '@angular/router';
 
@@ -324,10 +325,11 @@ export const routes: Routes = [
       { path: 'payments', component: Payments, data: { mode: 'manager' } },
       { path: 'payments/:id', component: PaymentDetail, data: { mode: 'manager' } },
       { path: 'requests', component: RequestsHub, data: { mode: 'manager' } },
-      { path: 'tariff', component: TariffHub, data: { mode: 'manager' } },
+      { path: 'tariff', component: PackagesHub, data: { mode: 'manager' } },
       { path: 'pricing-rules', redirectTo: 'tariff?tab=rules' },
       { path: 'pricing-requests', redirectTo: 'requests?tab=pricing-requests' },
-      { path: 'cancellations', redirectTo: 'requests?tab=cancellations' }
+      { path: 'cancellations', redirectTo: 'requests?tab=cancellations' },
+      { path: 'settings', component: AccountSettings, data: { mode: 'manager' } }
     ]
   },
 
@@ -352,7 +354,7 @@ export const routes: Routes = [
       },
       { path: 'vehicles/catalog', redirectTo: 'vehicles?tab=catalog' },
       { path: 'requests', component: RequestsHub },
-      { path: 'tariff', component: TariffHub },
+      { path: 'tariff', component: PackagesHub },
       { path: 'pricing-rules', redirectTo: 'tariff?tab=rules' },
       { path: 'pricing-requests', redirectTo: 'requests?tab=pricing-requests' },
       { path: 'cancellations', redirectTo: 'requests?tab=cancellations' },

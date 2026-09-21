@@ -1,3 +1,4 @@
+import { newestFirst } from '../../../core/utils/list-sort';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
   CommonModule
@@ -184,7 +185,7 @@ export class CustomerPolicies implements OnInit {
       .getAll()
       .subscribe({
         next: data => {
-          this.policies.set(data ?? []);
+          this.policies.set(newestFirst(data));
           this.isLoading.set(false);
         },
         error: error => {

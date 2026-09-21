@@ -1,0 +1,161 @@
+<section class="sim">
+
+  <div class="sim-formula">
+    <div class="sim-formula-head">
+      <strong>Prim Hesaplama Formülü</strong>
+      <span class="sim-admin">Yalnızca Yönetici</span>
+    </div>
+    <code>
+      Prim = TSB Değeri × Temel Oran × Araç Yaşı × Kullanım × Hasar × Sürücü × Bölge × Paket × Muafiyet + Teminat Ekleri
+    </code>
+    <small>Katsayılar Fiyat Kuralları sekmesinden yönetilir. Gösterilen toplam %5 gider vergisi dahildir.</small>
+  </div>
+
+  <div class="sim-grid">
+
+    <form class="sim-card" (ngSubmit)="simulate()">
+      <h3>Örnek Risk</h3>
+
+      <div class="sim-fields">
+        <label class="kf-field">
+          <span>Araç Değeri (TSB)</span>
+          <input type="number" name="marketValue" min="1" step="10000" [(ngModel)]="marketValue" />
+        </label>
+
+        <label class="kf-field">
+          <span>Model Yılı</span>
+          <select name="modelYear" [(ngModel)]="modelYear">
+            @for (year of years; track year) {
+              <option [ngValue]="year">{{ year }} ({{ currentYear - year }} yaş)</option>
+            }
+          </select>
+        </label>
+
+        <label class="kf-field">
+          <span>Sürücü Yaşı</span>
+          <input type="number" name="driverAge" min="18" max="99" [(ngModel)]="driverAge" />
+        </label>
+
+        <label class="kf-field">
+          <span>Kullanım</span>
+          <select name="usage" [(ngModel)]="usage">
+            <option value="PRIVATE">Hususi</option>
+            <option value="COMMERCIAL">Ticari</option>
+          </select>
+        </label>
+
+        <label class="kf-field">
+          <span>Hasar Geçmişi</span>
+          <select name="claimsCount" [(ngModel)]="claimsCount">
+            <option [ngValue]="0">Hasarsız</option>
+            <option [ngValue]="1">1 hasar</option>
+            <option [ngValue]="2">2 hasar</option>
+            <option [ngValue]="3">3 ve üzeri</option>
+          </select>
+        </label>
+
+        <label class="kf-field">
+          <span>Bölge</span>
+          <select name="region" [(ngModel)]="region">
+            <option value="LOW">Düşük risk (diğer iller)</option>
+            <option value="NORMAL">Normal risk (büyükşehirler)</option>
+            <option value="HIGH">Yüksek risk (İstanbul, Ankara, İzmir, Bursa, Kocaeli, Antalya)</option>
+          </select>
+        </label>
+
+        <label class="kf-field">
+          <span>Paket</span>
+          <select name="packageId" [(ngModel)]="packageId">
+            @for (item of packages(); track item.id) {
+              <option [ngValue]="item.id" [selected]="item.id === packageId">{{ item.name }} (× {{ item.factor | number:'1.2-2' }})</option>
+            }
+          </select>
+        </label>
+
+        <label class="kf-field">
+          <span>Muafiyet</span>
+          <select name="deductible" [(ngModel)]="deductible">
+            <option [ngValue]="0">Muafiyetsiz</option>
+            <option [ngValue]="2">%2 muafiyet</option>
+            <option [ngValue]="5">%5 muafiyet</option>
+          </select>
+        </label>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="kf-alert kf-alert-error">{{ errorMessage() }}</div>
+      }
+
+      <button type="submit" class="kf-btn" [disabled]="isLoading()">
+        {{ isLoading() ? 'Hesaplanıyor...' : 'Hesapla' }}
+      </button>
+    </form>
+
+    <div class="sim-card sim-result">
+      <h3>Adım Adım Hesaplama</h3>
+
+      @if (result(); as data) {
+        <div class="sim-table-wrap">
+        <table class="sim-table">
+          <thead>
+            <tr>
+              <th>Etken</th>
+              <th>Kural</th>
+              <th>Katsayı</th>
+              <th>Etkisi</th>
+              <th>Ara Toplam</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TSB Değeri</strong><small>Başlangıç</small></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td class="num">{{ data.marketValue | number:'1.2-2' }} ₺</td>
+            </tr>
+            @for (step of data.steps; track step.label) {
+              <tr>
+                <td><strong>{{ step.label }}</strong><small>{{ stepDetail(step) }}</small></td>
+                <td><span class="sim-code">{{ step.code }}</span></td>
+                <td class="num">{{ $first ? '%' + (step.factor * 100 | number:'1.2-2') : '× ' + (step.factor | number:'1.2-2') }}</td>
+                <td>
+                  @if (!$first) {
+                    <span class="sim-effect" [class]="'sim-effect ' + effectClass(step.factor)">{{ effectText(step.factor) }}</span>
+                  } @else {
+                    —
+                  }
+                </td>
+                <td class="num">{{ step.subtotal | number:'1.2-2' }} ₺</td>
+              </tr>
+            }
+            @for (coverage of data.coverages; track coverage.coverageName) {
+              @if (coverage.calculatedPrice > 0) {
+                <tr class="sim-extra">
+                  <td><strong>{{ coverage.coverageName }}</strong><small>{{ coverage.optionName || 'Teminat eki' }}</small></td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td><span class="sim-effect up">Ek ücret</span></td>
+                  <td class="num">+ {{ coverage.calculatedPrice | number:'1.2-2' }} ₺</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+        </div>
+
+        <div class="sim-totals">
+          <div><span>Risk Primi</span><strong>{{ data.riskAdjustedPremium | number:'1.2-2' }} ₺</strong></div>
+          <div><span>Teminat Ekleri</span><strong>{{ data.coveragePremium | number:'1.2-2' }} ₺</strong></div>
+          <div><span>Net Prim</span><strong>{{ data.netPremium | number:'1.2-2' }} ₺</strong></div>
+          <div><span>Gider Vergisi (%5)</span><strong>{{ data.tax | number:'1.2-2' }} ₺</strong></div>
+          <div class="sim-grand"><span>Yıllık Toplam</span><strong>{{ data.totalPremium | number:'1.2-2' }} ₺</strong></div>
+        </div>
+      } @else {
+        <div class="state-message"><strong>Örnek riski girip Hesapla'ya basın.</strong></div>
+      }
+    </div>
+
+  </div>
+
+</section>

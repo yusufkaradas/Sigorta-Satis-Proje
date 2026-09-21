@@ -1849,3 +1849,192 @@ app-root {
 .customers-content tbody td:first-child .customer-name {
   font-weight: 700;
 }
+
+.cp-page {
+  text-transform: uppercase;
+
+  input,
+  select,
+  textarea,
+  .keep-case,
+  .cp-email,
+  .cp-note,
+  .plate-badge,
+  .id-badge {
+    text-transform: none;
+  }
+}
+
+.cp-page tbody td:nth-child(2),
+.cp-page tbody td:nth-child(2) strong {
+  font-weight: 700;
+}
+
+.plate-badge,
+.id-badge,
+.plate-badge-sm {
+  width: k.u(150);
+  height: k.u(26);
+  font-size: k.u(13);
+  border-width: 1.5px;
+  border-radius: k.u(8);
+}
+
+.plate-badge > b,
+.id-badge > b {
+  width: k.u(42);
+  min-width: k.u(42);
+  padding: 0;
+  justify-content: center;
+  font-size: k.u(11);
+  letter-spacing: 0.04em;
+}
+
+.plate-badge > span,
+.id-badge > span {
+  flex: 1;
+  min-width: 0;
+  padding: 0 k.u(6);
+  justify-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Buton ölçü standardı --------------------------------------------------
+   Birincil / form butonları: 38 yükseklik
+   Tablo içi işlem butonları: 30 yükseklik
+   Hızlı teklif adım butonları: 42 yükseklik                                  */
+
+.kf-btn,
+.kf-btn-outline,
+.kf-btn-success,
+.kf-btn-danger,
+.cp-btn,
+.cp-btn-ghost,
+.login-button,
+.new-customer-button,
+.new-vehicle-button,
+.new-quote-button,
+.new-policy-button,
+.new-payment-button,
+.new-user-button,
+.new-role-button,
+.new-rule-button,
+.new-request-button,
+.kf-file-button {
+  height: k.u(38);
+  min-height: k.u(38);
+  padding: 0 k.u(18);
+  border-radius: k.u(10);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: k.u(14);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.action-button,
+.detail-button,
+.offer-button,
+.policy-button,
+.clear-button,
+.cp-act {
+  height: k.u(30);
+  min-height: k.u(30);
+  padding: 0 k.u(14);
+  border-radius: k.u(8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: k.u(12);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rule-dialog-actions .clear-button,
+.rule-dialog-actions .action-button,
+.rule-dialog-actions .policy-button,
+.rule-dialog-actions .detail-button {
+  height: k.u(34);
+  padding: 0 k.u(16);
+  font-size: k.u(13);
+}
+
+.kf-purchase-offer {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: k.u(8) k.u(16);
+  margin-left: k.u(16);
+
+  .kf-price-lock {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .kf-consents {
+    display: flex;
+    flex-direction: column;
+    gap: k.u(4);
+  }
+
+  .kf-btn {
+    justify-self: end;
+  }
+}
+
+.field-hint,
+.field-warning {
+  display: block;
+  margin-top: k.u(4);
+  font-size: k.u(11);
+  line-height: 1.35;
+}
+
+.field-hint {
+  color: #cbd5e1;
+}
+
+.field-warning {
+  color: #fde68a;
+  font-weight: 700;
+}
+
+.qq-option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kf-btn,
+.kf-btn-outline,
+.kf-btn-success,
+.kf-btn-danger,
+.cp-btn,
+.cp-btn-ghost,
+.cp-act,
+.action-button,
+.detail-button,
+.offer-button,
+.policy-button,
+.clear-button,
+.new-customer-button,
+.new-vehicle-button,
+.new-quote-button,
+.new-policy-button,
+.new-payment-button,
+.new-user-button,
+.new-role-button,
+.new-rule-button,
+.kf-file-button,
+.hub-tab,
+.tariff-tabs button,
+.rule-group-chips button,
+.matrix-toggle,
+.qq-btn,
+.qq-option strong {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

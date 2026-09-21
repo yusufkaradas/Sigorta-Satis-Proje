@@ -1,3 +1,4 @@
+import { pdfFileName } from '../../../core/utils/pdf-file-name';
 import { IdBadge } from '../../../core/components/id-badge';
 import { infoDialog } from '../../../core/services/confirm-dialog';
 import { PlateBadge } from '../../../core/components/plate-badge';
@@ -456,7 +457,7 @@ downloadQuotePdf(): void {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Teklif-${number}.pdf`;
+    link.download = pdfFileName('Kasko-Teklifi', number, this.quote?.plateNumber, this.quote?.customerName);
     link.click();
     URL.revokeObjectURL(url);
   });

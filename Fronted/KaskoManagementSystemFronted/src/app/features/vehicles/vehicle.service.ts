@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import {
   Injectable,
   inject
@@ -139,7 +140,7 @@ export class VehiclesService {
 
 
   private readonly apiUrl =
-    'https://localhost:7086/api/Vehicle';
+    `${environment.apiBaseUrl}/Vehicle`;
 
 
  getVehicles(

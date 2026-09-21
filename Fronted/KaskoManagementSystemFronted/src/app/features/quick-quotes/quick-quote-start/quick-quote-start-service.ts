@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import {
   Injectable,
   inject
@@ -171,7 +172,7 @@ export class QuickQuoteService {
 
 
   private readonly apiUrl =
-    'https://localhost:7086/api/QuickQuote';
+    `${environment.apiBaseUrl}/QuickQuote`;
 
   private readonly tokenKey = 'quickQuoteVerificationToken';
 
@@ -246,7 +247,7 @@ calculatePricing(
   return this.http.post<QuickQuotePricingResponse>(
     `${this.apiUrl}/calculate`,
     request,
-    { headers: this.headers(silent) }
+    { headers: { ...this.headers(silent), 'X-No-Loader': '1' } }
   );
 
 }

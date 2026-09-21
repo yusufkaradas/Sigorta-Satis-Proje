@@ -16,7 +16,8 @@
   <div class="hub-body">
     @switch (active()) {
       @case ('rules') { <app-pricing-rules [embedded]="true" /> }
-      @default { <app-tariff [embedded]="true" /> }
+      @case ('formula') { <app-pricing-simulator /> }
+      @default { <app-packages [embedded]="true" /> }
     }
   </div>
 

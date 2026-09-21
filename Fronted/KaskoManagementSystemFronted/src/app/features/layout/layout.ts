@@ -1,6 +1,8 @@
+import { environment } from '../../../environments/environment';
 import { BrandService } from '../../core/services/brand.service';
 import {
   Component,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -121,7 +123,7 @@ export class Layout implements OnInit {
 
   loadAlerts(): void {
 
-    const api = 'https://localhost:7086/api';
+    const api = environment.apiBaseUrl;
     const base = this.isManager ? '/manager' : '';
     const safe = <T>(url: string) => this.http.get<T[]>(url, { headers: { 'X-Silent-Error': '1' } }).pipe(catchError(() => of([] as T[])));
 
@@ -211,6 +213,25 @@ export class Layout implements OnInit {
 
     return item?.label ??
       (this.isManager ? 'Yönetici Paneli' : 'Admin Paneli');
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isNotificationOpen && !this.isUserMenuOpen) {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.kl-dropdown-wrap')) {
+      return;
+    }
+    this.isNotificationOpen = false;
+    this.isUserMenuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.isNotificationOpen = false;
+    this.isUserMenuOpen = false;
   }
 
   toggleNotification(): void {

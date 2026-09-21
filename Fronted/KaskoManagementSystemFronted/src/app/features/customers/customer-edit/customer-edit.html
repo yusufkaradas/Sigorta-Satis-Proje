@@ -13,7 +13,7 @@
         <h1>{{ form.firstName }} {{ form.lastName }}</h1>
         <p>Müşteri bilgilerini güncelleyin.</p>
       </div>
-      <a [routerLink]="['/customers', customerId]" class="kf-btn-outline">← Detaya Dön</a>
+      <a [routerLink]="['/customers', customerId]" class="kf-btn-outline">Detaya Dön</a>
     </div>
 
     <div *ngIf="errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>

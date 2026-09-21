@@ -1,3 +1,4 @@
+import { newestFirst } from '../../core/utils/list-sort';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
@@ -293,7 +294,8 @@ loadQuotes(): void {
           data
         );
 
-        this.quotes = data ?? [];
+        this.quotes =
+            newestFirst(data);
 
         console.log(
           'QUOTES ASSIGNED:',

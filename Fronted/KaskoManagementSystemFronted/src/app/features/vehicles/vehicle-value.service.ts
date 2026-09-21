@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -49,7 +50,7 @@ export class VehicleValueService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/VehicleValueCatalog';
+    `${environment.apiBaseUrl}/VehicleValueCatalog`;
 
   getCategories(): Observable<string[]> {
     return this.http.get<string[]>(

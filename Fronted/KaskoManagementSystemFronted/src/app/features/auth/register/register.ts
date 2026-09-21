@@ -37,9 +37,25 @@ export class Register {
 
   prefilledFromQuote = false;
 
+  birthYearFromQuote: number | null = null;
+
+  get birthYearMismatch(): boolean {
+    return !!this.birthYearFromQuote && !!this.dateOfBirth && Number(this.dateOfBirth.slice(0, 4)) !== this.birthYearFromQuote;
+  }
+
   private readonly prefill = (() => {
     try {
       const stored = JSON.parse(sessionStorage.getItem('quickQuoteIdentity') ?? 'null');
+      const draft = JSON.parse(sessionStorage.getItem('quickQuoteDraft') ?? 'null');
+      if (draft?.birthYear) {
+        queueMicrotask(() => {
+          if (!this.dateOfBirth) {
+            this.dateOfBirth = `${draft.birthYear}-01-01`;
+            this.birthYearFromQuote = Number(draft.birthYear);
+            this.cdr.markForCheck();
+          }
+        });
+      }
       if (stored?.identityNumber) {
         queueMicrotask(() => {
           this.identityNumber = String(stored.identityNumber).replace(/\D/g, '').slice(0, 11);

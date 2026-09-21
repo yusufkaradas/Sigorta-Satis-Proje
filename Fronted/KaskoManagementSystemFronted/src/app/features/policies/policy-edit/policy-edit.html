@@ -11,7 +11,7 @@
         <h1>{{ policy?.policyNumber || 'Poliçe' }} Düzenle</h1>
         <p>Poliçenin bitiş tarihini güncelleyin.</p>
       </div>
-      <button type="button" class="kf-btn-outline" (click)="cancel()">← Poliçe Detayına Dön</button>
+      <button type="button" class="kf-btn-outline" (click)="cancel()">Poliçe Detayına Dön</button>
     </div>
 
     <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">{{ errorMessage }}</div>

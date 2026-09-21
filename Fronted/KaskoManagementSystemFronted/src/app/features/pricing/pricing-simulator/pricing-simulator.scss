@@ -1,0 +1,283 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sim {
+  @include k.page;
+  gap: k.u(12);
+  min-height: 0;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+.sim-formula {
+  padding: k.u(14) k.u(18);
+  border: 2px solid k.$black;
+  border-radius: k.u(12);
+  background: k.$surface;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(6);
+
+  code {
+    padding: k.u(10) k.u(12);
+    border-radius: k.u(8);
+    background: #eef2ff;
+    color: #1e3a8a;
+    font-family: inherit;
+    font-size: k.u(14);
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  small {
+    color: k.$text-secondary;
+    font-size: k.u(12);
+  }
+}
+
+.sim-formula-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: k.u(15);
+}
+
+.sim-admin {
+  padding: k.u(3) k.u(10);
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: k.u(11);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sim-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
+  gap: k.u(12);
+}
+
+.sim-card {
+  min-height: 0;
+  padding: k.u(14) k.u(16);
+  border: 2px solid k.$black;
+  border-radius: k.u(12);
+  background: k.$surface;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(10);
+
+  h3 {
+    margin: 0;
+    font-size: k.u(15);
+    text-transform: uppercase;
+  }
+
+  .kf-btn {
+    align-self: flex-end;
+  }
+}
+
+.sim-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: k.u(8) k.u(10);
+
+  .kf-field {
+    display: flex;
+    flex-direction: column;
+    gap: k.u(4);
+
+    span {
+      font-size: k.u(12);
+      font-weight: 700;
+      color: k.$text-secondary;
+      text-transform: uppercase;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+      height: k.u(36);
+      padding: 0 k.u(10);
+      border: 1px solid #cbd5e1;
+      border-radius: k.u(8);
+      font: inherit;
+      font-size: k.u(13);
+    }
+  }
+}
+
+.sim-result {
+  overflow: auto;
+}
+
+.sim-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: k.u(13);
+
+  th {
+    padding: k.u(8);
+    border-bottom: 2px solid #e2e8f0;
+    color: k.$text-secondary;
+    font-size: k.u(11);
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: k.u(7) k.u(8);
+    border-bottom: 1px solid #eef2f7;
+    vertical-align: middle;
+
+    strong {
+      display: block;
+    }
+
+    small {
+      color: k.$text-secondary;
+      font-size: k.u(11);
+    }
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  th:last-child,
+  th:nth-child(3) {
+    text-align: right;
+  }
+}
+
+.sim-code {
+  padding: k.u(2) k.u(6);
+  border-radius: k.u(5);
+  background: #f1f5f9;
+  font-size: k.u(11);
+  font-weight: 700;
+}
+
+.sim-effect {
+  padding: k.u(2) k.u(8);
+  border-radius: 999px;
+  font-size: k.u(11);
+  font-weight: 800;
+  white-space: nowrap;
+
+  &.up {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.down {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  &.flat {
+    background: #f1f5f9;
+    color: #475569;
+  }
+}
+
+.sim-totals {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: k.u(8);
+
+  div {
+    padding: k.u(8) k.u(10);
+    border: 1px solid #e2e8f0;
+    border-radius: k.u(8);
+    display: flex;
+    flex-direction: column;
+    gap: k.u(2);
+
+    span {
+      color: k.$text-secondary;
+      font-size: k.u(11);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-size: k.u(14);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .sim-grand {
+    border-color: k.$primary;
+    background: #eff6ff;
+
+    strong {
+      color: k.$primary;
+      font-size: k.u(16);
+    }
+  }
+}
+
+.sim-result {
+  overflow: hidden;
+}
+
+.sim-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.sim-table {
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: k.u(6) k.u(8);
+    background: k.$surface;
+  }
+
+  td {
+    padding: k.u(4) k.u(8);
+    font-size: k.u(12);
+  }
+
+  td strong {
+    font-size: k.u(12);
+  }
+
+  td small {
+    font-size: k.u(10);
+  }
+
+  td:nth-child(2),
+  td:nth-child(3) {
+    white-space: nowrap;
+  }
+}
+
+.sim-totals {
+  flex: 0 0 auto;
+  margin-top: k.u(8);
+
+  div {
+    padding: k.u(6) k.u(10);
+  }
+}

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -17,7 +18,7 @@ export class QuoteService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/Quote';
+    `${environment.apiBaseUrl}/Quote`;
 
 
   getAll(): Observable<Quote[]> {
@@ -45,6 +46,16 @@ export class QuoteService {
 
   }
   
+eligibility(
+  vehicleId: string
+): Observable<{ eligible: boolean; message: string | null }> {
+
+  return this.http.get<{ eligible: boolean; message: string | null }>(
+    `${this.apiUrl}/eligibility/${vehicleId}`
+  );
+
+}
+
 calculate(
   dto: QuoteCreateDto,
   silent = false

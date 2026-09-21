@@ -5,6 +5,7 @@ import {
 
 import {
   Component,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -123,6 +124,25 @@ export class CustomerLayout implements OnInit {
         );
 
     return item?.label ?? 'Müşteri Portalı';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isNotificationOpen && !this.isUserMenuOpen) {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.kl-dropdown-wrap')) {
+      return;
+    }
+    this.isNotificationOpen = false;
+    this.isUserMenuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.isNotificationOpen = false;
+    this.isUserMenuOpen = false;
   }
 
   toggleNotification(): void {

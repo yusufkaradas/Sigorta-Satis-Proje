@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Security.Claims;
 using Kasko.Business.DTOs.Customer;
 using Kasko.Business.Exceptions;
@@ -36,6 +36,24 @@ namespace Kasko.Business.Tests.Services
             _unitOfWorkMock
                 .Setup(x => x.Users)
                 .Returns(userRepositoryMock.Object);
+
+            var policyRepositoryMock = new Mock<IPolicyRepository>();
+            policyRepositoryMock
+                .Setup(x => x.FindAsync(It.IsAny<Expression<Func<Policy, bool>>>()))
+                .ReturnsAsync(new List<Policy>());
+            _unitOfWorkMock.Setup(x => x.Policies).Returns(policyRepositoryMock.Object);
+
+            var quoteRepositoryMock = new Mock<IQuoteRepository>();
+            quoteRepositoryMock
+                .Setup(x => x.FindAsync(It.IsAny<Expression<Func<Quote, bool>>>()))
+                .ReturnsAsync(new List<Quote>());
+            _unitOfWorkMock.Setup(x => x.Quotes).Returns(quoteRepositoryMock.Object);
+
+            var vehicleRepositoryMock = new Mock<Kasko.DataAccess.Repositories.IVehicleRepository>();
+            vehicleRepositoryMock
+                .Setup(x => x.FindAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle>());
+            _unitOfWorkMock.Setup(x => x.Vehicles).Returns(vehicleRepositoryMock.Object);
 
             _customerService = new CustomerService(
                 _unitOfWorkMock.Object,

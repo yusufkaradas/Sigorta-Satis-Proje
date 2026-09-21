@@ -1,4 +1,64 @@
+@use '../../../shared/styles/kasko-theme' as k;
 :host {
   display: block;
   height: 100%;
+}
+
+.rule-group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: k.u(6);
+  padding: 0 k.u(16) k.u(10);
+
+  button {
+    height: k.u(30);
+    padding: 0 k.u(12);
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #334155;
+    font: inherit;
+    font-size: k.u(12);
+    font-weight: 700;
+    cursor: pointer;
+
+    b {
+      margin-left: k.u(4);
+      color: #64748b;
+      font-size: k.u(11);
+    }
+
+    &.active {
+      border-color: k.$primary;
+      background: k.$primary;
+      color: #fff;
+
+      b {
+        color: #dbeafe;
+      }
+    }
+  }
+}
+
+.rule-effect {
+  padding: k.u(2) k.u(8);
+  border-radius: 999px;
+  font-size: k.u(11);
+  font-weight: 800;
+  white-space: nowrap;
+
+  &.up {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.down {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  &.flat {
+    background: #f1f5f9;
+    color: #475569;
+  }
 }

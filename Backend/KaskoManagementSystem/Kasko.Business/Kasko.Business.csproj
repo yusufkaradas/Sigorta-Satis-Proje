@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kasko.DataAcces\Kasko.DataAccess.csproj" />
+    <ProjectReference Include="..\Kasko.DataAccess\Kasko.DataAccess.csproj" />
     <ProjectReference Include="..\Kasko.Entities\Kasko.Entities.csproj" />
     <ProjectReference Include="..\Kasko.Shared\Kasko.Shared.csproj" />
   </ItemGroup>

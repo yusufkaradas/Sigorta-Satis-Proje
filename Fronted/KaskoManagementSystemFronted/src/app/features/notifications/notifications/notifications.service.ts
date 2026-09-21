@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import {
   Injectable,
   inject
@@ -32,7 +33,7 @@ export class NotificationsService {
     inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7086/api/Notification';
+    `${environment.apiBaseUrl}/Notification`;
 
   getNotifications():
     Observable<Notification[]> {
