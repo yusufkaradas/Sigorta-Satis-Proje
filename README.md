@@ -46,10 +46,10 @@ Sıradan bir CRUD (Oluştur, Oku, Güncelle, Sil) uygulamasının ötesinde, ger
 - ✅ **FAZ 5:** Fiyatlandırma Kural Değişiklik Talepleri (Manager öneride bulunur, Admin onaylar veya reddeder)
 - ✅ **FAZ 6-7:** Sigorta Paketi (Insurance Package) ve Teklif Kapsam/Teminat (Quote Coverage) Yönetimi
 - ✅ **FAZ 8-10:** Fiyatlama Motoru (Quote Engine), Rol Tabanlı Yetkilendirme (Role Based Authorization) & Teklif Sihirbazı (Quote Wizard) Backend
-- 🔄 **FAZ 11-12:** Demo Entegrasyonları (Kimlik doğrulama, SMS, E-posta, Ödeme Gateway simülasyonu) & Teklif Karşılaştırma modülleri
 - ✅ **FAZ 13-16:** Angular Geliştirmeleri (Kullanıcı Dostu Hızlı Teklif, Sihirbaz, Müşteri/Yönetici/Admin Portallarının oluşturulması)
 - ✅ **FAZ 17-22:** Demo Ödeme Altyapısı, PDF Üretimi (Poliçe/Teklif için), Bildirimler (Notification), Denetim (Audit log), Hasar Yönetimi (Claims), Yenileme (Renewal) Süreçleri
 - ✅ **FAZ 23-25 (Kısmi):** Canlıya Alma ve Teslimat (Azure Static Web Apps CI/CD ve Custom Domain entegrasyonu tamamlandı). TSB Entegrasyonu şu an için donduruldu.
+- 🔄 **FAZ 11-12:** Demo Entegrasyonları (Kimlik doğrulama, SMS, E-posta, Ödeme Gateway simülasyonu) & Teklif Karşılaştırma modülleri
 
 ## 🆕 Son Geliştirmeler (Güncel Yapılanlar)
 
