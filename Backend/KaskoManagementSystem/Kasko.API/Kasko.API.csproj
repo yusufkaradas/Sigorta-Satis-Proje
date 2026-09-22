@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kasko.Business\Kasko.Business.csproj" />
+    <ProjectReference Include="..\Kasko.DataAccess\Kasko.DataAccess.csproj" />
     <ProjectReference Include="..\Kasko.Entities\Kasko.Entities.csproj" />
     <ProjectReference Include="..\Kasko.Shared\Kasko.Shared.csproj" />
   </ItemGroup>

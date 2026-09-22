@@ -50,11 +50,11 @@
       <section class="qq-card">
 
         <div class="qq-progress">
-          <span [style.width.%]="currentStep() * 33.3"></span>
+          <span [style.width.%]="currentStep() > 3 ? 100 : currentStep() * 33.3"></span>
         </div>
 
         <div class="qq-mobile-step">
-          Adım {{ currentStep() }} / 3
+          {{ currentStep() > 3 ? 'Teklif özeti' : 'Adım ' + currentStep() + ' / 3' }}
         </div>
 
         @if (errorMessage()) {

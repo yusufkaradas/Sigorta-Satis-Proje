@@ -620,32 +620,69 @@
         class="qq-step"
         *ngIf="currentStep === 6 && createdQuote as quote">
 
-        <div class="qq-body qq-body-center">
-          <div class="qq-offer-ready">
-            <span class="qq-offer-ready-icon">✓</span>
-            <h1>Teklifiniz Hazır</h1>
-            <p>{{ createdQuoteNeedsReview ? 'Teklifiniz oluşturuldu ve uzman onayına gönderildi. Onaylandığında size bildirim gelecek.' : 'Teklifiniz hesabınıza kaydedildi. Dilediğiniz zaman giriş yaparak satın alabilirsiniz.' }}</p>
+        <div class="qq-step-head">
+          <span class="qq-eyebrow">Teklif Özeti</span>
+          <h1>Teklifiniz Oluşturuldu</h1>
+          <p>{{ createdQuoteNeedsReview ? 'Teklifiniz hesabınıza kaydedildi ve uzman onayına gönderildi. Onaylandığında size bildirim gelecek.' : 'Teklifiniz hesabınıza kaydedildi. PDF olarak indirebilir, hesabınıza giriş yaparak satın alabilirsiniz.' }}</p>
+        </div>
 
-            <dl class="qq-offer-ready-grid">
-              <div><dt>Teklif No</dt><dd>{{ quote.quoteNumber }}</dd></div>
+        <div class="qq-body qg-offer-done">
+
+          <div class="qg-done-card">
+            <div class="qg-done-head">
+              <span class="qg-done-check">✓</span>
+              <div>
+                <small>Teklif No</small>
+                <strong>{{ quote.quoteNumber }}</strong>
+              </div>
+              <div class="qg-done-valid">
+                <small>Geçerlilik</small>
+                <strong>{{ quote.validUntil | date:'dd.MM.yyyy' }}</strong>
+              </div>
+            </div>
+
+            <dl class="qg-done-grid">
+              <div><dt>Araç</dt><dd>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</dd></div>
+              <div><dt>Plaka</dt><dd>{{ selectedVehicle?.plateNumber || 'Plakasız' }}</dd></div>
               <div><dt>Paket</dt><dd>{{ quote.packageName }}</dd></div>
-              <div><dt>Yıllık Prim</dt><dd class="qq-offer-ready-price">{{ quote.premiumAmount | number:'1.2-2' }} ₺</dd></div>
-              <div><dt>Geçerlilik</dt><dd>{{ quote.validUntil | date:'dd.MM.yyyy' }}</dd></div>
+              <div><dt>Teminat</dt><dd>{{ selectedPackage?.coverages?.length ?? 0 }} teminat</dd></div>
+              <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsCount === 0 ? 'Hasarsız' : claimsCount + ' hasar' }}</dd></div>
+              <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
             </dl>
 
-            <small>Fiyatınız geçerlilik tarihine kadar sabittir.</small>
+            <div class="qg-done-price">
+              <span>Yıllık prim</span>
+              <strong>{{ quote.premiumAmount | number:'1.2-2' }} ₺</strong>
+              <small>Peşin veya 9 taksitle aylık {{ quote.premiumAmount / 9 | number:'1.2-2' }} ₺ · Fiyatınız geçerlilik tarihine kadar sabittir.</small>
+            </div>
           </div>
+
+          <ol class="qg-done-steps">
+            <li><b>1</b> Teklifinizi PDF olarak indirin ve inceleyin.</li>
+            <li><b>2</b> Hesabınıza giriş yapın; teklifiniz hesabınızda hazır bekler.</li>
+            <li><b>3</b> Ödemeyi peşin veya taksitle tamamlayın, poliçeniz hemen oluşsun.</li>
+          </ol>
+
         </div>
 
         <div class="qq-actions">
           <button type="button" class="qq-btn qq-btn-ghost" (click)="finishCreatedQuote()">Kapat</button>
-          <button
-            *ngIf="!createdQuoteNeedsReview"
-            type="button"
-            class="qq-btn qq-btn-primary"
-            (click)="purchaseCreatedQuote()">
-            Giriş Yap ve Satın Al
-          </button>
+          <div class="qg-action-summary">
+            <button
+              type="button"
+              class="qq-btn qq-btn-ghost"
+              [disabled]="isDownloadingQuote"
+              (click)="downloadCreatedQuotePdf()">
+              {{ isDownloadingQuote ? 'Hazırlanıyor...' : 'Teklifi PDF İndir' }}
+            </button>
+            <button
+              *ngIf="!createdQuoteNeedsReview"
+              type="button"
+              class="qq-btn qq-btn-primary"
+              (click)="purchaseCreatedQuote()">
+              Giriş Yap ve Satın Al
+            </button>
+          </div>
         </div>
 
       </div>

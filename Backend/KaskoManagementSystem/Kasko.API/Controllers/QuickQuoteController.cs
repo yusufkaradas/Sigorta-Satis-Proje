@@ -615,4 +615,57 @@ public class QuickQuoteController : ControllerBase
             "application/pdf",
             $"{policy.PolicyNumber}.pdf");
     }
+
+    [HttpPost("quote/pdf")]
+    public async Task<IActionResult> GenerateQuotePdf(
+    [FromBody] QuickQuoteQuotePdfRequestDto dto)
+    {
+        EnsureCaller(
+            ResolveVerificationToken(),
+            dto.IdentityNumber,
+            dto.PhoneNumber);
+
+        if (dto.QuoteId == Guid.Empty)
+        {
+            return BadRequest(new
+            {
+                message = "Teklif bilgisi zorunludur."
+            });
+        }
+
+        var customer =
+            await _customerService.GetForQuickQuoteAsync(
+                dto.IdentityNumber,
+                dto.PhoneNumber);
+
+        if (!customer.Found || !customer.CustomerId.HasValue)
+        {
+            return NotFound(new
+            {
+                message = "Müşteri doğrulanamadı."
+            });
+        }
+
+        var quote =
+            await _quoteService.GetByIdAsync(dto.QuoteId);
+
+        if (
+            quote == null ||
+            quote.CustomerId != customer.CustomerId.Value)
+        {
+            return NotFound(new
+            {
+                message = "Teklif bulunamadı."
+            });
+        }
+
+        var pdf =
+            await _policyPdfService
+                .GenerateQuoteAsync(dto.QuoteId);
+
+        return File(
+            pdf,
+            "application/pdf",
+            $"Teklif-{quote.QuoteNumber}.pdf");
+    }
 }

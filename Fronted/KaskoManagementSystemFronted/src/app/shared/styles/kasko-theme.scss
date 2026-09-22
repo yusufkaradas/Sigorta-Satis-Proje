@@ -606,7 +606,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     .kl-layout {
       height: auto;
       min-height: 100dvh;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       overflow: visible;
     }
 
@@ -645,24 +645,49 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .kl-header {
       height: 64px;
-      grid-template-columns: auto 1fr;
+      padding: 0 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
     }
 
-    .kl-header > span,
-    .kl-icon-button {
+    .kl-header > span {
       display: none;
+    }
+
+    .kl-header-actions {
+      gap: 6px;
+    }
+
+    .kl-icon-button {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+    }
+
+    .kl-dropdown {
+      width: min(280px, calc(100vw - 20px));
     }
 
     .kl-title {
       min-width: 0;
-      height: 40px;
+      max-width: 100%;
+      height: 38px;
+      padding: 0 14px;
       justify-self: start;
+      display: block;
+      overflow: hidden;
+      line-height: 34px;
       font-size: 14px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .kl-user-button {
-      height: 40px;
-      font-size: 13px;
+      min-width: 0;
+      max-width: 118px;
+      height: 38px;
+      padding: 0 10px;
+      font-size: 12px;
     }
 
     .kl-content {

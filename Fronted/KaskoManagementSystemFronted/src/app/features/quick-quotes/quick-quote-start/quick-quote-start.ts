@@ -1,5 +1,6 @@
 import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
 import { PlateBadge } from '../../../core/components/plate-badge';
+import { pdfFileName } from '../../../core/utils/pdf-file-name';
 import { BrandService } from '../../../core/services/brand.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import {
@@ -520,6 +521,41 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
   finishCreatedQuote(): void {
     this.createdQuote = null;
     this.router.navigate(['/quick-quote/new']);
+  }
+
+  isDownloadingQuote = false;
+
+  downloadCreatedQuotePdf(): void {
+    const quote = this.createdQuote;
+
+    if (!quote || this.isDownloadingQuote) {
+      return;
+    }
+
+    this.isDownloadingQuote = true;
+    this.errorMessage = '';
+
+    this.quickQuoteService.createQuotePdf({
+      identityNumber: this.identityNumber,
+      phoneNumber: this.normalizedPhoneNumber,
+      quoteId: quote.id
+    }).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = pdfFileName('Kasko-Teklif', quote.quoteNumber, this.selectedVehicle?.plateNumber);
+        link.click();
+        URL.revokeObjectURL(url);
+        this.isDownloadingQuote = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isDownloadingQuote = false;
+        this.errorMessage = 'Teklif PDF oluşturulamadı. Lütfen tekrar deneyin.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   savingMessage = '';

@@ -149,6 +149,11 @@ export interface QuickQuotePolicyPdfRequest {
   phoneNumber: string;
   policyId: string;
 }
+export interface QuickQuoteQuotePdfRequest {
+  identityNumber: string;
+  phoneNumber: string;
+  quoteId: string;
+}
 export interface Notification {
   id: string;
   customerId: string;
@@ -278,6 +283,15 @@ createPolicyPdf(
 ): Observable<Blob> {
   return this.http.post(
     `${this.apiUrl}/policy/pdf`,
+    request,
+    { responseType: 'blob', headers: this.headers() }
+  );
+}
+createQuotePdf(
+  request: QuickQuoteQuotePdfRequest
+): Observable<Blob> {
+  return this.http.post(
+    `${this.apiUrl}/quote/pdf`,
     request,
     { responseType: 'blob', headers: this.headers() }
   );

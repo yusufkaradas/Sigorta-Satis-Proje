@@ -10,7 +10,7 @@ public class VehicleValueImportServiceTests
     [Fact]
     public async Task ImportAsync_ShouldReadTsbExcelCorrectly()
     {
-        var filePath = @"C:\Proje\SigortaSatisUygulama\Documents\202608R4.xlsx";
+        var filePath = Path.Combine(AppContext.BaseDirectory, "TestData", "202608R4.xlsx");
 
         var unitOfWorkMock =
             new Mock<IUnitOfWork>();

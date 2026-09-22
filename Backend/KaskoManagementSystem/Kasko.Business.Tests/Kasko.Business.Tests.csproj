@@ -19,11 +19,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kasko.Business\Kasko.Business.csproj" />
+    <ProjectReference Include="..\Kasko.DataAccess\Kasko.DataAccess.csproj" />
     <ProjectReference Include="..\Kasko.Entities\Kasko.Entities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestData\202608R4.xlsx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -132,7 +132,7 @@ public class PolicyPdfService : IPolicyPdfService
                     {
                         ("Marka / Model", $"{vehicle.Brand} {vehicle.Model}"),
                         ("Model Yılı", vehicle.ModelYear.ToString()),
-                        ("Plaka", string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "—" : vehicle.PlateNumber),
+                        ("Plaka", string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "—" : TurkishPlateNumber.FormatForDisplay(vehicle.PlateNumber)),
                         ("Kasa / Yakıt / Vites", $"{VehicleTypeText(vehicle.VehicleType)} · {FuelText(vehicle.FuelType)} · {TransmissionText(vehicle.TransmissionType)}"),
                         ("Renk", string.IsNullOrWhiteSpace(vehicle.Color) ? "—" : vehicle.Color),
                         ("Sigorta Bedeli (TSB Rayiç)", $"{marketValue:N2} TL")
@@ -278,7 +278,7 @@ public class PolicyPdfService : IPolicyPdfService
                         {
                             ("Marka / Model", $"{vehicle.Brand} {vehicle.Model}"),
                             ("Model Yılı", vehicle.ModelYear.ToString()),
-                            ("Plaka", string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "—" : vehicle.PlateNumber),
+                            ("Plaka", string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "—" : TurkishPlateNumber.FormatForDisplay(vehicle.PlateNumber)),
                             ("Sigorta Bedeli (TSB Rayiç)", $"{marketValue:N2} TL")
                         }));
                     });
@@ -394,7 +394,7 @@ public class PolicyPdfService : IPolicyPdfService
                         {
                             ("Marka / Model", $"{estimate.BrandName} {estimate.TypeName}"),
                             ("Model Yılı", estimate.ModelYear.ToString()),
-                            ("Plaka", string.IsNullOrWhiteSpace(request.PlateNumber) ? "—" : request.PlateNumber!),
+                            ("Plaka", string.IsNullOrWhiteSpace(request.PlateNumber) ? "—" : TurkishPlateNumber.FormatForDisplay(request.PlateNumber)),
                             ("Sigorta Bedeli (TSB Rayiç)", $"{estimate.MarketValue:N2} TL")
                         }));
 

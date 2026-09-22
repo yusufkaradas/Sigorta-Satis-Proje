@@ -19,6 +19,4 @@ public class BrandSetting : BaseEntity
     public string? Slogan { get; set; }
 
     public string? BrowserTitle { get; set; }
-
-    public DateTime? UpdatedDate { get; set; }
 }

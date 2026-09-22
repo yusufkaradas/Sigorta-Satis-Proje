@@ -3297,3 +3297,127 @@
 .qq-offer-ready-price {
   color: k.$primary;
 }
+
+@media (max-width: 900px) {
+
+  .qq-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qq-main {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .qq-page .qq-header {
+    min-height: 60px;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .qq-page .qq-company {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    height: 40px;
+    padding: 0 14px;
+    overflow: hidden;
+    font-size: 15px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .qq-page .qq-header-button {
+    width: auto;
+    height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .qq-page .qq-content {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .qq-page .qq-card,
+  .qq-page .qq-step,
+  .qq-page .qq-body,
+  .qq-page .qq-form,
+  .qq-page .qq-field {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .qq-page .qq-form,
+  .qq-page .qq-form-wide {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qq-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .qq-page .qq-actions .qq-btn {
+    flex: 1 1 auto;
+  }
+
+  .qq-page .qq-step-head h1 {
+    font-size: 22px;
+  }
+
+  .qq-page .qg-offer-done {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qg-action-summary {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .qq-page .qg-action-summary .qq-btn {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .qq-page .qg-deductible-hint,
+  .qq-page .qq-vehicle-box-label {
+    font-size: 11px;
+  }
+
+  .qq-page .qq-loading-card {
+    padding: 16px;
+  }
+
+  .qq-page .qq-loading-car {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .qq-page .qq-loading-car-name strong {
+    white-space: normal;
+  }
+
+  .qq-page .qq-loading-car-value {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .qq-page .qg-done-head {
+    flex-wrap: wrap;
+  }
+
+  .qq-page .qg-done-head strong {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+
+  .qq-page .qg-done-grid dd {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+}
