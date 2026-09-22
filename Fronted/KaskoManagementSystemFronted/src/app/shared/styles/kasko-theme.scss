@@ -30,6 +30,10 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
 @mixin scale-root {
   --u: clamp(0.78px, min(calc(100vh / 900), calc(100vw / 1440)), 1.25px);
+  
+  @media (max-width: 900px) {
+    --u: 1px;
+  }
 }
 
 @mixin reset {
@@ -283,7 +287,9 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 @mixin table-wrapper {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 @mixin table {
@@ -616,8 +622,11 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .kl-menu {
       flex-direction: row;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       gap: 8px;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .kl-menu-item,

@@ -383,7 +383,7 @@ app-root {
   }
 
   .register-card {
-    width: k.u(820);
+    width: min(k.u(820), 100%);
     padding: k.u(20) k.u(32) k.u(22);
     border-radius: k.u(28);
   }
