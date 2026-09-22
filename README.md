@@ -50,6 +50,7 @@ Sıradan bir CRUD (Oluştur, Oku, Güncelle, Sil) uygulamasının ötesinde, ger
 - ✅ **FAZ 17-22:** Demo Ödeme Altyapısı, PDF Üretimi (Poliçe/Teklif için), Bildirimler (Notification), Denetim (Audit log), Hasar Yönetimi (Claims), Yenileme (Renewal) Süreçleri
 - ✅ **FAZ 23-25 (Kısmi):** Canlıya Alma ve Teslimat (Azure Static Web Apps CI/CD ve Custom Domain entegrasyonu tamamlandı). TSB Entegrasyonu şu an için donduruldu.
 - 🔄 **FAZ 11-12:** Demo Entegrasyonları (Kimlik doğrulama, SMS, E-posta, Ödeme Gateway simülasyonu) & Teklif Karşılaştırma modülleri
+- ⏳ **FAZ 26+ (Gelecek Planı):** Chatbot Entegrasyonu (Yapay Zeka / Müşteri Destek Asistanı) ve Kapsamlı Bildirim (Push/Email Notification) sisteminin tamamlanması.
 
 ## 🆕 Son Geliştirmeler (Güncel Yapılanlar)
 
