@@ -51,6 +51,13 @@ Sıradan bir CRUD (Oluştur, Oku, Güncelle, Sil) uygulamasının ötesinde, ger
 - ⏳ **FAZ 17-22:** Demo Ödeme Altyapısı, PDF Üretimi (Poliçe/Teklif için), Bildirimler (Notification), Denetim (Audit log), Hasar Yönetimi (Claims), Yenileme (Renewal) Süreçleri
 - ⏳ **FAZ 23-25:** TSB Entegrasyonu (Şu an için donduruldu), Final E2E Testleri, Canlıya Alma ve Teslimat
 
+## 🆕 Son Geliştirmeler (Güncel Yapılanlar)
+
+- **CI/CD Entegrasyonu:** GitHub Actions kullanılarak Azure Static Web Apps için otomatik deployment (dağıtım) süreci kuruldu.
+- **Canlı Ortam & Özel Alan Adı:** Proje `netsigorta.online` alan adı ile Azure'a başarılı bir şekilde yüklendi ve yayınlandı.
+- **Arayüz (UI) Geliştirmeleri:** Giriş (Login) ekranına "Hızlı Teklif Al" (`/quick-quote`) butonu eklendi; mobil uyumluluk (responsive) geliştirmeleri yapıldı.
+- **Sunum Dokümanları:** Proje final sunumu için 20 ve 30 dakikalık sunum belgeleri (PDF/PPTX) ile soru-cevap dokümanları ana dizine eklendi.
+
 ## 🔧 Kurulum ve Çalıştırma
 
 ### Backend
