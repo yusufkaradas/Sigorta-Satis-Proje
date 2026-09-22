@@ -26,7 +26,7 @@ export class PackagesHub {
   private readonly portal = injectPortalContext();
 
   readonly tabs: { key: RequestTab; label: string }[] = [
-    ...(this.portal.isManager ? [] : [{ key: 'formula' as RequestTab, label: 'Formül & Simülatör' }]),
+    ...(this.portal.isManager ? [] : [{ key: 'formula' as RequestTab, label: 'Formül Motoru' }]),
     { key: 'tariff', label: 'Paket & Teminat' },
     { key: 'rules', label: 'Fiyat Kuralları' }
   ];

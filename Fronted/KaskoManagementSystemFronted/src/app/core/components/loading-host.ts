@@ -18,7 +18,7 @@ import { LoadingService } from '../services/loading.service';
             @if (brand().logoImage) {
               <img [src]="brand().logoImage" [alt]="brand().companyName" />
             } @else {
-              <span class="lh-mark">{{ (brand().companyName || 'N').charAt(0) }}</span>
+              <span class="lh-mark">N</span>
             }
           </div>
         </div>

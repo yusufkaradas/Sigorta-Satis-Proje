@@ -1,11 +1,48 @@
+@use '../../../shared/styles/kasko-theme' as k;
+
 :host {
   display: block;
   height: 100dvh;
+}
+
+.login-quick-quote {
+  @include k.button(primary);
+  position: absolute;
+  top: 50%;
+  right: k.u(30);
+  transform: translateY(-50%);
+  width: k.u(190);
+  height: k.u(50);
+  padding: 0;
+  border: 2px solid k.$surface;
+  border-radius: k.u(16);
+  font-size: k.u(18);
+  font-weight: 400;
 }
 
 @media (max-width: 900px) {
 
   :host {
     height: auto;
+  }
+
+  .login-quick-quote {
+    right: k.u(12);
+    width: auto;
+    padding: 0 k.u(12);
+    font-size: k.u(14);
+  }
+}
+
+@media (max-width: 600px) {
+
+  .login-header {
+    justify-items: start;
+    padding-left: k.u(12);
+  }
+
+  .login-header span {
+    width: k.u(170);
+    font-size: k.u(16);
   }
 }
