@@ -31,7 +31,7 @@ jobs:
           action: "upload"
           app_location: "Fronted/KaskoManagementSystemFronted"
           api_location: ""
-          output_location: "dist/KaskoManagementSystemFronted"
+          output_location: "dist/KaskoManagementSystemFronted/browser"
           
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
