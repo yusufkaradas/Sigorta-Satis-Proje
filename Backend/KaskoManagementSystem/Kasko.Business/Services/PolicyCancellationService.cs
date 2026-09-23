@@ -138,6 +138,22 @@ public class PolicyCancellationService : IPolicyCancellationService
 
         await _repository.AddAsync(request);
 
+        await Notifications.NotificationWriter.ToCustomerAsync(
+            _unitOfWork,
+            policy.CustomerId,
+            "CANCELLATION_RECEIVED",
+            "İptal talebiniz alındı",
+            $"{policy.PolicyNumber} numaralı poliçeniz için iptal talebiniz incelemeye alındı. Tahmini iade tutarı: {refund:N2} ₺.",
+            policy.Id);
+
+        await Notifications.NotificationWriter.ToRolesAsync(
+            _unitOfWork,
+            Notifications.NotificationWriter.AdminOnly,
+            "CANCELLATION_REQUESTED",
+            "Yeni iptal talebi",
+            $"{policy.PolicyNumber} numaralı poliçe için iptal talebi açıldı. Tahmini iade: {refund:N2} ₺. Neden: {request.Reason}",
+            request.Id);
+
         await _unitOfWork.SaveChangesAsync();
 
         return (await GetAllAsync()).First(x => x.Id == request.Id);

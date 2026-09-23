@@ -246,7 +246,7 @@ export class Dashboard implements OnInit {
       },
       {
         label: 'Fiyat Değişiklik Talebi',
-        hint: this.portal.isManager ? 'Admin onayı bekliyor' : 'Onayınızı bekliyor',
+        hint: this.portal.isManager ? 'Sistem yöneticisi onayı bekliyor' : 'Onayınızı bekliyor',
         count: pendingRequests,
         tone: 'warning',
         link: this.portal.basePath + '/requests',

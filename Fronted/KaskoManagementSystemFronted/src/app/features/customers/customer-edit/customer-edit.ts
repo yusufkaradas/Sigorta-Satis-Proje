@@ -221,7 +221,7 @@ export class CustomerEdit {
           if (error?.status === 403) {
 
             this.errorMessage =
-              'Bu işlem için Admin yetkisi gerekiyor.';
+              'Bu işlem için sistem yöneticisi yetkisi gerekiyor.';
 
           } else if (error?.status === 404) {
 

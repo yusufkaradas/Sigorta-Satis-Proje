@@ -125,7 +125,7 @@ namespace Kasko.API.Controllers
                 {
                     CustomerId = quote.CustomerId,
                     Type = "QUOTE_OFFERED",
-                    Title = "Teklifiniz hazır",
+                    Title = "Teklifiniz onaylandı",
                     Message = $"{quote.PremiumAmount:N2} ₺ tutarındaki kasko teklifiniz onaylandı. {quote.ValidUntil:dd.MM.yyyy} tarihine kadar satın alabilirsiniz.",
                     RelatedEntityId = quote.Id
                 });
@@ -234,6 +234,24 @@ namespace Kasko.API.Controllers
 
             if (dto.SimulateFailure)
             {
+                await Kasko.Business.Notifications.NotificationWriter.ToCustomerAsync(
+                    unitOfWork,
+                    quote.CustomerId,
+                    "QUOTE_PAYMENT_FAILED",
+                    "Ödemeniz tamamlanamadı",
+                    $"{quote.QuoteNumber} numaralı teklifiniz için ödeme bankanız tarafından onaylanmadı. Teklifiniz {Kasko.Business.Notifications.NotificationWriter.FormatDate(quote.ValidUntil)} tarihine kadar geçerlidir; tekrar deneyebilirsiniz.",
+                    quote.Id);
+
+                await Kasko.Business.Notifications.NotificationWriter.ToRolesAsync(
+                    unitOfWork,
+                    Kasko.Business.Notifications.NotificationWriter.Staff,
+                    "QUOTE_PAYMENT_FAILED",
+                    "Başarısız ödeme",
+                    $"{quote.QuoteNumber} numaralı teklif için {quote.PremiumAmount:N2} ₺ tutarındaki ödeme alınamadı. Müşteriyle iletişime geçin.",
+                    quote.Id);
+
+                await unitOfWork.SaveChangesAsync();
+
                 return BadRequest(new
                 {
                     message = "Ödeme bankanız tarafından onaylanmadı. Kart bilgilerinizi kontrol edip tekrar deneyin veya başka bir kart kullanın."

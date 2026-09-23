@@ -59,17 +59,40 @@
             aria-label="Bildirimler"
             (click)="toggleNotification()">
             <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-            @if (alertCount() > 0) {
-              <span class="kl-bell-count">{{ alertCount() > 9 ? '9+' : alertCount() }}</span>
+            @if (bellCount() > 0) {
+              <span class="kl-bell-count">{{ bellCount() > 9 ? '9+' : bellCount() }}</span>
             }
           </button>
 
           @if (isNotificationOpen) {
             <div class="kl-dropdown kl-notify">
-              <strong>Bildirimler</strong>
+              <div class="kl-notify-head">
+                <strong>Bildirimler</strong>
+                @if (unreadCount() > 0) {
+                  <button type="button" (click)="markAllNotificationsRead()">Tümünü okundu say</button>
+                }
+              </div>
+
+              @if (latestNotifications().length === 0) {
+                <p>Yeni bildiriminiz bulunmuyor.</p>
+              } @else {
+                <ul class="kl-notify-list">
+                  @for (item of latestNotifications(); track item.id) {
+                    <li class="kl-alert-item" [class.unread]="!item.isRead">
+                      <a href="#" (click)="$event.preventDefault(); openNotification(item)">
+                        <b>{{ item.title }}</b>
+                        <span>{{ item.message }}</span>
+                        <small>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</small>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+
+              <span class="kl-notify-section">Bekleyen işler</span>
 
               @if (alerts().length === 0) {
-                <p>Bekleyen işiniz yok. Her şey yolunda.</p>
+                <p>Bekleyen işiniz yok.</p>
               } @else {
                 <ul class="kl-notify-list">
                   @for (item of alerts(); track item.title) {
@@ -82,6 +105,8 @@
                   }
                 </ul>
               }
+
+              <a class="kl-notify-more" [routerLink]="basePath + '/notifications'" (click)="isNotificationOpen = false">Tüm bildirimler</a>
             </div>
           }
 
@@ -107,7 +132,7 @@
           @if (isUserMenuOpen) {
             <div class="kl-dropdown">
               <strong>{{ user.name || (isManager ? 'Yönetici' : 'Admin') }}</strong>
-              <p>{{ isManager ? 'Manager' : 'Admin' }}{{ user.email ? ' · ' + user.email : '' }}</p>
+              <p>{{ isManager ? 'Operasyon Yöneticisi' : 'Sistem Yöneticisi' }}{{ user.email ? ' · ' + user.email : '' }}</p>
               <button
                 type="button"
                 class="kl-dropdown-action"

@@ -42,7 +42,7 @@
         <h2 class="kf-section-title">Hesap Bilgileri</h2>
         <dl class="kf-details">
           <div class="kf-span-all"><dt>E-posta</dt><dd [title]="user.email">{{ user.email }}</dd></div>
-          <div><dt>Rol</dt><dd>{{ user.roleName || user.roleId }}</dd></div>
+          <div><dt>Rol</dt><dd>{{ roleLabel(user.roleName) }}</dd></div>
           <div><dt>Durum</dt><dd>{{ user.isActive ? 'Aktif' : 'Pasif' }}</dd></div>
           <div class="kf-span-all"><dt>Kullanıcı ID</dt><dd [title]="user.id">{{ user.id }}</dd></div>
         </dl>

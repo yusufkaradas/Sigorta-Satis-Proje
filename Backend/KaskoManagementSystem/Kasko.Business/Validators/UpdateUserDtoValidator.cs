@@ -16,19 +16,19 @@ namespace Kasko.Business.Validators
                 .NotEmpty()
                 .WithMessage("Ad alanı boş olamaz.")
                 .MaximumLength(50)
-                .WithMessage("Ad alanı maximum 50 karakter içerebilir.");
+                .WithMessage("Ad alanı en fazla  karakter olabilir.");
 
             RuleFor(x => x.LastName)
                 .NotEmpty()
                 .WithMessage("Soyad alanı boş olamaz.")
                 .MaximumLength(50)
-                .WithMessage("Soyad alanı maximum 50 karakter içerebilir.");
+                .WithMessage("Soyad alanı en fazla  karakter olabilir.");
 
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .WithMessage("Email alanı boş olamaz.")
+                .WithMessage("E-posta alanı boş olamaz.")
                 .EmailAddress()
-                .WithMessage("Geçerli bir email adresi giriniz.");
+                .WithMessage("Geçerli bir e-posta adresi giriniz.");
 
             RuleFor(x => x.PhoneNumber)
                 .Matches(@"^\+?[1-9]\d{1,14}$")

@@ -120,15 +120,40 @@ namespace Kasko.Business.Services.Concrete
 
                     await _policyRepository.UpdateAsync(policy);
 
-                    await _notificationService.CreateAsync(
-                        new Kasko.Business.DTOs.Notification.NotificationCreateDto
-                        {
-                            CustomerId = policy.CustomerId,
-                            Type = "PAYMENT_SUCCESS",
-                            Title = "Ödeme Başarılı",
-                            Message = $"Poliçeniz {policy.PolicyNumber} numarasıyla aktif hale getirildi.",
-                            RelatedEntityId = policy.Id
-                        });
+                    await Notifications.NotificationWriter.ToCustomerAsync(
+                        _unitOfWork,
+                        policy.CustomerId,
+                        "PAYMENT_SUCCESS",
+                        "Ödemeniz alındı, poliçeniz aktif",
+                        $"{payment.Amount:N2} ₺ tutarındaki ödemeniz alındı. {policy.PolicyNumber} numaralı poliçeniz {Notifications.NotificationWriter.FormatDate(policy.EndDate)} tarihine kadar geçerlidir.",
+                        policy.Id);
+
+                    await Notifications.NotificationWriter.ToRolesAsync(
+                        _unitOfWork,
+                        Notifications.NotificationWriter.Staff,
+                        "POLICY_SOLD",
+                        "Yeni poliçe satışı",
+                        $"{policy.PolicyNumber} numaralı poliçe {payment.Amount:N2} ₺ tahsilatla aktifleşti" +
+                        (payment.InstallmentCount > 1 ? $" ({payment.InstallmentCount} taksit)." : " (peşin)."),
+                        policy.Id);
+                }
+                else
+                {
+                    await Notifications.NotificationWriter.ToCustomerAsync(
+                        _unitOfWork,
+                        policy.CustomerId,
+                        "PAYMENT_FAILED",
+                        "Ödemeniz tamamlanamadı",
+                        $"{policy.PolicyNumber} numaralı poliçe için {payment.Amount:N2} ₺ tutarındaki ödeme bankanız tarafından onaylanmadı. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.",
+                        policy.Id);
+
+                    await Notifications.NotificationWriter.ToRolesAsync(
+                        _unitOfWork,
+                        Notifications.NotificationWriter.Staff,
+                        "PAYMENT_FAILED",
+                        "Başarısız ödeme",
+                        $"{policy.PolicyNumber} numaralı poliçe için {payment.Amount:N2} ₺ tutarındaki ödeme alınamadı. Müşteriyle iletişime geçin.",
+                        policy.Id);
                 }
 
                 await _unitOfWork.SaveChangesAsync();

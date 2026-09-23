@@ -5,6 +5,7 @@ import {
 
 import {
   Component,
+  DestroyRef,
   HostListener,
   OnInit,
   computed,
@@ -79,8 +80,15 @@ export class CustomerLayout implements OnInit {
       .slice(0, 5)
   );
 
+  private readonly destroyRef =
+    inject(DestroyRef);
+
   ngOnInit(): void {
     this.loadNotifications();
+
+    const timer = setInterval(() => this.loadNotifications(), 60000);
+
+    this.destroyRef.onDestroy(() => clearInterval(timer));
   }
 
   readonly notificationLink = notificationLink;
@@ -94,8 +102,14 @@ export class CustomerLayout implements OnInit {
     }
   }
 
+  markAllNotificationsRead(): void {
+    this.notificationsService.markAllAsRead().subscribe(() =>
+      this.notifications.update(list => list.map(row => ({ ...row, isRead: true })))
+    );
+  }
+
   loadNotifications(): void {
-    this.notificationsService.getNotifications().subscribe({
+    this.notificationsService.getNotifications(true).subscribe({
       next: data => this.notifications.set(data ?? []),
       error: () => this.notifications.set([])
     });

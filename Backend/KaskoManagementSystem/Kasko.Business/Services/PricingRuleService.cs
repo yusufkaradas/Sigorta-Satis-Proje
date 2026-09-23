@@ -68,7 +68,7 @@ public class PricingRuleService : IPricingRuleService
         foreach (var previousRule in activePreviousRules)
         {
             previousRule.EffectiveUntil =
-                dto.EffectiveFrom.AddDays(-1);
+                dto.EffectiveFrom.AddTicks(-1);
 
             await _unitOfWork.PricingRules.UpdateAsync(previousRule);
         }
@@ -101,7 +101,7 @@ public class PricingRuleService : IPricingRuleService
         if (rule == null || rule.IsDeleted)
         {
             throw new NotFoundException(
-                "Pricing rule bulunamadı.");
+                "Fiyat kuralı bulunamadı.");
         }
 
         if (rule.IsActive && !dto.IsActive)
@@ -127,10 +127,28 @@ public class PricingRuleService : IPricingRuleService
         if (rule == null || rule.IsDeleted)
         {
             throw new NotFoundException(
-                "Pricing rule bulunamadı.");
+                "Fiyat kuralı bulunamadı.");
         }
 
         await EnsureNotLastEngineRuleAsync(rule);
+
+        var previous = (await _unitOfWork.PricingRules.FindAsync(x =>
+                x.Id != rule.Id &&
+                x.Code == rule.Code &&
+                !x.IsDeleted &&
+                x.Version < rule.Version &&
+                x.EffectiveUntil != null &&
+                x.EffectiveUntil <= rule.EffectiveFrom))
+            .OrderByDescending(x => x.Version)
+            .FirstOrDefault();
+
+        if (previous != null)
+        {
+            previous.EffectiveUntil = rule.EffectiveUntil;
+            previous.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.PricingRules.UpdateAsync(previous);
+        }
 
         await _unitOfWork.PricingRules.DeleteAsync(rule);
 

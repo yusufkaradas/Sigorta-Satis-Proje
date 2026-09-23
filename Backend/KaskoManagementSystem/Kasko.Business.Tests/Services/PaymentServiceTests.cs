@@ -24,6 +24,10 @@ namespace Kasko.Business.Tests.Services
             _paymentRepositoryMock = new Mock<IPaymentRepository>();
             _policyRepositoryMock = new Mock<IPolicyRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+
+            _unitOfWorkMock.Setup(x => x.Notifications).Returns(new Mock<INotificationRepository>().Object);
+
+            _unitOfWorkMock.Setup(x => x.Roles).Returns(new Mock<IRoleRepository>().Object);
             _notificationServiceMock = new Mock<INotificationService>();
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 

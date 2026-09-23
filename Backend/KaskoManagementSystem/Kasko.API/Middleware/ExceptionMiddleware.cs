@@ -63,6 +63,45 @@ public class ExceptionMiddleware
                 "Conflict",
                 ex.Message);
         }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Kaynak bulunamadı. Path: {Path}",
+                context.Request.Path);
+
+            await HandleExceptionAsync(
+                context,
+                HttpStatusCode.NotFound,
+                "Not Found",
+                ex.Message);
+        }
+        catch (ArgumentException ex) when (ex.GetType() == typeof(ArgumentException))
+        {
+            _logger.LogWarning(
+                ex,
+                "Geçersiz istek. Path: {Path}",
+                context.Request.Path);
+
+            await HandleExceptionAsync(
+                context,
+                HttpStatusCode.BadRequest,
+                "Bad Request",
+                ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Yetkisiz istek. Path: {Path}",
+                context.Request.Path);
+
+            await HandleExceptionAsync(
+                context,
+                HttpStatusCode.Unauthorized,
+                "Unauthorized",
+                "Oturumunuzun süresi dolmuş olabilir. Lütfen yeniden giriş yapın.");
+        }
         catch (Exception ex)
         {
             _logger.LogError(

@@ -40,11 +40,11 @@ public class UpdateCustomerDtoValidator
 
         RuleFor(x => x.Email)
             .NotEmpty()
-            .WithMessage("Email alanı boş olamaz.")
+            .WithMessage("E-posta alanı boş olamaz.")
             .EmailAddress()
-            .WithMessage("Geçerli bir email adresi giriniz.")
+            .WithMessage("Geçerli bir e-posta adresi giriniz.")
             .MaximumLength(150)
-            .WithMessage("Email en fazla 150 karakter olabilir.");
+            .WithMessage("E-posta en fazla 150 karakter olabilir.");
 
         RuleFor(x => x.PhoneNumber)
             .MaximumLength(15)

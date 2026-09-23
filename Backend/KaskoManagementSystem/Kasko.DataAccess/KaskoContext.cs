@@ -99,6 +99,10 @@ public class KaskoContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<PolicyCancellationRequest>()
+            .Property(x => x.RefundAmount)
+            .HasPrecision(18, 2);
+
         modelBuilder.Entity<QuotePricingSnapshot>(entity =>
         {
             entity.Property(x => x.MarketValue)

@@ -1,3 +1,4 @@
+import { roleLabel } from '../../../core/utils/role-label';
 import { IdBadge } from '../../../core/components/id-badge';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
@@ -30,6 +31,8 @@ import { UserService } from '../users.service';
   styleUrl: './user-detail.scss'
 })
 export class UserDetail {
+
+  readonly roleLabel = roleLabel;
 
   private readonly route =
     inject(ActivatedRoute);
@@ -144,7 +147,7 @@ export class UserDetail {
           if (error?.status === 403) {
 
             this.errorMessage =
-              'Bu işlem için Admin yetkisi gerekiyor.';
+              'Bu işlem için sistem yöneticisi yetkisi gerekiyor.';
 
           } else {
 

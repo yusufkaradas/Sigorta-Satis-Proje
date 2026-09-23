@@ -332,7 +332,7 @@ export class PricingSimulator implements OnInit {
         this.loadRules();
         this.simulate();
       },
-      error: error => this.toast.error(error?.error?.message ?? error?.error?.detail ?? 'Katsayı silinemedi.')
+      error: () => undefined
     });
   }
 

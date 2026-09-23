@@ -13,8 +13,8 @@ namespace Kasko.Business.Validators
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Rol adı boş olamaz.")
-                .MinimumLength(5).WithMessage("Rol adı minimum 5 karakter içerebilir.")
-                .MaximumLength(20).WithMessage("Rol adı maximum 20 karakter içerebilir.");
+                .MinimumLength(5).WithMessage("Rol adı en az  karakter olmalıdır.")
+                .MaximumLength(20).WithMessage("Rol adı en fazla  karakter olabilir.");
         }
     }
 }

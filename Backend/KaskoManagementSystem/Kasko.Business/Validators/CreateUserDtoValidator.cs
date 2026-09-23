@@ -9,21 +9,21 @@ namespace Kasko.Business.Validators
         
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("Ad alanı boş olamaz.")
-                .MaximumLength(50).WithMessage("Ad alanı maximum 50 karakter içerebilir.");
+                .MaximumLength(50).WithMessage("Ad alanı en fazla  karakter olabilir.");
 
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Soyad alanı boş olamaz.")
-                .MaximumLength(50).WithMessage("Soyad alanı maximum 50 karakter içerebilir.");
+                .MaximumLength(50).WithMessage("Soyad alanı en fazla  karakter olabilir.");
             
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email alanı boş olamaz.")
-                .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.")
-                .MaximumLength(150).WithMessage("Email alanı maximum 150 karakter içerebilir.");
+                .NotEmpty().WithMessage("E-posta alanı boş olamaz.")
+                .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.")
+                .MaximumLength(150).WithMessage("E-posta alanı en fazla  karakter olabilir.");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Şifre alanı boş olamaz.")
-                .MinimumLength(6).WithMessage("Şifre minimum 6 karakter içerebilir.")
-                .MaximumLength(20).WithMessage("Şifre maximum 20 karakter içerebilir.")
+                .MinimumLength(6).WithMessage("Şifre en az  karakter olmalıdır.")
+                .MaximumLength(20).WithMessage("Şifre en fazla  karakter olabilir.")
                 .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,20}$")
                 .WithMessage("Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.");
            

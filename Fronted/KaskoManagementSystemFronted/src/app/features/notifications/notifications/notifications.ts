@@ -6,7 +6,8 @@ import {
   Notification,
   NotificationsService,
   notificationLink,
-  notificationTypeLabel
+  notificationTypeLabel,
+  staffNotificationTarget
 } from './notifications.service';
 
 @Component({
@@ -63,7 +64,16 @@ export class Notifications implements OnInit {
       this.notificationsService.markAsRead(item.id).subscribe();
     }
 
-    this.router.navigate(notificationLink(item));
+    const url = this.router.url;
+
+    if (url.startsWith('/customer')) {
+      this.router.navigate(notificationLink(item));
+      return;
+    }
+
+    const target = staffNotificationTarget(item, url.startsWith('/manager') ? '/manager' : '');
+
+    this.router.navigate(target.path, target.tab ? { queryParams: { tab: target.tab } } : undefined);
   }
 
   markAllAsRead(): void {

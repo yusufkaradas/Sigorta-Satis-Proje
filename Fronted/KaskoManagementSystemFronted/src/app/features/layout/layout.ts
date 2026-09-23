@@ -2,12 +2,21 @@ import { environment } from '../../../environments/environment';
 import { BrandService } from '../../core/services/brand.service';
 import {
   Component,
+  DestroyRef,
   HostListener,
   OnInit,
   computed,
   inject,
   signal
 } from '@angular/core';
+
+import { DatePipe } from '@angular/common';
+
+import {
+  Notification,
+  NotificationsService,
+  staffNotificationTarget
+} from '../notifications/notifications/notifications.service';
 
 import {
   HttpClient
@@ -74,6 +83,7 @@ const MANAGER_MENU: MenuItem[] = [
   selector: 'app-layout',
   standalone: true,
   imports: [
+    DatePipe,
     RouterOutlet,
     RouterLink,
     RouterLinkActive
@@ -117,8 +127,62 @@ export class Layout implements OnInit {
     this.alerts().reduce((total, item) => total + item.count, 0)
   );
 
+  private readonly notificationsService =
+    inject(NotificationsService);
+
+  private readonly destroyRef =
+    inject(DestroyRef);
+
+  readonly basePath =
+    this.isManager ? '/manager' : '';
+
+  notifications = signal<Notification[]>([]);
+
+  unreadCount = computed(() =>
+    this.notifications().filter(item => !item.isRead).length
+  );
+
+  latestNotifications = computed(() =>
+    this.notifications().slice(0, 5)
+  );
+
+  bellCount = computed(() =>
+    this.unreadCount() + this.alertCount()
+  );
+
   ngOnInit(): void {
     this.loadAlerts();
+    this.loadNotifications();
+
+    const timer = setInterval(() => this.loadNotifications(), 60000);
+
+    this.destroyRef.onDestroy(() => clearInterval(timer));
+  }
+
+  loadNotifications(): void {
+    this.notificationsService.getNotifications(true).subscribe({
+      next: data => this.notifications.set(data ?? []),
+      error: () => this.notifications.set([])
+    });
+  }
+
+  openNotification(item: Notification): void {
+    this.isNotificationOpen = false;
+
+    if (!item.isRead) {
+      this.notifications.update(list => list.map(row => row.id === item.id ? { ...row, isRead: true } : row));
+      this.notificationsService.markAsRead(item.id).subscribe();
+    }
+
+    const target = staffNotificationTarget(item, this.basePath);
+
+    this.router.navigate(target.path, target.tab ? { queryParams: { tab: target.tab } } : undefined);
+  }
+
+  markAllNotificationsRead(): void {
+    this.notificationsService.markAllAsRead().subscribe(() =>
+      this.notifications.update(list => list.map(row => ({ ...row, isRead: true })))
+    );
   }
 
   loadAlerts(): void {
@@ -148,7 +212,7 @@ export class Layout implements OnInit {
       const alerts: StaffAlert[] = [
         {
           title: this.isManager ? 'Fiyat talebiniz onay bekliyor' : 'Onayınızı bekleyen fiyat talebi',
-          detail: this.isManager ? 'Admin kararı bekleniyor' : 'Kural değişikliklerini inceleyin',
+          detail: this.isManager ? 'Sistem yöneticisi kararı bekleniyor' : 'Kural değişikliklerini inceleyin',
           count: pendingPricing,
           link: `${base}/requests`,
           tab: 'pricing-requests',
@@ -243,6 +307,7 @@ export class Layout implements OnInit {
 
     if (this.isNotificationOpen) {
       this.loadAlerts();
+      this.loadNotifications();
     }
   }
 

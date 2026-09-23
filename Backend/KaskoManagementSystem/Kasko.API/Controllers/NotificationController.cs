@@ -6,7 +6,7 @@ namespace Kasko.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Customer")]
+[Authorize]
 public class NotificationController : ControllerBase
 {
     private readonly INotificationService _notificationService;

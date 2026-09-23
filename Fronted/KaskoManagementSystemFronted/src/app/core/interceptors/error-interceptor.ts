@@ -1,6 +1,6 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, tap, throwError } from 'rxjs';
 
 import { ToastService } from '../services/toast.service';
 
@@ -103,19 +103,56 @@ function fallbackMessage(error: HttpErrorResponse): string {
   }
 }
 
+const SUCCESS_MESSAGES: { method: string; pattern: RegExp; title: string; detail?: string }[] = [
+  { method: 'POST', pattern: /\/api\/Customer$/i, title: 'Müşteri kaydedildi' },
+  { method: 'DELETE', pattern: /\/api\/Customer\/[^/]+$/i, title: 'Müşteri kaydı silindi' },
+  { method: 'DELETE', pattern: /\/api\/Vehicle\/[^/]+$/i, title: 'Araç kaydı silindi' },
+  { method: 'DELETE', pattern: /\/api\/Quote\/[^/]+$/i, title: 'Teklif silindi' },
+  { method: 'POST', pattern: /\/api\/Quote\/[^/]+\/offer$/i, title: 'Teklif onaylandı', detail: 'Müşteriye bildirim gönderildi.' },
+  { method: 'POST', pattern: /\/api\/Quote\/[^/]+\/share$/i, title: 'Teklif müşteriyle paylaşıldı', detail: 'Müşteriye bildirim gönderildi.' },
+  { method: 'POST', pattern: /\/api\/Quote\/[^/]+\/purchase$/i, title: 'Ödeme alındı', detail: 'Poliçe aktifleştirildi.' },
+  { method: 'PATCH', pattern: /\/api\/Quote\/[^/]+\/status/i, title: 'Teklif durumu güncellendi' },
+  { method: 'POST', pattern: /\/api\/Policy\/renew$/i, title: 'Yenileme teklifi oluşturuldu' },
+  { method: 'POST', pattern: /\/api\/Policy\/[^/]+\/cancel$/i, title: 'Poliçe iptal edildi' },
+  { method: 'DELETE', pattern: /\/api\/Policy\/[^/]+$/i, title: 'Poliçe silindi' },
+  { method: 'POST', pattern: /\/api\/PolicyCancellation$/i, title: 'İptal talebiniz alındı', detail: 'Sonuç size bildirim olarak iletilecek.' },
+  { method: 'POST', pattern: /\/api\/User$/i, title: 'Kullanıcı oluşturuldu' },
+  { method: 'PUT', pattern: /\/api\/User(\/[^/]+)?$/i, title: 'Kullanıcı bilgileri güncellendi' },
+  { method: 'DELETE', pattern: /\/api\/User\/[^/]+$/i, title: 'Kullanıcı silindi' },
+  { method: 'DELETE', pattern: /\/api\/Role\/[^/]+$/i, title: 'Rol silindi' },
+  { method: 'POST', pattern: /\/api\/PricingRuleChangeRequest$/i, title: 'Fiyat değişikliği talebi gönderildi', detail: 'Sistem yöneticisinin onayına iletildi.' }
+];
+
+function successMessageFor(method: string, url: string) {
+  const path = url.split('?')[0];
+
+  return SUCCESS_MESSAGES.find(item => item.method === method && item.pattern.test(path));
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
 
-  if (req.headers.has('X-Silent-Error')) {
-    return next(req.clone({ headers: req.headers.delete('X-Silent-Error') }));
-  }
+  const silent = req.headers.has('X-Silent-Error');
 
-  return next(req).pipe(
+  const request = silent ? req.clone({ headers: req.headers.delete('X-Silent-Error') }) : req;
+
+  return next(request).pipe(
+    tap(event => {
+      if (!(event instanceof HttpResponse) || req.method === 'GET') {
+        return;
+      }
+
+      const message = successMessageFor(req.method, req.urlWithParams);
+
+      if (message) {
+        toast.success(message.title, message.detail ? [message.detail] : []);
+      }
+    }),
     catchError((error: HttpErrorResponse) => {
 
       const silentGet = req.method === 'GET' && (error.status === 404 || error.status === 403);
 
-      if (error.status !== 401 && !silentGet) {
+      if (!silent && error.status !== 401 && !silentGet) {
         const messages = collectMessages(error);
         toast.error(titleFor(error, req.method), messages.length ? messages : [fallbackMessage(error)]);
       }
