@@ -1,4 +1,4 @@
-# 🛡️ Kasko Yönetim ve Sigorta Satış Platformu (Core Insurance System)
+# Kasko Yönetim ve Sigorta Satış Platformu (Core Insurance System)
 
 Bu proje, ASP.NET Core Web API (Backend) ve Angular (Frontend) kullanılarak geliştirilmiş, uçtan uca çalışabilen kapsamlı bir **Kasko Teklif ve Poliçe Yönetim Platformudur**. Sıradan bir CRUD uygulamasının ötesinde, gerçek dünya senaryolarına uygun tam kapsamlı bir sigortacılık yaşam döngüsünü (Core Insurance) simüle eder. 
 
@@ -8,7 +8,7 @@ Müşteri Yönetimi ➔ Araç Tanımlama ➔ Fiyatlandırma Motoru ➔ Teklif Ol
 
 ---
 
-## 🚀 Öne Çıkan Özellikler (Key Features)
+## MMÖne Çıkan Özellikler (Key Features)
 
 ### 1. Dinamik Tarife ve Fiyatlandırma Motoru (Quote Engine)
 Fiyatlar koda (hardcoded) yazılmamıştır. Veritabanındaki `PricingRule` (Fiyatlandırma Kuralı) tablosundan dinamik olarak hesaplanır.
@@ -39,7 +39,7 @@ Uygulama 3 farklı yetki seviyesi için özelleştirilmiş arayüzler sunar:
 - **Güvenlik:** JWT (JSON Web Token), Role-Based Authorization, BCrypt Password Hashing
 - **Test:** xUnit, Moq, WebApplicationFactory (Birim & Entegrasyon testleri)
 
-### Frontend (Angular 17+)
+### Frontend (Angular 22)
 - **Framework:** Angular (Standalone Components yapısı)
 - **Dil:** TypeScript, HTML5, SCSS
 - **Tasarım:** Modern, Responsive, Kullanıcı Dostu (Modern UI/UX)
@@ -96,5 +96,3 @@ Projeye ait geliştirme süreçleri ve vizyon hedefleri:
 - ⏳ **FAZ 26+ (Gelecek Planı):** Chatbot Entegrasyonu (Yapay Zeka Destekli Asistan) ve Kapsamlı Bildirim (Push/Email Notification) sisteminin tamamlanması.
 
 ---
-
-*Bu proje, modern yazılım mimarisi prensipleri (Clean Code, SOLID) dikkate alınarak geliştirilmiş profesyonel bir portfolyo çalışmasıdır.*
