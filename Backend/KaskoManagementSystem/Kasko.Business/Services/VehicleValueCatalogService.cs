@@ -237,4 +237,55 @@ public class VehicleValueCatalogService
                 brandCode,
                 typeCode);
     }
+
+    public async Task<IReadOnlyList<int>> GetYearsAsync(
+        string brandCode,
+        string? typeCode,
+        string? category,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(brandCode))
+        {
+            throw new ArgumentException(
+                "Marka kodu boş olamaz.",
+                nameof(brandCode));
+        }
+
+        return await _unitOfWork
+            .VehicleValueCatalogs
+            .GetActiveYearsAsync(
+                brandCode,
+                typeCode,
+                category);
+    }
+
+    public async Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
+        string brandCode,
+        string? category,
+        int? modelYear,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(brandCode))
+        {
+            throw new ArgumentException(
+                "Marka kodu boş olamaz.",
+                nameof(brandCode));
+        }
+
+        var records =
+            await _unitOfWork
+                .VehicleValueCatalogs
+                .GetActiveTypesAsync(
+                    brandCode,
+                    category,
+                    modelYear);
+
+        return records
+            .Select(x => new VehicleValueTypeDto
+            {
+                Code = x.TypeCode,
+                Name = x.TypeName
+            })
+            .ToList();
+    }
 }

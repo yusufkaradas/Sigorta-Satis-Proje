@@ -593,3 +593,10 @@
 .kf-package > button {
   margin-top: auto;
 }
+
+.qc-limits-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  width: 100%;
+}

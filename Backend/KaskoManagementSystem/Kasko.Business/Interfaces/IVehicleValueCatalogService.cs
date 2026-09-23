@@ -39,6 +39,18 @@ public interface IVehicleValueCatalogService
     string typeCode,
     CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<int>> GetYearsAsync(
+        string brandCode,
+        string? typeCode,
+        string? category,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<VehicleValueTypeDto>> GetTypesAsync(
+        string brandCode,
+        string? category,
+        int? modelYear,
+        CancellationToken cancellationToken);
+
     Task<VehicleValueCatalog?> GetActiveByKeyAsync(
     string brandCode,
     string typeCode,

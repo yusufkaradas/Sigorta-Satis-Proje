@@ -1,8 +1,8 @@
-import { CoverageRow, collectCoverageRows, deductibleExample, limitHint, upgradeNote } from '../../../core/utils/offer-helpers';
+import { CoverageRow, collectCoverageRows, deductibleExample, limitHint } from '../../../core/utils/offer-helpers';
 import { PlateBadge } from '../../../core/components/plate-badge';
 import { pdfFileName } from '../../../core/utils/pdf-file-name';
 import { BrandService } from '../../../core/services/brand.service';
-import { catchError, forkJoin, map, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import {
   ChangeDetectorRef,
   Component,
@@ -74,7 +74,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     'Aracınız tanınıyor',
     'Güncel kasko değeri alınıyor',
     'Size özel indirimler uygulanıyor',
-    'Paketler karşılaştırılıyor'
+    'Paket ve teminatlar fiyatlanıyor'
   ];
 
   calculationProgress = 0;
@@ -124,7 +124,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     this.selectedVehicle = vehicle;
     this.isLoading = false;
     this.currentStep = 3;
-    this.loadPackages();
+    this.loadCatalog();
   }
 
   private failResume(): void {
@@ -146,9 +146,13 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
   readonly steps = [
     { number: 1, label: 'Bilgileriniz', steps: [1, 2, 3] },
-    { number: 2, label: 'Teklifler', steps: [4, 5, 6] },
-    { number: 3, label: 'Satın Alma', steps: [5] }
+    { number: 2, label: 'Paket ve Fiyat', steps: [4] },
+    { number: 3, label: 'Teklifiniz', steps: [5, 6] }
   ];
+
+  get progressPercent(): number {
+    return Math.min(100, Math.round((this.currentStep / 6) * 100));
+  }
 
   isStageActive(stage: { steps: number[] }): boolean {
     return stage.steps.includes(this.currentStep);
@@ -212,8 +216,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       next: result => {
         this.isLoading = false;
         this.otpSent = true;
-        this.otpCode = '';
         this.demoCode = result.demoCode;
+        this.otpCode = result.demoCode ?? '';
         this.cdr.detectChanges();
       },
       error: error => {
@@ -332,7 +336,9 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     return Math.max(0, new Date().getFullYear() - year);
   }
 
-  isRepricing = false;
+  offerPhase: 'packages' | 'calculating' | 'price' = 'packages';
+
+  isLoadingCatalog = false;
 
   get offerOptionRows(): { coverageId: string; coverageName: string; options: QuickQuoteCoverageOption[] }[] {
     const seen = new Map<string, { coverageId: string; coverageName: string; options: QuickQuoteCoverageOption[] }>();
@@ -348,15 +354,27 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     return collectCoverageRows(this.packages);
   }
 
-  offerUpgrade(item: { id: string; coverages: { coverageId: string; coverageName: string; isDefault: boolean }[] }): string | null {
-    const chosen = this.selectedPackage;
-    if (!chosen || chosen.id === item.id) {
-      return null;
-    }
-    return upgradeNote(chosen.name, this.packagePrices[chosen.id], chosen.coverages.filter(c => c.isDefault).map(c => c.coverageId), this.packagePrices[item.id], item.coverages.filter(c => c.isDefault));
+  readonly limitHint = limitHint;
+
+  get claimsLabel(): string {
+    return this.claimsCount === 0
+      ? 'Hasarsız'
+      : this.claimsCount === 1 ? '1 hasar' : '2+ hasar';
   }
 
-  readonly limitHint = limitHint;
+  get selectedLimitSummary(): { label: string; value: string }[] {
+    const rows = this.offerOptionRows.map(row => ({
+      label: row.coverageName,
+      value: row.options.find(option => option.id === this.offerOptionValue(row.coverageId))?.name ?? '—'
+    }));
+
+    rows.push({
+      label: 'Muafiyet',
+      value: this.deductibleOptions.find(item => item.value === this.deductible)?.label ?? '—'
+    });
+
+    return rows;
+  }
 
   deductibleHint(): string {
     return deductibleExample(this.deductible);
@@ -375,32 +393,31 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       ?? '';
   }
 
-  private priceAllPackages() {
+  private priceSelectedPackage() {
     const vehicle = this.selectedVehicle!;
+    const packageItem = this.selectedPackage!;
     const optionIds: Record<string, string> = {};
     this.offerOptionRows.forEach(row => optionIds[row.coverageId] = this.offerOptionValue(row.coverageId));
 
-    return forkJoin(this.packages.map(packageItem =>
-      this.quickQuoteService
-        .calculatePricing({
-          identityNumber: this.identityNumber,
-          phoneNumber: this.normalizedPhoneNumber,
-          vehicleId: vehicle.id,
-          usage: this.usage,
-          claimsCount: this.claimsCount,
-          packageId: packageItem.id,
-          deductible: this.deductible,
-          coverageIds: packageItem.coverages.filter(item => item.isDefault).map(item => item.coverageId),
-          coverageOptionIds: optionIds
-        }, true)
-        .pipe(
-          map(result => ({ id: packageItem.id, result: result as QuickQuotePricingResponse | null, error: '' })),
-          catchError(error => of({ id: packageItem.id, result: null as QuickQuotePricingResponse | null, error: (error?.error?.message ?? error?.error?.detail ?? '') as string }))
-        )
-    ));
+    return this.quickQuoteService
+      .calculatePricing({
+        identityNumber: this.identityNumber,
+        phoneNumber: this.normalizedPhoneNumber,
+        vehicleId: vehicle.id,
+        usage: this.usage,
+        claimsCount: this.claimsCount,
+        packageId: packageItem.id,
+        deductible: this.deductible,
+        coverageIds: packageItem.coverages.filter(item => item.isDefault).map(item => item.coverageId),
+        coverageOptionIds: optionIds
+      }, true)
+      .pipe(
+        map(result => ({ result: result as QuickQuotePricingResponse | null, error: '' })),
+        catchError(error => of({ result: null as QuickQuotePricingResponse | null, error: (error?.error?.message ?? error?.error?.detail ?? '') as string }))
+      );
   }
 
-  packageResults: Record<string, QuickQuotePricingResponse | null> = {};
+  pricingResult: QuickQuotePricingResponse | null = null;
 
   readonly deductibleOptions = [
     { value: 0, label: 'Muafiyetsiz' },
@@ -410,37 +427,16 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
   changeDeductible(value: number): void {
     this.deductible = value;
-    this.changeOfferOption('', '');
-  }
-
-  changeOfferOption(coverageId: string, optionId: string): void {
-    if (coverageId) {
-      this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
-    }
-    this.isRepricing = true;
-
-    this.priceAllPackages().subscribe(results => {
-      results.forEach(item => {
-        this.packageResults[item.id] = item.result;
-        this.packagePrices[item.id] = item.result?.totalPremium ?? null;
-      });
-      this.isRepricing = false;
-      this.cdr.detectChanges();
-    });
   }
 
   selectOffer(packageItem: QuickQuotePackage): void {
-    if (this.packagePrices[packageItem.id] == null) {
-      return;
-    }
-
     this.selectedPackage = packageItem;
   }
 
   continueWithOffer(): void {
     const packageItem = this.selectedPackage;
 
-    if (!packageItem || this.isRepricing) {
+    if (!packageItem || this.isLoading) {
       return;
     }
 
@@ -694,9 +690,13 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
 
   get currentStepLabel(): string {
 
-    return this.steps.find(
+    const label = this.steps.find(
       step => step.steps.includes(this.currentStep)
     )?.label ?? '';
+
+    return this.currentStep <= 4
+      ? `Adım ${this.currentStep} / 4 · ${label}`
+      : label;
   }
 
   quoteStatusLabel(
@@ -1113,27 +1113,88 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       return;
     }
 
-    this.currentStep =
-      3;
+    this.errorMessage = '';
+    this.currentStep = 3;
+    this.loadCatalog();
   }
 
-  loadPackages(): void {
-
-    if (
-      this.isLoading ||
-      !this.selectedVehicle
-    ) {
+  loadCatalog(): void {
+    if (this.isLoadingCatalog || this.packages.length > 0) {
       return;
     }
 
+    this.isLoadingCatalog = true;
+
+    this.quickQuoteService
+      .getPackages()
+      .subscribe({
+        next: packages => {
+          this.packages = packages ?? [];
+          this.applyDefaultOptions();
+          this.isLoadingCatalog = false;
+          this.cdr.detectChanges();
+        },
+        error: error => {
+          this.isLoadingCatalog = false;
+          this.errorMessage = error?.error?.message ?? 'Kasko paketleri alınamadı.';
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  private applyDefaultOptions(): void {
+    const defaults: Record<string, string> = {};
+
+    this.packages.forEach(item => item.coverages.forEach(coverage => {
+      if ((coverage.options?.length ?? 0) > 0 && !defaults[coverage.coverageId]) {
+        const option = coverage.options!.find(x => x.isDefault) ?? coverage.options![0];
+        defaults[coverage.coverageId] = option.id;
+      }
+    }));
+
+    this.coverageOptionIds = { ...defaults, ...this.coverageOptionIds };
+  }
+
+  goToPackages(): void {
+    if (this.isLoading || !this.selectedVehicle) {
+      return;
+    }
+
+    this.errorMessage = '';
+
+    if (this.packages.length === 0) {
+      this.loadCatalog();
+    }
+
+    if (!this.selectedPackage) {
+      this.selectedPackage =
+        this.packages.find(item => item.id === this.preferredPackageId) ??
+        this.packages[Math.min(1, this.packages.length - 1)] ??
+        null;
+    }
+
+    this.offerPhase = 'packages';
+    this.currentStep = 4;
+  }
+
+  backToPackages(): void {
+    this.errorMessage = '';
+    this.offerPhase = 'packages';
+    this.currentStep = 4;
+  }
+
+  calculatePrices(): void {
+    if (this.isLoading || !this.selectedVehicle || !this.selectedPackage) {
+      return;
+    }
+
+    const packageItem = this.selectedPackage;
+
     this.isLoading = true;
     this.errorMessage = '';
-    this.selectedPackage = null;
-    this.selectedCoverageIds = [];
-    this.coverageOptionIds = {};
+    this.pricingResult = null;
     this.packagePrices = {};
-    this.packageResults = {};
-    this.currentStep = 4;
+    this.offerPhase = 'calculating';
     this.calculationProgress = 0;
     this.stopCalculationTimer();
 
@@ -1149,51 +1210,28 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       if (failure) {
         this.stopCalculationTimer();
         this.isLoading = false;
-        this.currentStep = 3;
+        this.offerPhase = 'packages';
         this.errorMessage = failure;
       } else if (finished && elapsed >= this.calculationDurationMs) {
         this.stopCalculationTimer();
         this.calculationProgress = 100;
         this.isLoading = false;
+        this.offerPhase = 'price';
       }
 
       this.cdr.detectChanges();
     }, 100);
 
-    this.quickQuoteService
-      .getPackages()
-      .subscribe({
-        next: packages => {
-          this.packages = packages ?? [];
+    this.priceSelectedPackage().subscribe(item => {
+      if (!item.result) {
+        failure = item.error || 'Teklif hesaplanamadı. Lütfen bilgilerinizi kontrol edin.';
+        return;
+      }
 
-          if (this.packages.length === 0) {
-            failure = 'Aktif kasko paketi bulunamadı.';
-            return;
-          }
-
-          this.priceAllPackages().subscribe(results => {
-            if (results.every(item => item.result === null)) {
-              failure = results.find(item => item.error)?.error || 'Teklif hesaplanamadı. Lütfen bilgilerinizi kontrol edin.';
-              return;
-            }
-
-            results.forEach(item => {
-              this.packageResults[item.id] = item.result;
-              this.packagePrices[item.id] = item.result?.totalPremium ?? null;
-            });
-
-            const priced = this.packages.filter(item => this.packagePrices[item.id] != null);
-            this.selectedPackage =
-              priced.find(item => item.id === this.preferredPackageId) ??
-              priced[Math.min(1, priced.length - 1)] ??
-              null;
-            finished = true;
-          });
-        },
-        error: error => {
-          failure = error?.error?.message ?? 'Kasko paketleri alınamadı.';
-        }
-      });
+      this.pricingResult = item.result;
+      this.packagePrices[packageItem.id] = item.result.totalPremium;
+      finished = true;
+    });
   }
 
   selectPackage(

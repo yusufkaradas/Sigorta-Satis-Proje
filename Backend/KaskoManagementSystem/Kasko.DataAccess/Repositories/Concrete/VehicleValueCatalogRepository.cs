@@ -175,6 +175,68 @@ public class VehicleValueCatalogRepository
             .OrderByDescending(x => x)
             .ToListAsync();
     }
+    public async Task<IReadOnlyList<int>> GetActiveYearsAsync(
+        string brandCode,
+        string? typeCode,
+        string? category)
+    {
+        var query = _context.VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.BrandCode == brandCode);
+
+        if (!string.IsNullOrWhiteSpace(typeCode))
+        {
+            query = query.Where(x => x.TypeCode == typeCode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            query = query.Where(x => x.VehicleCategory == category);
+        }
+
+        return await query
+            .Select(x => x.ModelYear)
+            .Distinct()
+            .OrderByDescending(x => x)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(
+        string brandCode,
+        string? category,
+        int? modelYear)
+    {
+        var query = _context.VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.IsActive &&
+                x.BrandCode == brandCode);
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            query = query.Where(x => x.VehicleCategory == category);
+        }
+
+        if (modelYear.HasValue)
+        {
+            query = query.Where(x => x.ModelYear == modelYear.Value);
+        }
+
+        return await query
+            .Select(x => new VehicleValueCatalog
+            {
+                TypeCode = x.TypeCode,
+                TypeName = x.TypeName
+            })
+            .Distinct()
+            .OrderBy(x => x.TypeName)
+            .ToListAsync();
+    }
+
     public async Task<VehicleValueCatalog?> GetActiveByKeyAsync(
      string brandCode,
      string typeCode,

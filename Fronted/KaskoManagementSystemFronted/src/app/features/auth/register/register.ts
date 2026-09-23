@@ -47,11 +47,11 @@ export class Register {
     try {
       const stored = JSON.parse(sessionStorage.getItem('quickQuoteIdentity') ?? 'null');
       const draft = JSON.parse(sessionStorage.getItem('quickQuoteDraft') ?? 'null');
-      if (draft?.birthYear) {
+      if (draft?.birthDate || draft?.birthYear) {
         queueMicrotask(() => {
           if (!this.dateOfBirth) {
-            this.dateOfBirth = `${draft.birthYear}-01-01`;
-            this.birthYearFromQuote = Number(draft.birthYear);
+            this.dateOfBirth = draft.birthDate ?? `${draft.birthYear}-01-01`;
+            this.birthYearFromQuote = Number(this.dateOfBirth.slice(0, 4));
             this.cdr.markForCheck();
           }
         });
@@ -98,7 +98,9 @@ export class Register {
   firstName = '';
   lastName = '';
   identityNumber = '';
+
   dateOfBirth = '';
+
   email = '';
   phoneNumber = '';
   address = '';

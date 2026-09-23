@@ -310,7 +310,8 @@
   flex: 1;
   min-height: 0;
   padding: k.u(4) k.u(24) k.u(12);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .qq-body-center {
@@ -3419,5 +3420,201 @@
     white-space: normal;
     text-overflow: clip;
     overflow-wrap: anywhere;
+  }
+}
+
+.qq-birth-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: k.u(10);
+
+  select {
+    @include k.input;
+    width: 100%;
+  }
+}
+
+.qq-page .qg-limits-plain {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(k.u(185), 1fr));
+  align-items: start;
+  gap: k.u(12);
+}
+
+.qq-page .qg-limits-plain .qg-limit {
+  gap: k.u(5);
+}
+
+.qq-page .qg-limits-plain .qg-limit small {
+  color: k.$surface;
+  font-size: k.u(12);
+  font-weight: 600;
+}
+
+.qq-page .qg-limits-plain .qg-limit select {
+  height: k.u(38);
+  padding: 0 k.u(10);
+  border: 2px solid k.$black;
+  border-radius: k.u(10);
+  background: k.$surface;
+  color: k.$text;
+  font-size: k.u(13);
+  font-weight: 600;
+}
+
+.qq-page .qg-limits-plain .qg-deductible-hint {
+  color: k.$border;
+  font-size: k.u(11);
+  font-style: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.qg-offer-desc {
+  color: k.$text-secondary;
+  font-size: k.u(12);
+  font-style: normal;
+  line-height: 1.4;
+}
+
+.qq-chip-row {
+  margin-top: k.u(8);
+  display: flex;
+  flex-wrap: wrap;
+  gap: k.u(6);
+}
+
+.qq-chip {
+  padding: k.u(4) k.u(10);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: k.$surface;
+  font-size: k.u(11);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: k.u(6);
+
+  b {
+    color: k.$border;
+    font-weight: 600;
+  }
+}
+
+.qq-page .qg-offer-done .qg-price-card {
+  width: 100%;
+}
+
+.qg-price-card {
+  width: min(k.u(620), 100%);
+  padding: k.u(22) k.u(24);
+  border: 2px solid k.$black;
+  border-radius: k.u(18);
+  background: k.$surface;
+  color: k.$text;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(16);
+  box-shadow: 0 k.u(12) k.u(30) rgba(0, 0, 0, 0.18);
+}
+
+.qg-price-head {
+  display: flex;
+  flex-direction: column;
+  gap: k.u(4);
+  padding-bottom: k.u(14);
+  border-bottom: 1px solid k.$border;
+
+  span {
+    color: k.$text-secondary;
+    font-size: k.u(13);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  strong {
+    font-size: k.u(34);
+    font-weight: 700;
+
+    small {
+      margin-left: k.u(6);
+      color: k.$text-secondary;
+      font-size: k.u(14);
+      font-weight: 500;
+    }
+  }
+
+  em {
+    color: k.$text-secondary;
+    font-size: k.u(13);
+    font-style: normal;
+  }
+}
+
+.qq-page .qg-price-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: k.u(10) k.u(20);
+
+  dt {
+    color: k.$text-secondary;
+    font-size: k.u(12);
+  }
+
+  dd {
+    margin: 0;
+    font-size: k.u(14);
+    font-weight: 600;
+  }
+}
+
+.qq-page .qg-price-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: k.u(6) k.u(18);
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: k.u(8);
+    padding: k.u(4) 0;
+    border-bottom: 1px dashed k.$border;
+    font-size: k.u(13);
+
+    span {
+      color: k.$text-secondary;
+      font-size: k.u(12);
+    }
+  }
+}
+
+@media (max-width: 900px) {
+
+  .qq-page .qg-price-list,
+  .qq-page .qg-price-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-birth-row {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+
+  .qq-page .qg-limits-plain {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

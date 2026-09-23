@@ -4,6 +4,9 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { environment } from '../../../../environments/environment';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
+import { ToastService } from '../../../core/services/toast.service';
+import { PricingRule, PricingService, formatPricingValue } from '../pricing.service';
 import { TariffPackage, TariffService } from '../../packages/packages.service';
 
 interface SimulationStep {
@@ -39,6 +42,164 @@ export class PricingSimulator implements OnInit {
 
   private readonly tariffService = inject(TariffService);
 
+  private readonly pricingService = inject(PricingService);
+
+  private readonly toast = inject(ToastService);
+
+  readonly formatPricingValue = formatPricingValue;
+
+  rules = signal<PricingRule[]>([]);
+
+  editingId = signal<string | null>(null);
+
+  isSavingRule = signal(false);
+
+  isAdding = signal(false);
+
+  ruleForm = { code: '', name: '', value: 1, effectiveFrom: new Date().toISOString().slice(0, 10) };
+
+  ruleError = signal('');
+
+  readonly ruleGroups = [
+    { prefix: 'BASE_', label: 'Temel Oran' },
+    { prefix: 'AGE_', label: 'Araç Yaşı' },
+    { prefix: 'USAGE_', label: 'Kullanım Şekli' },
+    { prefix: 'CLAIMS_', label: 'Hasar Geçmişi' },
+    { prefix: 'DRIVER_', label: 'Sürücü Yaşı' },
+    { prefix: 'REGION_', label: 'Bölge' },
+    { prefix: 'DEDUCTIBLE_', label: 'Muafiyet' }
+  ];
+
+  get formulaRules(): { label: string; items: PricingRule[] }[] {
+    const list = this.rules().filter(item => !item.code.startsWith('AUTO_APPROVE_'));
+
+    const groups = this.ruleGroups.map(group => ({
+      label: group.label,
+      items: list.filter(item => item.code.startsWith(group.prefix)).sort((a, b) => a.code.localeCompare(b.code, 'tr'))
+    }));
+
+    const known = new Set(groups.flatMap(group => group.items.map(item => item.id)));
+    const others = list.filter(item => !known.has(item.id)).sort((a, b) => a.code.localeCompare(b.code, 'tr'));
+
+    if (others.length > 0) {
+      groups.push({ label: 'Diğer Katsayılar', items: others });
+    }
+
+    return groups.filter(group => group.items.length > 0);
+  }
+
+  loadRules(): void {
+    this.pricingService.getRules().subscribe({
+      next: data => this.rules.set(data ?? []),
+      error: () => this.rules.set([])
+    });
+  }
+
+  startEdit(rule: PricingRule): void {
+    this.ruleError.set('');
+    this.isAdding.set(false);
+    this.editingId.set(rule.id);
+    this.ruleForm = {
+      code: rule.code,
+      name: rule.name,
+      value: rule.value,
+      effectiveFrom: rule.effectiveFrom.slice(0, 10)
+    };
+  }
+
+  startAdd(): void {
+    this.ruleError.set('');
+    this.editingId.set(null);
+    this.isAdding.set(true);
+    this.ruleForm = { code: '', name: '', value: 1, effectiveFrom: new Date().toISOString().slice(0, 10) };
+  }
+
+  cancelRuleForm(): void {
+    this.editingId.set(null);
+    this.isAdding.set(false);
+    this.ruleError.set('');
+  }
+
+  saveRule(): void {
+    const code = this.ruleForm.code.trim().toUpperCase().replace(/\s+/g, '_');
+    const name = this.ruleForm.name.trim();
+
+    if (!code || !name) {
+      this.ruleError.set('Kod ve açıklama zorunludur.');
+      return;
+    }
+
+    if (!Number.isFinite(this.ruleForm.value) || this.ruleForm.value <= 0) {
+      this.ruleError.set("Katsayı 0'dan büyük olmalıdır.");
+      return;
+    }
+
+    this.isSavingRule.set(true);
+    this.ruleError.set('');
+
+    const done = (message: string) => {
+      this.isSavingRule.set(false);
+      this.cancelRuleForm();
+      this.toast.success(message);
+      this.loadRules();
+      this.simulate();
+    };
+
+    const fail = (error: any) => {
+      this.isSavingRule.set(false);
+      this.ruleError.set(error?.error?.message ?? error?.error?.detail ?? 'Katsayı kaydedilemedi.');
+    };
+
+    const editingId = this.editingId();
+
+    if (editingId) {
+      this.pricingService.updateRule({
+        id: editingId,
+        name,
+        description: null,
+        value: this.ruleForm.value,
+        isActive: true
+      }).subscribe({ next: () => done(`${code} katsayısı güncellendi.`), error: fail });
+      return;
+    }
+
+    this.pricingService.createRule({
+      code,
+      name,
+      description: null,
+      value: this.ruleForm.value,
+      isActive: true,
+      effectiveFrom: new Date(this.ruleForm.effectiveFrom).toISOString()
+    }).subscribe({ next: () => done(`${code} katsayısı eklendi.`), error: fail });
+  }
+
+  async removeRule(rule: PricingRule): Promise<void> {
+    const approved = await confirmDialog(
+      'Katsayı formülden çıkarılacak; bu kurala bağlı yeni hesaplar varsayılan değeri kullanır.',
+      {
+        title: `${rule.code} silinsin mi?`,
+        confirmText: 'Evet, sil',
+        tone: 'danger',
+        details: [
+          { label: 'Katsayı', value: rule.name },
+          { label: 'Değer', value: formatPricingValue(rule.code, rule.value) }
+        ]
+      });
+
+    if (!approved) {
+      return;
+    }
+
+    this.pricingService.deleteRule(rule.id).subscribe({
+      next: () => {
+        this.toast.success(`${rule.code} katsayısı silindi.`);
+        this.loadRules();
+        this.simulate();
+      },
+      error: error => this.toast.error(error?.error?.message ?? error?.error?.detail ?? 'Katsayı silinemedi.')
+    });
+  }
+
   readonly currentYear = new Date().getFullYear();
 
   readonly years = Array.from({ length: 16 }, (_, index) => this.currentYear - index);
@@ -68,6 +229,8 @@ export class PricingSimulator implements OnInit {
   deductible = 0;
 
   ngOnInit(): void {
+    this.loadRules();
+
     this.tariffService.getTariff().subscribe({
       next: data => {
         const list = [...data.packages].sort((a, b) => a.factor - b.factor);

@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { BackendDatePipe } from '../../../core/pipes/backend-date.pipe';
+import { BackendDatePipe, parseBackendDate } from '../../../core/pipes/backend-date.pipe';
 import { ToastService } from '../../../core/services/toast.service';
+import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
   CatalogImportResult,
   CatalogSummary,
@@ -75,14 +76,24 @@ export class CatalogImport implements OnInit {
     this.period.set((event.target as HTMLInputElement).value);
   }
 
+  private readonly monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
   get latestPeriodText(): string {
-    const value = this.summary()?.latestEffectiveDate;
-    if (!value) {
-      return '—';
-    }
-    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-    const date = new Date(value);
-    return months[date.getMonth()] + ' ' + date.getFullYear();
+    const match = /^(\d{4})-(\d{2})/.exec(this.summary()?.latestEffectiveDate ?? '');
+    return match ? `${this.monthNames[Number(match[2]) - 1]} ${match[1]}` : '—';
+  }
+
+  get periodText(): string {
+    const match = /^(\d{4})-(\d{2})$/.exec(this.period());
+    return match ? `${this.monthNames[Number(match[2]) - 1]} ${match[1]}` : '—';
+  }
+
+  get lastImportTimeText(): string {
+    const date = parseBackendDate(this.summary()?.lastImportedAt);
+
+    return date
+      ? 'Saat ' + new Intl.DateTimeFormat('tr-TR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul' }).format(date)
+      : 'Henüz yükleme yapılmadı';
   }
 
   get fileSizeText(): string {
@@ -90,11 +101,28 @@ export class CatalogImport implements OnInit {
     return file ? `${(file.size / 1024 / 1024).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} MB` : '';
   }
 
-  import(): void {
+  async import(): Promise<void> {
     const file = this.selectedFile();
 
     if (!file || !/^\d{4}-\d{2}$/.test(this.period())) {
       this.errorMessage.set('Dosya ve liste dönemini seçin.');
+      return;
+    }
+
+    const approved = await confirmDialog(
+      'Seçtiğiniz liste kataloğa yüklensin mi? Yeni teklifler bu dönemin araç değerleriyle hesaplanır.',
+      {
+        title: 'Kasko değer listesi yüklensin mi?',
+        confirmText: 'Evet, yükle',
+        tone: 'primary',
+        details: [
+          { label: 'Liste dönemi', value: this.period() },
+          { label: 'Dosya', value: file.name },
+          { label: 'Boyut', value: this.fileSizeText }
+        ]
+      });
+
+    if (!approved) {
       return;
     }
 
@@ -113,7 +141,23 @@ export class CatalogImport implements OnInit {
     });
   }
 
-  reclassify(): void {
+  async reclassify(): Promise<void> {
+    const approved = await confirmDialog(
+      'Katalogdaki tüm kayıtların araç sınıfı marka ve model adına göre yeniden belirlenecek. Devam edilsin mi?',
+      {
+        title: 'Araç sınıfları yenilensin mi?',
+        confirmText: 'Evet, yenile',
+        tone: 'primary',
+        details: [
+          { label: 'Etkilenen kayıt', value: (this.summary()?.recordCount ?? 0).toLocaleString('tr-TR') },
+          { label: 'Güncel liste dönemi', value: this.latestPeriodText }
+        ]
+      });
+
+    if (!approved) {
+      return;
+    }
+
     this.isReclassifying.set(true);
 
     this.catalogService.reclassify().subscribe({
