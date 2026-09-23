@@ -20,6 +20,7 @@ import {
   GuestEstimatePackage,
   GuestEstimateRequest,
   GuestEstimateResult,
+  GuestPackageCatalogItem,
   QuickQuoteGuestService
 } from './quick-quote-guest.service';
 
@@ -47,9 +48,10 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
 
   readonly steps = [
     { number: 1, label: 'Araç Bilgileri' },
-    { number: 2, label: 'Sürücü Bilgileri' },
-    { number: 3, label: 'Teklifleriniz' },
-    { number: 4, label: 'Teklif Özeti' }
+    { number: 2, label: 'Sürücü ve Teminat' },
+    { number: 3, label: 'Paket Seçimi' },
+    { number: 4, label: 'Fiyatınız' },
+    { number: 5, label: 'Teklif Özeti' }
   ];
 
   readonly categoryLabels: Record<string, string> = {
@@ -90,7 +92,15 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
 
   lookupValue = signal<number | null>(null);
 
+  birthDay: number | null = null;
+
+  birthMonth: number | null = null;
+
   birthYear: number | null = null;
+
+  packageCatalog = signal<GuestPackageCatalogItem[]>([]);
+
+  isLoadingPackages = signal(false);
 
   usage = 'PRIVATE';
 
@@ -127,7 +137,47 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     return Array.from({ length: 83 }, (_, index) => current - 18 - index);
   }
 
+  readonly days = Array.from({ length: 31 }, (_, index) => index + 1);
+
+  readonly months = [
+    { value: 1, label: 'Ocak' },
+    { value: 2, label: 'Şubat' },
+    { value: 3, label: 'Mart' },
+    { value: 4, label: 'Nisan' },
+    { value: 5, label: 'Mayıs' },
+    { value: 6, label: 'Haziran' },
+    { value: 7, label: 'Temmuz' },
+    { value: 8, label: 'Ağustos' },
+    { value: 9, label: 'Eylül' },
+    { value: 10, label: 'Ekim' },
+    { value: 11, label: 'Kasım' },
+    { value: 12, label: 'Aralık' }
+  ];
+
+  get isBirthDateValid(): boolean {
+    if (!this.birthDay || !this.birthMonth || !this.birthYear) {
+      return false;
+    }
+
+    const date = new Date(this.birthYear, this.birthMonth - 1, this.birthDay);
+
+    return date.getFullYear() === this.birthYear &&
+      date.getMonth() === this.birthMonth - 1 &&
+      date.getDate() === this.birthDay;
+  }
+
+  get birthDateIso(): string | null {
+    if (!this.isBirthDateValid) {
+      return null;
+    }
+
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    return `${this.birthYear}-${pad(this.birthMonth!)}-${pad(this.birthDay!)}`;
+  }
+
   ngOnInit(): void {
+    this.loadPackageCatalog();
     this.isLoadingCatalog.set(true);
     this.catalogService.getCategories().subscribe({
       next: data => {
@@ -191,7 +241,28 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     }
 
     this.isLoadingCatalog.set(true);
-    this.catalogService.getTypes(this.brandCode, this.category).subscribe({
+    this.catalogService.getYears(this.brandCode, null, this.category).subscribe({
+      next: data => {
+        this.years.set(data ?? []);
+        this.isLoadingCatalog.set(false);
+      },
+      error: () => {
+        this.years.set([]);
+        this.isLoadingCatalog.set(false);
+      }
+    });
+  }
+
+  onModelYearChange(): void {
+    this.typeCode = '';
+    this.types.set([]);
+
+    if (!this.modelYear) {
+      return;
+    }
+
+    this.isLoadingCatalog.set(true);
+    this.catalogService.getTypes(this.brandCode, this.category, this.modelYear).subscribe({
       next: data => {
         this.types.set(data ?? []);
         this.isLoadingCatalog.set(false);
@@ -204,24 +275,109 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   }
 
   onTypeChange(): void {
-    this.modelYear = null;
-    this.years.set([]);
+    this.lookupValue.set(null);
 
-    if (!this.typeCode) {
+    if (!this.typeCode || !this.modelYear) {
       return;
     }
 
-    this.isLoadingCatalog.set(true);
-    this.catalogService.getYears(this.brandCode, this.typeCode).subscribe({
+    this.catalogService.lookup(this.brandCode, this.typeCode, this.modelYear).subscribe({
+      next: data => this.lookupValue.set(data?.value ?? null),
+      error: () => this.lookupValue.set(null)
+    });
+  }
+
+  private loadPackageCatalog(): void {
+    this.isLoadingPackages.set(true);
+    this.guestService.packageCatalog().subscribe({
       next: data => {
-        this.years.set(data ?? []);
-        this.isLoadingCatalog.set(false);
+        const items = (data ?? []).filter(item => item.isActive);
+        this.packageCatalog.set(items);
+        this.applyDefaultOptions(items);
+        this.isLoadingPackages.set(false);
       },
       error: () => {
-        this.years.set([]);
-        this.isLoadingCatalog.set(false);
+        this.packageCatalog.set([]);
+        this.isLoadingPackages.set(false);
       }
     });
+  }
+
+  private applyDefaultOptions(items: GuestPackageCatalogItem[]): void {
+    const defaults: Record<string, string> = {};
+
+    items.forEach(item => item.coverages.forEach(coverage => {
+      if ((coverage.options?.length ?? 0) > 0 && !defaults[coverage.coverageId]) {
+        const option = coverage.options!.find(x => x.isDefault) ?? coverage.options![0];
+        defaults[coverage.coverageId] = option.id;
+      }
+    }));
+
+    this.coverageOptionIds = { ...defaults, ...this.coverageOptionIds };
+  }
+
+  get limitRows(): { coverageId: string; coverageName: string; options: GuestCoverageOption[] }[] {
+    const seen = new Map<string, { coverageId: string; coverageName: string; options: GuestCoverageOption[] }>();
+
+    this.packageCatalog().forEach(item => item.coverages.forEach(coverage => {
+      if ((coverage.options?.length ?? 0) > 0 && !seen.has(coverage.coverageId)) {
+        seen.set(coverage.coverageId, {
+          coverageId: coverage.coverageId,
+          coverageName: coverage.coverageName,
+          options: coverage.options ?? []
+        });
+      }
+    }));
+
+    return [...seen.values()];
+  }
+
+  optionValue(coverageId: string): string {
+    return this.coverageOptionIds[coverageId] ?? '';
+  }
+
+  selectOption(coverageId: string, optionId: string): void {
+    this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
+  }
+
+  get claimsLabel(): string {
+    return this.claimsCount === 0
+      ? 'Hasarsız'
+      : this.claimsCount === 1 ? '1 hasar' : '2+ hasar';
+  }
+
+  get selectedLimitSummary(): { label: string; value: string }[] {
+    const rows = this.limitRows.map(row => ({
+      label: row.coverageName,
+      value: row.options.find(option => option.id === this.optionValue(row.coverageId))?.name ?? '—'
+    }));
+
+    rows.push({
+      label: 'Muafiyet',
+      value: this.deductibleOptions.find(item => item.value === this.deductible)?.label ?? '—'
+    });
+
+    return rows;
+  }
+
+  catalogCoverageRows(): { coverageId: string; coverageName: string; description?: string | null }[] {
+    const seen = new Map<string, { coverageId: string; coverageName: string; description?: string | null }>();
+
+    this.packageCatalog().forEach(item => item.coverages.forEach(coverage => {
+      if (!seen.has(coverage.coverageId)) {
+        seen.set(coverage.coverageId, {
+          coverageId: coverage.coverageId,
+          coverageName: coverage.coverageName,
+          description: coverage.description
+        });
+      }
+    }));
+
+    return [...seen.values()];
+  }
+
+  catalogHasCoverage(item: GuestPackageCatalogItem, coverageId: string): boolean {
+    return item.coverages.some(coverage => coverage.coverageId === coverageId);
   }
 
   plateTouched = false;
@@ -267,7 +423,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   }
 
   get canCalculate(): boolean {
-    return this.canContinueVehicle && !!this.birthYear;
+    return this.canContinueVehicle && this.isBirthDateValid;
   }
 
   goToDriver(): void {
@@ -296,12 +452,43 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
   isCheckingPlate = signal(false);
 
   private openDriverStep(): void {
-    this.lookupValue.set(null);
-    this.catalogService.lookup(this.brandCode, this.typeCode, this.modelYear as number).subscribe({
-      next: data => this.lookupValue.set(data?.value ?? null),
-      error: () => this.lookupValue.set(null)
-    });
+    if (this.lookupValue() === null) {
+      this.catalogService.lookup(this.brandCode, this.typeCode, this.modelYear as number).subscribe({
+        next: data => this.lookupValue.set(data?.value ?? null),
+        error: () => this.lookupValue.set(null)
+      });
+    }
+
     this.currentStep.set(2);
+  }
+
+  goToPackages(): void {
+    this.errorMessage.set('');
+
+    if (!this.isBirthDateValid) {
+      this.errorMessage.set('Devam etmek için doğum tarihinizi seçin.');
+      return;
+    }
+
+    this.currentStep.set(3);
+  }
+
+  backToDriver(): void {
+    this.errorMessage.set('');
+    this.currentStep.set(2);
+  }
+
+  backToPackages(): void {
+    this.errorMessage.set('');
+    this.currentStep.set(3);
+  }
+
+  selectCatalogPackage(packageId: string): void {
+    this.selectedPackageId.set(packageId);
+  }
+
+  get selectedCatalogPackage(): GuestPackageCatalogItem | null {
+    return this.packageCatalog().find(item => item.id === this.selectedPackageId()) ?? null;
   }
 
   get vehicleAge(): number {
@@ -383,12 +570,13 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     if (!this.selectedPackage) {
       return;
     }
+
     const now = new Date();
     const pad = (value: number) => String(value).padStart(2, '0');
     this.offerReference = `HT-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
     this.offerValidUntil = new Date(now.getTime() + 7 * 86400000);
     this.errorMessage.set('');
-    this.currentStep.set(4);
+    this.currentStep.set(5);
   }
 
   downloadPdf(): void {
@@ -442,13 +630,18 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     this.errorMessage.set('');
 
     if (!this.canCalculate) {
-      this.errorMessage.set('Devam etmek için doğum yılınızı seçin.');
+      this.errorMessage.set('Devam etmek için doğum tarihinizi seçin.');
+      return;
+    }
+
+    if (!this.selectedPackageId()) {
+      this.errorMessage.set('Devam etmek için bir paket seçin.');
       return;
     }
 
     this.isCalculating.set(true);
     this.calculationProgress.set(0);
-    this.currentStep.set(3);
+    this.currentStep.set(4);
 
     const startedAt = Date.now();
     let response: GuestEstimateResult | null = null;
@@ -462,7 +655,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
       if (failure) {
         this.stopTimer();
         this.isCalculating.set(false);
-        this.currentStep.set(2);
+        this.currentStep.set(3);
         this.errorMessage.set(failure);
         return;
       }
@@ -470,7 +663,13 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
       if (response && elapsed >= this.calculationDurationMs) {
         this.stopTimer();
         this.result.set(response);
-        this.selectedPackageId.set(response.packages[0]?.packageId ?? null);
+
+        const chosen = this.selectedPackageId();
+
+        if (!chosen || !response.packages.some(item => item.packageId === chosen)) {
+          this.selectedPackageId.set(response.packages[0]?.packageId ?? null);
+        }
+
         this.isCalculating.set(false);
       }
     }, 100);
@@ -534,6 +733,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         color: this.color,
         usage: this.usage,
         birthYear: this.birthYear,
+        birthDate: this.birthDateIso,
         claimsCount: this.claimsCount,
         deductible: this.deductible,
         packageId: this.selectedPackageId(),

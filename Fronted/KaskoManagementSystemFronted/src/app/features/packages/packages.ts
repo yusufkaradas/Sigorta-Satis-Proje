@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { injectPortalContext } from '../../core/services/portal-context';
 import { ToastService } from '../../core/services/toast.service';
+import { confirmDialog } from '../../core/services/confirm-dialog';
 import { BackendDatePipe } from '../../core/pipes/backend-date.pipe';
 
 import {
@@ -293,9 +294,23 @@ export class PackagesPage implements OnInit {
     this.selectedRequest.set(null);
   }
 
-  decide(item: TariffChangeRequest, action: 'approve' | 'reject'): void {
+  async decide(item: TariffChangeRequest, action: 'approve' | 'reject'): Promise<void> {
     if (action === 'reject' && !this.decisionNote.trim()) {
       this.formError.set('Reddetmek için bir neden yazın.');
+      return;
+    }
+
+    const approved = await confirmDialog(
+      action === 'approve'
+        ? 'Talep onaylanacak ve değişiklik yeni tekliflere hemen uygulanacak. Devam edilsin mi?'
+        : 'Talep reddedilecek ve talebi açan yöneticiye gerekçeniz iletilecek. Devam edilsin mi?',
+      {
+        title: action === 'approve' ? 'Tarife talebi onaylansın mı?' : 'Tarife talebi reddedilsin mi?',
+        confirmText: action === 'approve' ? 'Evet, onayla' : 'Evet, reddet',
+        tone: action === 'approve' ? 'primary' : 'danger'
+      });
+
+    if (!approved) {
       return;
     }
 

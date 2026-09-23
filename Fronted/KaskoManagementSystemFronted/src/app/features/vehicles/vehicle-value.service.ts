@@ -72,7 +72,8 @@ export class VehicleValueService {
 
   getTypes(
     brandCode: string,
-    category?: string
+    category?: string,
+    modelYear?: number | null
   ): Observable<VehicleValueType[]> {
 
     let params = new HttpParams()
@@ -80,6 +81,10 @@ export class VehicleValueService {
 
     if (category) {
       params = params.set('category', category);
+    }
+
+    if (modelYear) {
+      params = params.set('modelYear', modelYear);
     }
 
     return this.http.get<VehicleValueType[]>(
@@ -90,12 +95,20 @@ export class VehicleValueService {
 
   getYears(
     brandCode: string,
-    typeCode: string
+    typeCode?: string | null,
+    category?: string
   ): Observable<number[]> {
 
-    const params = new HttpParams()
-      .set('brandCode', brandCode)
-      .set('typeCode', typeCode);
+    let params = new HttpParams()
+      .set('brandCode', brandCode);
+
+    if (typeCode) {
+      params = params.set('typeCode', typeCode);
+    }
+
+    if (category) {
+      params = params.set('category', category);
+    }
 
     return this.http.get<number[]>(
       `${this.apiUrl}/years`,

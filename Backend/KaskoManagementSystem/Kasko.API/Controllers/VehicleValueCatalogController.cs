@@ -50,12 +50,14 @@ public class VehicleValueCatalogController : ControllerBase
     public async Task<IActionResult> GetTypes(
     [FromQuery] string brandCode,
     [FromQuery] string? category,
+    [FromQuery] int? modelYear,
     CancellationToken cancellationToken)
     {
         var result =
             await _catalogService.GetTypesAsync(
                 brandCode,
                 category,
+                modelYear,
                 cancellationToken);
 
         return Ok(result);
@@ -64,13 +66,15 @@ public class VehicleValueCatalogController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetYears(
     [FromQuery] string brandCode,
-    [FromQuery] string typeCode,
+    [FromQuery] string? typeCode,
+    [FromQuery] string? category,
     CancellationToken cancellationToken)
     {
         var result =
             await _catalogService.GetYearsAsync(
                 brandCode,
                 typeCode,
+                category,
                 cancellationToken);
 
         return Ok(result);

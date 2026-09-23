@@ -6,6 +6,7 @@ using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kasko.Business.Services;
 
@@ -153,7 +154,8 @@ public class TariffService : ITariffService
                 {
                     InsurancePackageId = packageId,
                     CoverageId = coverageId,
-                    IsDefault = true
+                    IsDefault = true,
+                    CreatedDate = DateTime.UtcNow
                 });
             }
         }
@@ -178,7 +180,15 @@ public class TariffService : ITariffService
             await _unitOfWork.PackageCoverages.UpdateAsync(active);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new BadRequestException(
+                $"Paket içeriği güncellenemedi: {ex.GetBaseException().Message}");
+        }
     }
 
     public async Task UpdatePackageInfoAsync(Guid packageId, string? description)

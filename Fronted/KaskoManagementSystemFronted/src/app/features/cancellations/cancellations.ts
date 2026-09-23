@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { confirmDialog } from '../../core/services/confirm-dialog';
 import { injectPortalContext } from '../../core/services/portal-context';
 import { RecordNumberPipe } from '../../core/pipes/record-number.pipe';
 import { BackendDatePipe } from '../../core/pipes/backend-date.pipe';
@@ -116,13 +117,45 @@ export class Cancellations implements OnInit {
     this.selected.set(null);
   }
 
-  approve(item: PolicyCancellation): void {
+  async approve(item: PolicyCancellation): Promise<void> {
+    const approved = await confirmDialog(
+      'Poliçe iptal edilecek ve iade süreci başlatılacak. Bu işlem geri alınamaz.',
+      {
+        title: 'İptal talebi onaylansın mı?',
+        confirmText: 'Evet, iptal et',
+        tone: 'danger',
+        details: [
+          { label: 'Poliçe', value: item.policyNumber ?? '—' },
+          { label: 'Müşteri', value: item.customerName ?? '—' }
+        ]
+      });
+
+    if (!approved) {
+      return;
+    }
+
     this.decide(item, 'approve', 'İptal onaylandı, poliçe iptal edildi.');
   }
 
-  reject(item: PolicyCancellation): void {
+  async reject(item: PolicyCancellation): Promise<void> {
     if (!this.decisionNote.trim()) {
       this.errorMessage.set('Reddetmek için müşteriye iletilecek bir neden yazın.');
+      return;
+    }
+
+    const approved = await confirmDialog(
+      'Talep reddedilecek ve müşteriye gerekçeniz iletilecek. Devam edilsin mi?',
+      {
+        title: 'İptal talebi reddedilsin mi?',
+        confirmText: 'Evet, reddet',
+        tone: 'danger',
+        details: [
+          { label: 'Poliçe', value: item.policyNumber ?? '—' },
+          { label: 'Gerekçe', value: this.decisionNote.trim() }
+        ]
+      });
+
+    if (!approved) {
       return;
     }
 

@@ -393,6 +393,11 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
   @include reset;
 
   .kl-layout {
+    --kl-hud: #{$text-secondary};
+    --kl-hud-soft: #{$text-disabled};
+    --kl-hud-active: #{$border-button};
+    --kl-hud-hover: #b3b9c2;
+
     height: 100%;
     display: grid;
     grid-template-columns: u(250) minmax(0, 1fr);
@@ -400,11 +405,25 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     overflow: hidden;
   }
 
+  .kl-layout.kl-role-admin {
+    --kl-hud: #3c4a63;
+    --kl-hud-soft: #8794ae;
+    --kl-hud-active: #5b6a88;
+    --kl-hud-hover: #9aa6bd;
+  }
+
+  .kl-layout.kl-role-manager {
+    --kl-hud: #2f5a58;
+    --kl-hud-soft: #7fa8a3;
+    --kl-hud-active: #47807b;
+    --kl-hud-hover: #93b8b3;
+  }
+
   .kl-sidebar {
     min-height: 0;
     padding: u(10) u(50) u(10);
     border-right: 2px solid $black;
-    background: $text-secondary;
+    background: var(--kl-hud);
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -418,7 +437,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     flex: 0 0 auto;
     border: 2px solid $surface;
     border-radius: u(16);
-    background: $text-disabled;
+    background: var(--kl-hud-soft);
     color: $text;
     display: grid;
     place-items: center;
@@ -437,7 +456,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     padding: 0 u(10);
     border: 2px solid $surface;
     border-radius: u(10);
-    background: $text-disabled;
+    background: var(--kl-hud-soft);
     color: $text;
     display: flex;
     align-items: center;
@@ -450,11 +469,11 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
   }
 
   .kl-menu-item:hover {
-    background: #b3b9c2;
+    background: var(--kl-hud-hover);
   }
 
   .kl-menu-item.active {
-    background: $border-button;
+    background: var(--kl-hud-active);
     color: $surface;
   }
 
@@ -488,7 +507,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     z-index: 20;
     padding: 0 u(12);
     border-bottom: 3px solid $black;
-    background: $text-secondary;
+    background: var(--kl-hud);
     box-shadow: 0 u(10) u(18) rgba(0, 0, 0, 0.2);
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -497,7 +516,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
   }
 
   .kl-title {
-    @include pill($text-disabled, $text, $surface, 2px);
+    @include pill(var(--kl-hud-soft), $text, $surface, 2px);
     min-width: u(250);
     height: u(50);
     margin: 0;
@@ -526,7 +545,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     height: u(50);
     border: 2px solid $surface;
     border-radius: u(12);
-    background: $text-disabled;
+    background: var(--kl-hud-soft);
     color: $text;
     display: grid;
     place-items: center;
@@ -1155,6 +1174,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .form-group input,
     .form-group textarea,
+    .form-group select,
     .phone-input {
       width: 100%;
       min-height: u(44);
@@ -1168,9 +1188,19 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
     .form-group input,
-    .form-group textarea {
+    .form-group textarea,
+    .form-group select {
       padding: u(8) u(10);
       outline: none;
+    }
+
+    .form-group select {
+      font-weight: 600;
+    }
+
+    .form-group select option {
+      color: $text;
+      background: $surface;
     }
 
     .form-group textarea {
@@ -1184,6 +1214,7 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .form-group input:focus,
     .form-group textarea:focus,
+    .form-group select:focus,
     .phone-input:focus-within {
       border-color: $info;
     }

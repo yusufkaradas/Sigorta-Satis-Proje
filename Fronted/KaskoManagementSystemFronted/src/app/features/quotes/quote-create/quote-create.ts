@@ -261,12 +261,18 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
   changeDeductible(value: number): void {
     this.deductible = value;
-    this.calculatePackageComparisons(false);
+
+    if (this.packageQuotes.length > 0) {
+      this.calculatePackageComparisons(false);
+    }
   }
 
   changeOption(coverageId: string, optionId: string): void {
     this.coverageOptionIds = { ...this.coverageOptionIds, [coverageId]: optionId };
-    this.calculatePackageComparisons(false);
+
+    if (this.packageQuotes.length > 0) {
+      this.calculatePackageComparisons(false);
+    }
   }
 
   readonly comparisonStages = [

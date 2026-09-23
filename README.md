@@ -96,5 +96,3 @@ Projeye ait geliştirme süreçleri ve vizyon hedefleri:
 - ⏳ **FAZ 26+ (Gelecek Planı):** Chatbot Entegrasyonu (Yapay Zeka Destekli Asistan) ve Kapsamlı Bildirim (Push/Email Notification) sisteminin tamamlanması.
 
 ---
-
-*Bu proje, modern yazılım mimarisi prensipleri (Clean Code, SOLID) dikkate alınarak geliştirilmiş profesyonel bir portfolyo çalışmasıdır.*

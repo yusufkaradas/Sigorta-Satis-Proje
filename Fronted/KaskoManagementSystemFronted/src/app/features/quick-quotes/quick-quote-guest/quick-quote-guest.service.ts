@@ -53,6 +53,25 @@ export interface GuestEstimateResult {
   packages: GuestEstimatePackage[];
 }
 
+export interface GuestPackageCoverage {
+  coverageId: string;
+  coverageName: string;
+  description?: string | null;
+  isDefault: boolean;
+  calculatedPrice?: number;
+  options?: GuestCoverageOption[];
+}
+
+export interface GuestPackageCatalogItem {
+  id: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  factor: number;
+  isActive: boolean;
+  coverages: GuestPackageCoverage[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class QuickQuoteGuestService {
 
@@ -66,6 +85,10 @@ export class QuickQuoteGuestService {
 
   plateEligibility(plate: string): Observable<{ eligible: boolean; message: string | null }> {
     return this.http.get<{ eligible: boolean; message: string | null }>(`${this.apiUrl}/plate-eligibility`, { params: { plate } });
+  }
+
+  packageCatalog(): Observable<GuestPackageCatalogItem[]> {
+    return this.http.get<GuestPackageCatalogItem[]>(`${this.apiUrl}/packages`);
   }
 
   estimate(request: GuestEstimateRequest): Observable<GuestEstimateResult> {
