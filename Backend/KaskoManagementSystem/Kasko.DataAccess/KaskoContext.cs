@@ -913,7 +913,8 @@ public class KaskoContext : DbContext
                 x.InsurancePackageId,
                 x.CoverageId
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
         });
     }
 }

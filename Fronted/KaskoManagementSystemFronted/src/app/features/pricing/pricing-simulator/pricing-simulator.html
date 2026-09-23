@@ -3,13 +3,124 @@
   <div class="sim-formula">
     <div class="sim-formula-head">
       <strong>Prim Hesaplama Formülü</strong>
-      <span class="sim-admin">Yalnızca Yönetici</span>
+      <div class="sim-head-actions">
+        <div class="sim-switch">
+          <button type="button" [class.active]="view() === 'simulate'" (click)="view.set('simulate')">Simülasyon</button>
+          <button type="button" [class.active]="view() === 'rules'" (click)="view.set('rules'); loadRules()">Katsayıları Yönet</button>
+        </div>
+        <span class="sim-admin">Yalnızca Yönetici</span>
+      </div>
     </div>
     <code>
       Prim = TSB Değeri × Temel Oran × Araç Yaşı × Kullanım × Hasar × Sürücü × Bölge × Paket × Muafiyet + Teminat Ekleri
     </code>
-    <small>Katsayılar Fiyat Kuralları sekmesinden yönetilir. Gösterilen toplam %5 gider vergisi dahildir.</small>
+    <small>Katsayıları buradan veya Fiyat Kuralları sekmesinden değiştirebilirsiniz. Gösterilen toplam %5 gider vergisi dahildir.</small>
   </div>
+
+  @if (view() === 'rules') {
+
+    <div class="sim-card sim-rules">
+
+      <div class="sim-rules-head">
+        <div>
+          <h3>Fiyatı Etkileyen Katsayılar</h3>
+          <small>Her satır, primi hangi durumda ne kadar artırdığını veya düşürdüğünü gösterir. Değişiklikler yeni tekliflere hemen uygulanır; mevcut teklifler ve poliçeler etkilenmez.</small>
+        </div>
+        <label class="sim-history-toggle">
+          <input type="checkbox" [checked]="showHistory()" (change)="showHistory.set($any($event.target).checked)" />
+          Geçmiş sürümleri göster
+        </label>
+      </div>
+
+      @if (ruleError()) {
+        <div class="kf-alert kf-alert-error">{{ ruleError() }}</div>
+      }
+
+      <nav class="sim-group-tabs">
+        @for (group of formulaRules; track group.prefix) {
+          <button type="button" [class.active]="activeRuleGroup?.prefix === group.prefix" (click)="activeGroup.set(group.prefix); cancelRuleForm()">
+            {{ group.label }}
+            <small>{{ group.items.length }}</small>
+          </button>
+        }
+      </nav>
+
+      @if (activeRuleGroup; as group) {
+
+        <p class="sim-group-hint">{{ group.hint }}</p>
+
+        <div class="sim-rule-list">
+
+          <div class="sim-rule-row sim-rule-row-head">
+            <span>Katsayı</span>
+            <span>Değer</span>
+            <span>Etkisi</span>
+            <span>Durum</span>
+            <span></span>
+          </div>
+
+          @for (rule of group.items; track rule.id) {
+
+            <div class="sim-rule-row" [class.sim-rule-past]="ruleStatus(rule) === 'past'" [class.editing]="isFormFor(rule)">
+              <div class="sim-rule-name">
+                <strong>{{ rule.name }}</strong>
+                <small>{{ rule.code }} · sürüm {{ rule.version }}</small>
+              </div>
+              <div class="sim-rule-value">{{ formatPricingValue(rule.code, rule.value) }}</div>
+              <div><span [class]="'sim-effect ' + ruleEffectClass(rule)">{{ ruleEffect(rule) }}</span></div>
+              <div class="sim-rule-status">
+                <span [class]="'sim-status ' + ruleStatus(rule)">{{ ruleStatusLabel(rule) }}</span>
+                <small>{{ ruleDateText(rule) }}</small>
+              </div>
+              <div class="sim-rule-actions">
+                @if (ruleStatus(rule) !== 'past') {
+                  <button type="button" class="sim-action" (click)="startEdit(rule)">Değiştir</button>
+                }
+                @if (isLatest(rule)) {
+                  <button type="button" class="sim-action" (click)="startAdd(rule)">Yeni Değer Planla</button>
+                }
+                @if (ruleStatus(rule) !== 'current') {
+                  <button type="button" class="sim-action danger" (click)="removeRule(rule)">Sil</button>
+                }
+              </div>
+            </div>
+
+            @if (isFormFor(rule)) {
+              <div class="sim-rule-editor">
+                <label class="kf-field">
+                  <span>Görünen ad</span>
+                  <input type="text" name="ruleName" maxlength="100" [(ngModel)]="ruleForm.name" />
+                </label>
+                <label class="kf-field">
+                  <span>{{ rule.code.includes('RATE') ? 'Oran (0,0215 = %2,15)' : 'Katsayı (1,00 = etkisiz · 1,10 = %10 ek prim)' }}</span>
+                  <input type="number" name="ruleValue" min="0.0001" step="0.01" [(ngModel)]="ruleForm.value" />
+                </label>
+                @if (isAdding()) {
+                  <label class="kf-field">
+                    <span>Hangi tarihten itibaren?</span>
+                    <input type="date" name="ruleEffectiveFrom" [(ngModel)]="ruleForm.effectiveFrom" />
+                  </label>
+                }
+                <div class="sim-rule-form-actions">
+                  <button type="button" class="kf-btn-outline" (click)="cancelRuleForm()">Vazgeç</button>
+                  <button type="button" class="kf-btn" [disabled]="isSavingRule()" (click)="saveRule()">
+                    {{ isSavingRule() ? 'Kaydediliyor...' : (isAdding() ? 'Planla' : 'Kaydet') }}
+                  </button>
+                </div>
+              </div>
+            }
+
+          }
+
+        </div>
+
+      } @else {
+        <div class="state-message"><strong>Katsayılar yükleniyor...</strong></div>
+      }
+
+    </div>
+
+  } @else {
 
   <div class="sim-grid">
 
@@ -23,43 +134,47 @@
         </label>
 
         <label class="kf-field">
-          <span>Model Yılı</span>
-          <select name="modelYear" [(ngModel)]="modelYear">
-            @for (year of years; track year) {
-              <option [ngValue]="year">{{ year }} ({{ currentYear - year }} yaş)</option>
+          <span>Araç Yaşı</span>
+          <select name="ageCode" [(ngModel)]="ageCode">
+            @for (rule of currentRulesFor('AGE_'); track rule.id) {
+              <option [ngValue]="rule.code">{{ ruleOptionLabel(rule) }}</option>
             }
           </select>
         </label>
 
         <label class="kf-field">
           <span>Sürücü Yaşı</span>
-          <input type="number" name="driverAge" min="18" max="99" data-max-digits="2" [(ngModel)]="driverAge" />
+          <select name="driverCode" [(ngModel)]="driverCode">
+            @for (rule of currentRulesFor('DRIVER_'); track rule.id) {
+              <option [ngValue]="rule.code">{{ ruleOptionLabel(rule) }}</option>
+            }
+          </select>
         </label>
 
         <label class="kf-field">
           <span>Kullanım</span>
-          <select name="usage" [(ngModel)]="usage">
-            <option value="PRIVATE">Hususi</option>
-            <option value="COMMERCIAL">Ticari</option>
+          <select name="usageCode" [(ngModel)]="usageCode">
+            @for (rule of currentRulesFor('USAGE_'); track rule.id) {
+              <option [ngValue]="rule.code">{{ ruleOptionLabel(rule) }}</option>
+            }
           </select>
         </label>
 
         <label class="kf-field">
           <span>Hasar Geçmişi</span>
-          <select name="claimsCount" [(ngModel)]="claimsCount">
-            <option [ngValue]="0">Hasarsız</option>
-            <option [ngValue]="1">1 hasar</option>
-            <option [ngValue]="2">2 hasar</option>
-            <option [ngValue]="3">3 ve üzeri</option>
+          <select name="claimsCode" [(ngModel)]="claimsCode">
+            @for (rule of currentRulesFor('CLAIMS_'); track rule.id) {
+              <option [ngValue]="rule.code">{{ ruleOptionLabel(rule) }}</option>
+            }
           </select>
         </label>
 
         <label class="kf-field">
           <span>Bölge</span>
-          <select name="region" [(ngModel)]="region">
-            <option value="LOW">Düşük risk (diğer iller)</option>
-            <option value="NORMAL">Normal risk (büyükşehirler)</option>
-            <option value="HIGH">Yüksek risk (İstanbul, Ankara, İzmir, Bursa, Kocaeli, Antalya)</option>
+          <select name="regionCode" [(ngModel)]="regionCode">
+            @for (rule of currentRulesFor('REGION_'); track rule.id) {
+              <option [ngValue]="rule.code">{{ ruleOptionLabel(rule) }}</option>
+            }
           </select>
         </label>
 
@@ -157,5 +272,7 @@
     </div>
 
   </div>
+
+  }
 
 </section>

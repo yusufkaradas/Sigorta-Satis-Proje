@@ -339,6 +339,19 @@
           <section class="qq-risk-group">
 
             <div class="qq-risk-title">
+              <strong>Poliçe Başlangıç Tarihi</strong>
+              <small>Kasko korumanızın başlayacağı gün; en fazla 30 gün sonrası seçilebilir.</small>
+            </div>
+
+            <div class="qq-birth-field">
+              <input id="policyStartDate" name="policyStartDate" type="date" aria-label="Poliçe başlangıç tarihi" [min]="minPolicyStart" [max]="maxPolicyStart" [value]="policyStartDate" (change)="policyStartDate = $any($event.target).value" />
+            </div>
+
+          </section>
+
+          <section class="qq-risk-group">
+
+            <div class="qq-risk-title">
               <strong>Kullanım Şekli</strong>
               <small>Aracınızı nasıl kullanıyorsunuz?</small>
             </div>
@@ -635,6 +648,7 @@
                 <div><dt>Teminat</dt><dd>{{ chosen.coverages.length }} teminat</dd></div>
                 <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsLabel }}</dd></div>
                 <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+<div><dt>Poliçe Başlangıcı</dt><dd>{{ policyStartText }}</dd></div>
               </dl>
 
               <ul class="qg-price-list" *ngIf="pricingResult as pricing">
@@ -650,7 +664,7 @@
             <ol class="qg-done-steps">
               <li><b>1</b> Paketi veya teminat limitlerinizi değiştirip fiyatı yeniden hesaplayabilirsiniz.</li>
               <li><b>2</b> "Teklifi Oluştur" dediğinizde teklif numaranız üretilir ve 7 gün geçerli olur.</li>
-              <li><b>3</b> Teklifi PDF indirip ödemeyi müşteri portalından tamamlayabilirsiniz.</li>
+              <li><b>3</b> Teklif PDF'ini indirip ödemeyi müşteri portalından tamamlayabilirsiniz.</li>
             </ol>
 
           </div>
@@ -711,6 +725,7 @@
               <div><dt>Teminat</dt><dd>{{ selectedPackage?.coverages?.length ?? 0 }} teminat</dd></div>
               <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsLabel }}</dd></div>
               <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+<div><dt>Poliçe Başlangıcı</dt><dd>{{ policyStartText }}</dd></div>
             </dl>
 
             <div class="qg-done-price">
@@ -736,7 +751,7 @@
               class="qq-btn qq-btn-ghost"
               [disabled]="isDownloadingQuote"
               (click)="downloadCreatedQuotePdf()">
-              {{ isDownloadingQuote ? 'Hazırlanıyor...' : 'Teklifi PDF İndir' }}
+              {{ isDownloadingQuote ? 'Hazırlanıyor...' : 'Teklif PDF İndir' }}
             </button>
             <button
               *ngIf="!createdQuoteNeedsReview"

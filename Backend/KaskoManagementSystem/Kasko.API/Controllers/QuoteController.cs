@@ -89,7 +89,7 @@ namespace Kasko.API.Controllers
 
         
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _quoteService.DeleteAsync(id);
@@ -209,7 +209,10 @@ namespace Kasko.API.Controllers
             }
 
             var today = DateTime.UtcNow.Date;
-            var requestedStart = dto.StartDate?.Date ?? today;
+            var requestedStart = dto.StartDate?.Date
+                ?? (quote.PolicyStartDate.HasValue && quote.PolicyStartDate.Value.Date >= today
+                    ? quote.PolicyStartDate.Value.Date
+                    : today);
 
             if (requestedStart < today || requestedStart > today.AddDays(30))
             {

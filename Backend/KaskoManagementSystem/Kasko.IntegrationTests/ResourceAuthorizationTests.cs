@@ -625,13 +625,12 @@ public class ResourceAuthorizationTests
                 factory,
                 customerAUser);
 
-        // Customer A, Customer B'nin quote'unu silmeye çalışıyor
         var response =
             await customerAClient.DeleteAsync(
                 $"/api/Quote/{quoteB.Id}");
 
         Assert.Equal(
-            HttpStatusCode.NotFound,
+            HttpStatusCode.Forbidden,
             response.StatusCode);
     }
     [Fact]

@@ -331,6 +331,22 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     return result;
   }
 
+  readonly minPolicyStart = new Date().toLocaleDateString('sv-SE');
+
+  readonly maxPolicyStart = new Date(Date.now() + 30 * 86400000).toLocaleDateString('sv-SE');
+
+  policyStartDate = new Date().toLocaleDateString('sv-SE');
+
+  get isPolicyStartValid(): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(this.policyStartDate) &&
+      this.policyStartDate >= this.minPolicyStart &&
+      this.policyStartDate <= this.maxPolicyStart;
+  }
+
+  get policyStartText(): string {
+    return this.policyStartDate ? this.policyStartDate.split('-').reverse().join('.') : '—';
+  }
+
   get vehicleAge(): number {
     const year = this.selectedVehicle?.modelYear ?? new Date().getFullYear();
     return Math.max(0, new Date().getFullYear() - year);
@@ -447,7 +463,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       usage: this.usage,
       claimsCount: this.claimsCount,
       deductible: this.deductible,
-      coverageOptionIds: this.coverageOptionIds
+      coverageOptionIds: this.coverageOptionIds,
+      policyStartDate: this.policyStartDate
     };
 
     if (this.isLoggedIn) {
@@ -472,7 +489,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       packageId: packageItem.id,
       deductible: this.deductible,
       coverageIds: [],
-      coverageOptionIds: this.coverageOptionIds
+      coverageOptionIds: this.coverageOptionIds,
+      policyStartDate: this.policyStartDate
     }).subscribe({
       next: quote => {
         this.isLoading = false;
@@ -655,7 +673,8 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       packageId: draft.packageId,
       coverageIds: [],
       coverageOptionIds: draft.coverageOptionIds ?? {},
-      validUntil: validUntil.toISOString()
+      validUntil: validUntil.toISOString(),
+      policyStartDate: draft.policyStartDate ?? null
     }).subscribe({
       next: (quote: any) => {
         this.isLoading = false;
@@ -1161,6 +1180,11 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
     }
 
     this.errorMessage = '';
+
+    if (!this.isPolicyStartValid) {
+      this.errorMessage = 'Poliçe başlangıç tarihi bugünden itibaren en fazla 30 gün sonrası olabilir.';
+      return;
+    }
 
     if (this.packages.length === 0) {
       this.loadCatalog();

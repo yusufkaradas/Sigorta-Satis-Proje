@@ -301,6 +301,120 @@ public class PricingRuleServiceTests
     }
 
     [Fact]
+    public async Task DeleteAsync_WhenLastEngineRuleVersion_ShouldThrowBadRequestException()
+    {
+        var rule = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "CLAIMS_2",
+            Name = "2 Hasar",
+            Value = 1.15m,
+            Version = 1,
+            EffectiveFrom = new DateTime(2026, 1, 1),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetByIdAsync(rule.Id))
+            .ReturnsAsync(rule);
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<PricingRule, bool>>>()))
+            .ReturnsAsync(new List<PricingRule>());
+
+        await Assert.ThrowsAsync<BadRequestException>(
+            () => _pricingRuleService.DeleteAsync(rule.Id));
+
+        _pricingRuleRepositoryMock.Verify(
+            x => x.DeleteAsync(It.IsAny<PricingRule>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenEngineRuleHasAnotherActiveVersion_ShouldDeleteRule()
+    {
+        var rule = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "BASE_KASKO_RATE",
+            Name = "Temel Oran",
+            Value = 0.0215m,
+            Version = 5,
+            EffectiveFrom = new DateTime(2026, 1, 1),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        var previous = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "BASE_KASKO_RATE",
+            Name = "Temel Oran",
+            Value = 0.02m,
+            Version = 4,
+            EffectiveFrom = new DateTime(2025, 1, 1),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetByIdAsync(rule.Id))
+            .ReturnsAsync(rule);
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<PricingRule, bool>>>()))
+            .ReturnsAsync(new List<PricingRule> { previous });
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.DeleteAsync(rule))
+            .Returns(Task.CompletedTask);
+
+        await _pricingRuleService.DeleteAsync(rule.Id);
+
+        _pricingRuleRepositoryMock.Verify(
+            x => x.DeleteAsync(rule),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenDeactivatingLastEngineRuleVersion_ShouldThrowBadRequestException()
+    {
+        var rule = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "REGION_HIGH",
+            Name = "Yüksek Risk",
+            Value = 1.2m,
+            Version = 1,
+            EffectiveFrom = new DateTime(2026, 1, 1),
+            IsActive = true,
+            IsDeleted = false
+        };
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetByIdAsync(rule.Id))
+            .ReturnsAsync(rule);
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<PricingRule, bool>>>()))
+            .ReturnsAsync(new List<PricingRule>());
+
+        var dto = new UpdatePricingRuleDto
+        {
+            Id = rule.Id,
+            Name = rule.Name,
+            Value = rule.Value,
+            IsActive = false
+        };
+
+        await Assert.ThrowsAsync<BadRequestException>(
+            () => _pricingRuleService.UpdateAsync(dto));
+
+        Assert.True(rule.IsActive);
+    }
+
+    [Fact]
     public async Task DeleteAsync_WhenRuleDoesNotExist_ShouldThrowNotFoundException()
     {
         var id = Guid.NewGuid();

@@ -1,4 +1,5 @@
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
+import { districtOptions, provinceOptions } from '../../../core/data/tr-locations';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,11 @@ import { ToastService } from '../../../core/services/toast.service';
   styles: [':host { display: block; height: 100%; }']
 })
 export class CustomerProfile implements OnInit {
+
+  readonly provinceOptions = provinceOptions;
+
+  readonly districtOptions = districtOptions;
+
 
   private readonly customerService = inject(CustomerService);
 

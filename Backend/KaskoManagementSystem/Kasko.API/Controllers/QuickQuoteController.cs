@@ -206,8 +206,12 @@ public class QuickQuoteController : ControllerBase
                         CustomerId = customer.CustomerId.Value,
                         VehicleId = quote.VehicleId,
                         QuoteId = dto.QuoteId,
-                        StartDate = DateTime.UtcNow,
-                        EndDate = DateTime.UtcNow.AddYears(1)
+                        StartDate = quote.PolicyStartDate.HasValue && quote.PolicyStartDate.Value.Date > DateTime.UtcNow.Date
+                            ? quote.PolicyStartDate.Value.Date
+                            : DateTime.UtcNow,
+                        EndDate = (quote.PolicyStartDate.HasValue && quote.PolicyStartDate.Value.Date > DateTime.UtcNow.Date
+                            ? quote.PolicyStartDate.Value.Date
+                            : DateTime.UtcNow).AddYears(1)
                     });
 
             payment =
@@ -447,7 +451,13 @@ public class QuickQuoteController : ControllerBase
                     dto.Deductible,
 
                 PreviousPolicyId =
-                    null
+                    null,
+
+                EnforceSingleOpenQuote =
+                    true,
+
+                PolicyStartDate =
+                    dto.PolicyStartDate
             };
 
 
@@ -549,7 +559,13 @@ public class QuickQuoteController : ControllerBase
                     dto.Deductible,
 
                 PreviousPolicyId =
-                    null
+                    null,
+
+                EnforceSingleOpenQuote =
+                    true,
+
+                PolicyStartDate =
+                    dto.PolicyStartDate
             };
 
         var quote =

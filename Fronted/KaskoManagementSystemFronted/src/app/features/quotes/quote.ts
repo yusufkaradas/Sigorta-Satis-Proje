@@ -82,6 +82,8 @@ export interface Quote {
 
   validUntil: string;
 
+  policyStartDate?: string | null;
+
   status: QuoteStatus;
 
   createdDate?: string;
@@ -116,6 +118,8 @@ export interface QuoteCreateDto {
   coverageOptionIds?: Record<string, string>;
 
   validUntil: string;
+
+  policyStartDate?: string | null;
 
 }
 

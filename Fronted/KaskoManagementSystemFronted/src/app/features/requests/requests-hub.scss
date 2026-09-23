@@ -42,3 +42,28 @@
     height: 100%;
   }
 }
+
+@media (max-width: 900px) {
+
+  :host,
+  .hub {
+    height: auto;
+  }
+
+  .hub-tabs {
+    box-sizing: border-box;
+    align-self: stretch;
+    max-width: 100%;
+    padding: 12px 12px 0;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hub-tab {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 0 16px;
+    font-size: 13px;
+  }
+}

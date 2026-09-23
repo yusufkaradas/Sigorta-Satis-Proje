@@ -235,6 +235,9 @@ namespace Kasko.Business.Services
                 ValidUntil =
         quote.ValidUntil,
 
+                PolicyStartDate =
+        quote.PolicyStartDate,
+
                 CreatedDate =
         quote.CreatedDate,
 
@@ -376,6 +379,11 @@ namespace Kasko.Business.Services
 
             await EnsureNoActivePolicyAsync(vehicle.Id);
 
+            if (dto.EnforceSingleOpenQuote || IsCustomerCaller)
+            {
+                await EnsureNoOpenQuoteAsync(vehicle.Id);
+            }
+
             PreviousPolicy? previousPolicy = null;
 
             if (dto.PreviousPolicyId.HasValue)
@@ -515,6 +523,11 @@ namespace Kasko.Business.Services
 
             await EnsureNoActivePolicyAsync(vehicle.Id);
 
+            if (dto.EnforceSingleOpenQuote || IsCustomerCaller)
+            {
+                await EnsureNoOpenQuoteAsync(vehicle.Id);
+            }
+
             await CancelOpenQuotesAsync(vehicle.Id);
 
             var quoteNumber =
@@ -630,6 +643,8 @@ namespace Kasko.Business.Services
 
                 ValidUntil = dto.ValidUntil,
 
+                PolicyStartDate = ResolvePolicyStartDate(dto.PolicyStartDate),
+
                 PackageId = dto.PackageId,
 
                 PackageName = dto.PackageId.HasValue
@@ -711,6 +726,7 @@ namespace Kasko.Business.Services
                 PremiumAmount = quote.PremiumAmount,
                 Status = quote.Status,
                 ValidUntil = quote.ValidUntil,
+                PolicyStartDate = quote.PolicyStartDate,
                 PackageId = quote.PackageId,
                 PackageName = quote.PackageName,
                 ReviewReason = quote.ReviewReason,
@@ -1035,9 +1051,66 @@ namespace Kasko.Business.Services
 
         public async Task<QuoteEligibilityDto> CheckVehicleEligibilityAsync(Guid vehicleId)
         {
-            var message = await GetActivePolicyBlockMessageAsync(new[] { vehicleId });
+            var message =
+                await GetActivePolicyBlockMessageAsync(new[] { vehicleId })
+                ?? (IsCustomerCaller ? await GetOpenQuoteBlockMessageAsync(vehicleId) : null);
 
             return new QuoteEligibilityDto { Eligible = message == null, Message = message };
+        }
+
+        private static DateTime? ResolvePolicyStartDate(DateTime? requested)
+        {
+            if (!requested.HasValue)
+            {
+                return null;
+            }
+
+            var today = DateTime.UtcNow.Date;
+            var date = requested.Value.Date;
+
+            if (date < today || date > today.AddDays(30))
+            {
+                throw new BadRequestException(
+                    "Poliçe başlangıç tarihi bugünden itibaren en fazla 30 gün sonrası olabilir.");
+            }
+
+            return date;
+        }
+
+        private bool IsCustomerCaller =>
+            _httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true;
+
+        public async Task EnsureNoOpenQuoteAsync(Guid vehicleId)
+        {
+            var message = await GetOpenQuoteBlockMessageAsync(vehicleId);
+
+            if (message != null)
+            {
+                throw new BadRequestException(message);
+            }
+        }
+
+        private async Task<string?> GetOpenQuoteBlockMessageAsync(Guid vehicleId)
+        {
+            var now = DateTime.UtcNow;
+
+            var openQuote =
+                (await _unitOfWork.Quotes
+                    .FindAsync(x =>
+                        x.VehicleId == vehicleId &&
+                        !x.IsDeleted &&
+                        (x.Status == QuoteStatus.Draft ||
+                         x.Status == QuoteStatus.Offered) &&
+                        x.ValidUntil > now))
+                    .OrderByDescending(x => x.ValidUntil)
+                    .FirstOrDefault();
+
+            if (openQuote == null)
+            {
+                return null;
+            }
+
+            return $"Bu araç için {openQuote.ValidUntil.ToLocalTime():dd.MM.yyyy} tarihine kadar geçerli bir teklifiniz var ({openQuote.QuoteNumber}). Mevcut teklifi Tekliflerim sayfasından satın alabilir, süresi dolduktan sonra yeni teklif alabilirsiniz.";
         }
 
         public async Task<QuoteEligibilityDto> CheckPlateEligibilityAsync(string plateNumber)

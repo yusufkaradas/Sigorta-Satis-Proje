@@ -5,6 +5,8 @@
 
 html {
   @include k.scale-root;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html,
@@ -23,6 +25,40 @@ app-root {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+@media (max-width: 900px) {
+
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  app-root {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  [class*="table-wrapper"],
+  [class*="table-wrap"],
+  .table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 @include k.shared-placeholders;
 @include form-kit.form-kit;
@@ -1908,6 +1944,7 @@ app-root {
 
 .kf-btn,
 .kf-btn-outline,
+.kf-btn-pdf,
 .kf-btn-success,
 .kf-btn-danger,
 .cp-btn,
@@ -2010,6 +2047,7 @@ app-root {
 
 .kf-btn,
 .kf-btn-outline,
+.kf-btn-pdf,
 .kf-btn-success,
 .kf-btn-danger,
 .cp-btn,
@@ -2329,6 +2367,7 @@ kbd {
 .sim-code,
 .kf-btn,
 .kf-btn-outline,
+.kf-btn-pdf,
 .offer-button,
 .action-button,
 .detail-button,

@@ -30,15 +30,15 @@
       </li>
       <li [class.active]="currentStep === 2" [class.done]="currentStep > 2">
         <span>{{ currentStep > 2 ? '✓' : 2 }}</span>
-        Sürücü ve Risk
+        Sürücü ve Teminat
       </li>
       <li [class.active]="currentStep === 3" [class.done]="currentStep > 3">
         <span>{{ currentStep > 3 ? '✓' : 3 }}</span>
-        Teklifler
+        Paket Seçimi
       </li>
       <li [class.active]="currentStep === 4">
         <span>4</span>
-        {{ isCustomerMode ? 'Özet ve Satın Al' : 'Özet' }}
+        {{ isCustomerMode ? 'Fiyat ve Satın Al' : 'Fiyat ve Teklif' }}
       </li>
     </ol>
 
@@ -152,17 +152,27 @@
 
       <section class="qc-risk-row">
         <div class="qc-risk-title">
+          <strong>Poliçe Başlangıç Tarihi</strong>
+          <small>En fazla 30 gün sonrası</small>
+        </div>
+        <div class="qc-risk-options">
+          <input class="qc-date" type="date" name="policyStartDate" [min]="minPolicyStart" [max]="maxPolicyStart" [(ngModel)]="policyStartDate" />
+        </div>
+      </section>
+
+      <section class="qc-risk-row">
+        <div class="qc-risk-title">
           <strong>Kullanım Şekli</strong>
           <small>Aracınızı nasıl kullanıyorsunuz?</small>
         </div>
         <div class="qc-risk-options">
           <label class="qc-option" [class.selected]="usage === 'PRIVATE'">
-            <input type="radio" name="usage" value="PRIVATE" [(ngModel)]="usage" (ngModelChange)="calculateQuote()" />
+            <input type="radio" name="usage" value="PRIVATE" [(ngModel)]="usage" />
             <strong>Özel Kullanım</strong>
             <small>Günlük / bireysel</small>
           </label>
           <label class="qc-option" [class.selected]="usage === 'COMMERCIAL'">
-            <input type="radio" name="usage" value="COMMERCIAL" [(ngModel)]="usage" (ngModelChange)="calculateQuote()" />
+            <input type="radio" name="usage" value="COMMERCIAL" [(ngModel)]="usage" />
             <strong>Ticari Kullanım</strong>
             <small>İşletme kullanımı</small>
           </label>
@@ -175,8 +185,8 @@
           <small>Son dönem hasar sayınız</small>
         </div>
         <div class="qc-risk-options">
-          <label *ngFor="let item of claimOptions" class="qc-option" [class.selected]="claimsCount === item.value">
-            <input type="radio" name="claimsCount" [value]="item.value" [(ngModel)]="claimsCount" (ngModelChange)="previousPolicyId = null; calculateQuote()" />
+          <label *ngFor="let item of claimOptions" class="qc-option" [class.selected]="isClaimSelected(item.value)">
+            <input type="radio" name="claimsCount" [value]="item.value" [checked]="isClaimSelected(item.value)" (change)="claimsCount = item.value; previousPolicyId = null" />
             <strong>{{ item.label }}</strong>
             <small>{{ item.hint }}</small>
           </label>
@@ -222,7 +232,57 @@
 
     <!-- Adım 3 -->
 
-    <div *ngIf="currentStep === 3" class="kf-body kf-body-3">
+    <div *ngIf="currentStep === 3" class="kf-body kf-body-3 qc-packages">
+
+      <div class="qc-pack-head kf-span-all">
+        <div>
+          <strong>Paketinizi seçin</strong>
+          <small>Teminat kapsamını karşılaştırın; fiyat, seçiminizden sonra hesaplanır.</small>
+        </div>
+        <div class="qc-chip-row">
+          <span class="qc-chip" *ngFor="let row of limitSummary"><b>{{ row.label }}</b>{{ row.value }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="isLoadingPackages" class="kf-state kf-span-all">Paketler yükleniyor...</div>
+
+      <article
+        *ngFor="let item of displayPackages; let i = index"
+        class="kf-package qc-package"
+        [class.recommended]="i === 1"
+        [class.selected]="item.id === packageId"
+        (click)="choosePackage(item.id)">
+
+        <h2 class="kf-section-title">
+          {{ item.name }}
+          <span *ngIf="i === 1" class="kf-badge status-offered">Önerilen</span>
+        </h2>
+
+        <span class="qc-package-count">{{ coveredCount(item) }} / {{ allCoverageRows.length }} teminat</span>
+
+        <span class="qc-package-desc" *ngIf="item.description">{{ item.description }}</span>
+
+        <ul class="qc-coverages">
+          <li *ngFor="let row of allCoverageRows" [class.missing]="!packageHasCoverage(item, row.coverageId)">
+            {{ packageHasCoverage(item, row.coverageId) ? '✓' : '–' }} {{ row.coverageName }}<i class="cov-help" *ngIf="row.description" [attr.data-tip]="row.description">?</i>
+          </li>
+        </ul>
+
+        <button
+          type="button"
+          [class]="item.id === packageId ? 'kf-btn' : 'kf-btn-outline'"
+          (click)="$event.stopPropagation(); choosePackage(item.id)">
+          {{ item.id === packageId ? '✓ Seçili Paket' : 'Bu Paketi Seç' }}
+        </button>
+
+      </article>
+
+    </div>
+
+
+    <!-- Adım 4 -->
+
+    <div *ngIf="currentStep === 4" class="kf-body qc-price-layout">
 
       <div *ngIf="isComparingPackages" class="qc-loading-wrap kf-span-all">
         <div class="qc-loading-card">
@@ -231,8 +291,8 @@
               <span>%{{ comparisonProgress }}</span>
             </div>
             <div>
-              <h2>Size özel teklifler hazırlanıyor</h2>
-              <p>Birkaç saniye içinde paketlerin fiyatlarını yan yana göstereceğiz.</p>
+              <h2>Priminiz hesaplanıyor</h2>
+              <p>Seçilen paket ve teminat limitleri için fiyat hazırlanıyor.</p>
             </div>
           </div>
           <div class="qc-loading-vehicle">
@@ -251,131 +311,89 @@
         </div>
       </div>
 
-      <div *ngIf="!isComparingPackages && packageQuotes.length === 0" class="kf-state kf-span-all">
-        <strong>Teklif hesaplanamadı.</strong>
-        Geri dönüp araç ve risk bilgilerini kontrol edin.
-      </div>
+      <ng-container *ngIf="!isComparingPackages && calculatedPremium !== null">
 
-      <ng-container *ngIf="!isComparingPackages">
+        <section class="qc-price-card">
 
-        <article
-          *ngFor="let option of packageQuotes; let i = index"
-          class="kf-package"
-          [class.recommended]="i === 1"
-          [class.selected]="option.package.id === packageId">
-
-          <h2 class="kf-section-title">
-            {{ option.package.name }}
-            <span *ngIf="i === 1" class="kf-badge status-offered">Önerilen</span>
-          </h2>
-
-          <div>
-            <span class="kf-muted">Toplam Prim</span>
-            <div *ngIf="option.totalPremium !== null" class="kf-package-price">
-              {{ option.totalPremium | number:'1.2-2' }} ₺
+          <div class="qc-price-head">
+            <div>
+              <span>{{ selectedPackage?.name }}</span>
+              <strong>{{ calculatedPremium | number:'1.2-2' }} ₺<small>/ yıl</small></strong>
+              <em>Peşin veya 9 taksitle aylık {{ calculatedPremium / 9 | number:'1.2-2' }} ₺</em>
             </div>
-            <span *ngIf="option.totalPremium !== null" class="kf-muted">Aylık yaklaşık {{ option.totalPremium / 12 | number:'1.0-0' }} ₺ · {{ option.package.coverages.length }} teminat</span>
-            <div *ngIf="option.totalPremium === null" class="kf-package-price">Hesaplanamadı</div>
+            <div class="qc-price-valid">
+              <small>Geçerlilik Tarihi</small>
+              <strong>{{ validUntil | date:'dd.MM.yyyy' }}</strong>
+            </div>
           </div>
 
-          <span class="kf-muted">{{ option.package.description }}</span>
+          <dl class="qc-price-grid">
+            <div *ngIf="!isCustomerMode"><dt>Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
+            <div><dt>Araç</dt><dd [title]="(selectedVehicle?.brand ?? '') + ' ' + (selectedVehicle?.model ?? '')">{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</dd></div>
+            <div><dt>Plaka</dt><dd><app-plate [value]="selectedVehicle?.plateNumber" size="sm" /></dd></div>
+            <div><dt>Kasko Değeri</dt><dd>{{ (marketValue ?? selectedVehicle?.marketValue) | number:'1.0-0' }} ₺</dd></div>
+            <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsLabel }}</dd></div>
+            <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+<div><dt>Poliçe Başlangıcı</dt><dd>{{ policyStartText }}</dd></div>
+          </dl>
 
-          <ul class="qc-coverages">
-            <li *ngFor="let row of allCoverageRows" [class.missing]="!packageHasCoverage(option.package, row.coverageId)">
-              {{ packageHasCoverage(option.package, row.coverageId) ? '✓' : '✕' }} {{ row.coverageName }}<i class="cov-help" *ngIf="row.description" [attr.data-tip]="row.description">?</i>
+          <ul class="qc-price-list">
+            <li *ngFor="let coverage of pricedCoverages">
+              {{ coverage.coverageName }}
+              <span>{{ coverage.optionName || (coverage.calculatedPrice > 0 ? 'Ek teminat' : 'Pakete dahil') }}</span>
             </li>
           </ul>
 
-          <span class="qg-upgrade" *ngIf="offerUpgrade(option) as note">{{ note }}</span>
+          <p class="kf-muted">Fiyata %5 gider vergisi dahildir; teklif oluşturulduktan sonra geçerlilik tarihine kadar sabittir.</p>
 
-          <button
-            type="button"
-            [class]="option.package.id === packageId ? 'kf-btn-success' : 'kf-btn'"
-            [disabled]="option.totalPremium === null || isCalculating"
-            (click)="selectPackage(option.package.id)">
-            {{ option.package.id === packageId ? '✓ Paket Seçildi' : 'Bu Paketi Seç' }}
-          </button>
+        </section>
 
-        </article>
+        <aside class="qc-price-side">
+
+          <ol class="qc-next-steps">
+            <ng-container *ngIf="isCustomerMode; else staffSteps">
+              <li><b>1</b> Genel şartları ve KVKK metnini onaylayın.</li>
+              <li><b>2</b> "Satın Al" dediğinizde teklif otomatik onaylanırsa ödeme ekranı hemen açılır.</li>
+              <li><b>3</b> Özel inceleme gerekirse teklif onaylandığında bildirim alırsınız.</li>
+            </ng-container>
+            <ng-template #staffSteps>
+              <li><b>1</b> "Teklifi Oluştur" ile teklif numarası üretilir ve müşterinin hesabına düşer.</li>
+              <li><b>2</b> Otomatik onay limitlerini aşan teklifler yönetici onayına gönderilir.</li>
+              <li><b>3</b> Onaylanan teklif müşteri tarafından ödenerek poliçeye dönüşür.</li>
+            </ng-template>
+          </ol>
+
+          <div *ngIf="isCustomerMode" class="qc-consents">
+            <label class="kf-consent">
+              <input type="checkbox" name="acceptedTerms" [(ngModel)]="acceptedTerms" />
+              Genel şartları ve ön bilgilendirme formunu okudum.
+            </label>
+            <label class="kf-consent">
+              <input type="checkbox" name="acceptedKvkk" [(ngModel)]="acceptedKvkk" />
+              KVKK aydınlatma metnini okudum.
+            </label>
+          </div>
+
+        </aside>
 
       </ng-container>
 
-    </div>
-
-
-    <!-- Adım 4 -->
-
-    <div *ngIf="currentStep === 4" class="kf-body kf-body-split">
-
-      <section class="kf-section">
-
-        <h2 class="kf-section-title">Teklif Bilgileri</h2>
-
-        <div class="kf-highlight" *ngIf="calculatedPremium !== null">
-          <span>Toplam Prim · {{ selectedPackage?.name }}</span>
-          <strong>{{ calculatedPremium | number:'1.2-2' }} ₺</strong>
-        </div>
-
-        <p class="kf-price-lock" *ngIf="calculatedPremium !== null">🔒 Bu fiyat teklif oluşturulduktan sonra {{ validUntil | date:'dd.MM.yyyy' }} tarihine kadar sabittir.</p>
-
-        <dl class="kf-details">
-          <div *ngIf="!isCustomerMode" class="kf-span-all"><dt>Müşteri</dt><dd>{{ selectedCustomerName }}</dd></div>
-          <div class="kf-span-all"><dt>Araç</dt><dd>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }} · {{ selectedVehicle?.plateNumber }}</dd></div>
-          <div><dt>Kullanım</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }}</dd></div>
-          <div><dt>Önceki Hasar</dt><dd>{{ claimsCount === 0 ? 'Hasarsız' : claimsCount + ' hasar' }}</dd></div>
-          <div><dt>Teklif Geçerlilik</dt><dd>{{ validUntil | date:'dd.MM.yyyy' }}</dd></div>
-        </dl>
-
-      </section>
-
-      <section class="kf-section" *ngIf="selectedPackage">
-
-        <h2 class="kf-section-title">
-          Teminatlar
-          <small>{{ pricedCoverages.length }} teminat</small>
-        </h2>
-
-        <div *ngIf="isCalculating" class="kf-muted">Teminatlar hesaplanıyor...</div>
-
-        <ul *ngIf="!isCalculating" class="kf-list kf-list-2">
-          <li *ngFor="let coverage of pricedCoverages" class="kf-list-item qc-summary-item">
-            <strong [title]="coverage.coverageName">✓ {{ coverage.coverageName }}</strong>
-            <span>{{ coverage.optionName || (coverage.limit ? ((coverage.limit | number:'1.0-0') + ' ₺') : 'Araç değeri kadar') }}</span>
-            <small *ngIf="coverage.calculatedPrice > 0">+{{ coverage.calculatedPrice | number:'1.0-0' }} ₺</small>
-          </li>
-        </ul>
-
-        <dl class="kf-details kf-details-3">
-          <div *ngIf="marketValue !== null"><dt>Araç Kasko Değeri</dt><dd>{{ marketValue | number:'1.0-0' }} ₺</dd></div>
-          <div *ngIf="riskAdjustedPremium !== null"><dt>Paket Primi</dt><dd>{{ riskAdjustedPremium | number:'1.2-2' }} ₺</dd></div>
-          <div *ngIf="coveragePremium !== null"><dt>Limit Farkı</dt><dd>{{ coveragePremium | number:'1.2-2' }} ₺</dd></div>
-        </dl>
-
-      </section>
+      <div *ngIf="!isComparingPackages && !isCalculating && calculatedPremium === null" class="kf-state kf-span-all">
+        <strong>Fiyat hesaplanamadı.</strong>
+        Paketi değiştirip tekrar deneyin.
+      </div>
 
     </div>
 
-
-    <div *ngIf="currentStep === 4 && isCustomerMode" class="qc-consents">
-      <label class="kf-consent">
-        <input type="checkbox" name="acceptedTerms" [(ngModel)]="acceptedTerms" />
-        Genel şartları ve ön bilgilendirme formunu okudum.
-      </label>
-      <label class="kf-consent">
-        <input type="checkbox" name="acceptedKvkk" [(ngModel)]="acceptedKvkk" />
-        KVKK aydınlatma metnini okudum.
-      </label>
-      <span class="kf-muted">Teklifiniz otomatik onaylanırsa ödeme ekranı hemen açılır; özel inceleme gerekirse onaylandığında bildirim alırsınız.</span>
-    </div>
 
     <div class="kf-actions kf-actions-between">
 
       <button
         type="button"
         class="kf-btn-outline"
-        [disabled]="currentStep === 1"
+        [disabled]="currentStep === 1 || isComparingPackages"
         (click)="previousStep()">
-        Geri
+        {{ currentStep === 4 ? 'Paketi Değiştir' : 'Geri' }}
       </button>
 
       <button
@@ -384,7 +402,7 @@
         class="kf-btn"
         [disabled]="!vehicleId"
         (click)="nextStep()">
-        Risk Bilgilerine Geç
+        Devam Et
       </button>
 
       <button
@@ -392,23 +410,23 @@
         type="button"
         class="kf-btn"
         (click)="nextStep()">
-        Teklifleri Getir
+        Paket Seç
       </button>
 
       <button
         *ngIf="currentStep === 3"
         type="button"
         class="kf-btn"
-        [disabled]="!packageId"
+        [disabled]="!packageId || isLoadingPackages"
         (click)="nextStep()">
-        Özete Geç
+        Fiyatı Hesapla
       </button>
 
       <button
         *ngIf="currentStep === 4"
         type="submit"
         class="kf-btn-success"
-        [disabled]="!packageId || calculatedPremium === null || isSaving || (isCustomerMode && (!acceptedTerms || !acceptedKvkk))">
+        [disabled]="!packageId || calculatedPremium === null || isSaving || isComparingPackages || (isCustomerMode && (!acceptedTerms || !acceptedKvkk))">
         {{ isSaving ? 'Teklif Oluşturuluyor...' : (isCustomerMode ? 'Satın Al' : 'Teklifi Oluştur') }}
       </button>
 

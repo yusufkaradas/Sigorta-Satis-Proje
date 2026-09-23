@@ -9,6 +9,16 @@ namespace Kasko.Business.Services;
 
 public class PricingRuleService : IPricingRuleService
 {
+    private static readonly string[] EngineRulePrefixes =
+    {
+        "BASE_",
+        "AGE_",
+        "USAGE_",
+        "CLAIMS_",
+        "DRIVER_",
+        "REGION_"
+    };
+
     private readonly IUnitOfWork _unitOfWork;
 
     public PricingRuleService(IUnitOfWork unitOfWork)
@@ -94,6 +104,11 @@ public class PricingRuleService : IPricingRuleService
                 "Pricing rule bulunamadı.");
         }
 
+        if (rule.IsActive && !dto.IsActive)
+        {
+            await EnsureNotLastEngineRuleAsync(rule);
+        }
+
         rule.Name = dto.Name;
         rule.Description = dto.Description;
         rule.Value = dto.Value;
@@ -115,9 +130,36 @@ public class PricingRuleService : IPricingRuleService
                 "Pricing rule bulunamadı.");
         }
 
+        await EnsureNotLastEngineRuleAsync(rule);
+
         await _unitOfWork.PricingRules.DeleteAsync(rule);
 
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    private async Task EnsureNotLastEngineRuleAsync(PricingRule rule)
+    {
+        if (!EngineRulePrefixes.Any(prefix =>
+                rule.Code.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
+        var remaining = await _unitOfWork.PricingRules.FindAsync(x =>
+            x.Id != rule.Id &&
+            x.Code == rule.Code &&
+            !x.IsDeleted &&
+            x.IsActive &&
+            x.EffectiveFrom <= now &&
+            (x.EffectiveUntil == null || x.EffectiveUntil >= now));
+
+        if (!remaining.Any())
+        {
+            throw new BadRequestException(
+                $"{rule.Code} prim formülünde kullanılıyor; son geçerli sürümü silinemez veya pasife alınamaz. Etkisini kaldırmak için değerini 1 yapın.");
+        }
     }
 
     private static PricingRuleDto MapToDto(

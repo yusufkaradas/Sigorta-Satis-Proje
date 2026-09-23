@@ -21,9 +21,11 @@
           Oluşturulma: {{ formatCreatedDate(quote.createdDate) }} · Geçerlilik: {{ quote.validUntil | backendDate }}
         </p>
       </div>
-      <button *ngIf="!isCustomerMode && quote && quote.status === QuoteStatus.Offered" type="button" class="kf-btn" [disabled]="isSharing" (click)="shareQuote()">{{ isSharing ? 'Gönderiliyor...' : 'Müşteriye Gönder' }}</button>
-      <button type="button" class="kf-btn-outline" (click)="downloadQuotePdf()">Teklif PDF</button>
-      <button type="button" class="kf-btn-outline" (click)="goBack()">Tekliflere Dön</button>
+      <div class="kf-head-actions">
+        <button *ngIf="!isCustomerMode && quote && quote.status === QuoteStatus.Offered" type="button" class="kf-btn" [disabled]="isSharing" (click)="shareQuote()">{{ isSharing ? 'Gönderiliyor...' : 'Müşteriye Gönder' }}</button>
+        <button type="button" class="kf-btn-pdf" (click)="downloadQuotePdf()">Teklif PDF İndir</button>
+        <button type="button" class="kf-btn-outline" (click)="goBack()">Tekliflere Dön</button>
+      </div>
     </div>
 
     <div *ngIf="!isLoading && errorMessage" class="kf-alert kf-alert-error">

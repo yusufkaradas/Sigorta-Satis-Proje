@@ -92,11 +92,24 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
 
   lookupValue = signal<number | null>(null);
 
-  birthDay: number | null = null;
+  birthDate = '';
 
-  birthMonth: number | null = null;
+  readonly maxBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 18);
+    return date.toISOString().slice(0, 10);
+  })();
 
-  birthYear: number | null = null;
+  readonly minBirthDate = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 100);
+    return date.toISOString().slice(0, 10);
+  })();
+
+  get birthYear(): number | null {
+    const match = /^(\d{4})-\d{2}-\d{2}$/.exec(this.birthDate);
+    return match ? Number(match[1]) : null;
+  }
 
   packageCatalog = signal<GuestPackageCatalogItem[]>([]);
 
@@ -132,48 +145,30 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
     return Math.min(index, this.calculationStages.length - 1);
   }
 
-  get years18Plus(): number[] {
-    const current = new Date().getFullYear();
-    return Array.from({ length: 83 }, (_, index) => current - 18 - index);
+  readonly minPolicyStart = new Date().toLocaleDateString('sv-SE');
+
+  readonly maxPolicyStart = new Date(Date.now() + 30 * 86400000).toLocaleDateString('sv-SE');
+
+  policyStartDate = new Date().toLocaleDateString('sv-SE');
+
+  get isPolicyStartValid(): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(this.policyStartDate) &&
+      this.policyStartDate >= this.minPolicyStart &&
+      this.policyStartDate <= this.maxPolicyStart;
   }
 
-  readonly days = Array.from({ length: 31 }, (_, index) => index + 1);
-
-  readonly months = [
-    { value: 1, label: 'Ocak' },
-    { value: 2, label: 'Şubat' },
-    { value: 3, label: 'Mart' },
-    { value: 4, label: 'Nisan' },
-    { value: 5, label: 'Mayıs' },
-    { value: 6, label: 'Haziran' },
-    { value: 7, label: 'Temmuz' },
-    { value: 8, label: 'Ağustos' },
-    { value: 9, label: 'Eylül' },
-    { value: 10, label: 'Ekim' },
-    { value: 11, label: 'Kasım' },
-    { value: 12, label: 'Aralık' }
-  ];
+  get policyStartText(): string {
+    return this.policyStartDate ? this.policyStartDate.split('-').reverse().join('.') : '—';
+  }
 
   get isBirthDateValid(): boolean {
-    if (!this.birthDay || !this.birthMonth || !this.birthYear) {
-      return false;
-    }
-
-    const date = new Date(this.birthYear, this.birthMonth - 1, this.birthDay);
-
-    return date.getFullYear() === this.birthYear &&
-      date.getMonth() === this.birthMonth - 1 &&
-      date.getDate() === this.birthDay;
+    return /^\d{4}-\d{2}-\d{2}$/.test(this.birthDate) &&
+      this.birthDate >= this.minBirthDate &&
+      this.birthDate <= this.maxBirthDate;
   }
 
   get birthDateIso(): string | null {
-    if (!this.isBirthDateValid) {
-      return null;
-    }
-
-    const pad = (value: number) => String(value).padStart(2, '0');
-
-    return `${this.birthYear}-${pad(this.birthMonth!)}-${pad(this.birthDay!)}`;
+    return this.isBirthDateValid ? this.birthDate : null;
   }
 
   ngOnInit(): void {
@@ -470,6 +465,17 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.isPolicyStartValid) {
+      this.errorMessage.set('Poliçe başlangıç tarihi bugünden itibaren en fazla 30 gün sonrası olabilir.');
+      return;
+    }
+
+    const catalog = this.packageCatalog();
+
+    if (!this.selectedPackageId() && catalog.length > 0) {
+      this.selectedPackageId.set(catalog[Math.min(1, catalog.length - 1)].id);
+    }
+
     this.currentStep.set(3);
   }
 
@@ -734,6 +740,7 @@ export class QuickQuoteGuest implements OnInit, OnDestroy {
         usage: this.usage,
         birthYear: this.birthYear,
         birthDate: this.birthDateIso,
+        policyStartDate: this.policyStartDate,
         claimsCount: this.claimsCount,
         deductible: this.deductible,
         packageId: this.selectedPackageId(),

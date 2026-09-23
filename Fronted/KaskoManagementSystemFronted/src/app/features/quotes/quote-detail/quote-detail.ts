@@ -105,6 +105,12 @@ export class QuoteDetail {
 
           this.quote = data;
 
+          const plannedStart = data?.policyStartDate?.slice(0, 10);
+
+          if (plannedStart && plannedStart >= this.minStartDate && plannedStart <= this.maxStartDate) {
+            this.startDate = plannedStart;
+          }
+
           if (this.route.snapshot.queryParamMap.get('pay') === '1' && data?.status === QuoteStatus.Offered) {
             this.acceptedTerms = true;
             this.acceptedKvkk = true;

@@ -249,9 +249,103 @@ export class QuoteCreate implements OnInit, OnDestroy {
   readonly claimOptions = [
     { value: 0, label: 'Hasarsız', hint: 'İndirim uygulanır' },
     { value: 1, label: '1 Hasar', hint: 'Son dönemde' },
-    { value: 2, label: '2 Hasar', hint: 'Son dönemde' },
-    { value: 3, label: '3 ve Üzeri', hint: 'Ek prim uygulanır' }
+    { value: 3, label: '2 ve Üzeri', hint: 'Ek prim uygulanır' }
   ];
+
+  readonly minPolicyStart = new Date().toLocaleDateString('sv-SE');
+
+  readonly maxPolicyStart = new Date(Date.now() + 30 * 86400000).toLocaleDateString('sv-SE');
+
+  policyStartDate = new Date().toLocaleDateString('sv-SE');
+
+  get isPolicyStartValid(): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(this.policyStartDate) &&
+      this.policyStartDate >= this.minPolicyStart &&
+      this.policyStartDate <= this.maxPolicyStart;
+  }
+
+  get policyStartText(): string {
+    return this.policyStartDate ? this.policyStartDate.split('-').reverse().join('.') : '—';
+  }
+
+  isClaimSelected(value: number): boolean {
+    return value === 3 ? this.claimsCount >= 2 : this.claimsCount === value;
+  }
+
+  get claimsLabel(): string {
+    return this.claimsCount === 0
+      ? 'Hasarsız'
+      : this.claimsCount === 1 ? '1 hasar' : '2+ hasar';
+  }
+
+  get displayPackages(): InsurancePackage[] {
+    return this.packages.slice(0, 3);
+  }
+
+  coveredCount(item: InsurancePackage): number {
+    return item.coverages.filter(coverage => coverage.isDefault).length;
+  }
+
+  get limitSummary(): { label: string; value: string }[] {
+    const rows = this.optionRows.map(row => ({
+      label: row.coverageName,
+      value: row.options.find(option => option.id === this.selectedOptionId(row))?.name ?? '—'
+    }));
+
+    rows.push({
+      label: 'Muafiyet',
+      value: this.deductibleOptions.find(item => item.value === this.deductible)?.label ?? '—'
+    });
+
+    return rows;
+  }
+
+  choosePackage(packageId: string): void {
+    const selected = this.packages.find(item => item.id === packageId);
+
+    if (!selected) {
+      return;
+    }
+
+    this.packageId = selected.id;
+    this.selectedPackage = selected;
+    this.selectedCoverageIds = this.getDefaultCoverageIds(selected);
+    this.packageCoverageTotal = this.getCoverageTotal(selected);
+    this.pricedCoverages = [];
+    this.resetPricingResult();
+  }
+
+  private startPriceCalculation(): void {
+    this.pricedCoverages = [];
+    this.resetPricingResult();
+    this.isComparingPackages = true;
+    this.comparisonProgress = 0;
+    this.stopComparisonTimer();
+
+    const startedAt = Date.now();
+
+    this.calculateQuote();
+
+    this.comparisonTimer = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      const ratio = Math.min(100, (elapsed / this.comparisonDurationMs) * 100);
+      const finished = !this.isCalculating;
+
+      this.comparisonProgress = Math.round(finished ? ratio : Math.min(95, ratio));
+
+      if (finished && elapsed >= this.comparisonDurationMs) {
+        this.stopComparisonTimer();
+        this.comparisonProgress = 100;
+        this.isComparingPackages = false;
+
+        if (this.calculatedPremium === null) {
+          this.currentStep = 3;
+        }
+      }
+
+      this.cdr.detectChanges();
+    }, 100);
+  }
 
   readonly deductibleOptions = [
     { value: 0, label: 'Muafiyetsiz' },
@@ -279,7 +373,7 @@ export class QuoteCreate implements OnInit, OnDestroy {
     'Aracınız tanınıyor',
     'Güncel kasko değeri alınıyor',
     'Size özel indirimler uygulanıyor',
-    'Paketler karşılaştırılıyor'
+    'Paket ve teminatlar fiyatlanıyor'
   ];
 
   acceptedTerms = false;
@@ -950,7 +1044,10 @@ export class QuoteCreate implements OnInit, OnDestroy {
         this.coverageOptionIds,
 
       validUntil:
-        this.validUntil
+        this.validUntil,
+
+      policyStartDate:
+        this.policyStartDate
     };
   }
 
@@ -1480,6 +1577,8 @@ export class QuoteCreate implements OnInit, OnDestroy {
           this.isCalculating = false;
 
           this.errorMessage =
+            error?.error?.detail ??
+            error?.error?.message ??
             'Teklif fiyatı hesaplanamadı.';
 
           this.cdr.detectChanges();
@@ -1572,13 +1671,16 @@ export class QuoteCreate implements OnInit, OnDestroy {
         return;
       }
 
-      /*
-       * Paket ekranına geçildiği anda
-       * 3 paket için gerçek fiyatları hesapla.
-       */
-      this.currentStep = 3;
+      if (!this.isPolicyStartValid) {
+        this.errorMessage = 'Poliçe başlangıç tarihi bugünden itibaren en fazla 30 gün sonrası olabilir.';
+        return;
+      }
 
-      this.calculatePackageComparisons();
+      if (!this.packageId && this.displayPackages.length > 0) {
+        this.choosePackage(this.displayPackages[Math.min(1, this.displayPackages.length - 1)].id);
+      }
+
+      this.currentStep = 3;
 
       return;
     }
@@ -1601,9 +1703,7 @@ export class QuoteCreate implements OnInit, OnDestroy {
 
       this.currentStep = 4;
 
-      this.pricedCoverages = [];
-
-      this.calculateQuote();
+      this.startPriceCalculation();
 
       return;
     }
