@@ -89,12 +89,22 @@
 
           <div class="kf-field">
             <label for="city">İl *</label>
-            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="city" type="text" name="city" [(ngModel)]="model.city" required />
+            <select id="city" name="city" [(ngModel)]="model.city" (ngModelChange)="model.district = ''" required>
+              <option value="" disabled>İl seçin</option>
+              @for (item of provinceOptions(model.city); track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
           </div>
 
           <div class="kf-field">
             <label for="district">İlçe *</label>
-            <input appInputRule="place" [ruleMaxLength]="50" maxlength="50" id="district" type="text" name="district" [(ngModel)]="model.district" required />
+            <select id="district" name="district" [(ngModel)]="model.district" [disabled]="!model.city" required>
+              <option value="" disabled>{{ model.city ? 'İlçe seçin' : 'Önce il seçin' }}</option>
+              @for (item of districtOptions(model.city, model.district); track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
           </div>
 
           <div class="kf-field kf-span-all">

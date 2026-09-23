@@ -416,6 +416,19 @@
     @include k.button(danger);
   }
 
+  .kf-btn-pdf {
+    @include k.button(outline);
+    border-color: #f59e0b;
+    background: #fef3c7;
+    color: #92400e;
+
+    &:hover:not(:disabled) {
+      border-color: #d97706;
+      background: #fde68a;
+      color: #78350f;
+    }
+  }
+
   .kf-btn-sm {
     @include k.button-small;
   }
@@ -597,9 +610,15 @@
     }
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 900px) {
 
     .kf-page {
+      height: auto;
+      overflow: visible;
+    }
+
+    .kf-panel {
+      flex: 0 0 auto;
       height: auto;
       overflow: visible;
     }
@@ -607,6 +626,36 @@
     .kf-body {
       overflow: visible;
     }
+
+    .kf-actions {
+      flex-wrap: wrap;
+    }
+
+    .kf-panel-head {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .kf-head-actions {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .kf-head-actions > * {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .kf-steps {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  @media (max-width: 700px) {
 
     .kf-body-split,
     .kf-body-half,

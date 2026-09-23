@@ -16,6 +16,8 @@ public class QuickQuotePricingRequestDto
 
     public decimal Deductible { get; set; }
 
+    public DateTime? PolicyStartDate { get; set; }
+
     public IReadOnlyCollection<Guid> CoverageIds { get; set; }
         = Array.Empty<Guid>();
 

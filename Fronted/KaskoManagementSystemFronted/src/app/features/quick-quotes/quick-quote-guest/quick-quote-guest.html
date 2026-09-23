@@ -205,34 +205,32 @@
                   <small>Sürücü yaşı primi doğrudan etkiler. Kayıt olurken bu tarih otomatik dolar.</small>
                 </div>
 
-                <div class="qq-birth-row">
-
-                  <select id="birthDay" name="birthDay" [(ngModel)]="birthDay" aria-label="Gün">
-                    <option [ngValue]="null" disabled>Gün</option>
-                    @for (item of days; track item) {
-                      <option [ngValue]="item">{{ item }}</option>
-                    }
-                  </select>
-
-                  <select id="birthMonth" name="birthMonth" [(ngModel)]="birthMonth" aria-label="Ay">
-                    <option [ngValue]="null" disabled>Ay</option>
-                    @for (item of months; track item.value) {
-                      <option [ngValue]="item.value">{{ item.label }}</option>
-                    }
-                  </select>
-
-                  <select id="birthYear" name="birthYear" [(ngModel)]="birthYear" aria-label="Yıl">
-                    <option [ngValue]="null" disabled>Yıl</option>
-                    @for (item of years18Plus; track item) {
-                      <option [ngValue]="item">{{ item }}</option>
-                    }
-                  </select>
-
+                <div class="qq-birth-field">
+                  <input
+                    id="birthDate"
+                    name="birthDate"
+                    type="date"
+                    aria-label="Doğum tarihi"
+                    [min]="minBirthDate"
+                    [max]="maxBirthDate"
+                    [(ngModel)]="birthDate" />
+                  @if (birthDate && !isBirthDateValid) {
+                    <small class="qq-field-required">Sürücü 18 yaşından büyük olmalı; geçerli bir tarih seçin.</small>
+                  }
                 </div>
 
-                @if (birthDay && birthMonth && birthYear && !isBirthDateValid) {
-                  <small class="qq-field-required">Seçtiğiniz tarih geçerli değil. Lütfen kontrol edin.</small>
-                }
+              </section>
+
+              <section class="qq-risk-group">
+
+                <div class="qq-risk-title">
+                  <strong>Poliçe Başlangıç Tarihi</strong>
+                  <small>Kasko korumanızın başlayacağı gün; en fazla 30 gün sonrası seçilebilir.</small>
+                </div>
+
+                <div class="qq-birth-field">
+                  <input id="policyStartDate" name="policyStartDate" type="date" aria-label="Poliçe başlangıç tarihi" [min]="minPolicyStart" [max]="maxPolicyStart" [(ngModel)]="policyStartDate" />
+                </div>
 
               </section>
 
@@ -484,6 +482,7 @@
                       <div><dt>Teminat</dt><dd>{{ chosen.coverages.length }} teminat</dd></div>
                       <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsLabel }}</dd></div>
                       <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+<div><dt>Poliçe Başlangıcı</dt><dd>{{ policyStartText }}</dd></div>
                     </dl>
 
                     <ul class="qg-price-list">
@@ -499,7 +498,7 @@
                   <ol class="qg-done-steps">
                     <li><b>1</b> Paketi veya teminat limitlerinizi değiştirip fiyatı yeniden hesaplayabilirsiniz.</li>
                     <li><b>2</b> "Teklifi Oluştur" dediğinizde teklif numaranız üretilir ve 7 gün geçerli olur.</li>
-                    <li><b>3</b> Teklifi PDF indirip satın alma için kayıt olabilirsiniz.</li>
+                    <li><b>3</b> Teklif PDF'ini indirip satın alma için kayıt olabilirsiniz.</li>
                   </ol>
 
                 }
@@ -550,6 +549,7 @@
                   <div><dt>Teminat</dt><dd>{{ chosen.coverages.length }} teminat</dd></div>
                   <div><dt>Kullanım / Hasar</dt><dd>{{ usage === 'PRIVATE' ? 'Özel' : 'Ticari' }} · {{ claimsLabel }}</dd></div>
                   <div><dt>Muafiyet</dt><dd>{{ deductible === 0 ? 'Muafiyetsiz' : '%' + deductible }}</dd></div>
+<div><dt>Poliçe Başlangıcı</dt><dd>{{ policyStartText }}</dd></div>
                 </dl>
 
                 <div class="qg-done-price">
@@ -570,7 +570,7 @@
             <div class="qq-actions">
               <button type="button" class="qq-btn qq-btn-ghost" (click)="backToPackages()">Paketlere Dön</button>
               <div class="qg-action-summary">
-                <button type="button" class="qq-btn qq-btn-ghost" [disabled]="isDownloading()" (click)="downloadPdf()">{{ isDownloading() ? 'Hazırlanıyor...' : 'Teklifi PDF İndir' }}</button>
+                <button type="button" class="qq-btn qq-btn-ghost" [disabled]="isDownloading()" (click)="downloadPdf()">{{ isDownloading() ? 'Hazırlanıyor...' : 'Teklif PDF İndir' }}</button>
                 <button type="button" class="qq-btn qq-btn-primary" (click)="continueToPurchase()">{{ isLoggedIn ? 'Portalda Satın Al' : 'Satın Almak İçin Kayıt Ol' }}</button>
               </div>
             </div>

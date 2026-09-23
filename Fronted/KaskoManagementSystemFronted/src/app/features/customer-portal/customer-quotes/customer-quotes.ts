@@ -1,5 +1,4 @@
 import { newestFirst } from '../../../core/utils/list-sort';
-import { confirmDialog } from '../../../core/services/confirm-dialog';
 import { RecordNumberPipe } from '../../../core/pipes/record-number.pipe';
 import {
   CommonModule
@@ -127,29 +126,6 @@ export class CustomerQuotes implements OnInit {
     return `${days} gün kaldı`;
   }
 
-  deletingId = signal<string | null>(null);
-
-  canDelete(quote: Quote): boolean {
-    return quote.status === QuoteStatus.Offered;
-  }
-
-  async deleteQuote(quote: Quote): Promise<void> {
-    if (!await confirmDialog('Bu teklifi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
-      return;
-    }
-    this.deletingId.set(quote.id);
-    this.quoteService.delete(quote.id).subscribe({
-      next: () => {
-        this.deletingId.set(null);
-        this.quotes.update(list => list.filter(item => item.id !== quote.id));
-        this.page.update(current => Math.min(current, this.totalPages()));
-      },
-      error: error => {
-        this.deletingId.set(null);
-        alert(error?.error?.detail ?? error?.error?.message ?? 'Teklif silinemedi.');
-      }
-    });
-  }
 
   isPending(quote: Quote): boolean {
     return quote.status === QuoteStatus.Offered;

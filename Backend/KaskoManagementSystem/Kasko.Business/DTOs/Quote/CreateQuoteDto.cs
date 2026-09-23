@@ -23,5 +23,9 @@ namespace Kasko.Business.DTOs.Quote
         public decimal Deductible { get; set; }
 
         public Guid? PreviousPolicyId { get; set; }
+
+        public bool EnforceSingleOpenQuote { get; set; }
+
+        public DateTime? PolicyStartDate { get; set; }
     }
 }

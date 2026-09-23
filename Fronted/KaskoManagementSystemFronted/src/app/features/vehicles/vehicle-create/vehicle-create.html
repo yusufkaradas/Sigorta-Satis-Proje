@@ -197,41 +197,41 @@
           </div>
 
           <div class="kf-field">
-            <label for="model">Model *</label>
-            <select
-              id="model"
-              name="model"
-              [(ngModel)]="selectedTypeCode"
-              (ngModelChange)="onTypeChange()"
-              [disabled]="!selectedBrandCode || isLoadingTypes || isSubmitting"
-              required>
-              <option value="" disabled>
-                {{ !selectedBrandCode ? 'Önce marka seçin' : isLoadingTypes ? 'Modeller yükleniyor...' : 'Model seçin' }}
-              </option>
-              <option
-                *ngFor="let type of types"
-                [ngValue]="type.code">
-                {{ type.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="kf-field">
             <label for="modelYear">Model Yılı *</label>
             <select
               id="modelYear"
               name="modelYear"
               [(ngModel)]="selectedModelYear"
               (ngModelChange)="onYearChange()"
-              [disabled]="!selectedTypeCode || isLoadingYears || isSubmitting"
+              [disabled]="!selectedBrandCode || isLoadingYears || isSubmitting"
               required>
               <option [ngValue]="null" disabled>
-                {{ !selectedTypeCode ? 'Önce model seçin' : isLoadingYears ? 'Yıllar yükleniyor...' : 'Yıl seçin' }}
+                {{ !selectedBrandCode ? 'Önce marka seçin' : isLoadingYears ? 'Yıllar yükleniyor...' : 'Yıl seçin' }}
               </option>
               <option
                 *ngFor="let year of years"
                 [ngValue]="year">
                 {{ year }}
+              </option>
+            </select>
+          </div>
+
+          <div class="kf-field">
+            <label for="model">Model *</label>
+            <select
+              id="model"
+              name="model"
+              [(ngModel)]="selectedTypeCode"
+              (ngModelChange)="onTypeChange()"
+              [disabled]="!selectedModelYear || isLoadingTypes || isSubmitting"
+              required>
+              <option value="" disabled>
+                {{ !selectedModelYear ? 'Önce model yılı seçin' : isLoadingTypes ? 'Modeller yükleniyor...' : 'Model seçin' }}
+              </option>
+              <option
+                *ngFor="let type of types"
+                [ngValue]="type.code">
+                {{ type.name }}
               </option>
             </select>
           </div>
@@ -320,7 +320,7 @@
         <div class="vc-value">
           <div>
             <span>Aracınızın kasko değeri (TSB)</span>
-            <small>{{ catalogInfo ? (catalogCategory ? catalogCategory + ' · ' : '') + (showBodyDetails ? 'Kasa, yakıt ve vites bilgisini yukarıdan seçin.' : 'Bu sınıfta kasa, yakıt ve vites sorulmaz.') : 'Marka, model ve yıl seçince otomatik hesaplanır.' }}</small>
+            <small>{{ catalogInfo ? (catalogCategory ? catalogCategory + ' · ' : '') + (showBodyDetails ? 'Kasa, yakıt ve vites bilgisini yukarıdan seçin.' : 'Bu sınıfta kasa, yakıt ve vites sorulmaz.') : 'Marka, model yılı ve model seçince otomatik hesaplanır.' }}</small>
           </div>
           <strong>
             {{

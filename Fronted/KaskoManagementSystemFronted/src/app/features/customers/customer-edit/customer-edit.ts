@@ -1,4 +1,5 @@
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
+import { districtOptions, provinceOptions } from '../../../core/data/tr-locations';
 import {
   ChangeDetectorRef,
   Component,
@@ -39,6 +40,11 @@ import {
   styleUrl: './customer-edit.scss'
 })
 export class CustomerEdit {
+
+  readonly provinceOptions = provinceOptions;
+
+  readonly districtOptions = districtOptions;
+
 
   readonly maxBirthDate = (() => {
     const date = new Date();

@@ -13,6 +13,8 @@ namespace Kasko.Entities.Concrete
         public QuoteStatus Status { get; set; }
         public DateTime ValidUntil { get; set; }
 
+        public DateTime? PolicyStartDate { get; set; }
+
         public Guid? PackageId { get; set; }
 
         public string? PackageName { get; set; }

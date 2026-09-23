@@ -22,6 +22,8 @@ namespace Kasko.Business.Services
 
         Task<QuoteEligibilityDto> CheckVehicleEligibilityAsync(Guid vehicleId);
 
+        Task EnsureNoOpenQuoteAsync(Guid vehicleId);
+
         Task<QuoteEligibilityDto> CheckPlateEligibilityAsync(string plateNumber);
     }
 }

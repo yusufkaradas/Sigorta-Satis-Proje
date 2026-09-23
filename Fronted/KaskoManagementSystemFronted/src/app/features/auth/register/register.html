@@ -213,14 +213,17 @@
                 İl
               </label>
 
-              <input appInputRule="place" [ruleMaxLength]="50" maxlength="50"
+              <select
                 id="city"
                 name="city"
-                type="text"
                 autocomplete="address-level1"
-                placeholder="İl"
                 [(ngModel)]="city"
-              />
+                (ngModelChange)="onCityChange()">
+                <option value="" disabled>İl seçin</option>
+                @for (item of provinces; track item.name) {
+                  <option [value]="item.name">{{ item.name }}</option>
+                }
+              </select>
 
             </div>
 
@@ -231,14 +234,17 @@
                 İlçe
               </label>
 
-              <input appInputRule="place" [ruleMaxLength]="50" maxlength="50"
+              <select
                 id="district"
                 name="district"
-                type="text"
                 autocomplete="address-level2"
-                placeholder="İlçe"
                 [(ngModel)]="district"
-              />
+                [disabled]="!city">
+                <option value="" disabled>{{ city ? 'İlçe seçin' : 'Önce il seçin' }}</option>
+                @for (item of districts; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
 
             </div>
 

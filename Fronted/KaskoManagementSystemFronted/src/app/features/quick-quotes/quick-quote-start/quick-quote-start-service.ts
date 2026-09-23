@@ -74,6 +74,7 @@ export interface QuickQuotePricingRequest {
   deductible: number;
   coverageIds: string[];
   coverageOptionIds?: Record<string, string>;
+  policyStartDate?: string | null;
 }
 export interface QuickQuoteOfferRequest {
 

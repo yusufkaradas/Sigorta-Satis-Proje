@@ -1,5 +1,6 @@
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import { BrandService } from '../../../core/services/brand.service';
+import { TR_PROVINCES } from '../../../core/data/tr-locations';
 import {
   ChangeDetectorRef,
   Component,
@@ -106,6 +107,16 @@ export class Register {
   address = '';
   city = '';
   district = '';
+
+  readonly provinces = TR_PROVINCES;
+
+  get districts(): string[] {
+    return this.provinces.find(item => item.name === this.city)?.districts ?? [];
+  }
+
+  onCityChange(): void {
+    this.district = '';
+  }
   password = '';
   passwordConfirm = '';
 

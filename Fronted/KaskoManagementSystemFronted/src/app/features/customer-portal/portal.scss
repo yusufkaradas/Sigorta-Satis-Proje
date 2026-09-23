@@ -135,10 +135,15 @@ a.cp-stat:hover {
 
 @include k.page-responsive('.cp-page', '.cp-stats');
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
+
+  .cp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .cp-table-wrap {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .cp-table {

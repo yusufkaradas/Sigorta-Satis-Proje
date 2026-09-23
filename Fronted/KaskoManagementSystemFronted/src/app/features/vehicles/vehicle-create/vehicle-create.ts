@@ -554,227 +554,117 @@ plateTouched = false;
 onBrandChange(): void {
 
   this.selectedTypeCode = '';
-
   this.selectedModelYear = null;
-
   this.types = [];
-
   this.years = [];
-
   this.tsbValue = null;
-
+  this.catalogInfo = null;
   this.form.brand = '';
-
   this.form.model = '';
-  
   this.form.brandCode = '';
-
   this.form.typeCode = '';
-
-  this.form.modelYear =
-    new Date().getFullYear();
+  this.form.modelYear = new Date().getFullYear();
 
   if (!this.selectedBrandCode) {
-
     return;
-
   }
 
-  const selectedBrand =
-    this.brands.find(
-      x => x.code === this.selectedBrandCode
-    );
+  const selectedBrand = this.brands.find(x => x.code === this.selectedBrandCode);
 
- if (selectedBrand) {
-
-  this.form.brand =
-    selectedBrand.name;
-
-  this.form.brandCode =
-    selectedBrand.code;
-
-}
-
-  this.isLoadingTypes = true;
-
-  this.vehicleValueService
-    .getTypes(this.selectedBrandCode, this.selectedCategory)
-    .subscribe({
-
-      next: (data) => {
-
-        this.types =
-          data ?? [];
-
-        this.isLoadingTypes = false;
-
-        this.cdr.detectChanges();
-
-      },
-
-      error: (error: any) => {
-
-        console.error(
-          'TSB MODEL API HATASI:',
-          error
-        );
-
-        this.errorMessage =
-          'Araç modelleri yüklenemedi.';
-
-        this.isLoadingTypes = false;
-
-        this.cdr.detectChanges();
-
-      }
-
-    });
-
-}
-onTypeChange(): void {
-
-  this.selectedModelYear = null;
-
-  this.years = [];
-
-  this.tsbValue = null;
-
-  this.form.model = '';
-
-  this.form.modelYear =
-    new Date().getFullYear();
-
-  if (!this.selectedBrandCode ||
-      !this.selectedTypeCode) {
-
-    return;
-
+  if (selectedBrand) {
+    this.form.brand = selectedBrand.name;
+    this.form.brandCode = selectedBrand.code;
   }
-
-  const selectedType =
-    this.types.find(
-      x => x.code === this.selectedTypeCode
-    );
-
-  if (selectedType) {
-
-  this.form.model =
-    selectedType.name;
-
-  this.form.typeCode =
-    selectedType.code;
-
-}
 
   this.isLoadingYears = true;
 
   this.vehicleValueService
-    .getYears(
-      this.selectedBrandCode,
-      this.selectedTypeCode
-    )
+    .getYears(this.selectedBrandCode, null, this.selectedCategory)
     .subscribe({
-
       next: (data) => {
-
-        this.years =
-          data ?? [];
-
+        this.years = data ?? [];
         this.isLoadingYears = false;
-
         this.cdr.detectChanges();
-
       },
-
-      error: (error: any) => {
-
-        console.error(
-          'TSB YIL API HATASI:',
-          error
-        );
-
-        this.errorMessage =
-          'Model yılları yüklenemedi.';
-
+      error: () => {
+        this.errorMessage = 'Model yılları yüklenemedi.';
         this.isLoadingYears = false;
-
         this.cdr.detectChanges();
-
       }
-
     });
-
 }
+
 onYearChange(): void {
 
+  this.selectedTypeCode = '';
+  this.types = [];
   this.tsbValue = null;
-
   this.catalogInfo = null;
+  this.form.model = '';
+  this.form.typeCode = '';
 
-  if (!this.selectedBrandCode ||
-      !this.selectedTypeCode ||
-      !this.selectedModelYear) {
-
+  if (!this.selectedBrandCode || !this.selectedModelYear) {
     return;
-
   }
 
-  this.form.modelYear =
-    this.selectedModelYear;
+  this.form.modelYear = this.selectedModelYear;
+  this.isLoadingTypes = true;
+
+  this.vehicleValueService
+    .getTypes(this.selectedBrandCode, this.selectedCategory, this.selectedModelYear)
+    .subscribe({
+      next: (data) => {
+        this.types = data ?? [];
+        this.isLoadingTypes = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Araç modelleri yüklenemedi.';
+        this.isLoadingTypes = false;
+        this.cdr.detectChanges();
+      }
+    });
+}
+
+onTypeChange(): void {
+
+  this.tsbValue = null;
+  this.catalogInfo = null;
+  this.form.model = '';
+
+  if (!this.selectedBrandCode || !this.selectedTypeCode || !this.selectedModelYear) {
+    return;
+  }
+
+  const selectedType = this.types.find(x => x.code === this.selectedTypeCode);
+
+  if (selectedType) {
+    this.form.model = selectedType.name;
+    this.form.typeCode = selectedType.code;
+  }
 
   this.isLoadingTsbValue = true;
 
   this.vehicleValueService
-    .lookup(
-      this.selectedBrandCode,
-      this.selectedTypeCode,
-      this.selectedModelYear
-    )
+    .lookup(this.selectedBrandCode, this.selectedTypeCode, this.selectedModelYear)
     .subscribe({
-
-  next: (result) => {
-
-    this.catalogInfo = result;
-
-    this.tsbValue =
-      result.value;
-
-    this.form.marketValue =
-      result.value;
-
-    this.isLoadingTsbValue =
-      false;
-
-    this.cdr.detectChanges();
-
-  },
-
-  error: (error: any) => {
-
-    console.error(
-      'TSB DEĞER API HATASI:',
-      error
-    );
-
-    this.tsbValue =
-      null;
-
-    this.form.marketValue =
-      0;
-
-    this.isLoadingTsbValue =
-      false;
-
-    this.errorMessage =
-      error?.error ??
-      'Bu araç için TSB kasko değeri bulunamadı.';
-
-    this.cdr.detectChanges();
-
-  }
+      next: (result) => {
+        this.catalogInfo = result;
+        this.tsbValue = result.value;
+        this.form.marketValue = result.value;
+        this.isLoadingTsbValue = false;
+        this.cdr.detectChanges();
+      },
+      error: (error: any) => {
+        this.tsbValue = null;
+        this.form.marketValue = 0;
+        this.isLoadingTsbValue = false;
+        this.errorMessage = error?.error ?? 'Bu araç için TSB kasko değeri bulunamadı.';
+        this.cdr.detectChanges();
+      }
     });
-
 }
+
   cancel(): void {
 
     this.router.navigate(

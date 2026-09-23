@@ -1,4 +1,5 @@
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
+import { districtOptions, provinceOptions } from '../../../core/data/tr-locations';
 import {
   Component,
   OnInit,
@@ -52,6 +53,11 @@ import {
   styleUrl: './user-create.scss'
 })
 export class UserCreate implements OnInit {
+
+  readonly provinceOptions = provinceOptions;
+
+  readonly districtOptions = districtOptions;
+
 
   private readonly userService =
     inject(UserService);

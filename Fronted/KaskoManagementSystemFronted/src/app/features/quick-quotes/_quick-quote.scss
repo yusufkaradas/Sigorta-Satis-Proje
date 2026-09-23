@@ -316,6 +316,7 @@
 
 .qq-body-center {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
 }
 
@@ -3618,3 +3619,399 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+@media (max-width: 900px) {
+
+  .qq-page .qq-risk-group,
+  .qq-page .qq-risk-stack .qq-risk-group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .qq-page .qq-options.qq-cols-2,
+  .qq-page .qq-risk-stack .qq-options.qq-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .qq-page .qq-options.qq-cols-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qq-risk-stack .qq-field-inline {
+    width: 100%;
+  }
+
+  .qq-page .qq-option {
+    min-width: 0;
+  }
+}
+
+.qq-page .qq-hero {
+  width: min(k.u(1040), 100%);
+  padding: k.u(36) k.u(40);
+  border: 2px solid k.$black;
+  border-radius: k.u(22);
+  background: k.$surface;
+  color: k.$text;
+  box-shadow: 0 k.u(16) k.u(40) rgba(0, 0, 0, 0.22);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: center;
+  gap: k.u(36);
+  text-align: left;
+}
+
+.qq-page .qq-hero-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: k.u(16);
+
+  h1 {
+    margin: 0;
+    color: k.$text;
+    font-size: k.u(34);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    max-width: none;
+    margin: 0;
+    color: k.$text-secondary;
+    font-size: k.u(15);
+    line-height: 1.55;
+  }
+}
+
+.qq-page .qq-hero-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(8);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: k.u(10);
+    color: #374151;
+    font-size: k.u(14);
+    font-weight: 600;
+  }
+
+  b {
+    width: k.u(22);
+    height: k.u(22);
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: k.u(12);
+    display: grid;
+    place-items: center;
+  }
+}
+
+.qq-page .qq-hero-actions {
+  margin-top: k.u(4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: k.u(18);
+
+  .qq-btn {
+    min-width: k.u(220);
+    height: k.u(48);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: k.u(15);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+}
+
+.qq-page .qq-hero-link {
+  color: #1d4ed8;
+  font-size: k.u(14);
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.qq-page .qq-hero-steps {
+  position: relative;
+  margin: 0;
+  padding: k.u(24) k.u(24) k.u(24) k.u(22);
+  border-radius: k.u(18);
+  background: k.$background;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: k.u(22);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: k.u(40);
+    bottom: k.u(40);
+    left: k.u(37);
+    width: 2px;
+    background: #bfdbfe;
+  }
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: k.u(14);
+  }
+
+  span {
+    flex: 0 0 auto;
+    width: k.u(32);
+    height: k.u(32);
+    border: 3px solid k.$background;
+    border-radius: 999px;
+    background: k.$info;
+    color: k.$surface;
+    font-size: k.u(14);
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-size: k.u(15);
+  }
+
+  small {
+    color: k.$text-secondary;
+    font-size: k.u(12);
+  }
+}
+
+@media (max-width: 900px) {
+
+  .qq-page .qq-hero {
+    padding: 22px 18px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .qq-page .qq-hero-main h1 {
+    font-size: 26px;
+  }
+
+  .qq-page .qq-hero-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qq-page .qq-hero-actions .qq-btn {
+    width: 100%;
+  }
+
+  .qq-page .qq-hero-link {
+    text-align: center;
+  }
+}
+
+.qq-page .qq-birth-field {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: k.u(12);
+
+  input {
+    width: k.u(220);
+    height: k.u(36);
+    padding: 0 k.u(10);
+    border: 2px solid k.$black;
+    border-radius: k.u(10);
+    background: k.$surface;
+    color: k.$text;
+    font-family: inherit;
+    font-size: k.u(13);
+    font-weight: 600;
+  }
+}
+
+.qq-page .qq-risk-stack .qq-risk {
+  gap: k.u(8);
+}
+
+.qq-page .qq-risk-stack .qq-risk-group,
+.qq-page .qq-risk-stack .qq-info-box {
+  min-height: 0;
+  padding: k.u(8) k.u(14);
+  border-radius: k.u(12);
+}
+
+.qq-page .qq-risk-stack .qq-risk-group {
+  grid-template-columns: k.u(220) minmax(0, 1fr);
+}
+
+.qq-page .qq-risk-stack .qq-risk-title strong {
+  font-size: k.u(13);
+}
+
+.qq-page .qq-risk-stack .qq-risk-title small {
+  font-size: k.u(11);
+}
+
+.qq-page .qq-risk-stack .qq-option {
+  min-height: k.u(38);
+  padding-top: k.u(5);
+  padding-bottom: k.u(5);
+  border-radius: k.u(10);
+
+  strong {
+    font-size: k.u(12);
+  }
+
+  small {
+    font-size: k.u(10);
+  }
+}
+
+.qq-page .qq-risk-stack .qq-options {
+  gap: k.u(8);
+}
+
+.qq-page .qq-risk-stack .qq-options.qq-cols-2 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qq-page .qq-risk-stack .qq-options.qq-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qq-page .qg-limits-plain {
+  gap: k.u(10);
+}
+
+.qq-page .qg-limits-plain .qg-limit select {
+  height: k.u(32);
+  font-size: k.u(12);
+  border-radius: k.u(8);
+}
+
+.qq-page .qg-limits-plain .qg-limit small {
+  font-size: k.u(11);
+}
+
+.qq-page .qg-limits-plain .qg-deductible-hint {
+  font-size: k.u(10);
+}
+
+.qq-page .qq-risk-stack .qq-info-box {
+  font-size: k.u(11);
+}
+
+@media (max-width: 900px) {
+
+  .qq-page .qq-birth-field input {
+    width: 100%;
+    height: 44px;
+  }
+
+  .qq-page .qq-risk-stack .qq-risk-group {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qq-risk-stack .qq-options.qq-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .qq-page .qq-risk-stack .qq-options.qq-cols-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qq-page .qq-risk-stack .qq-option {
+    min-height: 44px;
+  }
+
+  .qq-page .qg-limits-plain .qg-limit select {
+    height: 44px;
+  }
+}
+
+.qq-page .qq-body:has(> .qg-offers) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: k.u(10);
+}
+
+.qq-page .qq-step-head .qq-chip-row {
+  margin-top: k.u(10);
+}
+
+.qq-page .qg-offers .qg-offer {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.qq-page .qg-offers .qg-offer:hover {
+  box-shadow: 0 k.u(10) k.u(24) rgba(0, 0, 0, 0.22);
+}
+
+.qq-page .qg-offers .qg-offer-name {
+  padding: k.u(12) k.u(20);
+  font-size: k.u(13);
+}
+
+.qq-page .qg-offers .qg-offer-monthly {
+  align-self: flex-start;
+  margin-top: k.u(14);
+  padding: k.u(3) k.u(10);
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: k.u(12);
+  font-weight: 700;
+}
+
+.qq-page .qg-offers .qg-offer-desc {
+  margin-top: k.u(8);
+  padding-bottom: k.u(10);
+  border-bottom: 1px solid k.$border;
+  color: k.$text-secondary;
+  font-size: k.u(12);
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.qq-page .qg-offers .qg-offer-list {
+  margin-top: k.u(10);
+  gap: k.u(6) k.u(12);
+  font-size: k.u(12);
+}
+
+.qq-page .qg-offers .qg-offer-pick {
+  margin: k.u(14) k.u(20) k.u(16);
+  padding: k.u(9) 0;
+  border-radius: k.u(10);
+  font-size: k.u(13);
+}
+
+.qq-page .qg-offers .qg-offer.selected .qg-offer-pick {
+  border-color: k.$info;
+  background: k.$info;
+  color: k.$surface;
+}
+

@@ -51,19 +51,37 @@
 
         <div class="qq-landing">
 
-          <div class="qq-landing-card">
+          <div class="qq-hero">
 
-            <span class="qq-landing-eyebrow">KASKO SİGORTASI</span>
+            <div class="qq-hero-main">
 
-            <h1>Aracınız İçin Kasko Teklifi Alın</h1>
+              <span class="qq-landing-eyebrow">KASKO SİGORTASI</span>
 
-            <p>T.C. Kimlik No ve cep telefonunuzla başlayın. Kayıtlıysanız araçlarınız otomatik gelir, değilseniz üyelik olmadan devam edersiniz.</p>
+              <h1>Aracınızın kasko teklifi<br />birkaç dakikada hazır</h1>
 
-            <div class="qq-landing-actions">
-              <a routerLink="/quick-quote/start" class="qq-btn qq-btn-primary">HEMEN TEKLİF AL</a>
+              <p>T.C. Kimlik No ve cep telefonunuzla başlayın. Kayıtlıysanız araçlarınız otomatik gelir; değilseniz üyelik olmadan teklif alırsınız.</p>
+
+              <ul class="qq-hero-points">
+                <li><b>✓</b>Güncel TSB kasko değeriyle fiyatlama</li>
+                <li><b>✓</b>Paketleri karşılaştırın, limitleri siz belirleyin</li>
+                <li><b>✓</b>Teklif PDF'i anında, peşin veya 9 taksit</li>
+              </ul>
+
+              <div class="qq-hero-actions">
+                <a routerLink="/quick-quote/start" class="qq-btn qq-btn-primary">Hemen Teklif Al</a>
+                <a [routerLink]="isLoggedIn ? '/customer' : '/login'" class="qq-hero-link">{{ isLoggedIn ? 'Hesabıma git →' : 'Hesabım var, giriş yap →' }}</a>
+              </div>
+
+              <span class="qq-landing-note">Bilgileriniz 6698 sayılı KVKK kapsamında yalnızca teklif hazırlamak için kullanılır. <button type="button" class="qq-kvkk-link" (click)="showKvkk()">KVKK Aydınlatma Metni</button></span>
+
             </div>
 
-            <span class="qq-landing-note">Bilgileriniz 6698 sayılı KVKK kapsamında yalnızca teklif hazırlamak için kullanılır. <button type="button" class="qq-kvkk-link" (click)="showKvkk()">KVKK Aydınlatma Metni</button></span>
+            <ol class="qq-hero-steps">
+              <li><span>1</span><div><strong>Araç bilgileri</strong><small>Plaka, marka, model yılı ve model</small></div></li>
+              <li><span>2</span><div><strong>Sürücü ve teminat</strong><small>Doğum tarihi, kullanım, hasar ve limitler</small></div></li>
+              <li><span>3</span><div><strong>Paket seçimi</strong><small>Ekonomik, Standart veya Kapsamlı</small></div></li>
+              <li><span>4</span><div><strong>Fiyatınız hazır</strong><small>Teklif numarası ve PDF, 7 gün geçerli</small></div></li>
+            </ol>
 
           </div>
 
