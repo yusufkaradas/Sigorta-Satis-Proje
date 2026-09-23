@@ -1,5 +1,7 @@
 using Kasko.Business.DTOs.PricingRuleChangeRequest;
+using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
+using Kasko.Business.Notifications;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 
@@ -26,20 +28,20 @@ public class PricingRuleChangeRequestService
 
         if (rule == null || rule.IsDeleted)
         {
-            throw new KeyNotFoundException(
-                "Pricing rule bulunamadı.");
+            throw new NotFoundException(
+                "Fiyat kuralı bulunamadı.");
         }
 
         if (dto.NewValue < 0)
         {
-            throw new ArgumentException(
+            throw new BadRequestException(
                 "Yeni değer negatif olamaz.");
         }
 
         if (dto.EffectiveFrom <= DateTime.UtcNow)
         {
-            throw new ArgumentException(
-                "EffectiveFrom gelecekte bir tarih olmalıdır.");
+            throw new BadRequestException(
+                "Geçerlilik başlangıcı ileri bir tarih olmalıdır.");
         }
 
         var request = new PricingRuleChangeRequest
@@ -59,6 +61,15 @@ public class PricingRuleChangeRequestService
 
         await _unitOfWork.PricingRuleChangeRequests
             .AddAsync(request);
+
+        await NotificationWriter.ToRolesAsync(
+            _unitOfWork,
+            NotificationWriter.AdminOnly,
+            "PRICING_REQUEST_CREATED",
+            "Yeni fiyat değişikliği talebi",
+            $"{rule.Name}: {request.OldValue:0.####} → {request.NewValue:0.####}, {request.EffectiveFrom:dd.MM.yyyy} tarihinden itibaren. Gerekçe: {request.Reason}",
+            request.Id,
+            requestedBy);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -100,14 +111,14 @@ public class PricingRuleChangeRequestService
 
         if (request == null || request.IsDeleted)
         {
-            throw new KeyNotFoundException(
-                "Change request bulunamadı.");
+            throw new NotFoundException(
+                "Fiyat değişiklik talebi bulunamadı.");
         }
 
         if (request.Status != "Pending")
         {
-            throw new InvalidOperationException(
-                "Sadece Pending durumundaki talepler onaylanabilir.");
+            throw new BadRequestException(
+                "Yalnızca onay bekleyen talepler onaylanabilir.");
         }
 
         var currentRule =
@@ -116,8 +127,8 @@ public class PricingRuleChangeRequestService
 
         if (currentRule == null || currentRule.IsDeleted)
         {
-            throw new KeyNotFoundException(
-                "Pricing rule bulunamadı.");
+            throw new NotFoundException(
+                "Fiyat kuralı bulunamadı.");
         }
 
         var allRules =
@@ -134,8 +145,8 @@ public class PricingRuleChangeRequestService
 
         if (request.EffectiveFrom <= currentRule.EffectiveFrom)
         {
-            throw new InvalidOperationException(
-                "Yeni version mevcut versiondan daha ileri bir EffectiveFrom tarihine sahip olmalıdır.");
+            throw new BadRequestException(
+                "Yeni sürümün geçerlilik başlangıcı mevcut sürümden daha ileri bir tarih olmalıdır.");
         }
 
         currentRule.EffectiveUntil =
@@ -176,6 +187,17 @@ public class PricingRuleChangeRequestService
         await _unitOfWork.PricingRuleChangeRequests
             .UpdateAsync(request);
 
+        if (request.RequestedBy != approvedBy)
+        {
+            await NotificationWriter.ToUserAsync(
+                _unitOfWork,
+                request.RequestedBy,
+                "PRICING_REQUEST_APPROVED",
+                "Fiyat talebiniz onaylandı",
+                $"{currentRule.Name} için {request.NewValue:0.####} değeri {request.EffectiveFrom:dd.MM.yyyy} tarihinden itibaren geçerli olacak.",
+                request.Id);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -190,14 +212,14 @@ public class PricingRuleChangeRequestService
 
         if (request == null || request.IsDeleted)
         {
-            throw new KeyNotFoundException(
-                "Change request bulunamadı.");
+            throw new NotFoundException(
+                "Fiyat değişiklik talebi bulunamadı.");
         }
 
         if (request.Status != "Pending")
         {
-            throw new InvalidOperationException(
-                "Sadece Pending durumundaki talepler reddedilebilir.");
+            throw new BadRequestException(
+                "Yalnızca onay bekleyen talepler reddedilebilir.");
         }
 
         request.Status = "Rejected";
@@ -208,6 +230,19 @@ public class PricingRuleChangeRequestService
 
         await _unitOfWork.PricingRuleChangeRequests
             .UpdateAsync(request);
+
+        if (request.RequestedBy != approvedBy)
+        {
+            await NotificationWriter.ToUserAsync(
+                _unitOfWork,
+                request.RequestedBy,
+                "PRICING_REQUEST_REJECTED",
+                "Fiyat talebiniz reddedildi",
+                request.RejectReason == null
+                    ? "Fiyat değişikliği talebiniz uygun bulunmadı."
+                    : $"Fiyat değişikliği talebiniz uygun bulunmadı. Gerekçe: {request.RejectReason}",
+                request.Id);
+        }
 
         await _unitOfWork.SaveChangesAsync();
     }

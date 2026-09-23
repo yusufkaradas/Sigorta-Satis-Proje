@@ -18,6 +18,10 @@ public class PricingRuleChangeRequestServiceTests
     {
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
+        _unitOfWorkMock.Setup(x => x.Notifications).Returns(new Mock<INotificationRepository>().Object);
+
+        _unitOfWorkMock.Setup(x => x.Roles).Returns(new Mock<IRoleRepository>().Object);
+
         _pricingRuleRepositoryMock =
             new Mock<IPricingRuleRepository>();
 

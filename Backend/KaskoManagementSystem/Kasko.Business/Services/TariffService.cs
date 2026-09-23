@@ -2,6 +2,7 @@
 using Kasko.Business.DTOs.Tariff;
 using Kasko.Business.Exceptions;
 using Kasko.Business.Interfaces;
+using Kasko.Business.Notifications;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
 using Kasko.Entities.Enums;
@@ -277,6 +278,17 @@ public class TariffService : ITariffService
             request.DecidedDate = DateTime.UtcNow;
             request.DecisionNote = "Yönetici tarafından doğrudan uygulandı.";
         }
+        else
+        {
+            await NotificationWriter.ToRolesAsync(
+                _unitOfWork,
+                NotificationWriter.AdminOnly,
+                "TARIFF_REQUEST_CREATED",
+                "Yeni tarife değişikliği talebi",
+                $"{request.TargetName}: {request.OldValue:0.####} → {request.NewValue:0.####}. Talep eden: {request.RequestedByName}. Gerekçe: {request.Reason}",
+                request.Id,
+                userId);
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -297,6 +309,17 @@ public class TariffService : ITariffService
 
         await _requests.UpdateAsync(request);
 
+        if (request.RequestedBy.HasValue && request.RequestedBy != request.DecidedBy)
+        {
+            await NotificationWriter.ToUserAsync(
+                _unitOfWork,
+                request.RequestedBy.Value,
+                "TARIFF_REQUEST_APPROVED",
+                "Tarife talebiniz onaylandı",
+                $"{request.TargetName} için {request.NewValue:0.####} değeri uygulandı.",
+                request.Id);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -316,6 +339,17 @@ public class TariffService : ITariffService
         request.UpdatedDate = DateTime.UtcNow;
 
         await _requests.UpdateAsync(request);
+
+        if (request.RequestedBy.HasValue && request.RequestedBy != request.DecidedBy)
+        {
+            await NotificationWriter.ToUserAsync(
+                _unitOfWork,
+                request.RequestedBy.Value,
+                "TARIFF_REQUEST_REJECTED",
+                "Tarife talebiniz reddedildi",
+                $"{request.TargetName} için talebiniz uygun bulunmadı. Gerekçe: {request.DecisionNote}",
+                request.Id);
+        }
 
         await _unitOfWork.SaveChangesAsync();
     }

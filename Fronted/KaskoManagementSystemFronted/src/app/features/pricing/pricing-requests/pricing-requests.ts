@@ -187,7 +187,7 @@ export class PricingRequests implements OnInit {
   }
 
   requesterName(userId: string): string {
-    return this.userNames().get(userId) ?? (this.portal.isManager ? 'Manager' : 'Bilinmiyor');
+    return this.userNames().get(userId) ?? (this.portal.isManager ? 'Operasyon Yöneticisi' : 'Bilinmiyor');
   }
 
   ngOnInit(): void {

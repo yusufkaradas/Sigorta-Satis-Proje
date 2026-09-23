@@ -790,6 +790,45 @@ app-root {
   }
 }
 
+.kl-notify-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: k.u(8);
+
+  button {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: #2563eb;
+    font: inherit;
+    font-size: k.u(11);
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.kl-notify-section {
+  display: block;
+  margin-top: k.u(6);
+  color: #6b7280;
+  font-size: k.u(11);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kl-notify-more {
+  display: block;
+  padding-top: k.u(8);
+  border-top: 1px solid #e5e7eb;
+  color: #2563eb;
+  font-size: k.u(12);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
 .kl-alert-item a {
   display: flex;
   flex-direction: column;

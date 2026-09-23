@@ -329,7 +329,8 @@ export const routes: Routes = [
       { path: 'pricing-rules', redirectTo: 'tariff?tab=rules' },
       { path: 'pricing-requests', redirectTo: 'requests?tab=pricing-requests' },
       { path: 'cancellations', redirectTo: 'requests?tab=cancellations' },
-      { path: 'settings', component: AccountSettings, data: { mode: 'manager' } }
+      { path: 'settings', component: AccountSettings, data: { mode: 'manager' } },
+      { path: 'notifications', component: Notifications }
     ]
   },
 
@@ -353,6 +354,7 @@ export const routes: Routes = [
         }
       },
       { path: 'vehicles/catalog', redirectTo: 'vehicles?tab=catalog' },
+      { path: 'notifications', component: Notifications },
       { path: 'requests', component: RequestsHub },
       { path: 'tariff', component: PackagesHub },
       { path: 'pricing-rules', redirectTo: 'tariff?tab=rules' },

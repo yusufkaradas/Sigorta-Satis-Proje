@@ -14,7 +14,7 @@ import {
 
 export interface Notification {
   id: string;
-  customerId: string;
+  customerId: string | null;
   type: string;
   title: string;
   message: string;
@@ -35,12 +35,12 @@ export class NotificationsService {
   private readonly apiUrl =
     `${environment.apiBaseUrl}/Notification`;
 
-  getNotifications():
+  getNotifications(silent = false):
     Observable<Notification[]> {
 
     return this.http.get<
       Notification[]
-    >(this.apiUrl);
+    >(this.apiUrl, silent ? { headers: { 'X-Silent-Error': '1' } } : {});
   }
 
   markAsRead(id: string): Observable<void> {
@@ -71,8 +71,51 @@ export function notificationLink(item: Notification): string[] {
   return type.startsWith('PAYMENT') ? ['/customer/payments'] : ['/customer/policies'];
 }
 
+export interface NotificationTarget {
+  path: string[];
+  tab?: string;
+}
+
+export function staffNotificationTarget(item: Notification, base: string): NotificationTarget {
+  const type = (item.type ?? '').toUpperCase();
+  const id = item.relatedEntityId;
+  const home = base || '/dashboard';
+
+  if (type.startsWith('PRICING_REQUEST')) {
+    return { path: [`${base}/requests`], tab: 'pricing-requests' };
+  }
+
+  if (type.startsWith('TARIFF_REQUEST')) {
+    return { path: [`${base}/tariff`] };
+  }
+
+  if (type.startsWith('CANCELLATION')) {
+    return { path: [`${base}/requests`], tab: 'cancellations' };
+  }
+
+  if (type.startsWith('QUOTE')) {
+    return { path: id ? [`${base}/quotes`, id] : [`${base}/quotes`] };
+  }
+
+  if (type === 'POLICY_SOLD' || type === 'PAYMENT_FAILED') {
+    return { path: id ? [`${base}/policies`, id] : [`${base}/payments`] };
+  }
+
+  if (type === 'CUSTOMER_REGISTERED') {
+    return { path: id ? [`${base}/customers`, id] : [`${base}/customers`] };
+  }
+
+  return { path: [home] };
+}
+
 export function notificationTypeLabel(type: string): string {
   const value = (type ?? '').toUpperCase();
+  if (value.startsWith('PRICING') || value.startsWith('TARIFF')) {
+    return 'Tarife';
+  }
+  if (value.startsWith('CUSTOMER') || value.startsWith('ACCOUNT')) {
+    return 'Hesap';
+  }
   if (value.startsWith('PAYMENT')) {
     return 'Ödeme';
   }

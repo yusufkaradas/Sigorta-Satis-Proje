@@ -31,7 +31,7 @@
             <label for="roleId">Rol *</label>
             <select id="roleId" name="roleId" [(ngModel)]="model.roleId" [disabled]="isLoadingRoles()" required>
               <option value="" disabled>{{ isLoadingRoles() ? 'Roller yükleniyor...' : 'Rol seçin' }}</option>
-              <option *ngFor="let role of roles()" [value]="role.id">{{ role.name === 'Customer' ? 'Müşteri' : role.name }}</option>
+              <option *ngFor="let role of roles()" [value]="role.id">{{ roleLabel(role.name) }}</option>
             </select>
           </div>
 

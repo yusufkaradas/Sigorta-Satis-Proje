@@ -30,6 +30,10 @@ public class QuoteServiceTests
     public QuoteServiceTests()
     {
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+
+        _unitOfWorkMock.Setup(x => x.Notifications).Returns(new Mock<INotificationRepository>().Object);
+
+        _unitOfWorkMock.Setup(x => x.Roles).Returns(new Mock<IRoleRepository>().Object);
         _quoteRepositoryMock = new Mock<IQuoteRepository>();
         _customerRepositoryMock = new Mock<ICustomerRepository>();
         _vehicleRepositoryMock = new Mock<IVehicleRepository>();
@@ -305,7 +309,7 @@ public class QuoteServiceTests
 
         
         Assert.Contains(
-            "geçiş yapılamaz",
+            "durumuna alınamaz",
             exception.Message,
             StringComparison.OrdinalIgnoreCase);
 

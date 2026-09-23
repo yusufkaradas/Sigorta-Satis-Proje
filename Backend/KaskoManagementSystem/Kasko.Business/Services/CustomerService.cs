@@ -121,7 +121,7 @@ public class CustomerService : ICustomerService
         if (emailExists)
         {
             throw new BadRequestException(
-                "Bu email adresi ile kayıtlı bir müşteri zaten mevcut.");
+                "Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut.");
         }
 
         var customer = new Customer
@@ -193,7 +193,7 @@ public class CustomerService : ICustomerService
         if (emailExists)
         {
             throw new BadRequestException(
-                "Bu email adresi başka bir müşteri tarafından kullanılıyor.");
+                "Bu e-posta adresi başka bir müşteri tarafından kullanılıyor.");
         }
 
         customer.FirstName = dto.FirstName;

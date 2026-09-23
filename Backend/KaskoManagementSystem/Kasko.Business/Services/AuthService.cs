@@ -38,7 +38,7 @@ public class AuthService : IAuthService
         if (user == null)
         {
             throw new NotFoundException(
-                "Email veya şifre hatalı.");
+                "E-posta veya şifre hatalı.");
         }
 
         if (!user.IsActive)
@@ -56,7 +56,7 @@ public class AuthService : IAuthService
         if (!passwordValid)
         {
             throw new BadRequestException(
-                "Email veya şifre hatalı.");
+                "E-posta veya şifre hatalı.");
         }
 
         var role =
@@ -105,7 +105,7 @@ public class AuthService : IAuthService
         if (emailExists)
         {
             throw new BadRequestException(
-                "Bu email adresi zaten kayıtlı.");
+                "Bu e-posta adresi zaten kayıtlı.");
         }
 
         var identityExists =
@@ -173,6 +173,22 @@ public class AuthService : IAuthService
 
         await _unitOfWork.Users
             .AddAsync(user);
+
+        await Notifications.NotificationWriter.ToCustomerAsync(
+            _unitOfWork,
+            customer.Id,
+            "ACCOUNT_CREATED",
+            "NetSigorta'ya hoş geldiniz",
+            "Hesabınız oluşturuldu. Araçlarınızı ekleyip birkaç adımda kasko teklifi alabilirsiniz.",
+            customer.Id);
+
+        await Notifications.NotificationWriter.ToRolesAsync(
+            _unitOfWork,
+            Notifications.NotificationWriter.Staff,
+            "CUSTOMER_REGISTERED",
+            "Yeni müşteri kaydı",
+            $"{customer.FirstName} {customer.LastName} müşteri portalı üzerinden kayıt oldu.",
+            customer.Id);
 
         await _unitOfWork
             .SaveChangesAsync();

@@ -65,7 +65,7 @@ public class UserService : IUserService
 
         if (emailExists)
         {
-            throw new BadRequestException("Bu email adresi zaten kayıtlı.");
+            throw new BadRequestException("Bu e-posta adresi zaten kayıtlı.");
         }
 
         var role = await _unitOfWork.Roles
@@ -158,7 +158,7 @@ public class UserService : IUserService
         if (emailExists)
         {
             throw new BadRequestException(
-            "Bu email adresi başka bir kullanıcı tarafından kullanılıyor.");
+            "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.");
         }
 
        

@@ -1,5 +1,6 @@
 ﻿using Kasko.Business.DTOs.Quote;
 using Kasko.Business.Exceptions;
+using Kasko.Business.Notifications;
 using Kasko.Business.Pricing;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Concrete;
@@ -715,6 +716,35 @@ namespace Kasko.Business.Services
 
             await _unitOfWork.Quotes.AddAsync(quote);
 
+            if (quote.Status == QuoteStatus.Offered)
+            {
+                await NotificationWriter.ToCustomerAsync(
+                    _unitOfWork,
+                    quote.CustomerId,
+                    "QUOTE_READY",
+                    "Teklifiniz hazır",
+                    $"{vehicle.PlateNumber} plakalı aracınız için {quote.QuoteNumber} numaralı {quote.PremiumAmount:N2} ₺ tutarındaki kasko teklifiniz {NotificationWriter.FormatDate(quote.ValidUntil)} tarihine kadar geçerlidir.",
+                    quote.Id);
+            }
+            else
+            {
+                await NotificationWriter.ToCustomerAsync(
+                    _unitOfWork,
+                    quote.CustomerId,
+                    "QUOTE_REVIEW",
+                    "Teklifiniz incelemede",
+                    $"{quote.QuoteNumber} numaralı teklifiniz yetkili onayına gönderildi. Değerlendirme sonucu size bildirilecektir.",
+                    quote.Id);
+
+                await NotificationWriter.ToRolesAsync(
+                    _unitOfWork,
+                    NotificationWriter.AdminOnly,
+                    "QUOTE_APPROVAL_REQUIRED",
+                    "Onay bekleyen teklif",
+                    $"{quote.QuoteNumber} · {customer.FirstName} {customer.LastName} · {quote.PremiumAmount:N2} ₺. Gerekçe: {quote.ReviewReason}",
+                    quote.Id);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new QuoteDto
@@ -911,20 +941,32 @@ namespace Kasko.Business.Services
             if (!isValidTransition)
             {
                 throw new BadRequestException(
-                    $"'{quote.Status}' durumundan '{newStatus}' durumuna geçiş yapılamaz.");
+                    $"'{QuoteStatusText(quote.Status)}' durumundaki teklif '{QuoteStatusText(newStatus)}' durumuna alınamaz.");
             }
 
             if (newStatus == QuoteStatus.Expired
                 && quote.ValidUntil >= DateTime.UtcNow)
             {
                 throw new BadRequestException(
-                    "Geçerlilik süresi dolmamış bir teklif Expired yapılamaz.");
+                    "Geçerlilik süresi dolmamış bir teklif 'Süresi Doldu' durumuna alınamaz.");
             }
 
             quote.Status = newStatus;
             quote.UpdatedDate = DateTime.UtcNow;
 
             await _unitOfWork.Quotes.UpdateAsync(quote);
+
+            if (newStatus == QuoteStatus.Rejected)
+            {
+                await NotificationWriter.ToCustomerAsync(
+                    _unitOfWork,
+                    quote.CustomerId,
+                    "QUOTE_REJECTED",
+                    "Teklifiniz onaylanmadı",
+                    $"{quote.QuoteNumber} numaralı teklifiniz değerlendirme sonucunda onaylanmadı. Farklı bir paket veya muafiyetle yeni teklif alabilirsiniz.",
+                    quote.Id);
+            }
+
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -1046,7 +1088,7 @@ namespace Kasko.Business.Services
                 return null;
             }
 
-            return $"Bu aracın {activePolicy.EndDate.ToLocalTime():dd.MM.yyyy} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala ({activePolicy.EndDate.AddDays(-60).ToLocalTime():dd.MM.yyyy} tarihinden itibaren) yenileme olarak alınabilir.";
+            return $"Bu aracın {NotificationWriter.FormatDate(activePolicy.EndDate)} tarihine kadar geçerli aktif poliçesi var. Yeni teklif, poliçe bitimine 60 gün kala ({NotificationWriter.FormatDate(activePolicy.EndDate.AddDays(-60))} tarihinden itibaren) yenileme olarak alınabilir.";
         }
 
         public async Task<QuoteEligibilityDto> CheckVehicleEligibilityAsync(Guid vehicleId)
@@ -1076,6 +1118,17 @@ namespace Kasko.Business.Services
 
             return date;
         }
+
+        private static string QuoteStatusText(QuoteStatus status) => status switch
+        {
+            QuoteStatus.Draft => "Taslak",
+            QuoteStatus.Offered => "Teklif Verildi",
+            QuoteStatus.Accepted => "Kabul Edildi",
+            QuoteStatus.Rejected => "Reddedildi",
+            QuoteStatus.Expired => "Süresi Doldu",
+            QuoteStatus.Cancelled => "İptal Edildi",
+            _ => status.ToString()
+        };
 
         private bool IsCustomerCaller =>
             _httpContextAccessor.HttpContext?.User.IsInRole("Customer") == true;
@@ -1110,7 +1163,7 @@ namespace Kasko.Business.Services
                 return null;
             }
 
-            return $"Bu araç için {openQuote.ValidUntil.ToLocalTime():dd.MM.yyyy} tarihine kadar geçerli bir teklifiniz var ({openQuote.QuoteNumber}). Mevcut teklifi Tekliflerim sayfasından satın alabilir, süresi dolduktan sonra yeni teklif alabilirsiniz.";
+            return $"Bu araç için {NotificationWriter.FormatDate(openQuote.ValidUntil)} tarihine kadar geçerli bir teklifiniz var ({openQuote.QuoteNumber}). Mevcut teklifi Tekliflerim sayfasından satın alabilir, süresi dolduktan sonra yeni teklif alabilirsiniz.";
         }
 
         public async Task<QuoteEligibilityDto> CheckPlateEligibilityAsync(string plateNumber)

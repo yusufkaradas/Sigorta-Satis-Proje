@@ -98,10 +98,7 @@ export class PackagesPage implements OnInit {
         this.toast.success(included ? `${coverageName} paketten çıkarıldı.` : `${coverageName} pakete eklendi.`);
         this.load(true);
       },
-      error: error => {
-        this.matrixBusy.set('');
-        this.toast.error(error?.error?.detail ?? error?.error?.message ?? 'Paket içeriği güncellenemedi.');
-      }
+      error: () => this.matrixBusy.set('')
     });
   }
 
@@ -123,10 +120,7 @@ export class PackagesPage implements OnInit {
         this.toast.success('Paket açıklaması güncellendi.');
         this.load(true);
       },
-      error: error => {
-        this.matrixBusy.set('');
-        this.toast.error(error?.error?.detail ?? error?.error?.message ?? 'Açıklama kaydedilemedi.');
-      }
+      error: () => this.matrixBusy.set('')
     });
   }
 

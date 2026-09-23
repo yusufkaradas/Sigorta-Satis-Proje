@@ -1,3 +1,4 @@
+import { roleLabel } from '../../../core/utils/role-label';
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import {
   ChangeDetectorRef,
@@ -49,6 +50,8 @@ import {
   styleUrl: './user-edit.scss'
 })
 export class UserEdit implements OnInit {
+
+  readonly roleLabel = roleLabel;
   
   user: User | null = null;
 

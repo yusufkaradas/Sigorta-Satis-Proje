@@ -1,3 +1,4 @@
+import { roleLabel } from '../../../core/utils/role-label';
 import { InputRuleDirective } from '../../../core/directives/input-rule.directive';
 import { districtOptions, provinceOptions } from '../../../core/data/tr-locations';
 import {
@@ -53,6 +54,8 @@ import {
   styleUrl: './user-create.scss'
 })
 export class UserCreate implements OnInit {
+
+  readonly roleLabel = roleLabel;
 
   readonly provinceOptions = provinceOptions;
 

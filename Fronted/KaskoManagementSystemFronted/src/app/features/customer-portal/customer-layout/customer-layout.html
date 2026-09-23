@@ -58,7 +58,10 @@
           <div
             *ngIf="isNotificationOpen"
             class="kl-dropdown kl-notify">
-            <strong>Bildirimler</strong>
+            <div class="kl-notify-head">
+              <strong>Bildirimler</strong>
+              <button *ngIf="unreadCount() > 0" type="button" (click)="markAllNotificationsRead()">Tümünü okundu say</button>
+            </div>
 
             <p *ngIf="latestNotifications().length === 0">Yeni bildiriminiz bulunmuyor.</p>
 
@@ -71,6 +74,8 @@
                 </a>
               </li>
             </ul>
+
+            <a class="kl-notify-more" routerLink="/customer/notifications" (click)="isNotificationOpen = false">Tüm bildirimler</a>
 
           </div>
 

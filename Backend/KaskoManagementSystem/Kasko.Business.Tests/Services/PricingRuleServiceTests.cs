@@ -185,7 +185,7 @@ public class PricingRuleServiceTests
         Assert.Equal(2, result.Version);
 
         Assert.Equal(
-            new DateTime(2026, 8, 31),
+            new DateTime(2026, 9, 1).AddTicks(-1),
             existingRule.EffectiveUntil);
 
         _pricingRuleRepositoryMock.Verify(
@@ -297,6 +297,49 @@ public class PricingRuleServiceTests
 
         _unitOfWorkMock.Verify(
             x => x.SaveChangesAsync(),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenMiddleVersionDeleted_ShouldExtendPreviousVersion()
+    {
+        var previous = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "BASE_KASKO_RATE",
+            Value = 0.0215m,
+            Version = 2,
+            EffectiveFrom = new DateTime(2026, 9, 1),
+            EffectiveUntil = new DateTime(2026, 11, 1).AddTicks(-1),
+            IsActive = true
+        };
+
+        var middle = new PricingRule
+        {
+            Id = Guid.NewGuid(),
+            Code = "BASE_KASKO_RATE",
+            Value = 0.0230m,
+            Version = 3,
+            EffectiveFrom = new DateTime(2026, 11, 1),
+            EffectiveUntil = new DateTime(2027, 1, 1).AddTicks(-1),
+            IsActive = true
+        };
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.GetByIdAsync(middle.Id))
+            .ReturnsAsync(middle);
+
+        _pricingRuleRepositoryMock
+            .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<PricingRule, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<PricingRule, bool>> predicate) =>
+                new[] { previous, middle }.Where(predicate.Compile()).ToList());
+
+        await _pricingRuleService.DeleteAsync(middle.Id);
+
+        Assert.Equal(middle.EffectiveUntil, previous.EffectiveUntil);
+
+        _pricingRuleRepositoryMock.Verify(
+            x => x.UpdateAsync(previous),
             Times.Once);
     }
 

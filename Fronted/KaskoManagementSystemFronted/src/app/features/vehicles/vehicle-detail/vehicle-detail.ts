@@ -353,7 +353,7 @@ async deleteVehicle(): Promise<void> {
         ) {
 
           this.errorMessage =
-            'Araç silmek için Admin yetkisi gerekiyor.';
+            'Araç silmek için sistem yöneticisi yetkisi gerekiyor.';
 
         } else if (
           error?.status === 404

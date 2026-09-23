@@ -560,7 +560,7 @@ this.vehicleService.updateVehicle(this.form)
     if (error?.status === 403) {
 
       return (
-        'Araç güncellemek için Admin yetkisi gerekiyor.'
+        'Araç güncellemek için sistem yöneticisi yetkisi gerekiyor.'
       );
 
     }

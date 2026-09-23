@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using Kasko.Business.DTOs.Notification;
 using Kasko.Business.Exceptions;
@@ -10,6 +11,8 @@ namespace Kasko.Business.Services;
 
 public class NotificationService : INotificationService
 {
+    private const int MaxListCount = 50;
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -24,7 +27,7 @@ public class NotificationService : INotificationService
     public async Task CreateAsync(
         NotificationCreateDto dto)
     {
-        var notification = new Notification
+        await _unitOfWork.Notifications.AddAsync(new Notification
         {
             Id = Guid.NewGuid(),
             CustomerId = dto.CustomerId,
@@ -35,10 +38,7 @@ public class NotificationService : INotificationService
             IsRead = false,
             ReadDate = null,
             CreatedDate = DateTime.UtcNow
-        };
-
-        await _unitOfWork.Notifications
-            .AddAsync(notification);
+        });
 
         await _unitOfWork.SaveChangesAsync();
     }
@@ -46,62 +46,25 @@ public class NotificationService : INotificationService
     public async Task<IEnumerable<NotificationDto>>
         GetByCustomerIdAsync(Guid customerId)
     {
-        var notifications =
-            await _unitOfWork.Notifications.FindAsync(
-                x =>
-                    x.CustomerId == customerId &&
-                    !x.IsDeleted);
-
-        return notifications
-            .OrderByDescending(x => x.CreatedDate)
-            .Select(x => new NotificationDto
-            {
-                Id = x.Id,
-                CustomerId = x.CustomerId,
-                Type = x.Type,
-                Title = x.Title,
-                Message = x.Message,
-                IsRead = x.IsRead,
-                ReadDate = x.ReadDate,
-                RelatedEntityId = x.RelatedEntityId,
-                CreatedDate = x.CreatedDate
-            });
+        return Map(await _unitOfWork.Notifications.FindAsync(
+            x => x.CustomerId == customerId && !x.IsDeleted));
     }
 
     public async Task<IEnumerable<NotificationDto>>
         GetMyNotificationsAsync()
     {
-        var userIdValue =
-            _httpContextAccessor.HttpContext?
-                .User
-                .FindFirst(ClaimTypes.NameIdentifier)?
-                .Value;
+        var filter = await GetRecipientFilterAsync();
 
-        if (!Guid.TryParse(userIdValue, out var userId))
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var user =
-            await _unitOfWork.Users
-                .GetByIdAsync(userId);
-
-        if (user?.CustomerId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        return await GetByCustomerIdAsync(
-            user.CustomerId.Value);
+        return Map(await _unitOfWork.Notifications.FindAsync(filter));
     }
 
     public async Task MarkAsReadAsync(Guid id)
     {
-        var customerId = await GetCurrentCustomerIdAsync();
+        var filter = (await GetRecipientFilterAsync()).Compile();
 
         var notification = await _unitOfWork.Notifications.GetByIdAsync(id);
 
-        if (notification == null || notification.IsDeleted || notification.CustomerId != customerId)
+        if (notification == null || !filter(notification))
         {
             throw new NotFoundException("Bildirim bulunamadı.");
         }
@@ -121,10 +84,11 @@ public class NotificationService : INotificationService
 
     public async Task MarkAllAsReadAsync()
     {
-        var customerId = await GetCurrentCustomerIdAsync();
+        var filter = await GetRecipientFilterAsync();
 
-        var unread = await _unitOfWork.Notifications.FindAsync(
-            x => x.CustomerId == customerId && !x.IsRead && !x.IsDeleted);
+        var unread = (await _unitOfWork.Notifications.FindAsync(filter))
+            .Where(x => !x.IsRead)
+            .ToList();
 
         foreach (var notification in unread)
         {
@@ -134,10 +98,33 @@ public class NotificationService : INotificationService
             await _unitOfWork.Notifications.UpdateAsync(notification);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        if (unread.Count > 0)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
-    private async Task<Guid> GetCurrentCustomerIdAsync()
+    private static IEnumerable<NotificationDto> Map(IEnumerable<Notification> notifications)
+    {
+        return notifications
+            .OrderByDescending(x => x.CreatedDate)
+            .Take(MaxListCount)
+            .Select(x => new NotificationDto
+            {
+                Id = x.Id,
+                CustomerId = x.CustomerId,
+                Type = x.Type,
+                Title = x.Title,
+                Message = x.Message,
+                IsRead = x.IsRead,
+                ReadDate = x.ReadDate,
+                RelatedEntityId = x.RelatedEntityId,
+                CreatedDate = x.CreatedDate
+            })
+            .ToList();
+    }
+
+    private async Task<Expression<Func<Notification, bool>>> GetRecipientFilterAsync()
     {
         var userIdValue = _httpContextAccessor.HttpContext?.User
             .FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -149,6 +136,18 @@ public class NotificationService : INotificationService
 
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
 
-        return user?.CustomerId ?? throw new UnauthorizedAccessException();
+        if (user == null || user.IsDeleted)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        if (user.CustomerId.HasValue)
+        {
+            var customerId = user.CustomerId.Value;
+
+            return x => !x.IsDeleted && x.CustomerId == customerId;
+        }
+
+        return x => !x.IsDeleted && x.UserId == userId;
     }
 }

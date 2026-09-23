@@ -1,3 +1,4 @@
+import { roleLabel } from '../../core/utils/role-label';
 import { newestFirst } from '../../core/utils/list-sort';
 import { IdBadge } from '../../core/components/id-badge';
 import { confirmDialog } from '../../core/services/confirm-dialog';
@@ -107,16 +108,7 @@ formatPhone(value?: string | null): string {
 }
 
 roleLabel(roleName?: string | null): string {
-  switch (roleName) {
-    case 'Admin':
-      return 'Yönetici (Admin)';
-    case 'Manager':
-      return 'Müdür (Manager)';
-    case 'Customer':
-      return 'Müşteri';
-    default:
-      return roleName || 'Rol atanmamış';
-  }
+  return roleLabel(roleName);
 }
 
 get staffUserCount(): number {
