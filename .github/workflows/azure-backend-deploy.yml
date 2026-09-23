@@ -1,0 +1,42 @@
+name: Backend API Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'Backend/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: Backend/KaskoManagementSystem
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: Backend/KaskoManagementSystem
+
+      - name: Publish
+        run: dotnet publish Kasko.API/Kasko.API.csproj --configuration Release --output ./publish --no-build
+        working-directory: Backend/KaskoManagementSystem
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'app-netsigorta'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: Backend/KaskoManagementSystem/publish
