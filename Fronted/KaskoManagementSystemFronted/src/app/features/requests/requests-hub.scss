@@ -55,15 +55,32 @@
     align-self: stretch;
     max-width: 100%;
     padding: 12px 12px 0;
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 8px;
   }
 
   .hub-tab {
-    flex: 0 0 auto;
     min-width: 0;
-    padding: 0 16px;
+    height: auto;
+    min-height: 38px;
+    padding: 4px 10px;
     font-size: 13px;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .hub-tabs {
+    gap: 6px;
+  }
+
+  .hub-tab {
+    padding: 4px 6px;
+    font-size: 11px;
   }
 }

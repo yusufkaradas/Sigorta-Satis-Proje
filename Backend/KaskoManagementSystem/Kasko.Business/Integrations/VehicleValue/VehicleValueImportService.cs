@@ -8,6 +8,8 @@ namespace Kasko.Business.Integrations.VehicleValue;
 public class VehicleValueImportService
     : IVehicleValueImportService
 {
+    private const int ProgressInterval = 25;
+
     private readonly IUnitOfWork _unitOfWork;
     private static string BuildKey(
     string brandCode,
@@ -27,6 +29,8 @@ public class VehicleValueImportService
     public async Task<VehicleValueImportResult> ImportAsync(
         string filePath,
         DateTime? effectiveDate = null,
+        IProgress<VehicleValueImportProgress>? progress = null,
+        string? importedBy = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(filePath))
@@ -45,8 +49,12 @@ public class VehicleValueImportService
 
         var result = new VehicleValueImportResult();
 
+        progress?.Report(new VehicleValueImportProgress(VehicleValueImportStage.Reading, 0, 0));
+
         using var workbook = new XLWorkbook(filePath);
-        
+
+        cancellationToken.ThrowIfCancellationRequested();
+
         var period =
             (effectiveDate ?? new DateTime(2026, 8, 1)).Date;
 
@@ -56,11 +64,10 @@ public class VehicleValueImportService
         var existingRecords =
             await _unitOfWork
                 .VehicleValueCatalogs
-                .GetAllAsync();
+                .GetKeysByEffectiveDateAsync(period);
 
         var existingKeys =
             existingRecords
-                .Where(x => !x.IsDeleted)
                 .Select(x => BuildKey(
                     x.BrandCode,
                     x.TypeCode,
@@ -96,11 +103,24 @@ public class VehicleValueImportService
         var lastColumn =
             usedRange.LastColumn().ColumnNumber();
 
+        var totalRows =
+            Math.Max(lastRow - firstDataRow + 1, 0);
+
+        progress?.Report(new VehicleValueImportProgress(VehicleValueImportStage.Processing, 0, totalRows));
+
         for (var rowNumber = firstDataRow;
              rowNumber <= lastRow;
              rowNumber++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            var processedRows =
+                rowNumber - firstDataRow;
+
+            if (processedRows > 0 && processedRows % ProgressInterval == 0)
+            {
+                progress?.Report(new VehicleValueImportProgress(VehicleValueImportStage.Processing, processedRows, totalRows));
+            }
 
             result.ExcelRowCount++;
 
@@ -220,6 +240,9 @@ public class VehicleValueImportService
                         CreatedDate =
                             importedAt,
 
+                        CreatedBy =
+                            importedBy,
+
                         VehicleCategory =
                                           VehicleCategoryClassifier.Classify(brandName, typeName),
                     };
@@ -238,6 +261,8 @@ public class VehicleValueImportService
                 }
             }
         }
+
+        progress?.Report(new VehicleValueImportProgress(VehicleValueImportStage.Saving, totalRows, totalRows));
 
         await _unitOfWork.SaveChangesAsync();
 

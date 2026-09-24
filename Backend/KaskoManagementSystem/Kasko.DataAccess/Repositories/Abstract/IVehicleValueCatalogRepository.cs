@@ -15,6 +15,8 @@ public interface IVehicleValueCatalogRepository
 
     Task<int> ReclassifyAsync(Func<string, string, string> classify);
 
+    Task<IReadOnlyList<VehicleValueCatalog>> GetKeysByEffectiveDateAsync(DateTime effectiveDate);
+
     Task<IReadOnlyList<VehicleValueCatalog>> GetActiveTypesAsync(
         string brandCode);
 

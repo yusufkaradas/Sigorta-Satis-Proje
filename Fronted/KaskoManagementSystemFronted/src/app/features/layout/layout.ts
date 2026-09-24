@@ -1,5 +1,6 @@
 import { environment } from '../../../environments/environment';
 import { BrandService } from '../../core/services/brand.service';
+import { createMobileMenu, userInitials } from '../../core/utils/mobile-menu';
 import {
   Component,
   DestroyRef,
@@ -117,6 +118,15 @@ export class Layout implements OnInit {
 
   readonly user =
     this.authService.getCurrentUser();
+
+  readonly userInitials =
+    userInitials(this.user.name);
+
+  private readonly mobileMenu =
+    createMobileMenu();
+
+  readonly isMenuOpen =
+    this.mobileMenu.isOpen;
 
   private readonly http =
     inject(HttpClient);
@@ -296,6 +306,17 @@ export class Layout implements OnInit {
   onEscape(): void {
     this.isNotificationOpen = false;
     this.isUserMenuOpen = false;
+    this.mobileMenu.close();
+  }
+
+  toggleMenu(): void {
+    this.isNotificationOpen = false;
+    this.isUserMenuOpen = false;
+    this.mobileMenu.toggle();
+  }
+
+  closeMenu(): void {
+    this.mobileMenu.close();
   }
 
   toggleNotification(): void {

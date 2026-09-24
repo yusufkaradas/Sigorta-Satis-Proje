@@ -2,7 +2,10 @@
 
 @include k.panel-layout;
 
-.kl-menu {
-  margin-top: k.u(120);
-  gap: k.u(25);
+@media (min-width: 901px) {
+
+  .kl-menu {
+    margin-top: k.u(120);
+    gap: k.u(25);
+  }
 }

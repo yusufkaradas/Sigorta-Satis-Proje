@@ -668,6 +668,13 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     overflow-y: auto;
   }
 
+  .kl-menu-toggle,
+  .kl-backdrop,
+  .kl-drawer-head,
+  .kl-user-initials {
+    display: none;
+  }
+
   @media (max-width: 900px) {
 
     :host {
@@ -677,52 +684,129 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     .kl-layout {
       height: auto;
       min-height: 100dvh;
-      grid-template-columns: minmax(0, 1fr);
+      display: block;
       overflow: visible;
     }
 
+    .kl-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: block;
+      background: rgba(17, 24, 39, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+    }
+
+    .kl-menu-open .kl-backdrop {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.2s ease;
+    }
+
     .kl-sidebar {
-      padding: 12px 16px;
-      border-right: 0;
-      border-bottom: 2px solid $black;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      width: min(300px, 86vw);
+      padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+      border-right: 2px solid $black;
+      border-bottom: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      visibility: hidden;
+      transform: translateX(-102%);
+      transition: transform 0.25s ease, visibility 0s linear 0.25s;
+    }
+
+    .kl-menu-open .kl-sidebar {
+      visibility: visible;
+      transform: translateX(0);
+      box-shadow: 12px 0 32px rgba(0, 0, 0, 0.3);
+      transition: transform 0.25s ease;
+    }
+
+    .kl-drawer-head {
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: $surface;
+
+      strong {
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+    }
+
+    .kl-drawer-close {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      border: 2px solid $surface;
+      border-radius: 10px;
+      background: var(--kl-hud-soft);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
     }
 
     .kl-logo {
-      display: none;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 18px;
+      display: grid;
+      font-size: 18px;
     }
 
     .kl-menu {
-      flex-direction: row;
+      margin: 0 0 20px;
+      flex-direction: column;
       flex-wrap: nowrap;
-      overflow-x: auto;
       gap: 8px;
-      padding-bottom: 4px;
-      -webkit-overflow-scrolling: touch;
+      overflow: visible;
     }
 
-    .kl-menu-item,
-    .kl-logout {
-      height: 34px;
-      font-size: 13px;
+    .kl-menu-item {
+      height: 46px;
+      flex: 0 0 auto;
+      padding: 0 16px;
+      justify-content: flex-start;
+      font-size: 15px;
     }
 
     .kl-logout {
-      margin-top: 10px;
+      height: 46px;
+      margin-top: auto;
+      font-size: 15px;
     }
 
     .kl-main {
-      grid-template-rows: auto auto;
+      display: block;
     }
 
     .kl-header {
-      height: 64px;
-      padding: 0 10px;
-      grid-template-columns: minmax(0, 1fr) auto;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: calc(60px + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+      grid-template-columns: auto minmax(0, 1fr) auto;
       gap: 8px;
     }
 
-    .kl-header > span {
+    .kl-header > .kl-portal-badge {
       display: none;
+    }
+
+    .kl-menu-toggle {
+      display: grid;
     }
 
     .kl-header-actions {
@@ -730,13 +814,9 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
     .kl-icon-button {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
-    }
-
-    .kl-dropdown {
-      width: min(280px, calc(100vw - 20px));
     }
 
     .kl-title {
@@ -755,14 +835,73 @@ $shadow-pill: 0 4px 10px rgba(0, 0, 0, 0.25);
 
     .kl-user-button {
       min-width: 0;
-      max-width: 118px;
-      height: 38px;
-      padding: 0 10px;
+      max-width: 140px;
+      height: 40px;
+      padding: 0 12px;
       font-size: 12px;
     }
 
+    .kl-user-name {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kl-dropdown {
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top));
+      right: calc(8px + env(safe-area-inset-right));
+      left: calc(8px + env(safe-area-inset-left));
+      width: auto;
+      max-height: calc(100dvh - 76px - env(safe-area-inset-top));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .kl-dropdown p {
+      word-break: break-word;
+    }
+
     .kl-content {
+      min-height: calc(100dvh - 60px - env(safe-area-inset-top));
       overflow: visible;
+    }
+  }
+
+  @media (max-width: 560px) {
+
+    .kl-header {
+      padding-right: calc(8px + env(safe-area-inset-right));
+      padding-left: calc(8px + env(safe-area-inset-left));
+      gap: 6px;
+    }
+
+    .kl-header-actions {
+      gap: 5px;
+    }
+
+    .kl-title {
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .kl-user-button {
+      width: 40px;
+      padding: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+
+    .kl-user-name {
+      display: none;
+    }
+
+    .kl-user-initials {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
   }
 }

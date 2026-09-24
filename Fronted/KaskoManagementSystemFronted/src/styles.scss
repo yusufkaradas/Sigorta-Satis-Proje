@@ -2,6 +2,7 @@
 @use 'app/shared/styles/form-kit';
 @use 'app/features/customer-portal/portal';
 @use 'app/features/quick-quotes/quick-quote';
+@use 'app/shared/styles/mobile';
 
 html {
   @include k.scale-root;
@@ -2415,3 +2416,5 @@ kbd {
 .new-rule-button {
   font-family: k.$font;
 }
+
+@include mobile.mobile;

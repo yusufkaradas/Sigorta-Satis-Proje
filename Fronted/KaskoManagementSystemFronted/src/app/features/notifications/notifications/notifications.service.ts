@@ -93,6 +93,10 @@ export function staffNotificationTarget(item: Notification, base: string): Notif
     return { path: [`${base}/requests`], tab: 'cancellations' };
   }
 
+  if (type.startsWith('CATALOG')) {
+    return { path: [`${base}/vehicles`], tab: 'catalog' };
+  }
+
   if (type.startsWith('QUOTE')) {
     return { path: id ? [`${base}/quotes`, id] : [`${base}/quotes`] };
   }
@@ -124,6 +128,9 @@ export function notificationTypeLabel(type: string): string {
   }
   if (value.startsWith('CANCEL')) {
     return 'İptal';
+  }
+  if (value.startsWith('CATALOG')) {
+    return 'Katalog';
   }
   if (value.startsWith('POLICY')) {
     return 'Poliçe';

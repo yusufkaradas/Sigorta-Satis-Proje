@@ -70,7 +70,7 @@
     gap: k.u(10);
   }
 
-  b {
+  li > b {
     flex: 0 0 auto;
     width: k.u(24);
     height: k.u(24);
@@ -83,15 +83,15 @@
   }
 
   span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: block;
     color: #4b5563;
     font-size: k.u(12);
     line-height: 1.45;
   }
 
   strong {
+    margin-bottom: 2px;
+    display: block;
     color: k.$text;
     font-size: k.u(13);
   }
@@ -114,11 +114,150 @@
   border-top: 0;
 }
 
-.ci-result {
-  margin: k.u(12) 0 0;
+.ci-upload {
+  overflow-y: auto;
+}
+
+.ci-progress {
+  margin-top: k.u(12);
+  padding: k.u(12) k.u(14);
+  border: 1px solid #bfdbfe;
+  border-radius: k.u(10);
+  background: #eff6ff;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: k.u(6);
+  color: k.$text;
+}
+
+.ci-progress-steps {
+  margin: 0 0 k.u(2);
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: k.u(6) k.u(14);
+  color: k.$text-secondary;
+  font-size: k.u(12);
+  font-weight: 600;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: k.u(6);
+  }
+
+  b {
+    width: k.u(18);
+    height: k.u(18);
+    border-radius: 50%;
+    background: #cbd5e1;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: k.u(10);
+  }
+
+  li.active {
+    color: k.$info-text;
+
+    b {
+      background: k.$info;
+    }
+  }
+
+  li.done b {
+    background: k.$success;
+  }
+}
+
+.ci-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: k.u(10);
+
+  strong {
+    font-size: k.u(14);
+  }
+
+  span {
+    color: k.$info-text;
+    font-size: k.u(18);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ci-progress-bar {
+  height: k.u(10);
+  border-radius: 999px;
+  background: #dbeafe;
+  overflow: hidden;
+
+  span {
+    height: 100%;
+    border-radius: inherit;
+    background: k.$info;
+    display: block;
+    transition: width 0.4s ease;
+  }
+}
+
+.ci-progress-file {
+  overflow: hidden;
+  color: k.$text-secondary;
+  font-size: k.u(12);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ci-progress-detail {
+  color: #374151;
+  font-size: k.u(12);
+  line-height: 1.45;
+}
+
+.ci-progress-note {
+  color: k.$info-text;
+  font-size: k.u(11);
+  font-weight: 600;
+}
+
+.ci-progress-done {
+  border-color: #bbf7d0;
+  background: k.$success-soft;
+
+  .ci-progress-head span {
+    color: k.$success-text;
+  }
+
+  .ci-progress-bar {
+    background: #bbf7d0;
+
+    span {
+      background: k.$success;
+    }
+  }
+}
+
+.ci-progress-failed {
+  border-color: #fecaca;
+  background: k.$danger-soft;
+
+  .ci-progress-head span,
+  .ci-progress-detail {
+    color: k.$danger-text;
+  }
+
+  .ci-progress-bar {
+    background: #fecaca;
+
+    span {
+      background: k.$danger;
+    }
+  }
 }
 
 .ci-file {
@@ -157,4 +296,27 @@
 
 .ci-reclassify strong {
   font-size: k.u(14);
+}
+
+@media (max-width: 700px) {
+
+  .ci-stats {
+    gap: 10px;
+  }
+
+  .ci-stat {
+    height: auto;
+    min-height: 86px;
+    padding: 12px 14px;
+    border-radius: 14px;
+
+    span {
+      font-size: 11px;
+      white-space: normal;
+    }
+
+    strong {
+      font-size: 22px;
+    }
+  }
 }

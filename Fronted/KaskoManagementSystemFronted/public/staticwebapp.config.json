@@ -1,6 +1,9 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/*.{js,css,ico,png,jpg,svg,woff,woff2,json}"]
+    "exclude": ["/*.{js,css,ico,png,jpg,svg,woff,woff2,json,webmanifest}", "/icons/*"]
+  },
+  "mimeTypes": {
+    ".webmanifest": "application/manifest+json"
   }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Kasko.Business.Integrations.VehicleValue;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,17 +10,20 @@ namespace Kasko.Business.Interfaces;
 [Authorize]
 public class VehicleValueCatalogController : ControllerBase
 {
-    private readonly IVehicleValueImportService _importService;
-
     private readonly IVehicleValueCatalogService _catalogService;
 
-    public VehicleValueCatalogController(
-        IVehicleValueImportService importService,
-        IVehicleValueCatalogService catalogService)
-    {
-        _importService = importService;
+    private readonly CatalogImportTracker _importTracker;
 
+    private const string ImportBusyMessage =
+        "Devam eden bir TSB liste yüklemesi var. Tamamlandıktan sonra yeni liste yükleyebilirsiniz.";
+
+    public VehicleValueCatalogController(
+        IVehicleValueCatalogService catalogService,
+        CatalogImportTracker importTracker)
+    {
         _catalogService = catalogService;
+
+        _importTracker = importTracker;
     }
 
     [HttpGet("lookup")]
@@ -116,11 +120,24 @@ public class VehicleValueCatalogController : ControllerBase
     public async Task<IActionResult> Reclassify(
         CancellationToken cancellationToken)
     {
+        if (_importTracker.IsBusy)
+        {
+            return Conflict(ImportBusyMessage);
+        }
+
         var updated =
             await _catalogService.ReclassifyAsync(cancellationToken);
 
         return Ok(new { updated });
     }
+
+    [HttpGet("import/status")]
+    [Authorize(Roles = "Admin")]
+    public IActionResult ImportStatus()
+    {
+        return Ok(_importTracker.GetStatus());
+    }
+
     [HttpPost("import")]
     [Authorize(Roles = "Admin")]
     [Consumes("multipart/form-data")]
@@ -147,6 +164,11 @@ public class VehicleValueCatalogController : ControllerBase
                 "Sadece .xlsx formatındaki Excel dosyaları kabul edilir.");
         }
 
+        if (_importTracker.IsBusy)
+        {
+            return Conflict(ImportBusyMessage);
+        }
+
         var tempFilePath = Path.Combine(
             Path.GetTempPath(),
             $"{Guid.NewGuid()}{extension}");
@@ -160,21 +182,37 @@ public class VehicleValueCatalogController : ControllerBase
                     stream,
                     cancellationToken);
             }
-
-            var result =
-                await _importService.ImportAsync(
-                    tempFilePath,
-                    effectiveDate,
-                    cancellationToken);
-
-            return Ok(result);
         }
-        finally
+        catch
         {
-            if (System.IO.File.Exists(tempFilePath))
-            {
-                System.IO.File.Delete(tempFilePath);
-            }
+            DeleteTempFile(tempFilePath);
+            throw;
+        }
+
+        var job = new CatalogImportJob
+        {
+            FilePath = tempFilePath,
+            FileName = Path.GetFileName(file.FileName),
+            EffectiveDate = effectiveDate?.Date,
+            RequestedByUserId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null,
+            RequestedBy = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+        };
+
+        if (!_importTracker.TryEnqueue(job))
+        {
+            DeleteTempFile(tempFilePath);
+
+            return Conflict(ImportBusyMessage);
+        }
+
+        return Accepted(_importTracker.GetStatus());
+    }
+
+    private static void DeleteTempFile(string path)
+    {
+        if (System.IO.File.Exists(path))
+        {
+            System.IO.File.Delete(path);
         }
     }
 }
