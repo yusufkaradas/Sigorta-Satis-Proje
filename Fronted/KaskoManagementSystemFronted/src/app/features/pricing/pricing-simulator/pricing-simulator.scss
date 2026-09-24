@@ -702,3 +702,84 @@
     justify-content: flex-start;
   }
 }
+
+@media (max-width: 700px) {
+
+  .sim-table-wrap {
+    overflow: visible;
+  }
+
+  .sim-table {
+    display: block;
+    min-width: 0;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+    }
+
+    tr {
+      padding: 8px 2px;
+      border-bottom: 1px solid #eef2f7;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        'label label total'
+        'code effect factor';
+      align-items: center;
+      gap: 4px 8px;
+    }
+
+    td {
+      padding: 0;
+      border: 0;
+      font-size: 12px;
+    }
+
+    td:nth-child(1) {
+      grid-area: label;
+
+      strong {
+        display: inline;
+        font-size: 13px;
+      }
+
+      small {
+        margin-left: 6px;
+      }
+    }
+
+    td:nth-child(2) {
+      grid-area: code;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    td:nth-child(3) {
+      grid-area: factor;
+      text-align: right;
+    }
+
+    td:nth-child(4) {
+      grid-area: effect;
+    }
+
+    td:nth-child(5) {
+      grid-area: total;
+      font-size: 13px;
+    }
+  }
+
+  .sim-totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .sim-grand {
+      grid-column: 1 / -1;
+    }
+  }
+}

@@ -877,6 +877,11 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .qc-loading ul {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .qc-date {
@@ -889,4 +894,80 @@
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+}
+
+@media (max-width: 700px) {
+
+  .qc-risk-vehicle,
+  .qc-risk-row {
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+
+  .qc-risk-vehicle {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'main value'
+      'info info';
+    gap: 12px;
+  }
+
+  .qc-risk-vehicle-main {
+    grid-area: main;
+
+    small {
+      white-space: normal;
+    }
+  }
+
+  .qc-risk-vehicle-value {
+    grid-area: value;
+    padding-left: 12px;
+
+    strong {
+      font-size: 16px;
+    }
+  }
+
+  .qc-risk-vehicle dl {
+    grid-area: info;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+
+    > div {
+      padding-left: 0;
+      border-left: 0;
+      gap: 3px;
+    }
+  }
+
+  .qc-risk-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .qc-risk-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .qc-option {
+    min-height: 48px;
+    padding: 8px 10px 8px 38px;
+
+    &::before {
+      left: 10px;
+    }
+  }
+
+  .qc-date {
+    width: 100%;
+  }
+
+  .qc-limits-inline {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

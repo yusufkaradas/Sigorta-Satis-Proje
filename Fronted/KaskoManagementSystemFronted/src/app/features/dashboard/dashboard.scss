@@ -385,14 +385,29 @@ a.db-row:hover {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
 
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    flex: 0 0 auto;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    gap: 12px;
   }
 
   .db-chart {
-    min-height: k.u(160);
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 700px) {
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-grid > :nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 
@@ -748,4 +763,153 @@ a.db-row:hover {
 
 .db-action {
   height: k.u(42);
+}
+
+@media (max-width: 700px) {
+
+  .summary-grid {
+    gap: 10px;
+  }
+
+  .summary-card {
+    height: auto;
+    min-height: 86px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    gap: 2px;
+
+    span {
+      font-size: 12px;
+    }
+
+    strong {
+      font-size: 22px;
+    }
+
+    small {
+      font-size: 11px;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  h2 {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .db-donut-wrap {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .db-donut {
+    width: 110px;
+    height: 110px;
+  }
+
+  .dashboard-grid > .db-cell-renewals {
+    order: 1;
+  }
+
+  .dashboard-grid > :nth-child(6) {
+    order: 2;
+  }
+
+  .dashboard-grid > .db-cell-expiring {
+    order: 3;
+  }
+
+  .dashboard-grid > :nth-child(4) {
+    order: 4;
+  }
+
+  .dashboard-grid > .db-cell-week {
+    order: 5;
+  }
+
+  .dashboard-grid > :nth-child(1) {
+    order: 6;
+  }
+
+  .db-actions {
+    padding: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 44px;
+    gap: 8px;
+  }
+
+  .db-action {
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .db-list {
+    overflow: visible;
+  }
+
+  .dashboard-card > .db-table {
+    overflow: visible;
+  }
+
+  .db-row-head {
+    display: none;
+  }
+
+  .db-row {
+    padding: 10px 14px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'type record amount'
+      'type status date';
+    row-gap: 6px;
+    column-gap: 10px;
+  }
+
+  .db-row > span:nth-child(1) {
+    grid-area: type;
+    align-self: start;
+  }
+
+  .db-row > .db-record {
+    grid-area: record;
+  }
+
+  .db-row > .db-amount {
+    grid-area: amount;
+    text-align: right;
+  }
+
+  .db-row > span:nth-child(4) {
+    grid-area: status;
+  }
+
+  .db-row > .db-date:not(.db-time) {
+    grid-area: date;
+    text-align: right;
+  }
+
+  .db-row > .db-time {
+    display: none;
+  }
+
+  .db-chart {
+    padding: 24px 10px 8px;
+    gap: 4px;
+  }
+
+  .db-chart-bars em {
+    font-size: 9px;
+  }
+
+  .db-card-foot {
+    min-height: 44px;
+  }
+
+  .db-activity-list {
+    max-height: none;
+  }
 }

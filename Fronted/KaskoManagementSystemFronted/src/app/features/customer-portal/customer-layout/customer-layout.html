@@ -1,6 +1,15 @@
-<div class="kl-layout kl-role-customer">
+<div class="kl-layout kl-role-customer" [class.kl-menu-open]="isMenuOpen()">
 
-  <aside class="kl-sidebar">
+  <div class="kl-backdrop" (click)="closeMenu()"></div>
+
+  <aside class="kl-sidebar" id="kl-sidebar">
+
+    <div class="kl-drawer-head">
+      <strong>Müşteri Portalı</strong>
+      <button type="button" class="kl-drawer-close" aria-label="Menüyü kapat" (click)="closeMenu()">
+        <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
 
     <a
       routerLink="/customer"
@@ -16,7 +25,8 @@
         [routerLink]="item.path"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: item.exact }"
-        class="kl-menu-item">
+        class="kl-menu-item"
+        (click)="closeMenu()">
         {{ item.label }}
       </a>
 
@@ -35,6 +45,16 @@
   <div class="kl-main">
 
     <header class="kl-header">
+
+      <button
+        type="button"
+        class="kl-icon-button kl-menu-toggle"
+        aria-label="Menüyü aç"
+        aria-controls="kl-sidebar"
+        [attr.aria-expanded]="isMenuOpen()"
+        (click)="toggleMenu()">
+        <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+      </button>
 
       <span class="kl-portal-badge">Müşteri Portalı</span>
 
@@ -94,8 +114,10 @@
           <button
             type="button"
             class="kl-user-button"
+            [attr.aria-label]="user.name || 'Kullanıcı menüsü'"
             (click)="toggleUserMenu()">
-            {{ user.name || 'Kullanıcı Adı' }}
+            <span class="kl-user-name">{{ user.name || 'Kullanıcı Adı' }}</span>
+            <span class="kl-user-initials" aria-hidden="true">{{ userInitials }}</span>
           </button>
 
           <div

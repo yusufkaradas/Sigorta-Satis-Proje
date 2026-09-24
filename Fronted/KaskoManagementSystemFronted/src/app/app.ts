@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { ToastHost } from './core/components/toast-host';
 import { LoadingHost } from './core/components/loading-host';
 import { BrandService } from './core/services/brand.service';
+import { ResponsiveTableService } from './core/services/responsive-table.service';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +17,11 @@ export class App {
 
   private readonly brandService = inject(BrandService);
 
+  private readonly responsiveTables = inject(ResponsiveTableService);
+
   constructor() {
     this.brandService.load();
+    this.responsiveTables.start();
 
     document.addEventListener('input', event => {
       const input = event.target as HTMLInputElement | null;

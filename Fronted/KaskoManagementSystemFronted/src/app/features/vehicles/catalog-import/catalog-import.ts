@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { BackendDatePipe, parseBackendDate } from '../../../core/pipes/backend-date.pipe';
 import { ToastService } from '../../../core/services/toast.service';
 import { confirmDialog } from '../../../core/services/confirm-dialog';
 import {
-  CatalogImportResult,
   CatalogSummary,
   VehicleValueService
 } from '../../vehicles/vehicle-value.service';
+import { CatalogImportTracker } from './catalog-import-tracker.service';
 
 @Component({
   selector: 'app-catalog-import',
@@ -26,31 +26,86 @@ export class CatalogImport implements OnInit {
 
   private readonly toast = inject(ToastService);
 
+  readonly tracker = inject(CatalogImportTracker);
+
   readonly maxFileBytes = 30 * 1024 * 1024;
 
   summary = signal<CatalogSummary | null>(null);
-
-  result = signal<CatalogImportResult | null>(null);
 
   selectedFile = signal<File | null>(null);
 
   period = signal(new Date().toISOString().slice(0, 7));
 
-  isImporting = signal(false);
-
   isReclassifying = signal(false);
 
   errorMessage = signal('');
 
+  private readonly seenCompletions = this.tracker.completedCount();
+
+  constructor() {
+    effect(() => {
+      if (this.tracker.completedCount() !== this.seenCompletions) {
+        this.loadSummary();
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadSummary();
+    this.tracker.refresh();
+  }
+
+  get progressTitle(): string {
+    const status = this.tracker.status();
+
+    switch (this.tracker.phase()) {
+      case 'uploading':
+        return 'Dosya sunucuya gönderiliyor';
+      case 'processing':
+        if (status?.state === 'Queued') {
+          return 'Yükleme sıraya alındı';
+        }
+        return status?.stage === 'Saving'
+          ? 'Kayıtlar kaydediliyor'
+          : status?.stage === 'Processing' ? 'Araç değerleri işleniyor' : 'Excel dosyası okunuyor';
+      case 'completed':
+        return 'Yükleme tamamlandı';
+      case 'failed':
+        return 'Yükleme tamamlanamadı';
+      default:
+        return '';
+    }
+  }
+
+  get progressDetail(): string {
+    const status = this.tracker.status();
+
+    switch (this.tracker.phase()) {
+      case 'uploading':
+        return 'Dosya gönderilirken bu sekmeyi kapatmayın.';
+      case 'processing':
+        return status && status.totalRows > 0
+          ? `${status.processedRows.toLocaleString('tr-TR')} / ${status.totalRows.toLocaleString('tr-TR')} satır işlendi`
+          : 'Liste hazırlanıyor';
+      case 'failed':
+        return this.tracker.failure();
+      default:
+        return '';
+    }
+  }
+
+  get finishedTimeText(): string {
+    const date = parseBackendDate(this.tracker.status()?.finishedAt);
+
+    return date
+      ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul' }).format(date)
+      : '';
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     this.errorMessage.set('');
-    this.result.set(null);
 
     if (!file) {
       this.selectedFile.set(null);
@@ -70,6 +125,7 @@ export class CatalogImport implements OnInit {
     }
 
     this.selectedFile.set(file);
+    input.value = '';
   }
 
   onPeriodChange(event: Event): void {
@@ -126,19 +182,9 @@ export class CatalogImport implements OnInit {
       return;
     }
 
-    this.isImporting.set(true);
     this.errorMessage.set('');
-
-    this.catalogService.importExcel(file, `${this.period()}-01`).subscribe({
-      next: result => {
-        this.isImporting.set(false);
-        this.result.set(result);
-        this.selectedFile.set(null);
-        this.toast.success(`${result.importedCount.toLocaleString('tr-TR')} araç değeri kataloğa eklendi.`);
-        this.loadSummary();
-      },
-      error: () => this.isImporting.set(false)
-    });
+    this.selectedFile.set(null);
+    this.tracker.start(file, `${this.period()}-01`);
   }
 
   async reclassify(): Promise<void> {

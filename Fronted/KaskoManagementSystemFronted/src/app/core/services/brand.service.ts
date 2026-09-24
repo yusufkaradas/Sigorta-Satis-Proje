@@ -60,7 +60,7 @@ export class BrandService {
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link) {
       link.type = value ? 'image/png' : 'image/x-icon';
-      link.href = value || 'Ust_Logo.png';
+      link.href = value || 'favicon.ico';
     }
   }
 }

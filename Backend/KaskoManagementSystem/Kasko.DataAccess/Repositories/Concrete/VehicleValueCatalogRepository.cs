@@ -14,6 +14,25 @@ public class VehicleValueCatalogRepository
     {
     }
 
+    public async Task<IReadOnlyList<VehicleValueCatalog>> GetKeysByEffectiveDateAsync(
+        DateTime effectiveDate)
+    {
+        return await _context
+            .VehicleValueCatalogs
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.EffectiveDate == effectiveDate)
+            .Select(x => new VehicleValueCatalog
+            {
+                BrandCode = x.BrandCode,
+                TypeCode = x.TypeCode,
+                ModelYear = x.ModelYear,
+                EffectiveDate = x.EffectiveDate
+            })
+            .ToListAsync();
+    }
+
     public async Task<IReadOnlyList<VehicleValueCatalog>> GetActiveBrandsAsync()
     {
         return await _context

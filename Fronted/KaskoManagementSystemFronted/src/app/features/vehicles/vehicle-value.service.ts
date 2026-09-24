@@ -1,6 +1,6 @@
 import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface VehicleValueBrand {
@@ -28,6 +28,27 @@ export interface CatalogImportResult {
   skippedZeroValueCount: number;
   duplicateCount: number;
   invalidRowCount: number;
+}
+
+export type CatalogImportState = 'Idle' | 'Queued' | 'Running' | 'Completed' | 'Failed';
+
+export type CatalogImportStage = 'Reading' | 'Processing' | 'Saving';
+
+export interface CatalogImportStatus {
+  jobId: string | null;
+  state: CatalogImportState;
+  stage: CatalogImportStage | null;
+  percent: number;
+  processedRows: number;
+  totalRows: number;
+  fileName: string | null;
+  effectiveDate: string | null;
+  queuedAt: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  result: CatalogImportResult | null;
+  error: string | null;
+  isActive: boolean;
 }
 
 export interface VehicleValueLookup {
@@ -120,11 +141,19 @@ export class VehicleValueService {
     return this.http.get<CatalogSummary>(`${this.apiUrl}/summary`);
   }
 
-  importExcel(file: File, effectiveDate: string): Observable<CatalogImportResult> {
+  startImport(file: File, effectiveDate: string): Observable<HttpEvent<CatalogImportStatus>> {
     const form = new FormData();
     form.append('file', file);
     form.append('effectiveDate', effectiveDate);
-    return this.http.post<CatalogImportResult>(`${this.apiUrl}/import`, form);
+    return this.http.post<CatalogImportStatus>(`${this.apiUrl}/import`, form, {
+      headers: { 'X-Silent-Error': '1' },
+      observe: 'events',
+      reportProgress: true
+    });
+  }
+
+  getImportStatus(): Observable<CatalogImportStatus> {
+    return this.http.get<CatalogImportStatus>(`${this.apiUrl}/import/status`, { headers: { 'X-Silent-Error': '1' } });
   }
 
   reclassify(): Observable<{ updated: number }> {

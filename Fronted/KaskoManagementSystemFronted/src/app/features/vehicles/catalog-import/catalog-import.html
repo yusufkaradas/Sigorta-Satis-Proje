@@ -63,10 +63,10 @@
 
           <div class="kf-field">
             <label for="catalogFile">Excel dosyası (.xlsx) *</label>
-            <label class="ci-file" [class.disabled]="isImporting()">
+            <label class="ci-file" [class.disabled]="tracker.isBusy()">
               <span class="kf-file-button">Dosya Seç</span>
               <span class="ci-file-name">{{ selectedFile()?.name || 'Dosya seçilmedi' }}</span>
-              <input id="catalogFile" type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="isImporting()" hidden />
+              <input id="catalogFile" type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="tracker.isBusy()" hidden />
             </label>
             <small class="kf-muted">{{ selectedFile() ? fileSizeText + ' · en fazla 30 MB' : 'En fazla 30 MB, yalnızca .xlsx' }}</small>
           </div>
@@ -74,15 +74,57 @@
         </div>
 
         <div class="kf-actions ci-actions">
-          <button type="button" class="kf-btn" [disabled]="!selectedFile() || isImporting()" (click)="import()">
-            {{ isImporting() ? 'Liste yükleniyor...' : 'Listeyi Yükle' }}
+          <button type="button" class="kf-btn" [disabled]="!selectedFile() || tracker.isBusy()" (click)="import()">
+            {{ tracker.isBusy() ? 'Liste yükleniyor · %' + tracker.percent() : 'Listeyi Yükle' }}
           </button>
         </div>
 
-        @if (result(); as r) {
-          <div class="kf-alert kf-alert-success ci-result">
-            <strong>Yükleme tamamlandı</strong>
-            <span>{{ r.importedCount | number }} yeni değer eklendi · {{ r.duplicateCount | number }} zaten vardı · {{ r.skippedZeroValueCount | number }} boş değer · {{ r.invalidRowCount | number }} hatalı satır ({{ r.excelRowCount | number }} satır okundu)</span>
+        @if (tracker.phase() !== 'idle') {
+          <div
+            class="ci-progress"
+            [class.ci-progress-done]="tracker.phase() === 'completed'"
+            [class.ci-progress-failed]="tracker.phase() === 'failed'"
+            role="status"
+            aria-live="polite">
+
+            <ol class="ci-progress-steps">
+              <li [class.active]="tracker.phase() === 'uploading'" [class.done]="tracker.phase() !== 'uploading'">
+                <b>{{ tracker.phase() === 'uploading' ? '1' : '✓' }}</b>Dosya gönderimi
+              </li>
+              <li [class.active]="tracker.phase() === 'processing'" [class.done]="tracker.phase() === 'completed'">
+                <b>{{ tracker.phase() === 'completed' ? '✓' : '2' }}</b>Kataloğa işleme
+              </li>
+            </ol>
+
+            <div class="ci-progress-head">
+              <strong>{{ progressTitle }}</strong>
+              <span>%{{ tracker.percent() }}</span>
+            </div>
+
+            <div
+              class="ci-progress-bar"
+              role="progressbar"
+              aria-label="Yükleme ilerlemesi"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="tracker.percent()">
+              <span [style.width.%]="tracker.percent()"></span>
+            </div>
+
+            <span class="ci-progress-file">{{ tracker.fileName() }}</span>
+
+            @if (tracker.phase() === 'completed' && tracker.status()?.result; as r) {
+              <span class="ci-progress-detail">
+                {{ r.importedCount | number }} yeni değer eklendi · {{ r.duplicateCount | number }} zaten vardı · {{ r.skippedZeroValueCount | number }} boş değer · {{ r.invalidRowCount | number }} hatalı satır ({{ r.excelRowCount | number }} satır okundu){{ finishedTimeText ? ' · ' + finishedTimeText : '' }}
+              </span>
+            } @else if (progressDetail) {
+              <span class="ci-progress-detail">{{ progressDetail }}</span>
+            }
+
+            @if (tracker.phase() === 'processing') {
+              <small class="ci-progress-note">Sayfadan ayrılabilirsiniz; işlem sunucuda devam eder ve bittiğinde bildirim alırsınız.</small>
+            }
+
           </div>
         }
 
@@ -104,7 +146,7 @@
         <p class="kf-muted">Sınıflar marka ve model adına göre belirlenir; hızlı teklifte araç sınıfı seçimi ve ticari kullanım kuralları bu listeye dayanır.</p>
 
         <div class="kf-actions ci-actions">
-          <button type="button" class="kf-btn-outline" [disabled]="isReclassifying()" (click)="reclassify()">
+          <button type="button" class="kf-btn-outline" [disabled]="isReclassifying() || tracker.isBusy()" (click)="reclassify()">
             {{ isReclassifying() ? 'Güncelleniyor...' : 'Sınıfları Yenile' }}
           </button>
         </div>
@@ -118,7 +160,7 @@
         <ol class="ci-steps">
           <li><b>1</b><span><strong>Dosya yapısı</strong>Dosyada <b>Smarka</b> adlı sayfa olmalı; ilk sütunlar marka kodu, tip kodu, marka ve tip adıdır.</span></li>
           <li><b>2</b><span><strong>Çift kayıt yok</strong>Aynı dönemde daha önce yüklenmiş değerler atlanır, katalogda tekrar oluşmaz.</span></li>
-          <li><b>3</b><span><strong>Süre</strong>Büyük listelerin yüklenmesi birkaç dakika sürebilir; işlem bitene kadar sayfadan ayrılmayın.</span></li>
+          <li><b>3</b><span><strong>Kesintisiz yükleme</strong>Dosya gönderilirken sekmeyi kapatmayın. Gönderim bitince işlem sunucuda devam eder; sayfadan ayrılsanız da kesilmez ve bittiğinde bildirim alırsınız.</span></li>
         </ol>
 
       </section>
