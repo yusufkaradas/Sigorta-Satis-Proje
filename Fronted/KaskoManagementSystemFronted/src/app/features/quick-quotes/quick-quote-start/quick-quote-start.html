@@ -176,7 +176,7 @@
                 (keydown.enter)="onContinue()"
                 placeholder="6 haneli kod" />
 
-              <div class="demo-code-box">Demo doğrulama kodu: <strong>{{ demoCode }}</strong></div>
+              <div *ngIf="demoCode" class="demo-code-box">Demo doğrulama kodu: <strong>{{ demoCode }}</strong></div>
 
               <div class="qq-otp-actions">
                 <button type="button" class="qq-link" [disabled]="isLoading" (click)="resetOtp()">Bilgileri değiştir</button>

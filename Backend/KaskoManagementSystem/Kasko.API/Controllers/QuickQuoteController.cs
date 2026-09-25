@@ -8,14 +8,17 @@ using Kasko.Business.Services;
 using Kasko.Business.Services.Abstract;
 using Kasko.DataAccess.Repositories.Abstract;
 using Kasko.Entities.Enums;
+using Kasko.Business.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Kasko.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
+[EnableRateLimiting("public")]
 public class QuickQuoteController : ControllerBase
 {
     private readonly ICustomerService _customerService;
@@ -29,6 +32,8 @@ public class QuickQuoteController : ControllerBase
 
     private readonly IQuickQuoteVerificationService _verificationService;
 
+    private readonly VerificationCodePolicy _verificationCodePolicy;
+
     public QuickQuoteController(
         ICustomerService customerService,
         IQuoteService quoteService,
@@ -38,10 +43,14 @@ public class QuickQuoteController : ControllerBase
         IPolicyService policyService,
         IPaymentService paymentService,
         IPolicyPdfService policyPdfService,
-        IQuickQuoteVerificationService verificationService)
+        IQuickQuoteVerificationService verificationService,
+        VerificationCodePolicy verificationCodePolicy)
     {
         _verificationService =
             verificationService;
+
+        _verificationCodePolicy =
+            verificationCodePolicy;
 
         _customerService =
             customerService;
@@ -116,15 +125,48 @@ public class QuickQuoteController : ControllerBase
         return Request.Headers["X-QuickQuote-Token"].FirstOrDefault();
     }
 
-    private void EnsureCaller(string? token, string identityNumber, string phoneNumber)
+    private async Task EnsureCallerAsync(string? token, string identityNumber, string phoneNumber)
     {
-        if (User.Identity?.IsAuthenticated == true &&
-            (User.IsInRole("Customer") || User.IsInRole("Admin")))
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
         {
             return;
         }
 
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+        {
+            var current = await _customerService.GetCurrentAsync();
+
+            if (current != null &&
+                Digits(current.IdentityNumber) == Digits(identityNumber) &&
+                NormalizePhone(current.PhoneNumber) == NormalizePhone(phoneNumber))
+            {
+                return;
+            }
+        }
+
         _verificationService.EnsureVerified(token, identityNumber, phoneNumber);
+    }
+
+    private static string Digits(string? value)
+    {
+        return new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+    }
+
+    private static string NormalizePhone(string? value)
+    {
+        var digits = Digits(value);
+
+        if (digits.Length == 12 && digits.StartsWith("90"))
+        {
+            digits = digits[2..];
+        }
+
+        if (digits.Length == 11 && digits.StartsWith("0"))
+        {
+            digits = digits[1..];
+        }
+
+        return digits;
     }
 
     [HttpPost("purchase")]
@@ -150,7 +192,7 @@ public class QuickQuoteController : ControllerBase
             });
         }
 
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -234,6 +276,7 @@ public class QuickQuoteController : ControllerBase
     }
 
     [HttpPost("otp/send")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> SendOtp(
         [FromBody] QuickQuoteCustomerLookupRequestDto dto)
     {
@@ -258,11 +301,12 @@ public class QuickQuoteController : ControllerBase
         return Ok(new
         {
             message = "Doğrulama kodu telefonunuza gönderildi.",
-            demoCode = code
+            demoCode = _verificationCodePolicy.Reveal(code)
         });
     }
 
     [HttpPost("otp/verify")]
+    [EnableRateLimiting("auth")]
     public IActionResult VerifyOtp(
         [FromBody] QuickQuoteOtpVerifyRequestDto dto)
     {
@@ -283,7 +327,7 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuoteCustomerLookupRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -315,7 +359,7 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuoteCustomerLookupRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -371,7 +415,7 @@ public class QuickQuoteController : ControllerBase
         [FromBody]
         QuickQuotePricingRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -483,7 +527,7 @@ public class QuickQuoteController : ControllerBase
     [FromBody]
     QuickQuotePricingRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -582,7 +626,7 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> GeneratePolicyPdf(
     [FromBody] QuickQuotePolicyPdfRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);
@@ -636,7 +680,7 @@ public class QuickQuoteController : ControllerBase
     public async Task<IActionResult> GenerateQuotePdf(
     [FromBody] QuickQuoteQuotePdfRequestDto dto)
     {
-        EnsureCaller(
+        await EnsureCallerAsync(
             ResolveVerificationToken(),
             dto.IdentityNumber,
             dto.PhoneNumber);

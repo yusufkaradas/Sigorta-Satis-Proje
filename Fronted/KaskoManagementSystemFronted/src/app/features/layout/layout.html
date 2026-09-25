@@ -5,7 +5,7 @@
   <aside class="kl-sidebar" id="kl-sidebar">
 
     <div class="kl-drawer-head">
-      <strong>{{ isManager ? 'Yönetici Paneli' : 'Admin Paneli' }}</strong>
+      <strong class="kl-drawer-brand">{{ brand().companyName }}</strong>
       <button type="button" class="kl-drawer-close" aria-label="Menüyü kapat" (click)="closeMenu()">
         <svg class="kl-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>

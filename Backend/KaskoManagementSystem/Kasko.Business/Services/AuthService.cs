@@ -15,15 +15,22 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly PasswordHasherService _passwordHasherService;
     private readonly JwtTokenService _jwtTokenService;
+    private readonly VerificationCodePolicy _verificationCodePolicy;
+
+    private static readonly string[] StaffRoles = { "Admin", "Manager" };
+
+    private const string InvalidCredentialsMessage = "E-posta veya şifre hatalı.";
 
     public AuthService(
         IUnitOfWork unitOfWork,
         PasswordHasherService passwordHasherService,
-        JwtTokenService jwtTokenService)
+        JwtTokenService jwtTokenService,
+        VerificationCodePolicy verificationCodePolicy)
     {
         _unitOfWork = unitOfWork;
         _passwordHasherService = passwordHasherService;
         _jwtTokenService = jwtTokenService;
+        _verificationCodePolicy = verificationCodePolicy;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
@@ -37,26 +44,29 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            throw new NotFoundException(
-                "E-posta veya şifre hatalı.");
-        }
+            _passwordHasherService.VerifyPassword(
+                new User(),
+                dto.Password ?? string.Empty,
+                DummyPasswordHash.Value);
 
-        if (!user.IsActive)
-        {
-            throw new BadRequestException(
-                "Kullanıcı aktif değil.");
+            throw new BadRequestException(InvalidCredentialsMessage);
         }
 
         var passwordValid =
             _passwordHasherService.VerifyPassword(
                 user,
-                dto.Password,
+                dto.Password ?? string.Empty,
                 user.PasswordHash);
 
         if (!passwordValid)
         {
+            throw new BadRequestException(InvalidCredentialsMessage);
+        }
+
+        if (!user.IsActive)
+        {
             throw new BadRequestException(
-                "E-posta veya şifre hatalı.");
+                "Hesabınız pasif durumda. Lütfen yöneticinizle iletişime geçin.");
         }
 
         var role =
@@ -198,15 +208,23 @@ public class AuthService : IAuthService
 
     private static readonly ConcurrentDictionary<string, (string Code, DateTime ExpiresAt, int Attempts)> ResetCodes = new();
 
+    private static readonly Lazy<string> DummyPasswordHash =
+        new(() => new Microsoft.AspNetCore.Identity.PasswordHasher<User>().HashPassword(new User(), Guid.NewGuid().ToString("N")));
+
     public async Task<PasswordResetCodeResponseDto> SendPasswordResetCodeAsync(PasswordResetRequestDto dto)
     {
         var email = (dto.Email ?? string.Empty).Trim().ToLowerInvariant();
 
         var user = (await _unitOfWork.Users.FindAsync(x => x.Email.ToLower() == email && !x.IsDeleted)).FirstOrDefault();
 
-        if (user == null || !user.IsActive)
+        if (user == null || !user.IsActive || await IsStaffAsync(user))
         {
-            throw new NotFoundException("Bu e-posta adresiyle kayıtlı aktif bir hesap bulunamadı.");
+            ResetCodes.TryRemove(email, out _);
+
+            return new PasswordResetCodeResponseDto
+            {
+                MaskedPhone = "kayıtlı telefonunuz"
+            };
         }
 
         var code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
@@ -220,8 +238,15 @@ public class AuthService : IAuthService
         return new PasswordResetCodeResponseDto
         {
             MaskedPhone = masked,
-            DemoCode = code
+            DemoCode = _verificationCodePolicy.Reveal(code)
         };
+    }
+
+    private async Task<bool> IsStaffAsync(User user)
+    {
+        var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId);
+
+        return role != null && StaffRoles.Contains(role.Name, StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task ResetPasswordAsync(PasswordResetConfirmDto dto)
@@ -263,9 +288,10 @@ public class AuthService : IAuthService
 
         var user = (await _unitOfWork.Users.FindAsync(x => x.Email.ToLower() == email && !x.IsDeleted)).FirstOrDefault();
 
-        if (user == null)
+        if (user == null || !user.IsActive || await IsStaffAsync(user))
         {
-            throw new NotFoundException("Kullanıcı bulunamadı.");
+            ResetCodes.TryRemove(email, out _);
+            throw new BadRequestException("Doğrulama kodu bulunamadı. Lütfen yeni kod isteyin.");
         }
 
         user.PasswordHash = _passwordHasherService.HashPassword(user, password);

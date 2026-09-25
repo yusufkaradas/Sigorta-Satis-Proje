@@ -306,9 +306,9 @@
 
   .ci-stat {
     height: auto;
-    min-height: 86px;
-    padding: 12px 14px;
-    border-radius: 14px;
+    min-height: 72px;
+    padding: 10px 12px;
+    border-radius: 12px;
 
     span {
       font-size: 11px;
@@ -316,7 +316,7 @@
     }
 
     strong {
-      font-size: 22px;
+      font-size: clamp(16px, 5.2vw, 20px);
     }
   }
 }

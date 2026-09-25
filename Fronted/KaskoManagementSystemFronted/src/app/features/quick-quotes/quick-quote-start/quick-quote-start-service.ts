@@ -210,8 +210,8 @@ export class QuickQuoteService {
     return headers;
   }
 
-  sendOtp(request: QuickQuoteCustomerLookupRequest): Observable<{ message: string; demoCode: string }> {
-    return this.http.post<{ message: string; demoCode: string }>(`${this.apiUrl}/otp/send`, request);
+  sendOtp(request: QuickQuoteCustomerLookupRequest): Observable<{ message: string; demoCode: string | null }> {
+    return this.http.post<{ message: string; demoCode: string | null }>(`${this.apiUrl}/otp/send`, request);
   }
 
   verifyOtp(request: QuickQuoteCustomerLookupRequest & { code: string }): Observable<{ verificationToken: string }> {
