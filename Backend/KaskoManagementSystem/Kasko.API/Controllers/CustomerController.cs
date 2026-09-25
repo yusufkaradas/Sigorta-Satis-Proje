@@ -18,6 +18,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> GetAll()
     {
         var customers = await _customerService.GetAllAsync();

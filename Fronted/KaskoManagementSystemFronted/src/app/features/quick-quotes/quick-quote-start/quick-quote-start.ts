@@ -216,7 +216,7 @@ export class QuickQuoteStart implements OnInit, OnDestroy {
       next: result => {
         this.isLoading = false;
         this.otpSent = true;
-        this.demoCode = result.demoCode;
+        this.demoCode = result.demoCode ?? '';
         this.otpCode = result.demoCode ?? '';
         this.cdr.detectChanges();
       },

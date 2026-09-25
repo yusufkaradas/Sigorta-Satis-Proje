@@ -4035,3 +4035,133 @@
   color: k.$surface;
 }
 
+
+.qg-price-card .qq-note {
+  color: k.$text-secondary;
+}
+
+.qq-page .qq-risk-stack .qq-vehicle-box {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+
+  dl {
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+  }
+}
+
+@media (min-width: 701px) {
+
+  .qq-page .qq-vehicle-box dl dd .plate-badge {
+    width: k.u(150);
+    max-width: 100%;
+  }
+
+  .qq-page .qq-risk-stack .qq-vehicle-box dl dd .plate-badge {
+    max-width: none;
+  }
+}
+
+@media (max-width: 1100px) {
+
+  .qq-page .qq-risk-stack .qq-vehicle-box {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    dl {
+      grid-column: 1 / -1;
+      grid-row: auto;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid k.$border;
+      justify-content: space-between;
+    }
+
+    .qq-vehicle-box-value {
+      grid-column: 2;
+      grid-row: 1 / 4;
+    }
+  }
+}
+
+@media (max-width: 700px) {
+
+  .qq-page .qq-body-center,
+  .qq-page .qq-body-center:has(> .qq-form-wide) {
+    padding-top: 8px;
+    place-items: start stretch;
+  }
+
+  .qq-page .qq-body:has(> .qg-offers) {
+    justify-content: flex-start;
+  }
+
+  .qq-page .qg-done-card {
+    padding: 16px 14px;
+  }
+
+  .qq-page .qg-done-grid {
+    gap: 10px 12px;
+  }
+
+  .qq-page .qg-done-price strong {
+    font-size: 24px;
+  }
+
+  .qq-page .qq-company,
+  .qq-page .qq-header-button {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .qq-page .qq-btn {
+    height: 38px;
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .qq-page .qq-risk-stack .qq-vehicle-box {
+    padding: 14px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: 6px;
+
+    .qq-vehicle-box-label,
+    > strong,
+    > p {
+      grid-column: 1;
+    }
+
+    > p {
+      white-space: normal;
+    }
+
+    dl {
+      grid-column: 1;
+      grid-row: auto;
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid k.$border;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 12px;
+
+      > div {
+        padding-left: 0;
+        border-left: 0;
+      }
+    }
+
+    .qq-vehicle-box-value {
+      grid-column: 1;
+      grid-row: auto;
+      margin-top: 4px;
+      padding: 10px 0 0;
+      border-top: 1px solid k.$border;
+      border-left: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+}

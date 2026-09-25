@@ -80,7 +80,7 @@ export class ForgotPassword {
     this.errorMessage.set('');
     this.isLoading.set(true);
 
-    this.http.post<{ maskedPhone: string; demoCode: string }>(
+    this.http.post<{ maskedPhone: string; demoCode: string | null }>(
       `${this.apiUrl}/send`,
       { email },
       { headers: { 'X-Silent-Error': '1' } }
@@ -88,7 +88,7 @@ export class ForgotPassword {
       next: result => {
         this.isLoading.set(false);
         this.maskedPhone.set(result.maskedPhone);
-        this.demoCode.set(result.demoCode);
+        this.demoCode.set(result.demoCode ?? '');
         this.code = '';
         this.step.set('code');
       },

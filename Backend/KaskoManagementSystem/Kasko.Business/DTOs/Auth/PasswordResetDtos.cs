@@ -18,5 +18,5 @@ public class PasswordResetCodeResponseDto
 {
     public string MaskedPhone { get; set; } = string.Empty;
 
-    public string DemoCode { get; set; } = string.Empty;
+    public string? DemoCode { get; set; }
 }
