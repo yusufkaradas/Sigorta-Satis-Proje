@@ -8,7 +8,7 @@ Müşteri Yönetimi ➔ Araç Tanımlama ➔ Fiyatlandırma Motoru ➔ Teklif Ol
 
 ---
 
-## MMÖne Çıkan Özellikler (Key Features)
+## Öne Çıkan Özellikler (Key Features)
 
 ### 1. Dinamik Tarife ve Fiyatlandırma Motoru (Quote Engine)
 Fiyatlar koda (hardcoded) yazılmamıştır. Veritabanındaki `PricingRule` (Fiyatlandırma Kuralı) tablosundan dinamik olarak hesaplanır.
